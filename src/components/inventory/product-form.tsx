@@ -7,6 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Plus, X } from "lucide-react"
+
+type DimType = "length" | "width" | "thickness"
+interface Dimension {
+  type: DimType
+  value: string
+  unit: string
+}
+
+const DIM_LABELS: Record<DimType, string> = {
+  length: "Length",
+  width: "Width",
+  thickness: "Thickness",
+}
 
 interface Category {
   id: string
@@ -52,12 +66,13 @@ export function ProductForm({ product }: ProductFormProps) {
   const [notes, setNotes] = useState(product?.notes || "")
   const [leadTimeDays, setLeadTimeDays] = useState(product?.leadTimeDays?.toString() || "")
   const [pieceUnit, setPieceUnit] = useState(product?.pieceUnit || NONE_VALUE)
-  const [dimLength, setDimLength] = useState(product?.dimLength?.toString() || "")
-  const [dimLengthUnit, setDimLengthUnit] = useState(product?.dimLengthUnit || "ft")
-  const [dimWidth, setDimWidth] = useState(product?.dimWidth?.toString() || "")
-  const [dimWidthUnit, setDimWidthUnit] = useState(product?.dimWidthUnit || "ft")
-  const [dimThickness, setDimThickness] = useState(product?.dimThickness?.toString() || "")
-  const [dimThicknessUnit, setDimThicknessUnit] = useState(product?.dimThicknessUnit || "in")
+
+  // Build initial dimensions from existing product data
+  const initialDims: Dimension[] = []
+  if (product?.dimLength) initialDims.push({ type: "length", value: product.dimLength.toString(), unit: product.dimLengthUnit || "ft" })
+  if (product?.dimWidth) initialDims.push({ type: "width", value: product.dimWidth.toString(), unit: product.dimWidthUnit || "ft" })
+  if (product?.dimThickness) initialDims.push({ type: "thickness", value: product.dimThickness.toString(), unit: product.dimThicknessUnit || "in" })
+  const [dimensions, setDimensions] = useState<Dimension[]>(initialDims)
 
   useEffect(() => {
     async function fetchCategories() {
@@ -77,6 +92,34 @@ export function ProductForm({ product }: ProductFormProps) {
     fetchCategories()
   }, [])
 
+  function getDimValue(type: DimType): number | null {
+    const dim = dimensions.find((d) => d.type === type)
+    return dim?.value ? parseFloat(dim.value) : null
+  }
+
+  function getDimUnit(type: DimType): string | null {
+    const dim = dimensions.find((d) => d.type === type)
+    return dim?.value ? dim.unit : null
+  }
+
+  function addDimension(type: DimType) {
+    setDimensions((prev) => [...prev, { type, value: "", unit: type === "thickness" ? "in" : "ft" }])
+  }
+
+  function removeDimension(type: DimType) {
+    setDimensions((prev) => prev.filter((d) => d.type !== type))
+  }
+
+  function updateDimension(type: DimType, field: "value" | "unit", val: string) {
+    setDimensions((prev) =>
+      prev.map((d) => (d.type === type ? { ...d, [field]: val } : d))
+    )
+  }
+
+  const availableDims: DimType[] = (["length", "width", "thickness"] as DimType[]).filter(
+    (t) => !dimensions.some((d) => d.type === t)
+  )
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -92,12 +135,12 @@ export function ProductForm({ product }: ProductFormProps) {
       notes: notes || null,
       leadTimeDays: leadTimeDays ? parseInt(leadTimeDays) : null,
       pieceUnit: pieceUnit === NONE_VALUE ? null : pieceUnit,
-      dimLength: dimLength ? parseFloat(dimLength) : null,
-      dimLengthUnit: dimLength ? dimLengthUnit : null,
-      dimWidth: dimWidth ? parseFloat(dimWidth) : null,
-      dimWidthUnit: dimWidth ? dimWidthUnit : null,
-      dimThickness: dimThickness ? parseFloat(dimThickness) : null,
-      dimThicknessUnit: dimThickness ? dimThicknessUnit : null,
+      dimLength: getDimValue("length"),
+      dimLengthUnit: getDimUnit("length"),
+      dimWidth: getDimValue("width"),
+      dimWidthUnit: getDimUnit("width"),
+      dimThickness: getDimValue("thickness"),
+      dimThicknessUnit: getDimUnit("thickness"),
     }
 
     try {
@@ -238,78 +281,67 @@ export function ProductForm({ product }: ProductFormProps) {
 
       {/* Dimensions */}
       <div className="space-y-3">
-        <Label className="text-base">Dimensions</Label>
-
-        {/* Length */}
-        <div className="flex items-center gap-2">
-          <span className="w-20 text-sm text-text-secondary shrink-0">Length</span>
-          <Input
-            type="number"
-            min="0"
-            step="any"
-            value={dimLength}
-            onChange={(e) => setDimLength(e.target.value)}
-            placeholder="—"
-            className="h-11 flex-1"
-          />
-          <Select value={dimLengthUnit} onValueChange={setDimLengthUnit}>
-            <SelectTrigger className="h-11 w-[72px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ft">ft</SelectItem>
-              <SelectItem value="in">in</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center justify-between">
+          <Label className="text-base">Dimensions</Label>
+          {availableDims.length > 0 && (
+            <div className="flex gap-1">
+              {availableDims.map((type) => (
+                <Button
+                  key={type}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addDimension(type)}
+                  className="h-8 text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  {DIM_LABELS[type]}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Width */}
-        <div className="flex items-center gap-2">
-          <span className="w-20 text-sm text-text-secondary shrink-0">Width</span>
-          <Input
-            type="number"
-            min="0"
-            step="any"
-            value={dimWidth}
-            onChange={(e) => setDimWidth(e.target.value)}
-            placeholder="—"
-            className="h-11 flex-1"
-          />
-          <Select value={dimWidthUnit} onValueChange={setDimWidthUnit}>
-            <SelectTrigger className="h-11 w-[72px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ft">ft</SelectItem>
-              <SelectItem value="in">in</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {dimensions.length === 0 && (
+          <p className="text-sm text-text-muted py-2">No dimensions added. Tap a button above to add one.</p>
+        )}
 
-        {/* Thickness */}
-        <div className="flex items-center gap-2">
-          <span className="w-20 text-sm text-text-secondary shrink-0">Thickness</span>
-          <Input
-            type="number"
-            min="0"
-            step="any"
-            value={dimThickness}
-            onChange={(e) => setDimThickness(e.target.value)}
-            placeholder="—"
-            className="h-11 flex-1"
-          />
-          <Select value={dimThicknessUnit} onValueChange={setDimThicknessUnit}>
-            <SelectTrigger className="h-11 w-[72px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ft">ft</SelectItem>
-              <SelectItem value="in">in</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {dimensions.map((dim) => (
+          <div key={dim.type} className="flex items-center gap-2">
+            <span className="w-20 text-sm text-text-secondary shrink-0">{DIM_LABELS[dim.type]}</span>
+            <Input
+              type="number"
+              min="0"
+              step="any"
+              value={dim.value}
+              onChange={(e) => updateDimension(dim.type, "value", e.target.value)}
+              placeholder="—"
+              className="h-11 flex-1"
+            />
+            <Select value={dim.unit} onValueChange={(v) => updateDimension(dim.type, "unit", v)}>
+              <SelectTrigger className="h-11 w-[72px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ft">ft</SelectItem>
+                <SelectItem value="in">in</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => removeDimension(dim.type)}
+              className="h-11 w-11 shrink-0 text-text-muted hover:text-status-red"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
 
-        <p className="text-xs text-text-muted">Length is used for BOM piece conversion (e.g., 8 ft angle = 1 piece)</p>
+        {dimensions.length > 0 && (
+          <p className="text-xs text-text-muted">Length is used for BOM piece conversion (e.g., 8 ft angle = 1 piece)</p>
+        )}
       </div>
 
       <div className="space-y-2">
