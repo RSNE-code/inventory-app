@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         lineItems: {
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceSize: true, pieceUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
             },
           },
         },

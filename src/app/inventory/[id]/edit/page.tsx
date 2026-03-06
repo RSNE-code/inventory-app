@@ -43,8 +43,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           location: product.location,
           notes: product.notes,
           leadTimeDays: product.leadTimeDays,
-          pieceSize: product.pieceSize ? Number(product.pieceSize) : null,
           pieceUnit: product.pieceUnit,
+          dimLength: product.dimLength ? Number(product.dimLength) : null,
+          dimLengthUnit: product.dimLengthUnit,
+          dimWidth: product.dimWidth ? Number(product.dimWidth) : null,
+          dimWidthUnit: product.dimWidthUnit,
+          dimThickness: product.dimThickness ? Number(product.dimThickness) : null,
+          dimThicknessUnit: product.dimThicknessUnit,
         }}
       />
     </div>

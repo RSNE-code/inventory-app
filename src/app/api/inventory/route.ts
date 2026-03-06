@@ -15,8 +15,13 @@ const createProductSchema = z.object({
   location: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   leadTimeDays: z.number().int().positive().optional().nullable(),
-  pieceSize: z.number().positive().optional().nullable(),
   pieceUnit: z.string().optional().nullable(),
+  dimLength: z.number().positive().optional().nullable(),
+  dimLengthUnit: z.string().optional().nullable(),
+  dimWidth: z.number().positive().optional().nullable(),
+  dimWidthUnit: z.string().optional().nullable(),
+  dimThickness: z.number().positive().optional().nullable(),
+  dimThicknessUnit: z.string().optional().nullable(),
 })
 
 export async function GET(request: NextRequest) {
@@ -118,8 +123,13 @@ export async function POST(request: NextRequest) {
         location: data.location || null,
         notes: data.notes || null,
         leadTimeDays: data.leadTimeDays || null,
-        pieceSize: data.pieceSize || null,
         pieceUnit: data.pieceUnit || null,
+        dimLength: data.dimLength || null,
+        dimLengthUnit: data.dimLengthUnit || null,
+        dimWidth: data.dimWidth || null,
+        dimWidthUnit: data.dimWidthUnit || null,
+        dimThickness: data.dimThickness || null,
+        dimThicknessUnit: data.dimThicknessUnit || null,
       },
       include: { category: true },
     })

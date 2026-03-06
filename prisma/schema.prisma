@@ -135,8 +135,13 @@ model Product {
   tier          InventoryTier @default(TIER_1)
   unitOfMeasure String
   trackingUnit  String?
-  pieceSize     Decimal?      @db.Decimal(12, 4)
-  pieceUnit     String?
+  pieceUnit        String?
+  dimLength        Decimal?      @db.Decimal(12, 4)
+  dimLengthUnit    String?
+  dimWidth         Decimal?      @db.Decimal(12, 4)
+  dimWidthUnit     String?
+  dimThickness     Decimal?      @db.Decimal(12, 4)
+  dimThicknessUnit String?
   currentQty    Decimal       @default(0) @db.Decimal(12, 4)
   reorderPoint  Decimal       @default(0) @db.Decimal(12, 4)
   avgCost       Decimal       @default(0) @db.Decimal(12, 4)

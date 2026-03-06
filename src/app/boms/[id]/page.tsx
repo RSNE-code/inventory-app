@@ -67,7 +67,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
-  async function handleAddProduct(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; pieceSize?: number | null; pieceUnit?: string | null }) {
+  async function handleAddProduct(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; pieceUnit?: string | null; dimLength?: number | null }) {
     try {
       await updateBom.mutateAsync({
         id,
@@ -201,7 +201,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     ? (item.nonCatalogUom as string) || ""
                     : (product?.unitOfMeasure as string) || ""
                 }
-                pieceSize={product?.pieceSize ? Number(product.pieceSize) : null}
+                dimLength={product?.dimLength ? Number(product.dimLength) : null}
                 pieceUnit={product?.pieceUnit as string | null}
                 tier={item.tier as string}
                 qtyNeeded={displayQty}

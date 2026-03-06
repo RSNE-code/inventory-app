@@ -10,7 +10,7 @@ interface BomLineItemRowProps {
   name: string
   sku?: string | null
   unitOfMeasure: string
-  pieceSize?: number | null
+  dimLength?: number | null
   pieceUnit?: string | null
   tier: string
   qtyNeeded: number
@@ -27,7 +27,7 @@ export function BomLineItemRow({
   name,
   sku,
   unitOfMeasure,
-  pieceSize,
+  dimLength,
   pieceUnit,
   tier,
   qtyNeeded,
@@ -39,8 +39,8 @@ export function BomLineItemRow({
   onQtyChange,
   onRemove,
 }: BomLineItemRowProps) {
-  const hasPieceConversion = pieceSize && pieceSize > 0
-  const piecesNeeded = hasPieceConversion ? Math.ceil(qtyNeeded / pieceSize) : null
+  const hasPieceConversion = dimLength && dimLength > 0
+  const piecesNeeded = hasPieceConversion ? Math.ceil(qtyNeeded / dimLength) : null
 
   return (
     <div className="py-3 border-b border-border-custom last:border-0">

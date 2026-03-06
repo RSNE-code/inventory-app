@@ -14,8 +14,13 @@ const updateProductSchema = z.object({
   location: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   leadTimeDays: z.number().int().positive().optional().nullable(),
-  pieceSize: z.number().positive().optional().nullable(),
   pieceUnit: z.string().optional().nullable(),
+  dimLength: z.number().positive().optional().nullable(),
+  dimLengthUnit: z.string().optional().nullable(),
+  dimWidth: z.number().positive().optional().nullable(),
+  dimWidthUnit: z.string().optional().nullable(),
+  dimThickness: z.number().positive().optional().nullable(),
+  dimThicknessUnit: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
 })
 

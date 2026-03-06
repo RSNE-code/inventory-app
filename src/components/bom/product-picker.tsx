@@ -11,8 +11,9 @@ interface ProductResult {
   sku: string | null
   unitOfMeasure: string
   currentQty: number
-  pieceSize?: number | null
   pieceUnit?: string | null
+  dimLength?: number | null
+  dimLengthUnit?: string | null
   category?: { name: string }
 }
 

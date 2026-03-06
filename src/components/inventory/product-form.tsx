@@ -25,10 +25,17 @@ interface ProductFormProps {
     location: string | null
     notes: string | null
     leadTimeDays: number | null
-    pieceSize: number | null
     pieceUnit: string | null
+    dimLength: number | null
+    dimLengthUnit: string | null
+    dimWidth: number | null
+    dimWidthUnit: string | null
+    dimThickness: number | null
+    dimThicknessUnit: string | null
   }
 }
+
+const NONE_VALUE = "__none__"
 
 export function ProductForm({ product }: ProductFormProps) {
   const router = useRouter()
@@ -44,20 +51,15 @@ export function ProductForm({ product }: ProductFormProps) {
   const [location, setLocation] = useState(product?.location || "")
   const [notes, setNotes] = useState(product?.notes || "")
   const [leadTimeDays, setLeadTimeDays] = useState(product?.leadTimeDays?.toString() || "")
-  const [pieceSize, setPieceSize] = useState(product?.pieceSize?.toString() || "")
-  const [pieceUnit, setPieceUnit] = useState(product?.pieceUnit || "")
+  const [pieceUnit, setPieceUnit] = useState(product?.pieceUnit || NONE_VALUE)
+  const [dimLength, setDimLength] = useState(product?.dimLength?.toString() || "")
+  const [dimLengthUnit, setDimLengthUnit] = useState(product?.dimLengthUnit || "ft")
+  const [dimWidth, setDimWidth] = useState(product?.dimWidth?.toString() || "")
+  const [dimWidthUnit, setDimWidthUnit] = useState(product?.dimWidthUnit || "ft")
+  const [dimThickness, setDimThickness] = useState(product?.dimThickness?.toString() || "")
+  const [dimThicknessUnit, setDimThicknessUnit] = useState(product?.dimThicknessUnit || "in")
 
   useEffect(() => {
-    fetch("/api/inventory?limit=1")
-      .then((r) => r.json())
-      .then((data) => {
-        // Fetch categories from a separate list
-        fetch("/api/inventory?limit=1").then(() => {
-          // Get unique categories
-          fetchCategories()
-        })
-      })
-
     async function fetchCategories() {
       const res = await fetch("/api/inventory?limit=500")
       const json = await res.json()
@@ -72,6 +74,7 @@ export function ProductForm({ product }: ProductFormProps) {
       cats.sort((a, b) => a.name.localeCompare(b.name))
       setCategories(cats)
     }
+    fetchCategories()
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -88,8 +91,13 @@ export function ProductForm({ product }: ProductFormProps) {
       location: location || null,
       notes: notes || null,
       leadTimeDays: leadTimeDays ? parseInt(leadTimeDays) : null,
-      pieceSize: pieceSize ? parseFloat(pieceSize) : null,
-      pieceUnit: pieceUnit || null,
+      pieceUnit: pieceUnit === NONE_VALUE ? null : pieceUnit,
+      dimLength: dimLength ? parseFloat(dimLength) : null,
+      dimLengthUnit: dimLength ? dimLengthUnit : null,
+      dimWidth: dimWidth ? parseFloat(dimWidth) : null,
+      dimWidthUnit: dimWidth ? dimWidthUnit : null,
+      dimThickness: dimThickness ? parseFloat(dimThickness) : null,
+      dimThicknessUnit: dimThickness ? dimThicknessUnit : null,
     }
 
     try {
@@ -210,32 +218,98 @@ export function ProductForm({ product }: ProductFormProps) {
         <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Rack A3, Bay 2" className="h-12" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="pieceSize">Piece Size</Label>
+      {/* Piece Unit */}
+      <div className="space-y-2">
+        <Label>Piece Unit</Label>
+        <Select value={pieceUnit} onValueChange={setPieceUnit}>
+          <SelectTrigger className="h-12">
+            <SelectValue placeholder="Select piece unit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE_VALUE}>None</SelectItem>
+            <SelectItem value="pieces">Pieces</SelectItem>
+            <SelectItem value="sheets">Sheets</SelectItem>
+            <SelectItem value="panels">Panels</SelectItem>
+            <SelectItem value="units">Units</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-text-muted">How this product is counted on a BOM for the shop</p>
+      </div>
+
+      {/* Dimensions */}
+      <div className="space-y-3">
+        <Label className="text-base">Dimensions</Label>
+
+        {/* Length */}
+        <div className="flex items-center gap-2">
+          <Label className="w-20 text-sm text-text-secondary shrink-0">Length</Label>
           <Input
-            id="pieceSize"
             type="number"
             min="0"
             step="any"
-            value={pieceSize}
-            onChange={(e) => setPieceSize(e.target.value)}
-            placeholder="e.g., 8"
-            className="h-12"
+            value={dimLength}
+            onChange={(e) => setDimLength(e.target.value)}
+            placeholder="—"
+            className="h-10 flex-1"
           />
-          <p className="text-xs text-text-muted">How many units per piece (e.g., 8 ft per piece)</p>
+          <Select value={dimLengthUnit} onValueChange={setDimLengthUnit}>
+            <SelectTrigger className="h-10 w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ft">ft</SelectItem>
+              <SelectItem value="in">in</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="pieceUnit">Piece Unit</Label>
+        {/* Width */}
+        <div className="flex items-center gap-2">
+          <Label className="w-20 text-sm text-text-secondary shrink-0">Width</Label>
           <Input
-            id="pieceUnit"
-            value={pieceUnit}
-            onChange={(e) => setPieceUnit(e.target.value)}
-            placeholder="e.g., piece, panel"
-            className="h-12"
+            type="number"
+            min="0"
+            step="any"
+            value={dimWidth}
+            onChange={(e) => setDimWidth(e.target.value)}
+            placeholder="—"
+            className="h-10 flex-1"
           />
+          <Select value={dimWidthUnit} onValueChange={setDimWidthUnit}>
+            <SelectTrigger className="h-10 w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ft">ft</SelectItem>
+              <SelectItem value="in">in</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+
+        {/* Thickness */}
+        <div className="flex items-center gap-2">
+          <Label className="w-20 text-sm text-text-secondary shrink-0">Thickness</Label>
+          <Input
+            type="number"
+            min="0"
+            step="any"
+            value={dimThickness}
+            onChange={(e) => setDimThickness(e.target.value)}
+            placeholder="—"
+            className="h-10 flex-1"
+          />
+          <Select value={dimThicknessUnit} onValueChange={setDimThicknessUnit}>
+            <SelectTrigger className="h-10 w-20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ft">ft</SelectItem>
+              <SelectItem value="in">in</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <p className="text-xs text-text-muted">Length is used for BOM piece conversion (e.g., 8 ft trim = 1 piece)</p>
       </div>
 
       <div className="space-y-2">
