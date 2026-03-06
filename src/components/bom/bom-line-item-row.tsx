@@ -11,6 +11,7 @@ interface BomLineItemRowProps {
   sku?: string | null
   unitOfMeasure: string
   dimLength?: number | null
+  dimLengthUnit?: string | null
   pieceUnit?: string | null
   tier: string
   qtyNeeded: number
@@ -28,6 +29,7 @@ export function BomLineItemRow({
   sku,
   unitOfMeasure,
   dimLength,
+  dimLengthUnit,
   pieceUnit,
   tier,
   qtyNeeded,
@@ -42,9 +44,12 @@ export function BomLineItemRow({
   const hasPieceConversion = dimLength && dimLength > 0
   const piecesNeeded = hasPieceConversion ? Math.ceil(qtyNeeded / dimLength) : null
 
+  // If the product has a length dimension, the BOM input is in that unit (ft/in),
+  // not the product's purchase unit (ea). This is what the sales manager quotes in.
+  const inputUnit = hasPieceConversion ? (dimLengthUnit || "ft") : unitOfMeasure
+
   return (
     <div className="py-3 border-b border-border-custom last:border-0">
-      {/* Top row: name + tier badge */}
       <div className="flex items-start gap-2 mb-1">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -61,11 +66,10 @@ export function BomLineItemRow({
         </div>
 
         {editable ? (
-          /* --- EDIT MODE: small inputs right-aligned --- */
           <div className="flex items-end gap-1.5 shrink-0">
             <div className="w-16">
               <label className="text-[10px] text-text-muted font-medium uppercase tracking-wide block text-center">
-                {unitOfMeasure}
+                {inputUnit}
               </label>
               <Input
                 type="number"
@@ -80,7 +84,7 @@ export function BomLineItemRow({
             {hasPieceConversion && (
               <div className="w-16">
                 <label className="text-[10px] text-text-muted font-medium uppercase tracking-wide block text-center">
-                  pieces
+                  {pieceUnit || "pieces"}
                 </label>
                 <div className="h-8 mt-0.5 rounded-md border border-border-custom bg-surface-secondary flex items-center justify-center">
                   <span className="text-sm font-semibold text-navy">{piecesNeeded}</span>
@@ -99,7 +103,6 @@ export function BomLineItemRow({
             </Button>
           </div>
         ) : (
-          /* --- READ-ONLY MODE (shop foreman view): right-aligned --- */
           <div className="text-right shrink-0">
             {hasPieceConversion ? (
               <>
@@ -108,11 +111,11 @@ export function BomLineItemRow({
                     {piecesNeeded}
                   </span>
                   <span className="text-sm font-medium text-navy ml-1">
-                    pieces
+                    {pieceUnit || "pieces"}
                   </span>
                 </div>
                 <span className="text-xs text-text-muted tabular-nums">
-                  ({formatQuantity(qtyNeeded)} {unitOfMeasure})
+                  ({formatQuantity(qtyNeeded)} {inputUnit})
                 </span>
               </>
             ) : (
@@ -129,7 +132,6 @@ export function BomLineItemRow({
         )}
       </div>
 
-      {/* Checkout progress (for in-progress BOMs) */}
       {qtyCheckedOut > 0 && (
         <p className="text-xs text-text-muted mt-1">
           Checked out: {formatQuantity(qtyCheckedOut)}

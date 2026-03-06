@@ -20,7 +20,7 @@ export async function GET(
         lineItems: {
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true },
             },
           },
           orderBy: { createdAt: "asc" },
@@ -188,7 +188,7 @@ export async function PUT(
         lineItems: {
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true },
             },
           },
           orderBy: { createdAt: "asc" },

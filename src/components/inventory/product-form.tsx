@@ -242,7 +242,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
         {/* Length */}
         <div className="flex items-center gap-2">
-          <Label className="w-20 text-sm text-text-secondary shrink-0">Length</Label>
+          <span className="w-20 text-sm text-text-secondary shrink-0">Length</span>
           <Input
             type="number"
             min="0"
@@ -250,10 +250,10 @@ export function ProductForm({ product }: ProductFormProps) {
             value={dimLength}
             onChange={(e) => setDimLength(e.target.value)}
             placeholder="—"
-            className="h-10 flex-1"
+            className="h-11 flex-1"
           />
           <Select value={dimLengthUnit} onValueChange={setDimLengthUnit}>
-            <SelectTrigger className="h-10 w-20">
+            <SelectTrigger className="h-11 w-[72px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -265,7 +265,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
         {/* Width */}
         <div className="flex items-center gap-2">
-          <Label className="w-20 text-sm text-text-secondary shrink-0">Width</Label>
+          <span className="w-20 text-sm text-text-secondary shrink-0">Width</span>
           <Input
             type="number"
             min="0"
@@ -273,10 +273,10 @@ export function ProductForm({ product }: ProductFormProps) {
             value={dimWidth}
             onChange={(e) => setDimWidth(e.target.value)}
             placeholder="—"
-            className="h-10 flex-1"
+            className="h-11 flex-1"
           />
           <Select value={dimWidthUnit} onValueChange={setDimWidthUnit}>
-            <SelectTrigger className="h-10 w-20">
+            <SelectTrigger className="h-11 w-[72px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -288,7 +288,7 @@ export function ProductForm({ product }: ProductFormProps) {
 
         {/* Thickness */}
         <div className="flex items-center gap-2">
-          <Label className="w-20 text-sm text-text-secondary shrink-0">Thickness</Label>
+          <span className="w-20 text-sm text-text-secondary shrink-0">Thickness</span>
           <Input
             type="number"
             min="0"
@@ -296,10 +296,10 @@ export function ProductForm({ product }: ProductFormProps) {
             value={dimThickness}
             onChange={(e) => setDimThickness(e.target.value)}
             placeholder="—"
-            className="h-10 flex-1"
+            className="h-11 flex-1"
           />
           <Select value={dimThicknessUnit} onValueChange={setDimThicknessUnit}>
-            <SelectTrigger className="h-10 w-20">
+            <SelectTrigger className="h-11 w-[72px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -309,7 +309,7 @@ export function ProductForm({ product }: ProductFormProps) {
           </Select>
         </div>
 
-        <p className="text-xs text-text-muted">Length is used for BOM piece conversion (e.g., 8 ft trim = 1 piece)</p>
+        <p className="text-xs text-text-muted">Length is used for BOM piece conversion (e.g., 8 ft angle = 1 piece)</p>
       </div>
 
       <div className="space-y-2">
