@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatQuantity } from "@/lib/utils"
-import { Pencil, ArrowUpDown, MapPin, Clock } from "lucide-react"
+import { Pencil, ArrowUpDown, MapPin, Clock, Ruler } from "lucide-react"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -125,6 +125,32 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
           </div>
+          {/* Dimensions */}
+          {(product.dimLength || product.dimWidth || product.dimThickness || product.pieceUnit) && (
+            <div className="pt-2 border-t border-border-custom space-y-1.5">
+              <p className="text-text-muted text-xs flex items-center gap-1"><Ruler className="h-3 w-3" /> Dimensions</p>
+              <div className="flex flex-wrap gap-3 text-sm">
+                {product.dimLength && (
+                  <span className="font-medium text-navy">
+                    {Number(product.dimLength)} {product.dimLengthUnit || "ft"} L
+                  </span>
+                )}
+                {product.dimWidth && (
+                  <span className="font-medium text-navy">
+                    {Number(product.dimWidth)} {product.dimWidthUnit || "ft"} W
+                  </span>
+                )}
+                {product.dimThickness && (
+                  <span className="font-medium text-navy">
+                    {Number(product.dimThickness)} {product.dimThicknessUnit || "in"} T
+                  </span>
+                )}
+              </div>
+              {product.pieceUnit && (
+                <p className="text-xs text-text-muted">BOM unit: {product.pieceUnit}</p>
+              )}
+            </div>
+          )}
           {product.notes && (
             <div className="pt-2 border-t border-border-custom">
               <p className="text-text-muted text-xs">Notes</p>

@@ -281,29 +281,27 @@ export function ProductForm({ product }: ProductFormProps) {
 
       {/* Dimensions */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base">Dimensions</Label>
-          {availableDims.length > 0 && (
-            <div className="flex gap-1">
-              {availableDims.map((type) => (
-                <Button
-                  key={type}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => addDimension(type)}
-                  className="h-8 text-xs"
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  {DIM_LABELS[type]}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Label className="text-base">Dimensions</Label>
 
-        {dimensions.length === 0 && (
-          <p className="text-sm text-text-muted py-2">No dimensions added. Tap a button above to add one.</p>
+        {availableDims.length > 0 && (
+          <div className="flex gap-2">
+            {availableDims.map((type) => (
+              <Button
+                key={type}
+                type="button"
+                variant="outline"
+                onClick={() => addDimension(type)}
+                className="h-10 px-4 text-sm"
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                {DIM_LABELS[type]}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {dimensions.length === 0 && availableDims.length > 0 && (
+          <p className="text-xs text-text-muted">Tap a button to add a dimension.</p>
         )}
 
         {dimensions.map((dim) => (

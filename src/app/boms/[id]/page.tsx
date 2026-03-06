@@ -24,6 +24,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
   const [editing, setEditing] = useState(false)
   const [pendingQtyChanges, setPendingQtyChanges] = useState<Record<string, number>>({})
+  const [pendingUnitChanges, setPendingUnitChanges] = useState<Record<string, string>>({})
   const [pendingRemovals, setPendingRemovals] = useState<string[]>([])
 
   const isCreator = me && bom && me.id === bom.createdById
@@ -210,9 +211,13 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 nonCatalogCategory={item.nonCatalogCategory as string | null}
                 qtyCheckedOut={Number(item.qtyCheckedOut || 0)}
                 qtyReturned={Number(item.qtyReturned || 0)}
+                inputUnit={pendingUnitChanges[lineId]}
                 editable={editing}
                 onQtyChange={(qty) =>
                   setPendingQtyChanges((prev) => ({ ...prev, [lineId]: qty }))
+                }
+                onInputUnitChange={(unit) =>
+                  setPendingUnitChanges((prev) => ({ ...prev, [lineId]: unit }))
                 }
                 onRemove={() =>
                   setPendingRemovals((prev) => [...prev, lineId])

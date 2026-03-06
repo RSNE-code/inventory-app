@@ -22,6 +22,7 @@ interface LineItem {
   pieceUnit?: string | null
   dimLength?: number | null
   dimLengthUnit?: string | null
+  inputUnit?: string
   tier: "TIER_1" | "TIER_2"
   qtyNeeded: number
   isNonCatalog: boolean
@@ -162,6 +163,7 @@ export default function NewBomPage() {
                   dimLength={item.dimLength}
                   dimLengthUnit={item.dimLengthUnit}
                   pieceUnit={item.pieceUnit}
+                  inputUnit={item.inputUnit}
                   tier={item.tier}
                   qtyNeeded={item.qtyNeeded}
                   isNonCatalog={item.isNonCatalog}
@@ -170,6 +172,11 @@ export default function NewBomPage() {
                   onQtyChange={(qty) =>
                     setLineItems((prev) =>
                       prev.map((i) => (i.tempId === item.tempId ? { ...i, qtyNeeded: qty } : i))
+                    )
+                  }
+                  onInputUnitChange={(unit) =>
+                    setLineItems((prev) =>
+                      prev.map((i) => (i.tempId === item.tempId ? { ...i, inputUnit: unit } : i))
                     )
                   }
                   onRemove={() =>
