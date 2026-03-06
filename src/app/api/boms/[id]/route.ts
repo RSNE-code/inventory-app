@@ -110,19 +110,21 @@ export async function PUT(
       }
     }
 
-    // Only allow editing line items on DRAFT BOMs by the creator
+    // Only the creator can edit line items, and not on completed/cancelled BOMs
     const isEditingLineItems = data.addLineItems || data.removeLineItemIds || data.updateLineItems
-    if (isEditingLineItems && existing.status !== "DRAFT") {
-      return NextResponse.json(
-        { error: "Can only edit line items on DRAFT BOMs" },
-        { status: 400 }
-      )
-    }
-    if (isEditingLineItems && existing.createdById !== user.id) {
-      return NextResponse.json(
-        { error: "Only the BOM creator can edit line items" },
-        { status: 403 }
-      )
+    if (isEditingLineItems) {
+      if (existing.status === "COMPLETED" || existing.status === "CANCELLED") {
+        return NextResponse.json(
+          { error: "Cannot edit completed or cancelled BOMs" },
+          { status: 400 }
+        )
+      }
+      if (existing.createdById !== user.id) {
+        return NextResponse.json(
+          { error: "Only the BOM creator can edit line items" },
+          { status: 403 }
+        )
+      }
     }
 
     // Remove line items

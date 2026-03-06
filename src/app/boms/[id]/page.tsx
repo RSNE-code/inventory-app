@@ -27,7 +27,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [pendingRemovals, setPendingRemovals] = useState<string[]>([])
 
   const isCreator = me && bom && me.id === bom.createdById
-  const canEdit = isCreator && bom?.status === "DRAFT"
+  const canEdit = isCreator && bom?.status !== "COMPLETED" && bom?.status !== "CANCELLED"
 
   async function handleStatusChange(status: string) {
     try {
