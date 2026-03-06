@@ -44,7 +44,6 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           location: product.location,
           notes: product.notes,
           leadTimeDays: product.leadTimeDays,
-          pieceUnit: product.pieceUnit,
           dimLength: product.dimLength ? Number(product.dimLength) : null,
           dimLengthUnit: product.dimLengthUnit,
           dimWidth: product.dimWidth ? Number(product.dimWidth) : null,

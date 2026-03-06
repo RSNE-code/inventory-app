@@ -15,7 +15,6 @@ interface BomLineItemRowProps {
   dimLengthUnit?: string | null
   dimWidth?: number | null
   dimWidthUnit?: string | null
-  pieceUnit?: string | null
   tier: string
   qtyNeeded: number
   inputUnit?: string
@@ -42,7 +41,6 @@ export function BomLineItemRow({
   dimLengthUnit,
   dimWidth,
   dimWidthUnit,
-  pieceUnit,
   tier,
   qtyNeeded,
   inputUnit: inputUnitProp,
@@ -152,7 +150,7 @@ export function BomLineItemRow({
             {piecesNeeded !== null && (
               <div className="w-16">
                 <label className="text-[10px] text-text-muted font-medium uppercase tracking-wide block text-center h-6 leading-6">
-                  {pieceUnit || "pieces"}
+                  {unitOfMeasure}
                 </label>
                 <div className="h-8 rounded-md border border-border-custom bg-surface-secondary flex items-center justify-center">
                   <span className="text-sm font-semibold text-navy">{piecesNeeded}</span>
@@ -179,7 +177,7 @@ export function BomLineItemRow({
                     {piecesNeeded}
                   </span>
                   <span className="text-sm font-medium text-navy ml-1">
-                    {pieceUnit || "pieces"}
+                    {unitOfMeasure}
                   </span>
                 </div>
                 <span className="text-xs text-text-muted tabular-nums">

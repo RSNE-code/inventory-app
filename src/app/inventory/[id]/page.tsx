@@ -134,7 +134,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             )}
           </div>
           {/* Dimensions */}
-          {(product.dimLength || product.dimWidth || product.dimThickness || product.pieceUnit) && (
+          {(product.dimLength || product.dimWidth || product.dimThickness) && (
             <div className="pt-2 border-t border-border-custom space-y-1.5">
               <p className="text-text-muted text-xs flex items-center gap-1"><Ruler className="h-3 w-3" /> Dimensions</p>
               <div className="flex flex-wrap gap-3 text-sm">
@@ -154,9 +154,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </span>
                 )}
               </div>
-              {product.pieceUnit && (
-                <p className="text-xs text-text-muted">BOM unit: {product.pieceUnit}</p>
-              )}
             </div>
           )}
           {product.notes && (

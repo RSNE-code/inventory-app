@@ -13,7 +13,6 @@ interface ProductResult {
   unitOfMeasure: string
   shopUnit?: string | null
   currentQty: number
-  pieceUnit?: string | null
   dimLength?: number | null
   dimLengthUnit?: string | null
   dimWidth?: number | null

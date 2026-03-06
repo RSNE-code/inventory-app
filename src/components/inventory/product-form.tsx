@@ -40,7 +40,6 @@ interface ProductFormProps {
     location: string | null
     notes: string | null
     leadTimeDays: number | null
-    pieceUnit: string | null
     dimLength: number | null
     dimLengthUnit: string | null
     dimWidth: number | null
@@ -67,7 +66,6 @@ export function ProductForm({ product }: ProductFormProps) {
   const [location, setLocation] = useState(product?.location || "")
   const [notes, setNotes] = useState(product?.notes || "")
   const [leadTimeDays, setLeadTimeDays] = useState(product?.leadTimeDays?.toString() || "")
-  const [pieceUnit, setPieceUnit] = useState(product?.pieceUnit || NONE_VALUE)
 
   // Build initial dimensions from existing product data
   const initialDims: Dimension[] = []
@@ -137,7 +135,6 @@ export function ProductForm({ product }: ProductFormProps) {
       location: location || null,
       notes: notes || null,
       leadTimeDays: leadTimeDays ? parseInt(leadTimeDays) : null,
-      pieceUnit: pieceUnit === NONE_VALUE ? null : pieceUnit,
       dimLength: getDimValue("length"),
       dimLengthUnit: getDimUnit("length"),
       dimWidth: getDimValue("width"),
@@ -279,24 +276,6 @@ export function ProductForm({ product }: ProductFormProps) {
       <div className="space-y-2">
         <Label htmlFor="location">Location in Shop</Label>
         <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Rack A3, Bay 2" className="h-12" />
-      </div>
-
-      {/* BOM Unit */}
-      <div className="space-y-2">
-        <Label>BOM Unit</Label>
-        <Select value={pieceUnit} onValueChange={setPieceUnit}>
-          <SelectTrigger className="h-12">
-            <SelectValue placeholder="Select piece unit" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE_VALUE}>None</SelectItem>
-            <SelectItem value="pieces">Pieces</SelectItem>
-            <SelectItem value="sheets">Sheets</SelectItem>
-            <SelectItem value="panels">Panels</SelectItem>
-            <SelectItem value="units">Units</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-text-muted">How this product is counted on a BOM for the shop</p>
       </div>
 
       {/* Dimensions */}
