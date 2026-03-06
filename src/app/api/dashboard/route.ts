@@ -34,6 +34,11 @@ export async function GET() {
       currentQty: number
       reorderPoint: number
       unitOfMeasure: string
+      shopUnit: string | null
+      dimLength: number | null
+      dimLengthUnit: string | null
+      dimWidth: number | null
+      dimWidthUnit: string | null
       categoryName: string
     }> = []
 
@@ -52,6 +57,11 @@ export async function GET() {
           currentQty: qty,
           reorderPoint: reorder,
           unitOfMeasure: p.unitOfMeasure,
+          shopUnit: p.shopUnit,
+          dimLength: p.dimLength ? Number(p.dimLength) : null,
+          dimLengthUnit: p.dimLengthUnit,
+          dimWidth: p.dimWidth ? Number(p.dimWidth) : null,
+          dimWidthUnit: p.dimWidthUnit,
           categoryName: p.category.name,
         })
       }

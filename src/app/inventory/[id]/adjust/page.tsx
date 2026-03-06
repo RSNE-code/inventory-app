@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatQuantity } from "@/lib/utils"
+import { getDisplayQty } from "@/lib/units"
 import { StockBadge } from "@/components/inventory/stock-badge"
 import { toast } from "sonner"
 
@@ -36,8 +37,12 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
 
   const product = data?.data
   const currentQty = product ? Number(product.currentQty) : 0
+  const display = product ? getDisplayQty(product) : { qty: 0, unit: "" }
+  const hasShopUnit = product?.shopUnit && product.shopUnit !== product.unitOfMeasure
   const qty = parseFloat(quantity) || 0
-  const newQty = direction === "up" ? currentQty + qty : currentQty - qty
+  // If shop unit is set, convert the user's input back to purchase units for the API
+  const purchaseQty = hasShopUnit && display.qty > 0 ? qty * (currentQty / display.qty) : qty
+  const newDisplayQty = direction === "up" ? display.qty + qty : display.qty - qty
   const finalReason = reason === "Other" ? customReason : reason
 
   async function handleSubmit(e: React.FormEvent) {
@@ -47,7 +52,7 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
     try {
       await adjustMutation.mutateAsync({
         productId: id,
-        quantity: qty,
+        quantity: purchaseQty,
         direction,
         reason: finalReason,
         notes: notes || undefined,
@@ -78,9 +83,9 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
           <p className="text-text-muted text-sm">{product.name}</p>
           <div className="mt-1">
             <span className="text-3xl font-bold text-navy tabular-nums">
-              {formatQuantity(currentQty)}
+              {formatQuantity(display.qty)}
             </span>
-            <span className="text-text-secondary ml-2">{product.unitOfMeasure}</span>
+            <span className="text-text-secondary ml-2">{display.unit}</span>
           </div>
           <div className="mt-2">
             <StockBadge currentQty={currentQty} reorderPoint={Number(product.reorderPoint)} />
@@ -127,7 +132,8 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
         {qty > 0 && (
           <Card className="p-3 rounded-xl bg-surface-secondary border-0 text-center">
             <p className="text-sm text-text-secondary">
-              {formatQuantity(currentQty)} → <span className="font-bold text-navy">{formatQuantity(newQty)}</span>{" "}
+              {formatQuantity(display.qty)} → <span className="font-bold text-navy">{formatQuantity(newDisplayQty)}</span>{" "}
+              {display.unit}{" "}
               <span className={direction === "up" ? "text-status-green" : "text-status-red"}>
                 ({direction === "up" ? "+" : "-"}{formatQuantity(qty)})
               </span>

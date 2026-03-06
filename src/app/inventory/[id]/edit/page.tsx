@@ -39,6 +39,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           categoryId: product.categoryId,
           tier: product.tier,
           unitOfMeasure: product.unitOfMeasure,
+          shopUnit: product.shopUnit || null,
           reorderPoint: Number(product.reorderPoint),
           location: product.location,
           notes: product.notes,

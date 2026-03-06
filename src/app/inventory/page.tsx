@@ -76,6 +76,11 @@ export default function InventoryPage() {
                 currentQty={Number(p.currentQty)}
                 reorderPoint={Number(p.reorderPoint)}
                 unitOfMeasure={p.unitOfMeasure as string}
+                shopUnit={p.shopUnit as string | null}
+                dimLength={p.dimLength ? Number(p.dimLength) : null}
+                dimLengthUnit={p.dimLengthUnit as string | null}
+                dimWidth={p.dimWidth ? Number(p.dimWidth) : null}
+                dimWidthUnit={p.dimWidthUnit as string | null}
                 location={p.location as string | null}
               />
             ))}

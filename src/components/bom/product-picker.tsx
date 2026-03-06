@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
+import { getDisplayQty } from "@/lib/units"
 
 interface ProductResult {
   id: string
   name: string
   sku: string | null
   unitOfMeasure: string
+  shopUnit?: string | null
   currentQty: number
   pieceUnit?: string | null
   dimLength?: number | null
@@ -115,7 +117,7 @@ export function ProductPicker({ onSelect, placeholder = "Search products...", ex
                     </p>
                   </div>
                   <span className="text-xs text-text-muted whitespace-nowrap">
-                    Qty: {formatQuantity(Number(p.currentQty))}
+                    {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)} ${d.unit}` })()}
                   </span>
                 </div>
               </button>

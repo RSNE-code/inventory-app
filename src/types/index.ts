@@ -33,6 +33,11 @@ export interface LowStockItem {
   currentQty: number
   reorderPoint: number
   unitOfMeasure: string
+  shopUnit?: string | null
+  dimLength?: number | null
+  dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
   categoryName: string
 }
 

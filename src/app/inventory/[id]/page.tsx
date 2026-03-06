@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatQuantity } from "@/lib/utils"
+import { getDisplayQty, getDisplayReorder } from "@/lib/units"
 import { Pencil, ArrowUpDown, MapPin, Clock, Ruler } from "lucide-react"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +37,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const qty = Number(product.currentQty)
   const reorder = Number(product.reorderPoint)
+  const display = getDisplayQty(product)
+  const displayReorder = getDisplayReorder({ ...product, reorderPoint: reorder })
 
   return (
     <div>
@@ -57,13 +60,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <StockBadge currentQty={qty} reorderPoint={reorder} />
           <div className="mt-3">
             <span className="text-5xl font-bold text-navy tabular-nums">
-              {formatQuantity(qty)}
+              {formatQuantity(display.qty)}
             </span>
-            <span className="text-text-secondary text-lg ml-2">{product.unitOfMeasure}</span>
+            <span className="text-text-secondary text-lg ml-2">{display.unit}</span>
           </div>
           <p className="text-text-muted text-sm mt-2">
-            Reorder at {formatQuantity(reorder)} {product.unitOfMeasure}
+            Reorder at {formatQuantity(displayReorder.qty)} {displayReorder.unit}
           </p>
+          {product.shopUnit && (
+            <p className="text-text-muted text-xs mt-1">
+              Ordered in: {product.unitOfMeasure}
+            </p>
+          )}
         </Card>
 
         {/* Actions */}

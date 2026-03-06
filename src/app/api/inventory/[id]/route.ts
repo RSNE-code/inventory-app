@@ -9,6 +9,7 @@ const updateProductSchema = z.object({
   categoryId: z.string().uuid().optional(),
   tier: z.enum(["TIER_1", "TIER_2"]).optional(),
   unitOfMeasure: z.string().min(1).optional(),
+  shopUnit: z.string().optional().nullable(),
   trackingUnit: z.string().optional().nullable(),
   reorderPoint: z.number().min(0).optional(),
   location: z.string().optional().nullable(),

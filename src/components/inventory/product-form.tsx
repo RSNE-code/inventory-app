@@ -35,6 +35,7 @@ interface ProductFormProps {
     categoryId: string
     tier: string
     unitOfMeasure: string
+    shopUnit: string | null
     reorderPoint: number
     location: string | null
     notes: string | null
@@ -61,6 +62,7 @@ export function ProductForm({ product }: ProductFormProps) {
   const [categoryId, setCategoryId] = useState(product?.categoryId || "")
   const [tier, setTier] = useState(product?.tier || "TIER_1")
   const [unitOfMeasure, setUnitOfMeasure] = useState(product?.unitOfMeasure || "ea")
+  const [shopUnit, setShopUnit] = useState(product?.shopUnit || NONE_VALUE)
   const [reorderPoint, setReorderPoint] = useState(product?.reorderPoint?.toString() || "0")
   const [location, setLocation] = useState(product?.location || "")
   const [notes, setNotes] = useState(product?.notes || "")
@@ -130,6 +132,7 @@ export function ProductForm({ product }: ProductFormProps) {
       categoryId,
       tier,
       unitOfMeasure,
+      shopUnit: shopUnit === NONE_VALUE ? null : shopUnit,
       reorderPoint: parseFloat(reorderPoint) || 0,
       location: location || null,
       notes: notes || null,
@@ -227,6 +230,23 @@ export function ProductForm({ product }: ProductFormProps) {
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      {/* Shop Unit */}
+      <div className="space-y-2">
+        <Label>Shop Unit</Label>
+        <Select value={shopUnit} onValueChange={setShopUnit}>
+          <SelectTrigger className="h-12">
+            <SelectValue placeholder="Select shop unit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE_VALUE}>None (same as order unit)</SelectItem>
+            <SelectItem value="ft">Linear Feet (ft)</SelectItem>
+            <SelectItem value="in">Inches (in)</SelectItem>
+            <SelectItem value="sq ft">Square Feet (sq ft)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-text-muted">How the shop measures this item. Uses dimensions for conversion.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

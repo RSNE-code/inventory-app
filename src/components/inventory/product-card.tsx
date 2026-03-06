@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { StockBadge } from "./stock-badge"
 import { formatQuantity } from "@/lib/utils"
+import { getDisplayQty } from "@/lib/units"
 import { MapPin } from "lucide-react"
 
 interface ProductCardProps {
@@ -13,12 +14,20 @@ interface ProductCardProps {
   currentQty: number
   reorderPoint: number
   unitOfMeasure: string
+  shopUnit?: string | null
+  dimLength?: number | null
+  dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
   location?: string | null
 }
 
 export function ProductCard({
-  id, name, categoryName, currentQty, reorderPoint, unitOfMeasure, location,
+  id, name, categoryName, currentQty, reorderPoint, unitOfMeasure, shopUnit,
+  dimLength, dimLengthUnit, dimWidth, dimWidthUnit, location,
 }: ProductCardProps) {
+  const display = getDisplayQty({ currentQty, unitOfMeasure, shopUnit, dimLength, dimLengthUnit, dimWidth, dimWidthUnit })
+
   return (
     <Link href={`/inventory/${id}`}>
       <Card className="p-4 rounded-xl shadow-sm border-border-custom hover:shadow-md transition-shadow duration-200 active:scale-[0.98]">
@@ -34,9 +43,9 @@ export function ProductCard({
         <div className="flex items-end justify-between mt-3">
           <div>
             <span className="text-2xl font-semibold text-navy tabular-nums">
-              {formatQuantity(currentQty)}
+              {formatQuantity(display.qty)}
             </span>
-            <span className="text-text-muted text-sm ml-1">{unitOfMeasure}</span>
+            <span className="text-text-muted text-sm ml-1">{display.unit}</span>
           </div>
           {location && (
             <div className="flex items-center gap-1 text-text-muted text-xs">

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { AlertTriangle } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
+import { getDisplayQty, getDisplayReorder } from "@/lib/units"
 import type { LowStockItem } from "@/types"
 
 export function LowStockList({ items }: { items: LowStockItem[] }) {
@@ -16,24 +17,28 @@ export function LowStockList({ items }: { items: LowStockItem[] }) {
         <h3 className="font-semibold text-navy">Needs Attention</h3>
       </div>
       <div className="space-y-2">
-        {items.map((item) => (
-          <Link key={item.id} href={`/inventory/${item.id}`}>
-            <div className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-surface-secondary transition-colors duration-200">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-navy truncate">{item.name}</p>
-                <p className="text-xs text-text-muted">{item.categoryName}</p>
+        {items.map((item) => {
+          const display = getDisplayQty(item)
+          const reorder = getDisplayReorder({ ...item, reorderPoint: item.reorderPoint })
+          return (
+            <Link key={item.id} href={`/inventory/${item.id}`}>
+              <div className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-surface-secondary transition-colors duration-200">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-navy truncate">{item.name}</p>
+                  <p className="text-xs text-text-muted">{item.categoryName}</p>
+                </div>
+                <div className="text-right ml-3 shrink-0">
+                  <p className="text-sm font-semibold text-status-yellow tabular-nums">
+                    {formatQuantity(display.qty)} {display.unit}
+                  </p>
+                  <p className="text-xs text-text-muted tabular-nums">
+                    Reorder at {formatQuantity(reorder.qty)}
+                  </p>
+                </div>
               </div>
-              <div className="text-right ml-3 shrink-0">
-                <p className="text-sm font-semibold text-status-yellow tabular-nums">
-                  {formatQuantity(item.currentQty)} {item.unitOfMeasure}
-                </p>
-                <p className="text-xs text-text-muted tabular-nums">
-                  Reorder at {formatQuantity(item.reorderPoint)}
-                </p>
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          )
+        })}
       </div>
       <Link
         href="/inventory?status=low"

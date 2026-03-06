@@ -134,6 +134,7 @@ model Product {
   categoryId    String
   tier          InventoryTier @default(TIER_1)
   unitOfMeasure String
+  shopUnit      String?
   trackingUnit  String?
   pieceUnit        String?
   dimLength        Decimal?      @db.Decimal(12, 4)
