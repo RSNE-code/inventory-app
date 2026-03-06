@@ -13,6 +13,8 @@ interface BomLineItemRowProps {
   unitOfMeasure: string
   dimLength?: number | null
   dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
   pieceUnit?: string | null
   tier: string
   qtyNeeded: number
@@ -27,12 +29,19 @@ interface BomLineItemRowProps {
   onRemove?: () => void
 }
 
+// Convert a dimension value to feet
+function toFeet(value: number, unit: string): number {
+  return unit === "in" ? value / 12 : value
+}
+
 export function BomLineItemRow({
   name,
   sku,
   unitOfMeasure,
   dimLength,
   dimLengthUnit,
+  dimWidth,
+  dimWidthUnit,
   pieceUnit,
   tier,
   qtyNeeded,
@@ -46,31 +55,47 @@ export function BomLineItemRow({
   onInputUnitChange,
   onRemove,
 }: BomLineItemRowProps) {
-  const hasDimension = dimLength && dimLength > 0
-  const dimUnit = dimLengthUnit || "ft"
+  const hasLength = dimLength && dimLength > 0
+  const hasWidth = dimWidth && dimWidth > 0
+  const hasArea = hasLength && hasWidth
 
-  // The active input unit — either what the user selected, or auto-detected
-  const activeInputUnit = inputUnitProp || (hasDimension ? dimUnit : unitOfMeasure)
+  // Calculate area per piece in sq ft (if both length and width exist)
+  const areaPerPieceSqFt = hasArea
+    ? toFeet(dimLength, dimLengthUnit || "ft") * toFeet(dimWidth, dimWidthUnit || "ft")
+    : null
 
-  // Calculate pieces based on the input unit
+  // Default input unit logic:
+  // - Has area → default to sq ft
+  // - Has length only → default to length unit
+  // - Otherwise → product's unit of measure
+  const defaultInputUnit = hasArea ? "sq ft" : hasLength ? (dimLengthUnit || "ft") : unitOfMeasure
+  const activeInputUnit = inputUnitProp || defaultInputUnit
+
+  // Calculate pieces
   let piecesNeeded: number | null = null
-  if (hasDimension && activeInputUnit === dimUnit) {
-    // Input is in the same unit as the dimension — direct conversion
-    piecesNeeded = Math.ceil(qtyNeeded / dimLength)
-  } else if (hasDimension && activeInputUnit === "in" && dimUnit === "ft") {
-    // Input in inches, dimension in feet
-    piecesNeeded = Math.ceil((qtyNeeded / 12) / dimLength)
-  } else if (hasDimension && activeInputUnit === "ft" && dimUnit === "in") {
-    // Input in feet, dimension in inches
-    piecesNeeded = Math.ceil((qtyNeeded * 12) / dimLength)
+  if (qtyNeeded > 0) {
+    if (activeInputUnit === "sq ft" && areaPerPieceSqFt && areaPerPieceSqFt > 0) {
+      // Area-based: sq ft input ÷ sq ft per piece
+      piecesNeeded = Math.ceil(qtyNeeded / areaPerPieceSqFt)
+    } else if (hasLength) {
+      const lengthInFt = toFeet(dimLength, dimLengthUnit || "ft")
+      if (activeInputUnit === "ft") {
+        piecesNeeded = Math.ceil(qtyNeeded / lengthInFt)
+      } else if (activeInputUnit === "in") {
+        piecesNeeded = Math.ceil((qtyNeeded / 12) / lengthInFt)
+      }
+    }
   }
 
   // Build unit options for the dropdown
   const unitOptions: { value: string; label: string }[] = []
-  if (hasDimension) {
+  if (hasLength || hasArea) {
     unitOptions.push({ value: "ft", label: "ft" })
     unitOptions.push({ value: "in", label: "in" })
-    if (unitOfMeasure !== "ft" && unitOfMeasure !== "in") {
+    if (hasArea) {
+      unitOptions.push({ value: "sq ft", label: "sq ft" })
+    }
+    if (unitOfMeasure !== "ft" && unitOfMeasure !== "in" && unitOfMeasure !== "sq ft") {
       unitOptions.push({ value: unitOfMeasure, label: unitOfMeasure })
     }
   }
@@ -115,8 +140,8 @@ export function BomLineItemRow({
               )}
               <Input
                 type="number"
-                value={qtyNeeded}
-                onChange={(e) => onQtyChange?.(parseFloat(e.target.value) || 0)}
+                value={qtyNeeded || ""}
+                onChange={(e) => onQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
                 className="h-8 w-16 text-center text-sm"
                 min={0}
                 step="any"

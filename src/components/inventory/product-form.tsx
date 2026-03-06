@@ -261,9 +261,9 @@ export function ProductForm({ product }: ProductFormProps) {
         <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Rack A3, Bay 2" className="h-12" />
       </div>
 
-      {/* Piece Unit */}
+      {/* BOM Unit */}
       <div className="space-y-2">
-        <Label>Piece Unit</Label>
+        <Label>BOM Unit</Label>
         <Select value={pieceUnit} onValueChange={setPieceUnit}>
           <SelectTrigger className="h-12">
             <SelectValue placeholder="Select piece unit" />

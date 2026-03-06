@@ -14,6 +14,8 @@ interface ProductResult {
   pieceUnit?: string | null
   dimLength?: number | null
   dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
   category?: { name: string }
 }
 

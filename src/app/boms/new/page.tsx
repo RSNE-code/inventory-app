@@ -22,6 +22,8 @@ interface LineItem {
   pieceUnit?: string | null
   dimLength?: number | null
   dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
   inputUnit?: string
   tier: "TIER_1" | "TIER_2"
   qtyNeeded: number
@@ -46,7 +48,7 @@ export default function NewBomPage() {
   const [ncQty, setNcQty] = useState("")
   const [ncCost, setNcCost] = useState("")
 
-  function handleProductSelect(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; pieceUnit?: string | null; dimLength?: number | null; dimLengthUnit?: string | null }) {
+  function handleProductSelect(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; pieceUnit?: string | null; dimLength?: number | null; dimLengthUnit?: string | null; dimWidth?: number | null; dimWidthUnit?: string | null }) {
     setLineItems((prev) => [
       ...prev,
       {
@@ -58,6 +60,8 @@ export default function NewBomPage() {
         pieceUnit: product.pieceUnit || null,
         dimLength: product.dimLength ? Number(product.dimLength) : null,
         dimLengthUnit: product.dimLengthUnit || null,
+        dimWidth: product.dimWidth ? Number(product.dimWidth) : null,
+        dimWidthUnit: product.dimWidthUnit || null,
         tier: "TIER_1",
         qtyNeeded: 1,
         isNonCatalog: false,
@@ -162,6 +166,8 @@ export default function NewBomPage() {
                   unitOfMeasure={item.unitOfMeasure}
                   dimLength={item.dimLength}
                   dimLengthUnit={item.dimLengthUnit}
+                  dimWidth={item.dimWidth}
+                  dimWidthUnit={item.dimWidthUnit}
                   pieceUnit={item.pieceUnit}
                   inputUnit={item.inputUnit}
                   tier={item.tier}
