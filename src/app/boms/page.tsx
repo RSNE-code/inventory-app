@@ -1,0 +1,110 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Plus, ClipboardList } from "lucide-react"
+import { useBoms } from "@/hooks/use-boms"
+import { Header } from "@/components/layout/header"
+import { SearchInput } from "@/components/shared/search-input"
+import { BomCard } from "@/components/bom/bom-card"
+import { EmptyState } from "@/components/shared/empty-state"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+const statuses = [
+  { label: "All", value: "" },
+  { label: "Draft", value: "DRAFT" },
+  { label: "Approved", value: "APPROVED" },
+  { label: "In Progress", value: "IN_PROGRESS" },
+  { label: "Completed", value: "COMPLETED" },
+]
+
+export default function BomsPage() {
+  const router = useRouter()
+  const [search, setSearch] = useState("")
+  const [status, setStatus] = useState("")
+  const [page, setPage] = useState(1)
+
+  const { data, isLoading } = useBoms({ search, status, page })
+  const boms = data?.data || []
+  const totalPages = data?.totalPages || 1
+
+  return (
+    <div>
+      <Header title="Bills of Materials" />
+
+      <div className="p-4 space-y-3">
+        <SearchInput
+          value={search}
+          onChange={(v) => { setSearch(v); setPage(1) }}
+          placeholder="Search by job name or number..."
+        />
+
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          {statuses.map((s) => (
+            <button
+              key={s.value}
+              onClick={() => { setStatus(s.value); setPage(1) }}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                status === s.value
+                  ? "bg-brand-blue text-white"
+                  : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 space-y-3">
+        {isLoading ? (
+          <div className="text-center py-12 text-text-muted">Loading...</div>
+        ) : boms.length === 0 ? (
+          <EmptyState
+            icon={ClipboardList}
+            title="No BOMs found"
+            description={search || status ? "Try different filters" : "Create your first Bill of Materials"}
+            actionLabel={!search && !status ? "Create BOM" : undefined}
+            onAction={!search && !status ? () => router.push("/boms/new") : undefined}
+          />
+        ) : (
+          <>
+            <p className="text-text-muted text-sm">{data?.total || 0} BOMs</p>
+            {boms.map((bom: Record<string, unknown>) => (
+              <BomCard
+                key={bom.id as string}
+                id={bom.id as string}
+                jobName={bom.jobName as string}
+                status={bom.status as string}
+                lineItemCount={(bom._count as Record<string, number>)?.lineItems || 0}
+                createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
+                createdAt={bom.createdAt as string}
+              />
+            ))}
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 py-4">
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                  Previous
+                </Button>
+                <span className="flex items-center text-sm text-text-secondary">{page} / {totalPages}</span>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <Button
+        onClick={() => router.push("/boms/new")}
+        className="fixed bottom-20 right-4 h-14 w-14 rounded-full bg-brand-orange hover:bg-brand-orange-hover text-white shadow-lg z-30"
+        size="icon"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+    </div>
+  )
+}

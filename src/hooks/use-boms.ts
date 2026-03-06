@@ -1,0 +1,126 @@
+"use client"
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+
+interface BomFilters {
+  search?: string
+  status?: string
+  page?: number
+  limit?: number
+}
+
+export function useBoms(filters: BomFilters = {}) {
+  const params = new URLSearchParams()
+  if (filters.search) params.set("search", filters.search)
+  if (filters.status) params.set("status", filters.status)
+  params.set("page", String(filters.page || 1))
+  params.set("limit", String(filters.limit || 20))
+
+  return useQuery({
+    queryKey: ["boms", filters],
+    queryFn: async () => {
+      const res = await fetch(`/api/boms?${params}`)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `API error: ${res.status}`)
+      }
+      return res.json()
+    },
+  })
+}
+
+export function useBom(id: string) {
+  return useQuery({
+    queryKey: ["bom", id],
+    queryFn: async () => {
+      const res = await fetch(`/api/boms/${id}`)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `API error: ${res.status}`)
+      }
+      return res.json()
+    },
+    enabled: !!id,
+  })
+}
+
+export function useCreateBom() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (data: {
+      jobName: string
+      jobNumber?: string | null
+      jobStartDate?: string | null
+      notes?: string | null
+      lineItems: Array<{
+        productId?: string | null
+        tier?: "TIER_1" | "TIER_2"
+        qtyNeeded: number
+        isNonCatalog?: boolean
+        nonCatalogName?: string | null
+        nonCatalogCategory?: string | null
+        nonCatalogUom?: string | null
+        nonCatalogEstCost?: number | null
+      }>
+    }) => {
+      const res = await fetch("/api/boms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to create BOM")
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["boms"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}
+
+export function useUpdateBom() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...data
+    }: {
+      id: string
+      status?: string
+      jobName?: string
+      notes?: string | null
+      addLineItems?: Array<{
+        productId?: string | null
+        tier?: "TIER_1" | "TIER_2"
+        qtyNeeded: number
+        isNonCatalog?: boolean
+        nonCatalogName?: string | null
+        nonCatalogCategory?: string | null
+        nonCatalogUom?: string | null
+        nonCatalogEstCost?: number | null
+      }>
+      removeLineItemIds?: string[]
+    }) => {
+      const res = await fetch(`/api/boms/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to update BOM")
+      }
+      return res.json()
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["bom", variables.id] })
+      queryClient.invalidateQueries({ queryKey: ["boms"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}
