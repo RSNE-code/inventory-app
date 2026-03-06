@@ -66,17 +66,20 @@ export function BomLineItemRow({
 
       {editable ? (
         <div className="flex items-center gap-2">
-          <div>
-            <Input
-              type="number"
-              value={qtyNeeded}
-              onChange={(e) => onQtyChange?.(parseFloat(e.target.value) || 0)}
-              className="w-20 h-10 text-center"
-              min={0}
-              step="any"
-            />
+          <div className="text-right">
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                value={qtyNeeded}
+                onChange={(e) => onQtyChange?.(parseFloat(e.target.value) || 0)}
+                className="w-20 h-10 text-center"
+                min={0}
+                step="any"
+              />
+              <span className="text-xs text-text-muted whitespace-nowrap">{unitOfMeasure}</span>
+            </div>
             {piecesNeeded !== null && (
-              <p className="text-[11px] text-brand-blue font-medium text-center mt-0.5">
+              <p className="text-[11px] text-brand-blue font-medium mt-0.5">
                 = {piecesNeeded} {pieceUnit || "pcs"}
               </p>
             )}

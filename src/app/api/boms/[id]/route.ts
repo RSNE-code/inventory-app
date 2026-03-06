@@ -61,6 +61,14 @@ const updateBomSchema = z.object({
     )
     .optional(),
   removeLineItemIds: z.array(z.string().uuid()).optional(),
+  updateLineItems: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        qtyNeeded: z.number().positive(),
+      })
+    )
+    .optional(),
 })
 
 export async function PUT(
@@ -102,11 +110,18 @@ export async function PUT(
       }
     }
 
-    // Only allow editing line items on DRAFT BOMs
-    if ((data.addLineItems || data.removeLineItemIds) && existing.status !== "DRAFT") {
+    // Only allow editing line items on DRAFT BOMs by the creator
+    const isEditingLineItems = data.addLineItems || data.removeLineItemIds || data.updateLineItems
+    if (isEditingLineItems && existing.status !== "DRAFT") {
       return NextResponse.json(
         { error: "Can only edit line items on DRAFT BOMs" },
         { status: 400 }
+      )
+    }
+    if (isEditingLineItems && existing.createdById !== user.id) {
+      return NextResponse.json(
+        { error: "Only the BOM creator can edit line items" },
+        { status: 403 }
       )
     }
 
@@ -115,6 +130,16 @@ export async function PUT(
       await prisma.bomLineItem.deleteMany({
         where: { id: { in: data.removeLineItemIds }, bomId: id },
       })
+    }
+
+    // Update line item quantities
+    if (data.updateLineItems && data.updateLineItems.length > 0) {
+      for (const item of data.updateLineItems) {
+        await prisma.bomLineItem.update({
+          where: { id: item.id },
+          data: { qtyNeeded: new Prisma.Decimal(item.qtyNeeded) },
+        })
+      }
     }
 
     // Add line items

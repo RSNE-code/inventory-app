@@ -105,6 +105,7 @@ export function useUpdateBom() {
         nonCatalogEstCost?: number | null
       }>
       removeLineItemIds?: string[]
+      updateLineItems?: Array<{ id: string; qtyNeeded: number }>
     }) => {
       const res = await fetch(`/api/boms/${id}`, {
         method: "PUT",
