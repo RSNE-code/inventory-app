@@ -103,20 +103,20 @@ export function BomLineItemRow({
 
   return (
     <div className="py-3 border-b border-border-custom last:border-0">
-      <div className="flex items-start gap-2 mb-1">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-navy truncate">{name}</p>
-            {tier === "TIER_2" && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">
-                T2
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-text-muted">
-            {isNonCatalog ? (nonCatalogCategory || "Non-catalog") : (sku || "No SKU")}
-          </p>
-        </div>
+      {/* Item name — always full width on its own line */}
+      <div className="flex items-center gap-2 mb-1">
+        <p className="text-sm font-medium text-navy">{name}</p>
+        {tier === "TIER_2" && (
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">
+            T2
+          </Badge>
+        )}
+      </div>
+
+      <div className="flex items-end justify-between gap-2">
+        <p className="text-xs text-text-muted">
+          {isNonCatalog ? (nonCatalogCategory || "Non-catalog") : (sku || "No SKU")}
+        </p>
 
         {editable ? (
           <div className="flex items-end gap-1.5 shrink-0">
