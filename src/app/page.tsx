@@ -6,8 +6,9 @@ import { LowStockList } from "@/components/dashboard/low-stock-list"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { Card } from "@/components/ui/card"
 import { formatQuantity } from "@/lib/utils"
-import { Package, ClipboardList } from "lucide-react"
+import { ClipboardList } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard()
@@ -20,12 +21,19 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-navy px-4 pt-6 pb-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-orange">
-            <Package className="h-5 w-5 text-white" />
+          <div className="rounded bg-white px-1.5 py-0.5 shrink-0">
+            <Image
+              src="/logo.jpg"
+              alt="RSNE"
+              width={100}
+              height={40}
+              className="h-8 w-auto"
+              priority
+            />
           </div>
           <div>
             <p className="text-white/70 text-sm">{greeting}</p>
-            <h1 className="text-white text-xl font-bold">RSNE Inventory</h1>
+            <h1 className="text-white text-xl font-bold">Inventory</h1>
           </div>
         </div>
       </header>
