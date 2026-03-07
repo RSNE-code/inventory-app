@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Undo2 } from "lucide-react"
+import { Trash2, Check } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 
 interface BomLineItemRowProps {
@@ -25,12 +24,14 @@ interface BomLineItemRowProps {
   qtyReturned?: number
   editable?: boolean
   checkoutMode?: boolean
+  returnMode?: boolean
   checkoutQty?: number
+  returnQty?: number
   onQtyChange?: (qty: number) => void
   onInputUnitChange?: (unit: string) => void
   onRemove?: () => void
   onCheckoutQtyChange?: (qty: number) => void
-  onReturn?: (qty: number) => void
+  onReturnQtyChange?: (qty: number) => void
 }
 
 // Convert a dimension value to feet
@@ -55,16 +56,15 @@ export function BomLineItemRow({
   qtyReturned = 0,
   editable = false,
   checkoutMode = false,
+  returnMode = false,
   checkoutQty,
+  returnQty,
   onQtyChange,
   onInputUnitChange,
   onRemove,
   onCheckoutQtyChange,
-  onReturn,
+  onReturnQtyChange,
 }: BomLineItemRowProps) {
-  const [showReturn, setShowReturn] = useState(false)
-  const [returnQty, setReturnQty] = useState("")
-
   const hasLength = dimLength && dimLength > 0
   const hasWidth = dimWidth && dimWidth > 0
   const hasArea = hasLength && hasWidth
@@ -111,10 +111,12 @@ export function BomLineItemRow({
   const remaining = qtyNeeded - qtyCheckedOut
   const fullyCheckedOut = qtyCheckedOut >= qtyNeeded && qtyNeeded > 0
 
-  // Checkout mode render
-  if (checkoutMode) {
+  // Return mode render — only items with outstanding material
+  if (returnMode) {
+    if (outstanding <= 0) return null
+
     return (
-      <div className={`py-3 border-b border-border-custom last:border-0 ${fullyCheckedOut ? "opacity-50" : ""}`}>
+      <div className="py-3 border-b border-border-custom last:border-0">
         <div className="flex items-center gap-2 mb-1">
           <p className="text-sm font-medium text-navy">{name}</p>
           {tier === "TIER_2" && (
@@ -124,8 +126,50 @@ export function BomLineItemRow({
           )}
         </div>
 
-        {/* Progress line */}
-        <div className="flex items-end justify-between gap-2 mb-2">
+        <div className="flex items-end justify-between gap-2">
+          <p className="text-xs text-text-muted">
+            {formatQuantity(outstanding)} {activeInputUnit} outstanding
+          </p>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div className="text-center">
+              <Input
+                type="number"
+                value={returnQty || ""}
+                onChange={(e) => onReturnQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                placeholder={String(outstanding)}
+                className="h-10 w-20 text-center text-sm"
+                min={0}
+                max={outstanding}
+                step="any"
+              />
+              <span className="text-[10px] text-text-muted font-medium uppercase mt-0.5 block">
+                {activeInputUnit}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Checkout mode render — enter qty to pull
+  if (checkoutMode) {
+    return (
+      <div className="py-3 border-b border-border-custom last:border-0">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="text-sm font-medium text-navy">{name}</p>
+          {fullyCheckedOut && (
+            <Check className="h-3.5 w-3.5 text-status-green shrink-0" />
+          )}
+          {tier === "TIER_2" && (
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">
+              T2
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-end justify-between gap-2">
           <div className="text-xs text-text-muted">
             {qtyCheckedOut > 0 ? (
               <span>
@@ -141,87 +185,38 @@ export function BomLineItemRow({
             )}
           </div>
 
-          {/* Checkout input */}
           {!fullyCheckedOut && (
             <div className="flex items-center gap-1.5 shrink-0">
-              <Input
-                type="number"
-                value={checkoutQty || ""}
-                onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
-                className="h-8 w-16 text-center text-sm"
-                min={0}
-                step="any"
-              />
-              <span className="text-[10px] text-text-muted font-medium uppercase w-8">
-                {activeInputUnit}
-              </span>
+              <div className="text-center">
+                <Input
+                  type="number"
+                  value={checkoutQty || ""}
+                  onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                  placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
+                  className="h-10 w-20 text-center text-sm"
+                  min={0}
+                  step="any"
+                />
+                <span className="text-[10px] text-text-muted font-medium uppercase mt-0.5 block">
+                  {activeInputUnit}
+                </span>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Return option */}
-        {outstanding > 0 && (
-          showReturn ? (
-            <div className="flex items-center gap-2 mt-1">
-              <Input
-                type="number"
-                value={returnQty}
-                onChange={(e) => setReturnQty(e.target.value)}
-                placeholder="Qty"
-                className="h-8 w-16 text-center text-sm"
-                min={0}
-                max={outstanding}
-                step="any"
-              />
-              <span className="text-xs text-text-muted">{activeInputUnit}</span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs"
-                onClick={() => {
-                  const qty = parseFloat(returnQty)
-                  if (qty > 0) {
-                    onReturn?.(qty)
-                    setReturnQty("")
-                    setShowReturn(false)
-                  }
-                }}
-              >
-                Confirm
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-7 text-xs"
-                onClick={() => { setShowReturn(false); setReturnQty("") }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowReturn(true)}
-              className="flex items-center gap-1 text-xs text-brand-blue hover:underline mt-1"
-            >
-              <Undo2 className="h-3 w-3" />
-              Return material
-            </button>
-          )
-        )}
       </div>
     )
   }
 
-  // Normal (non-checkout, non-edit) render
+  // Normal (non-checkout, non-edit) render — also used for IN_PROGRESS default view
   return (
     <div className="py-3 border-b border-border-custom last:border-0">
       {/* Item name — always full width on its own line */}
       <div className="flex items-center gap-2 mb-1">
         <p className="text-sm font-medium text-navy">{name}</p>
+        {fullyCheckedOut && qtyCheckedOut > 0 && (
+          <Check className="h-3.5 w-3.5 text-status-green shrink-0" />
+        )}
         {tier === "TIER_2" && (
           <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">
             T2
@@ -230,14 +225,32 @@ export function BomLineItemRow({
       </div>
 
       <div className="flex items-end justify-between gap-2">
-        <p className="text-xs text-text-muted">
-          {isNonCatalog ? (nonCatalogCategory || "Non-catalog") : (sku || "No SKU")}
-        </p>
+        <div>
+          <p className="text-xs text-text-muted">
+            {isNonCatalog ? (nonCatalogCategory || "Non-catalog") : (sku || "No SKU")}
+          </p>
+          {qtyCheckedOut > 0 && (
+            <p className="text-xs text-text-muted mt-0.5">
+              {formatQuantity(qtyCheckedOut)} of {formatQuantity(qtyNeeded)} {activeInputUnit} pulled
+              {qtyReturned > 0 && (
+                <span className="text-status-green"> · {formatQuantity(qtyReturned)} returned</span>
+              )}
+            </p>
+          )}
+        </div>
 
         {editable ? (
           <div className="flex items-end gap-1.5 shrink-0">
             {/* Qty input + unit picker */}
             <div>
+              <Input
+                type="number"
+                value={qtyNeeded || ""}
+                onChange={(e) => onQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                className="h-8 w-16 text-center text-sm"
+                min={0}
+                step="any"
+              />
               {showUnitPicker ? (
                 <Select value={activeInputUnit} onValueChange={(v) => onInputUnitChange?.(v)}>
                   <SelectTrigger className="h-6 w-16 text-[10px] font-medium uppercase tracking-wide border-0 bg-transparent px-0 justify-center text-text-muted">
@@ -254,25 +267,17 @@ export function BomLineItemRow({
                   {activeInputUnit}
                 </label>
               )}
-              <Input
-                type="number"
-                value={qtyNeeded || ""}
-                onChange={(e) => onQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                className="h-8 w-16 text-center text-sm"
-                min={0}
-                step="any"
-              />
             </div>
 
             {/* Pieces display */}
             {piecesNeeded !== null && (
               <div className="w-16">
-                <label className="text-[10px] text-text-muted font-medium uppercase tracking-wide block text-center h-6 leading-6">
-                  {unitOfMeasure}
-                </label>
                 <div className="h-8 rounded-md border border-border-custom bg-surface-secondary flex items-center justify-center">
                   <span className="text-sm font-semibold text-navy">{piecesNeeded}</span>
                 </div>
+                <label className="text-[10px] text-text-muted font-medium uppercase tracking-wide block text-center h-6 leading-6">
+                  {unitOfMeasure}
+                </label>
               </div>
             )}
 
@@ -315,13 +320,6 @@ export function BomLineItemRow({
           </div>
         )}
       </div>
-
-      {qtyCheckedOut > 0 && (
-        <p className="text-xs text-text-muted mt-1">
-          Checked out: {formatQuantity(qtyCheckedOut)}
-          {qtyReturned > 0 && ` · Returned: ${formatQuantity(qtyReturned)}`}
-        </p>
-      )}
     </div>
   )
 }

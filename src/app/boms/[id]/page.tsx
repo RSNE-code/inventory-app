@@ -11,7 +11,9 @@ import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
 import { ProductPicker } from "@/components/bom/product-picker"
 import { toast } from "sonner"
-import { Calendar, User, Pencil } from "lucide-react"
+import { Calendar, User, Pencil, Plus, Undo2 } from "lucide-react"
+
+type ActiveMode = "view" | "edit" | "add-material" | "return"
 
 export default function BomDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -23,19 +25,26 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const bom = data?.data
   const me = meData?.data
 
-  const [editing, setEditing] = useState(false)
+  const [mode, setMode] = useState<ActiveMode>("view")
   const [pendingQtyChanges, setPendingQtyChanges] = useState<Record<string, number>>({})
   const [pendingUnitChanges, setPendingUnitChanges] = useState<Record<string, string>>({})
   const [pendingRemovals, setPendingRemovals] = useState<string[]>([])
-
-  // Checkout state
-  const [checkoutMode, setCheckoutMode] = useState(false)
   const [checkoutQtys, setCheckoutQtys] = useState<Record<string, number>>({})
+  const [returnQtys, setReturnQtys] = useState<Record<string, number>>({})
 
   const isCreator = me && bom && me.id === bom.createdById
-  const canEdit = isCreator && bom?.status !== "COMPLETED" && bom?.status !== "CANCELLED"
+  const canEdit = isCreator && bom && ["DRAFT", "APPROVED"].includes(bom.status)
   const canCheckout = bom && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && me &&
     ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SHOP_FOREMAN"].includes(me.role)
+
+  function resetMode() {
+    setMode("view")
+    setPendingQtyChanges({})
+    setPendingUnitChanges({})
+    setPendingRemovals([])
+    setCheckoutQtys({})
+    setReturnQtys({})
+  }
 
   async function handleStatusChange(status: string) {
     try {
@@ -67,9 +76,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         updateLineItems: updateLineItems.length > 0 ? updateLineItems : undefined,
       })
       toast.success("BOM updated")
-      setEditing(false)
-      setPendingQtyChanges({})
-      setPendingRemovals([])
+      resetMode()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save changes")
     }
@@ -91,12 +98,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
-  function handleCancelEdits() {
-    setEditing(false)
-    setPendingQtyChanges({})
-    setPendingRemovals([])
-  }
-
   async function handleCheckout() {
     const items = Object.entries(checkoutQtys)
       .filter(([, qty]) => qty > 0)
@@ -107,27 +108,37 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
       }))
 
     if (items.length === 0) {
-      toast.error("Enter quantities to check out")
+      toast.error("Enter quantities to pull")
       return
     }
 
     try {
       await checkoutBom.mutateAsync({ id, items })
-      toast.success("Materials checked out")
-      setCheckoutQtys({})
-      setCheckoutMode(false)
+      toast.success("Materials pulled from inventory")
+      resetMode()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Checkout failed")
     }
   }
 
-  async function handleReturn(bomLineItemId: string, qty: number) {
+  async function handleReturnAll() {
+    const items = Object.entries(returnQtys)
+      .filter(([, qty]) => qty > 0)
+      .map(([bomLineItemId, quantity]) => ({
+        bomLineItemId,
+        type: "RETURN" as const,
+        quantity,
+      }))
+
+    if (items.length === 0) {
+      toast.error("Enter quantities to return")
+      return
+    }
+
     try {
-      await checkoutBom.mutateAsync({
-        id,
-        items: [{ bomLineItemId, type: "RETURN", quantity: qty }],
-      })
-      toast.success("Material returned")
+      await checkoutBom.mutateAsync({ id, items })
+      toast.success("Materials returned to inventory")
+      resetMode()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Return failed")
     }
@@ -151,7 +162,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  const visibleItems = (bom.lineItems as Record<string, unknown>[]).filter(
+  const allItems = bom.lineItems as Record<string, unknown>[]
+  const visibleItems = allItems.filter(
     (item) => !pendingRemovals.includes(item.id as string)
   )
 
@@ -161,6 +173,14 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
   const hasPendingChanges = Object.keys(pendingQtyChanges).length > 0 || pendingRemovals.length > 0
   const hasCheckoutQtys = Object.values(checkoutQtys).some((q) => q > 0)
+  const hasReturnQtys = Object.values(returnQtys).some((q) => q > 0)
+
+  // Check if any items have outstanding material for the return button
+  const hasOutstandingMaterial = allItems.some((item) => {
+    const checkedOut = Number(item.qtyCheckedOut || 0)
+    const returned = Number(item.qtyReturned || 0)
+    return checkedOut - returned > 0
+  })
 
   return (
     <div>
@@ -200,14 +220,14 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         <Card className="p-4 rounded-xl border-border-custom">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-navy">
-              Items ({visibleItems.length})
+              {mode === "return" ? "Return Material" : `Items (${visibleItems.length})`}
             </h3>
-            {canEdit && !editing && !checkoutMode && (
+            {canEdit && mode === "view" && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setEditing(true)}
+                onClick={() => setMode("edit")}
                 className="text-brand-blue"
               >
                 <Pencil className="h-3.5 w-3.5 mr-1" />
@@ -216,7 +236,26 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             )}
           </div>
 
-          {editing && (
+          {/* Return mode instructions */}
+          {mode === "return" && (
+            <p className="text-xs text-text-muted mb-3 bg-surface-secondary p-2.5 rounded-lg">
+              Enter the quantity being returned for each item. Only items with outstanding material are shown.
+            </p>
+          )}
+
+          {/* Add material mode — product picker */}
+          {mode === "add-material" && (
+            <div className="mb-3">
+              <ProductPicker
+                onSelect={handleAddProduct}
+                placeholder="Search catalog to add new items..."
+                excludeIds={existingProductIds}
+              />
+            </div>
+          )}
+
+          {/* Edit mode — product picker */}
+          {mode === "edit" && (
             <div className="mb-3">
               <ProductPicker
                 onSelect={handleAddProduct}
@@ -257,9 +296,11 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 qtyCheckedOut={Number(item.qtyCheckedOut || 0)}
                 qtyReturned={Number(item.qtyReturned || 0)}
                 inputUnit={pendingUnitChanges[lineId]}
-                editable={editing}
-                checkoutMode={checkoutMode || (bom.status === "IN_PROGRESS" && !editing)}
+                editable={mode === "edit"}
+                checkoutMode={mode === "add-material"}
+                returnMode={mode === "return"}
                 checkoutQty={checkoutQtys[lineId]}
+                returnQty={returnQtys[lineId]}
                 onQtyChange={(qty) =>
                   setPendingQtyChanges((prev) => ({ ...prev, [lineId]: qty }))
                 }
@@ -272,14 +313,23 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 onCheckoutQtyChange={(qty) =>
                   setCheckoutQtys((prev) => ({ ...prev, [lineId]: qty }))
                 }
-                onReturn={(qty) => handleReturn(lineId, qty)}
+                onReturnQtyChange={(qty) =>
+                  setReturnQtys((prev) => ({ ...prev, [lineId]: qty }))
+                }
               />
             )
           })}
+
+          {/* Return mode — no items message */}
+          {mode === "return" && !hasOutstandingMaterial && (
+            <p className="text-center text-sm text-text-muted py-6">
+              No outstanding material to return.
+            </p>
+          )}
         </Card>
 
         {/* Edit Save/Cancel */}
-        {editing && (
+        {mode === "edit" && (
           <div className="flex gap-2">
             <Button
               onClick={handleSaveEdits}
@@ -288,87 +338,110 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             >
               {updateBom.isPending ? "Saving..." : "Save Changes"}
             </Button>
-            <Button
-              onClick={handleCancelEdits}
-              variant="outline"
-              className="h-12"
-            >
+            <Button onClick={resetMode} variant="outline" className="h-12">
               Cancel
             </Button>
           </div>
         )}
 
-        {/* Checkout Actions */}
-        {!editing && canCheckout && (
-          <div className="space-y-2">
-            {checkoutMode ? (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCheckout}
-                  disabled={checkoutBom.isPending || !hasCheckoutQtys}
-                  className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-                >
-                  {checkoutBom.isPending ? "Checking out..." : "Confirm Checkout"}
-                </Button>
-                <Button
-                  onClick={() => { setCheckoutMode(false); setCheckoutQtys({}) }}
-                  variant="outline"
-                  className="h-12"
-                >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <>
-                {bom.status === "APPROVED" && (
-                  <Button
-                    onClick={() => setCheckoutMode(true)}
-                    className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-                  >
-                    Start Checkout
-                  </Button>
-                )}
-                {bom.status === "IN_PROGRESS" && (
-                  <>
-                    <Button
-                      onClick={() => setCheckoutMode(true)}
-                      className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-                    >
-                      Pull More Materials
-                    </Button>
-                    <Button
-                      onClick={() => handleStatusChange("COMPLETED")}
-                      disabled={updateBom.isPending}
-                      variant="outline"
-                      className="w-full h-12 text-status-green border-status-green/30 hover:bg-status-green/5 font-semibold"
-                    >
-                      Mark Completed
-                    </Button>
-                  </>
-                )}
-              </>
-            )}
+        {/* Add Material confirm/cancel */}
+        {mode === "add-material" && (
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCheckout}
+              disabled={checkoutBom.isPending || !hasCheckoutQtys}
+              className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+            >
+              {checkoutBom.isPending ? "Pulling..." : "Confirm Checkout"}
+            </Button>
+            <Button onClick={resetMode} variant="outline" className="h-12">
+              Cancel
+            </Button>
           </div>
         )}
 
-        {/* Draft Actions */}
-        {!editing && bom.status === "DRAFT" && (
+        {/* Return confirm/cancel */}
+        {mode === "return" && (
+          <div className="flex gap-2">
+            <Button
+              onClick={handleReturnAll}
+              disabled={checkoutBom.isPending || !hasReturnQtys}
+              className="flex-1 h-12 bg-status-green hover:bg-status-green/90 text-white font-semibold"
+            >
+              {checkoutBom.isPending ? "Returning..." : "Confirm Returns"}
+            </Button>
+            <Button onClick={resetMode} variant="outline" className="h-12">
+              Cancel
+            </Button>
+          </div>
+        )}
+
+        {/* Action buttons — view mode */}
+        {mode === "view" && (
           <div className="space-y-2">
-            <Button
-              onClick={() => handleStatusChange("APPROVED")}
-              disabled={updateBom.isPending}
-              className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-            >
-              Approve BOM
-            </Button>
-            <Button
-              onClick={() => handleStatusChange("CANCELLED")}
-              disabled={updateBom.isPending}
-              variant="outline"
-              className="w-full h-12 text-status-red border-status-red/30 hover:bg-status-red/5"
-            >
-              Cancel BOM
-            </Button>
+            {/* Draft actions */}
+            {bom.status === "DRAFT" && (
+              <>
+                <Button
+                  onClick={() => handleStatusChange("APPROVED")}
+                  disabled={updateBom.isPending}
+                  className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                >
+                  Approve BOM
+                </Button>
+                <Button
+                  onClick={() => handleStatusChange("CANCELLED")}
+                  disabled={updateBom.isPending}
+                  variant="outline"
+                  className="w-full h-12 text-status-red border-status-red/30 hover:bg-status-red/5"
+                >
+                  Cancel BOM
+                </Button>
+              </>
+            )}
+
+            {/* Approved — first checkout */}
+            {bom.status === "APPROVED" && canCheckout && (
+              <Button
+                onClick={() => setMode("add-material")}
+                className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+              >
+                Start Checkout
+              </Button>
+            )}
+
+            {/* In Progress — add material + return + complete */}
+            {bom.status === "IN_PROGRESS" && canCheckout && (
+              <>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setMode("add-material")}
+                    className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                  >
+                    <Plus className="h-4 w-4 mr-1.5" />
+                    Add Material
+                  </Button>
+                  {hasOutstandingMaterial && (
+                    <Button
+                      onClick={() => setMode("return")}
+                      variant="outline"
+                      className="flex-1 h-12 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold"
+                    >
+                      <Undo2 className="h-4 w-4 mr-1.5" />
+                      Return Material
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  onClick={() => handleStatusChange("COMPLETED")}
+                  disabled={updateBom.isPending}
+                  variant="outline"
+                  className="w-full h-12 text-status-green border-status-green/30 hover:bg-status-green/5 font-semibold"
+                >
+                  Mark Completed
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
