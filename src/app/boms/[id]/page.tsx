@@ -2,7 +2,7 @@
 
 import { use, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useBom, useUpdateBom } from "@/hooks/use-boms"
+import { useBom, useUpdateBom, useCheckoutBom } from "@/hooks/use-boms"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
@@ -19,6 +19,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const { data, isLoading } = useBom(id)
   const { data: meData } = useMe()
   const updateBom = useUpdateBom()
+  const checkoutBom = useCheckoutBom()
   const bom = data?.data
   const me = meData?.data
 
@@ -27,8 +28,14 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [pendingUnitChanges, setPendingUnitChanges] = useState<Record<string, string>>({})
   const [pendingRemovals, setPendingRemovals] = useState<string[]>([])
 
+  // Checkout state
+  const [checkoutMode, setCheckoutMode] = useState(false)
+  const [checkoutQtys, setCheckoutQtys] = useState<Record<string, number>>({})
+
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom?.status !== "COMPLETED" && bom?.status !== "CANCELLED"
+  const canCheckout = bom && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && me &&
+    ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SHOP_FOREMAN"].includes(me.role)
 
   async function handleStatusChange(status: string) {
     try {
@@ -90,6 +97,42 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     setPendingRemovals([])
   }
 
+  async function handleCheckout() {
+    const items = Object.entries(checkoutQtys)
+      .filter(([, qty]) => qty > 0)
+      .map(([bomLineItemId, quantity]) => ({
+        bomLineItemId,
+        type: "CHECKOUT" as const,
+        quantity,
+      }))
+
+    if (items.length === 0) {
+      toast.error("Enter quantities to check out")
+      return
+    }
+
+    try {
+      await checkoutBom.mutateAsync({ id, items })
+      toast.success("Materials checked out")
+      setCheckoutQtys({})
+      setCheckoutMode(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Checkout failed")
+    }
+  }
+
+  async function handleReturn(bomLineItemId: string, qty: number) {
+    try {
+      await checkoutBom.mutateAsync({
+        id,
+        items: [{ bomLineItemId, type: "RETURN", quantity: qty }],
+      })
+      toast.success("Material returned")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Return failed")
+    }
+  }
+
   if (isLoading) {
     return (
       <div>
@@ -117,6 +160,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     .map((item) => (item.product as Record<string, unknown>).id as string)
 
   const hasPendingChanges = Object.keys(pendingQtyChanges).length > 0 || pendingRemovals.length > 0
+  const hasCheckoutQtys = Object.values(checkoutQtys).some((q) => q > 0)
 
   return (
     <div>
@@ -158,7 +202,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <h3 className="font-semibold text-navy">
               Items ({visibleItems.length})
             </h3>
-            {canEdit && !editing && (
+            {canEdit && !editing && !checkoutMode && (
               <Button
                 type="button"
                 variant="ghost"
@@ -214,6 +258,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 qtyReturned={Number(item.qtyReturned || 0)}
                 inputUnit={pendingUnitChanges[lineId]}
                 editable={editing}
+                checkoutMode={checkoutMode || (bom.status === "IN_PROGRESS" && !editing)}
+                checkoutQty={checkoutQtys[lineId]}
                 onQtyChange={(qty) =>
                   setPendingQtyChanges((prev) => ({ ...prev, [lineId]: qty }))
                 }
@@ -223,6 +269,10 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 onRemove={() =>
                   setPendingRemovals((prev) => [...prev, lineId])
                 }
+                onCheckoutQtyChange={(qty) =>
+                  setCheckoutQtys((prev) => ({ ...prev, [lineId]: qty }))
+                }
+                onReturn={(qty) => handleReturn(lineId, qty)}
               />
             )
           })}
@@ -248,44 +298,77 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
           </div>
         )}
 
-        {/* Actions */}
-        {!editing && (
+        {/* Checkout Actions */}
+        {!editing && canCheckout && (
           <div className="space-y-2">
-            {bom.status === "DRAFT" && (
-              <>
+            {checkoutMode ? (
+              <div className="flex gap-2">
                 <Button
-                  onClick={() => handleStatusChange("APPROVED")}
-                  disabled={updateBom.isPending}
-                  className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                  onClick={handleCheckout}
+                  disabled={checkoutBom.isPending || !hasCheckoutQtys}
+                  className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
                 >
-                  Approve BOM
+                  {checkoutBom.isPending ? "Checking out..." : "Confirm Checkout"}
                 </Button>
                 <Button
-                  onClick={() => handleStatusChange("CANCELLED")}
-                  disabled={updateBom.isPending}
+                  onClick={() => { setCheckoutMode(false); setCheckoutQtys({}) }}
                   variant="outline"
-                  className="w-full h-12 text-status-red border-status-red/30 hover:bg-status-red/5"
+                  className="h-12"
                 >
-                  Cancel BOM
+                  Cancel
                 </Button>
+              </div>
+            ) : (
+              <>
+                {bom.status === "APPROVED" && (
+                  <Button
+                    onClick={() => setCheckoutMode(true)}
+                    className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                  >
+                    Start Checkout
+                  </Button>
+                )}
+                {bom.status === "IN_PROGRESS" && (
+                  <>
+                    <Button
+                      onClick={() => setCheckoutMode(true)}
+                      className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                    >
+                      Pull More Materials
+                    </Button>
+                    <Button
+                      onClick={() => handleStatusChange("COMPLETED")}
+                      disabled={updateBom.isPending}
+                      variant="outline"
+                      className="w-full h-12 text-status-green border-status-green/30 hover:bg-status-green/5 font-semibold"
+                    >
+                      Mark Completed
+                    </Button>
+                  </>
+                )}
               </>
             )}
+          </div>
+        )}
 
-            {bom.status === "APPROVED" && (
-              <p className="text-center text-sm text-text-muted py-4">
-                Ready for checkout (coming soon)
-              </p>
-            )}
-
-            {bom.status === "IN_PROGRESS" && (
-              <Button
-                onClick={() => handleStatusChange("COMPLETED")}
-                disabled={updateBom.isPending}
-                className="w-full h-12 bg-status-green hover:bg-status-green/90 text-white font-semibold"
-              >
-                Mark Completed
-              </Button>
-            )}
+        {/* Draft Actions */}
+        {!editing && bom.status === "DRAFT" && (
+          <div className="space-y-2">
+            <Button
+              onClick={() => handleStatusChange("APPROVED")}
+              disabled={updateBom.isPending}
+              className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+            >
+              Approve BOM
+            </Button>
+            <Button
+              onClick={() => handleStatusChange("CANCELLED")}
+              disabled={updateBom.isPending}
+              variant="outline"
+              className="w-full h-12 text-status-red border-status-red/30 hover:bg-status-red/5"
+            >
+              Cancel BOM
+            </Button>
           </div>
         )}
       </div>

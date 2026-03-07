@@ -46,6 +46,31 @@ export function getDisplayQty(product: ProductForDisplay): { qty: number; unit: 
 }
 
 /**
+ * Converts a quantity in shop units back to purchase units.
+ * Reverse of getDisplayQty's multiplication.
+ * Example: 5 ft of gasket (dimLength=100ft) → 0.05 rolls
+ */
+export function toPurchaseQty(shopQty: number, product: ProductForDisplay): number {
+  if (!product.shopUnit) return shopQty
+
+  const dimLength = product.dimLength ? Number(product.dimLength) : 0
+  const dimWidth = product.dimWidth ? Number(product.dimWidth) : 0
+
+  if (product.shopUnit === "sq ft" && dimLength > 0 && dimWidth > 0) {
+    const areaPerUnit = toFeet(dimLength, product.dimLengthUnit || "ft") * toFeet(dimWidth, product.dimWidthUnit || "ft")
+    return areaPerUnit > 0 ? shopQty / areaPerUnit : shopQty
+  }
+
+  if ((product.shopUnit === "ft" || product.shopUnit === "in") && dimLength > 0) {
+    const lengthInFt = toFeet(dimLength, product.dimLengthUnit || "ft")
+    const shopQtyInFt = product.shopUnit === "in" ? shopQty / 12 : shopQty
+    return lengthInFt > 0 ? shopQtyInFt / lengthInFt : shopQty
+  }
+
+  return shopQty
+}
+
+/**
  * Returns the display quantity and unit for a reorder point.
  * Same conversion logic as getDisplayQty but for the reorder threshold.
  */

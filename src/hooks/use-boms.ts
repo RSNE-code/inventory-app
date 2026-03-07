@@ -125,3 +125,38 @@ export function useUpdateBom() {
     },
   })
 }
+
+export function useCheckoutBom() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      items,
+    }: {
+      id: string
+      items: Array<{
+        bomLineItemId: string
+        type: "CHECKOUT" | "RETURN"
+        quantity: number
+      }>
+    }) => {
+      const res = await fetch(`/api/boms/${id}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to checkout")
+      }
+      return res.json()
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["bom", variables.id] })
+      queryClient.invalidateQueries({ queryKey: ["boms"] })
+      queryClient.invalidateQueries({ queryKey: ["products"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}
