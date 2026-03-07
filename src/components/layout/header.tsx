@@ -26,13 +26,15 @@ export function Header({ title, showBack, action }: HeaderProps) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
       ) : (
-        <Image
-          src="/logo.jpg"
-          alt="RSNE"
-          width={80}
-          height={32}
-          className="h-8 w-auto"
-        />
+        <div className="rounded bg-white px-1.5 py-0.5 shrink-0">
+          <Image
+            src="/logo.jpg"
+            alt="RSNE"
+            width={80}
+            height={32}
+            className="h-6 w-auto"
+          />
+        </div>
       )}
       <h1 className="flex-1 text-lg font-semibold text-white truncate">
         {title}
