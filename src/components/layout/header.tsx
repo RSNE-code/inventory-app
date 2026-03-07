@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface HeaderProps {
   title: string
@@ -15,7 +16,7 @@ export function Header({ title, showBack, action }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border-custom bg-navy px-4">
-      {showBack && (
+      {showBack ? (
         <Button
           variant="ghost"
           size="icon"
@@ -24,6 +25,14 @@ export function Header({ title, showBack, action }: HeaderProps) {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
+      ) : (
+        <Image
+          src="/logo.jpg"
+          alt="RSNE"
+          width={80}
+          height={32}
+          className="h-8 w-auto"
+        />
       )}
       <h1 className="flex-1 text-lg font-semibold text-white truncate">
         {title}

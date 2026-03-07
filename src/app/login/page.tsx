@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package } from "lucide-react"
+import Image from "next/image"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -38,11 +38,17 @@ export default function LoginPage() {
     <div className="min-h-screen bg-navy flex items-center justify-center p-4">
       <Card className="w-full max-w-sm border-0 shadow-2xl">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-orange">
-            <Package className="h-8 w-8 text-white" />
+          <div className="mx-auto mb-3">
+            <Image
+              src="/logo.jpg"
+              alt="RSNE"
+              width={240}
+              height={97}
+              priority
+            />
           </div>
-          <CardTitle className="text-2xl font-bold text-navy">
-            RSNE Inventory
+          <CardTitle className="text-xl font-bold text-navy">
+            Inventory Management
           </CardTitle>
           <p className="text-text-muted text-sm mt-1">
             Sign in to manage inventory
