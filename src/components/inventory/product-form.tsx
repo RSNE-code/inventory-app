@@ -210,7 +210,7 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="uom">Unit of Measure *</Label>
+          <Label htmlFor="uom">Order Unit *</Label>
           <Select value={unitOfMeasure} onValueChange={setUnitOfMeasure}>
             <SelectTrigger className="h-12">
               <SelectValue />

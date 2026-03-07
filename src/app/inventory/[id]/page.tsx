@@ -67,11 +67,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-text-muted text-sm mt-2">
             Reorder at {formatQuantity(displayReorder.qty)} {displayReorder.unit}
           </p>
-          {product.shopUnit && (
-            <p className="text-text-muted text-xs mt-1">
-              Ordered in: {product.unitOfMeasure}
-            </p>
-          )}
         </Card>
 
         {/* Actions */}
