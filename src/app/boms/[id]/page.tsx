@@ -112,7 +112,28 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
       return
     }
 
+    // If checkout qty exceeds qtyNeeded for any item, update qtyNeeded to match total pulled
+    const allItems = bom?.lineItems as Record<string, unknown>[] | undefined
+    const qtyUpdates: Array<{ id: string; qtyNeeded: number }> = []
+    if (allItems) {
+      for (const item of items) {
+        const lineItem = allItems.find((li) => (li.id as string) === item.bomLineItemId)
+        if (lineItem) {
+          const currentNeeded = Number(lineItem.qtyNeeded)
+          const alreadyCheckedOut = Number(lineItem.qtyCheckedOut || 0)
+          const totalAfterCheckout = alreadyCheckedOut + item.quantity
+          if (totalAfterCheckout > currentNeeded) {
+            qtyUpdates.push({ id: item.bomLineItemId, qtyNeeded: totalAfterCheckout })
+          }
+        }
+      }
+    }
+
     try {
+      // Update qtyNeeded first if any items exceed their original amount
+      if (qtyUpdates.length > 0) {
+        await updateBom.mutateAsync({ id, updateLineItems: qtyUpdates })
+      }
       await checkoutBom.mutateAsync({ id, items })
       toast.success("Materials pulled from inventory")
       resetMode()
