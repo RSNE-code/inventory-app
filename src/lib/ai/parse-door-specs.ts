@@ -74,6 +74,13 @@ Hardware Manufacturers:
 - Kason — KDE series
 - DERA — DFE series
 
+RSNE Standard Hardware (default when nothing specific is mentioned):
+- Hinges: DENT D690CS
+- Latch: DENT D90
+- Closer: DENT D276
+If someone says "standard hardware" or doesn't mention specific hardware, use these defaults:
+  hingeMfrName = "DENT", hingeModel = "D690CS", latchMfrName = "DENT", latchModel = "D90", closerModel = "DENT D276"
+
 Parsing Rules:
 - If someone says "freezer door" → temperatureType = FREEZER, doorCategory = HINGED_FREEZER (unless they specify sliding)
 - If someone says "cooler door" → temperatureType = COOLER, doorCategory = HINGED_COOLER (unless they specify sliding)

@@ -281,6 +281,15 @@ export function formatDoorSize(specs: Partial<DoorSpecs>): string {
 }
 
 /** Default values for a new door spec — booleans default to false, quantity to 1 */
+/** Standard RSNE hardware — used when no specific hardware is indicated */
+export const STANDARD_HARDWARE = {
+  hingeMfrName: "DENT",
+  hingeModel: "D690CS",
+  latchMfrName: "DENT",
+  latchModel: "D90",
+  closerModel: "DENT D276",
+} as const
+
 export function getDefaultSpecs(): Partial<DoorSpecs> {
   return {
     label: true,
@@ -290,6 +299,8 @@ export function getDefaultSpecs(): Partial<DoorSpecs> {
     weatherShield: false,
     thresholdPlate: false,
     quantity: 1,
+    // Standard RSNE hardware
+    ...STANDARD_HARDWARE,
   }
 }
 
