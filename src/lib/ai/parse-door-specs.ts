@@ -1,71 +1,52 @@
-import { generateObject } from "ai"
+import { generateText } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
-import { z } from "zod"
 import type { DoorSpecs, GapQuestion } from "@/lib/door-specs"
 import { findSpecGaps, getDefaultSpecs } from "@/lib/door-specs"
 
 const MODEL = "claude-sonnet-4-5-20250929"
 
-const doorSpecSchema = z.object({
-  doorCategory: z
-    .enum(["HINGED_COOLER", "HINGED_FREEZER", "SLIDING"])
-    .optional()
-    .describe("Door category based on description"),
-  serialNumber: z.string().optional().describe("Serial number if mentioned"),
-  label: z.boolean().optional().describe("Whether to include a label (default true)"),
-
-  jobNumber: z.string().optional().describe("Job/JWO number"),
-  jobName: z.string().optional().describe("Customer or job name"),
-  jobSiteName: z.string().optional().describe("Site/location name if separate from job name"),
-
-  widthInClear: z.string().optional().describe("Door width in clear, e.g. 36\""),
-  heightInClear: z.string().optional().describe("Door height in clear, e.g. 77-1/4\""),
-  wallThickness: z.string().optional().describe("Wall thickness"),
-  jambDepth: z.string().optional().describe("Jamb depth, e.g. 2\""),
-
-  temperatureType: z.enum(["COOLER", "FREEZER"]).optional(),
-  openingType: z.enum(["HINGE", "SLIDE"]).optional(),
-  hingeSide: z.enum(["LEFT", "RIGHT"]).optional(),
-  slideSide: z.enum(["LEFT", "RIGHT"]).optional(),
-
-  frameType: z.enum(["FULL_FRAME", "FACE_FRAME", "BALLY_TYPE"]).optional(),
-  highSill: z.boolean().optional(),
-  wiper: z.boolean().optional(),
-
-  panelThickness: z.string().optional(),
-  panelInsulated: z.boolean().optional(),
-  insulation: z.string().optional(),
-
-  finish: z.string().optional().describe("Finish code/description, e.g. WPG, White/White, SS"),
-  skinMaterial: z.string().optional(),
-
-  hingeMfrName: z.string().optional().describe("Hinge manufacturer, e.g. DENT, Kason"),
-  hingeModel: z.string().optional().describe("Hinge model number, e.g. D690CS"),
-  hingeOffset: z.string().optional(),
-
-  latchMfrName: z.string().optional(),
-  latchModel: z.string().optional().describe("Latch model, e.g. D90"),
-  latchOffset: z.string().optional(),
-  insideRelease: z.string().optional(),
-
-  closerModel: z.string().optional().describe("Door closer model, e.g. DENT CLOSER D276"),
-
-  heaterSize: z.string().optional().describe("Heater cable size in feet, e.g. 32 FT"),
-  heaterCableLocation: z.string().optional(),
-
-  gasketType: z.enum(["MAGNETIC", "NEOPRENE"]).optional(),
-
-  weatherShield: z.boolean().optional(),
-  thresholdPlate: z.boolean().optional(),
-
-  doorPull: z.string().optional().describe("Full or half handle (sliding doors)"),
-  trackType: z.string().optional(),
-
-  specialNotes: z.string().optional(),
-  infoLine: z.string().optional().describe("Additional info / notes for the shop"),
-
-  quantity: z.number().optional().describe("Number of doors, default 1"),
-})
+const DOOR_SPEC_SCHEMA = `{
+  "doorCategory": "HINGED_COOLER | HINGED_FREEZER | SLIDING | null",
+  "serialNumber": "string|null",
+  "label": "boolean|null",
+  "jobNumber": "string|null",
+  "jobName": "string|null",
+  "jobSiteName": "string|null",
+  "widthInClear": "string|null — e.g. 36\\"",
+  "heightInClear": "string|null — e.g. 77-1/4\\"",
+  "wallThickness": "string|null",
+  "jambDepth": "string|null",
+  "temperatureType": "COOLER | FREEZER | null",
+  "openingType": "HINGE | SLIDE | null",
+  "hingeSide": "LEFT | RIGHT | null",
+  "slideSide": "LEFT | RIGHT | null",
+  "frameType": "FULL_FRAME | FACE_FRAME | BALLY_TYPE | null",
+  "highSill": "boolean|null",
+  "wiper": "boolean|null",
+  "panelThickness": "string|null",
+  "panelInsulated": "boolean|null",
+  "insulation": "string|null",
+  "finish": "string|null — e.g. WPG, White/White, SS",
+  "skinMaterial": "string|null",
+  "hingeMfrName": "string|null — e.g. DENT, Kason",
+  "hingeModel": "string|null — e.g. D690CS",
+  "hingeOffset": "string|null",
+  "latchMfrName": "string|null",
+  "latchModel": "string|null — e.g. D90",
+  "latchOffset": "string|null",
+  "insideRelease": "string|null",
+  "closerModel": "string|null — e.g. DENT CLOSER D276",
+  "heaterSize": "string|null — e.g. 32 FT",
+  "heaterCableLocation": "string|null",
+  "gasketType": "MAGNETIC | NEOPRENE | null",
+  "weatherShield": "boolean|null",
+  "thresholdPlate": "boolean|null",
+  "doorPull": "string|null — full or half handle (sliding doors)",
+  "trackType": "string|null",
+  "specialNotes": "string|null",
+  "infoLine": "string|null",
+  "quantity": "number|null — default 1"
+}`
 
 const SYSTEM_PROMPT = `You are a door specification parser for RSNE (Refrigerated Structures of New England), a company that builds walk-in cooler and freezer doors.
 
@@ -102,11 +83,29 @@ Parsing Rules:
 - If a job has two parts like "GKT Refrigeration South Kingstown High School", first part is jobName, second is jobSiteName
 - "job 25415" or "JWO 25415" → jobNumber
 - If not specified, assume label = true, panelInsulated = true
-- Freezer doors always need heater cable — if not mentioned, leave heaterSize blank (will be asked as a gap)
+- Freezer doors always need heater cable — if not mentioned, leave heaterSize as null (will be asked as a gap)
 - Default quantity is 1 unless specified
 - If "right" or "left" is mentioned with hinge/slide context, set the appropriate side field
 
-Extract as much information as possible from the input. Leave fields undefined if not mentioned — the system will ask follow-up questions for required missing fields.`
+Extract as much information as possible from the input. Use null for fields not mentioned.
+
+IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`
+
+function extractJSON(text: string): Record<string, unknown> {
+  try {
+    return JSON.parse(text)
+  } catch {
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) {
+      return JSON.parse(match[1].trim())
+    }
+    const start = text.search(/[{[]/)
+    if (start >= 0) {
+      return JSON.parse(text.slice(start))
+    }
+    throw new Error("Could not extract JSON from response")
+  }
+}
 
 export interface DoorSpecParseResult {
   specs: Partial<DoorSpecs>
@@ -115,18 +114,19 @@ export interface DoorSpecParseResult {
 }
 
 export async function parseDoorSpecs(text: string): Promise<DoorSpecParseResult> {
-  const { object } = await generateObject({
+  const { text: response } = await generateText({
     model: anthropic(MODEL),
-    schema: doorSpecSchema,
     system: SYSTEM_PROMPT,
-    prompt: `Parse the following door specification description into structured fields:\n\n"${text}"`,
+    prompt: `Parse the following door specification description into structured fields. Return JSON matching this schema:\n${DOOR_SPEC_SCHEMA}\n\nInput: "${text}"`,
   })
+
+  const object = extractJSON(response)
 
   // Merge with defaults
   const defaults = getDefaultSpecs()
   const specs: Partial<DoorSpecs> = { ...defaults }
 
-  // Copy all non-undefined values from parsed result
+  // Copy all non-undefined/null values from parsed result
   for (const [key, value] of Object.entries(object)) {
     if (value !== undefined && value !== null) {
       (specs as Record<string, unknown>)[key] = value
@@ -148,11 +148,11 @@ export async function parseDoorSpecs(text: string): Promise<DoorSpecParseResult>
   const gaps = findSpecGaps(specs, specs.doorCategory)
 
   // Calculate confidence based on how many required fields were filled
+  const filledCount = Object.values(object).filter((v) => v !== undefined && v !== null).length
   const totalRequired = specs.doorCategory
-    ? gaps.length + Object.keys(object).filter((k) => object[k as keyof typeof object] !== undefined).length
+    ? gaps.length + filledCount
     : 1
-  const filled = totalRequired - gaps.length
-  const confidence = totalRequired > 0 ? Math.round((filled / totalRequired) * 100) / 100 : 0
+  const confidence = totalRequired > 0 ? Math.round((filledCount / totalRequired) * 100) / 100 : 0
 
   return { specs, gaps, confidence }
 }

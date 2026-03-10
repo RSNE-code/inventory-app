@@ -1,49 +1,33 @@
-import { generateObject } from "ai"
+import { generateText } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
-import { z } from "zod"
 import type { ParsedLineItem } from "./types"
 
 const MODEL = "claude-sonnet-4-5-20250929"
 
-const parsedItemSchema = z.object({
-  items: z.array(
-    z.object({
-      rawText: z.string().describe("The original text this item was parsed from"),
-      name: z.string().describe("Product name, as specific as possible"),
-      quantity: z.number().describe("Quantity needed"),
-      unitOfMeasure: z
-        .string()
-        .describe("Unit: each, linear ft, sq ft, sheet, tube, box, case, roll, etc."),
-      category: z
-        .string()
-        .optional()
-        .describe("Best guess category: Insulated Metal Panel, Door Hardware, Metal Raw Materials, Sealants & Adhesives, Fasteners, Insulation, etc."),
-      dimensions: z
-        .object({
-          length: z.number().optional(),
-          lengthUnit: z.string().optional(),
-          width: z.number().optional(),
-          widthUnit: z.string().optional(),
-          thickness: z.number().optional(),
-          thicknessUnit: z.string().optional(),
-        })
-        .optional()
-        .describe("Physical dimensions if mentioned"),
-      finish: z.string().optional().describe("Surface finish if mentioned: White, Galvalume, Stainless, etc."),
-      material: z.string().optional().describe("Base material if mentioned: steel, aluminum, copper, etc."),
-      specs: z
-        .record(z.string(), z.string())
-        .optional()
-        .describe("Any other specs mentioned (shape, type, grade, etc.)"),
-      estimatedCost: z.number().optional().describe("Cost per unit if mentioned"),
-      confidence: z
-        .number()
-        .min(0)
-        .max(1)
-        .describe("How confident you are in this parse, 0-1"),
-    })
-  ),
-})
+const JSON_SCHEMA = `{
+  "items": [
+    {
+      "rawText": "string — original text this item was parsed from",
+      "name": "string — product name, as specific as possible",
+      "quantity": "number — quantity needed",
+      "unitOfMeasure": "string — each, linear ft, sq ft, sheet, tube, box, case, roll, etc.",
+      "category": "string|null — best guess: Insulated Metal Panel, Door Hardware, Metal Raw Materials, Sealants & Adhesives, Fasteners, Insulation, etc.",
+      "dimensions": { "length": "number|null", "lengthUnit": "string|null", "width": "number|null", "widthUnit": "string|null", "thickness": "number|null", "thicknessUnit": "string|null" },
+      "finish": "string|null — White, Galvalume, Stainless, etc.",
+      "material": "string|null — steel, aluminum, copper, etc.",
+      "specs": "object|null — any other specs (shape, type, grade)",
+      "estimatedCost": "number|null — cost per unit if mentioned",
+      "confidence": "number 0-1 — how confident in this parse"
+    }
+  ]
+}`
+
+const RECEIVING_SCHEMA = `{
+  "supplier": "string|null — supplier/vendor name if visible",
+  "poNumber": "string|null — purchase order number if visible",
+  "deliveryDate": "string|null — delivery date if visible (ISO format)",
+  "items": [ ... same item schema as above ... ]
+}`
 
 const SYSTEM_PROMPT = `You are a materials parser for RSNE (Refrigerated Structures of New England), a company that builds walk-in coolers and freezers.
 
@@ -61,25 +45,39 @@ Rules:
 - Use your best judgment for units of measure based on the material type
 - Distinguish between items that are likely in a catalog (standard materials) vs. custom/non-standard items
 - Set confidence lower for ambiguous items
-- Preserve all dimensional and spec information — downstream matching depends on it`
+- Preserve all dimensional and spec information — downstream matching depends on it
 
-export async function parseTextInput(text: string): Promise<ParsedLineItem[]> {
-  const { object } = await generateObject({
-    model: anthropic(MODEL),
-    schema: parsedItemSchema,
-    system: SYSTEM_PROMPT,
-    prompt: `Parse the following into structured material line items:\n\n"${text}"`,
-  })
+IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`
 
-  return object.items
+function extractJSON(text: string): unknown {
+  // Try direct parse first
+  try {
+    return JSON.parse(text)
+  } catch {
+    // Try to extract JSON from markdown code fences
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (match) {
+      return JSON.parse(match[1].trim())
+    }
+    // Try to find first { or [ and parse from there
+    const start = text.search(/[{[]/)
+    if (start >= 0) {
+      return JSON.parse(text.slice(start))
+    }
+    throw new Error("Could not extract JSON from response")
+  }
 }
 
-const receivingSchema = z.object({
-  supplier: z.string().optional().describe("Supplier/vendor name if visible"),
-  poNumber: z.string().optional().describe("Purchase order number if visible"),
-  deliveryDate: z.string().optional().describe("Delivery date if visible (ISO format)"),
-  items: parsedItemSchema.shape.items,
-})
+export async function parseTextInput(text: string): Promise<ParsedLineItem[]> {
+  const { text: response } = await generateText({
+    model: anthropic(MODEL),
+    system: SYSTEM_PROMPT,
+    prompt: `Parse the following into structured material line items. Return JSON matching this schema:\n${JSON_SCHEMA}\n\nInput: "${text}"`,
+  })
+
+  const parsed = extractJSON(response) as { items: ParsedLineItem[] }
+  return parsed.items
+}
 
 export async function parseImageInput(
   imageBase64: string,
@@ -90,9 +88,8 @@ export async function parseImageInput(
   poNumber?: string
   deliveryDate?: string
 }> {
-  const { object } = await generateObject({
+  const { text: response } = await generateText({
     model: anthropic(MODEL),
-    schema: receivingSchema,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -105,17 +102,24 @@ export async function parseImageInput(
           },
           {
             type: "text",
-            text: "Extract all material line items from this image. This may be a packing slip, invoice, handwritten BOM, or material list. Extract the supplier name and PO number if visible.",
+            text: `Extract all material line items from this image. This may be a packing slip, invoice, handwritten BOM, or material list. Return JSON matching this schema:\n${RECEIVING_SCHEMA}`,
           },
         ],
       },
     ],
   })
 
+  const parsed = extractJSON(response) as {
+    items: ParsedLineItem[]
+    supplier?: string
+    poNumber?: string
+    deliveryDate?: string
+  }
+
   return {
-    items: object.items,
-    supplier: object.supplier,
-    poNumber: object.poNumber,
-    deliveryDate: object.deliveryDate,
+    items: parsed.items,
+    supplier: parsed.supplier,
+    poNumber: parsed.poNumber,
+    deliveryDate: parsed.deliveryDate,
   }
 }
