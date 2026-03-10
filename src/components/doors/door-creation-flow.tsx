@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import {
   Mic,
+  Pencil,
   RefreshCw,
   Send,
   ChevronRight,
@@ -29,6 +30,7 @@ import {
   findSpecGaps,
   getDefaultSpecs,
   resolveGapAnswer,
+  FIELD_METADATA,
 } from "@/lib/door-specs"
 import { StepProgress } from "@/components/layout/step-progress"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
@@ -57,6 +59,8 @@ export function DoorCreationFlow() {
   const [gaps, setGaps] = useState<GapQuestion[]>([])
   const [confidence, setConfidence] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [editingField, setEditingField] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState("")
 
   // Job & components
   const [jobName, setJobName] = useState("")
@@ -201,6 +205,26 @@ export function DoorCreationFlow() {
     }
   }
 
+  function handleStartEdit(field: string, currentValue: unknown) {
+    setEditingField(field)
+    setEditValue(currentValue != null ? String(currentValue) : "")
+  }
+
+  function handleSaveEdit() {
+    if (editingField) {
+      const newSpecs = { ...specs, [editingField]: editValue || undefined }
+      setSpecs(newSpecs)
+      setGaps(findSpecGaps(newSpecs, newSpecs.doorCategory))
+      setEditingField(null)
+      setEditValue("")
+    }
+  }
+
+  function handleCancelEdit() {
+    setEditingField(null)
+    setEditValue("")
+  }
+
   const hasRequiredGaps = gaps.length > 0
 
   return (
@@ -246,16 +270,9 @@ export function DoorCreationFlow() {
                     }}
                     className="w-full h-auto py-2.5 justify-start rounded-xl text-left"
                   >
-                    <div>
-                      <p className="font-semibold text-navy text-sm">
-                        {t.name as string}
-                      </p>
-                      {t.description ? (
-                        <p className="text-xs text-gray-500">
-                          {t.description as string}
-                        </p>
-                      ) : null}
-                    </div>
+                    <p className="font-semibold text-navy text-sm">
+                      {t.name as string}
+                    </p>
                   </Button>
                 ))}
               </div>
@@ -292,8 +309,56 @@ export function DoorCreationFlow() {
             </Button>
           </div>
 
-          {/* Spec sheet preview */}
-          <DoorSpecSheet specs={specs} />
+          {/* Editable spec sheet */}
+          <Card className="p-4 rounded-xl border-border-custom space-y-2">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-navy text-sm">Door Specifications</h3>
+              <span className="text-[10px] text-gray-400">Tap any field to edit</span>
+            </div>
+            {Object.entries(specs)
+              .filter(([, v]) => v !== undefined && v !== null && v !== "")
+              .map(([field, value]) => {
+                const meta = FIELD_METADATA[field]
+                const label = meta?.label || field.replace(/([A-Z])/g, " $1").trim()
+                const displayValue = typeof value === "boolean" ? (value ? "Yes" : "No") : String(value)
+
+                if (editingField === field) {
+                  return (
+                    <div key={field} className="flex items-center gap-2 py-1.5 border-b border-gray-50">
+                      <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="h-8 text-sm flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEdit()
+                          if (e.key === "Escape") handleCancelEdit()
+                        }}
+                      />
+                      <Button size="sm" onClick={handleSaveEdit} className="h-8 px-2 text-xs bg-brand-blue text-white">
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={handleCancelEdit} className="h-8 px-2 text-xs">
+                        Cancel
+                      </Button>
+                    </div>
+                  )
+                }
+
+                return (
+                  <button
+                    key={field}
+                    onClick={() => handleStartEdit(field, value)}
+                    className="flex items-center justify-between w-full py-1.5 border-b border-gray-50 last:border-0 text-left hover:bg-gray-50 rounded px-1 -mx-1 transition-colors"
+                  >
+                    <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
+                    <span className="text-sm font-medium text-navy flex-1">{displayValue}</span>
+                    <Pencil className="h-3 w-3 text-gray-300 shrink-0 ml-2" />
+                  </button>
+                )
+              })}
+          </Card>
 
           {/* Gap questions */}
           {gaps.length > 0 && (
