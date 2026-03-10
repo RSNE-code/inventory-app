@@ -466,10 +466,24 @@ model Notification {
 }
 
 model Job {
-  id        String    @id @default(uuid())
-  name      String
-  number    String?   @unique
-  status    JobStatus @default(ACTIVE)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  name           String
+  number         String?   @unique
+  status         JobStatus @default(ACTIVE)
+  client         String?
+  contactName    String?
+  address        String?
+  city           String?
+  contractNumber String?
+  gcRef          String?
+  contractValue  Decimal?  @db.Decimal(12, 2)
+  services       String?
+  proposalDate   DateTime?
+  estStartDate   DateTime?
+  estEndDate     DateTime?
+  percentBilled  Decimal?  @db.Decimal(5, 2)
+  salesLead      String?
+  projectManager String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
