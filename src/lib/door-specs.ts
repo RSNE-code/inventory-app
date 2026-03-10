@@ -8,6 +8,12 @@ export type FrameType = "FULL_FRAME" | "FACE_FRAME" | "BALLY_TYPE"
 export type GasketType = "MAGNETIC" | "NEOPRENE"
 export type Side = "LEFT" | "RIGHT"
 
+export interface Cutout {
+  floorToBottom: string
+  floorToTop: string
+  frameWidth: string
+}
+
 export interface DoorSpecs {
   // Identity
   doorCategory: DoorCategory
@@ -33,7 +39,12 @@ export interface DoorSpecs {
 
   // Frame
   frameType: FrameType
+  frameCustom?: boolean
+  frameLHS?: string
+  frameRHS?: string
+  frameTop?: string
   highSill: boolean
+  sillHeight?: string
   wiper: boolean
 
   // Panel / Insulation
@@ -66,9 +77,16 @@ export interface DoorSpecs {
   // Gasket
   gasketType: GasketType
 
+  // Cutouts
+  cutouts?: Cutout[]
+
+  // Exterior
+  isExterior?: boolean
+
   // Options (from engineering sheet)
   weatherShield: boolean
   thresholdPlate: boolean
+  additionalItems?: string[]
 
   // Sliding door specific
   doorPull?: string
@@ -387,6 +405,30 @@ export function getDefaultSpecs(): Partial<DoorSpecs> {
     thresholdPlate: false,
     quantity: 1,
   }
+}
+
+/**
+ * Auto-calculate heater cable length for freezer doors.
+ * Standard (wiper): (height×2 + width) × 2 / 12 → rounded up FT
+ * High sill:        (height×2 + width×2) × 2 / 12 → rounded up FT
+ * Returns null for non-freezer doors.
+ */
+export function calculateHeaterCable(specs: Partial<DoorSpecs>): string | null {
+  if (specs.temperatureType !== "FREEZER") return null
+  const widthIn = specs.widthInClear ? parseWidthInches(specs.widthInClear) : 0
+  const heightIn = specs.heightInClear ? parseWidthInches(specs.heightInClear) : 0
+  if (!widthIn || !heightIn) return null
+
+  let totalInches: number
+  if (specs.highSill) {
+    // All four sides, doubled
+    totalInches = (heightIn * 2 + widthIn * 2) * 2
+  } else {
+    // Sides + top, doubled (wiper at bottom)
+    totalInches = (heightIn * 2 + widthIn) * 2
+  }
+  const feet = Math.ceil(totalInches / 12)
+  return `${feet} FT`
 }
 
 /** Resolve gap answer string to the correct typed value */
