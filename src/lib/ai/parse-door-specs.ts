@@ -4,7 +4,7 @@ import { z } from "zod"
 import type { DoorSpecs, GapQuestion } from "@/lib/door-specs"
 import { findSpecGaps, getDefaultSpecs } from "@/lib/door-specs"
 
-const MODEL = "claude-sonnet-4-6"
+const MODEL = "claude-sonnet-4-5-20250929"
 
 const doorSpecSchema = z.object({
   doorCategory: z

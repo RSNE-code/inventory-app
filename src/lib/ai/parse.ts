@@ -3,7 +3,7 @@ import { anthropic } from "@ai-sdk/anthropic"
 import { z } from "zod"
 import type { ParsedLineItem } from "./types"
 
-const MODEL = "claude-sonnet-4-6"
+const MODEL = "claude-sonnet-4-5-20250929"
 
 const parsedItemSchema = z.object({
   items: z.array(
