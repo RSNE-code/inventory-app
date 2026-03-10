@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
-import { Prisma } from "@prisma/client"
 
 export async function GET() {
   try {
     await requireAuth()
 
-    const [totalProducts, outOfStock, products, recentTransactions, activeBomCount] = await Promise.all([
+    const [
+      totalProducts,
+      outOfStock,
+      products,
+      recentTransactions,
+      activeBomCount,
+      pendingApprovals,
+      inProductionCount,
+      completedAssemblies,
+      needsCountingCount,
+    ] = await Promise.all([
       prisma.product.count({ where: { isActive: true, tier: "TIER_1" } }),
       prisma.product.count({ where: { isActive: true, tier: "TIER_1", currentQty: { lte: 0 } } }),
       prisma.product.findMany({
@@ -24,6 +33,19 @@ export async function GET() {
         },
       }),
       prisma.bom.count({ where: { status: { in: ["DRAFT", "APPROVED", "IN_PROGRESS"] } } }),
+      prisma.assembly.count({ where: { approvalStatus: "PENDING" } }),
+      prisma.assembly.count({ where: { status: "IN_PRODUCTION" } }),
+      prisma.assembly.count({ where: { status: "COMPLETED" } }),
+      prisma.product.count({
+        where: {
+          isActive: true,
+          tier: "TIER_1",
+          OR: [
+            { lastCountedAt: null },
+            { lastCountedAt: { lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+          ],
+        },
+      }),
     ])
 
     let totalValue = 0
@@ -67,12 +89,51 @@ export async function GET() {
       }
     }
 
-    // Sort low stock by urgency (lowest ratio of current/reorder first)
+    // Sort low stock by urgency
     lowStockItems.sort((a, b) => {
       const ratioA = a.reorderPoint > 0 ? a.currentQty / a.reorderPoint : 1
       const ratioB = b.reorderPoint > 0 ? b.currentQty / b.reorderPoint : 1
       return ratioA - ratioB
     })
+
+    // Build alerts
+    const alerts: Array<{ type: string; title: string; message: string; link?: string }> = []
+
+    if (outOfStock > 0) {
+      alerts.push({
+        type: "critical",
+        title: `${outOfStock} item${outOfStock !== 1 ? "s" : ""} out of stock`,
+        message: "Items need immediate reordering",
+        link: "/inventory",
+      })
+    }
+
+    if (lowStockCount > 0) {
+      alerts.push({
+        type: "warning",
+        title: `${lowStockCount} item${lowStockCount !== 1 ? "s" : ""} below reorder point`,
+        message: "Consider reordering soon",
+        link: "/inventory",
+      })
+    }
+
+    if (pendingApprovals > 0) {
+      alerts.push({
+        type: "info",
+        title: `${pendingApprovals} assembly${pendingApprovals !== 1 ? " assemblies" : ""} awaiting approval`,
+        message: "Door sheets need SM review",
+        link: "/assemblies",
+      })
+    }
+
+    if (needsCountingCount > 5) {
+      alerts.push({
+        type: "info",
+        title: `${needsCountingCount} items need cycle counting`,
+        message: "Items haven't been counted in 30+ days",
+        link: "/cycle-counts",
+      })
+    }
 
     return NextResponse.json({
       data: {
@@ -92,6 +153,12 @@ export async function GET() {
           createdAt: t.createdAt.toISOString(),
         })),
         activeBomCount,
+        alerts,
+        fabrication: {
+          pendingApprovals,
+          inProduction: inProductionCount,
+          completed: completedAssemblies,
+        },
       },
     })
   } catch (error) {

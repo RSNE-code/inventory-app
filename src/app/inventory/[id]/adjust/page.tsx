@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatQuantity } from "@/lib/utils"
 import { getDisplayQty } from "@/lib/units"
 import { StockBadge } from "@/components/inventory/stock-badge"
+import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { toast } from "sonner"
 
 const REASONS = [
@@ -76,6 +77,11 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
   return (
     <div>
       <Header title="Adjust Stock" showBack />
+      <Breadcrumb items={[
+        { label: "Inventory", href: "/inventory" },
+        { label: product.name, href: `/inventory/${id}` },
+        { label: "Adjust Stock" },
+      ]} />
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
         {/* Current stock */}

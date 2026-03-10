@@ -3,6 +3,7 @@
 import { use } from "react"
 import { useProduct } from "@/hooks/use-products"
 import { Header } from "@/components/layout/header"
+import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { ProductForm } from "@/components/inventory/product-form"
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +32,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   return (
     <div>
       <Header title="Edit Product" showBack />
+      <Breadcrumb items={[
+        { label: "Inventory", href: "/inventory" },
+        { label: product.name, href: `/inventory/${product.id}` },
+        { label: "Edit" },
+      ]} />
       <ProductForm
         product={{
           id: product.id,

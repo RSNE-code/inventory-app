@@ -1,23 +1,26 @@
 "use client"
 
 import { use, useState } from "react"
-import { useRouter } from "next/navigation"
 import { useBom, useUpdateBom, useCheckoutBom } from "@/hooks/use-boms"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
 import { ProductPicker } from "@/components/bom/product-picker"
+import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
+import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
-import { Calendar, User, Pencil, Plus, Undo2 } from "lucide-react"
+import { Calendar, User, Pencil, Plus, Undo2, Mic } from "lucide-react"
+import { Breadcrumb } from "@/components/layout/breadcrumb"
+import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
 
 type ActiveMode = "view" | "edit" | "add-material" | "return"
 
 export default function BomDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const router = useRouter()
   const { data, isLoading } = useBom(id)
   const { data: meData } = useMe()
   const updateBom = useUpdateBom()
@@ -98,21 +101,43 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
-  async function handleCheckout() {
-    const items = Object.entries(checkoutQtys)
-      .filter(([, qty]) => qty > 0)
-      .map(([bomLineItemId, quantity]) => ({
-        bomLineItemId,
-        type: "CHECKOUT" as const,
-        quantity,
-      }))
+  // AI-parsed items → add to BOM + auto-checkout
+  async function handleAIAddItems(result: ParseResult | ReceivingParseResult) {
+    const catalogItems = result.items.filter((m: CatalogMatch) => !m.isNonCatalog && m.matchedProduct)
+    const nonCatalogItems = result.items.filter((m: CatalogMatch) => m.isNonCatalog)
 
-    if (items.length === 0) {
-      toast.error("Enter quantities to pull")
+    if (catalogItems.length === 0 && nonCatalogItems.length === 0) {
+      toast.error("No items recognized")
       return
     }
 
-    // If checkout qty exceeds qtyNeeded for any item, update qtyNeeded to match total pulled
+    try {
+      // Add items to the BOM
+      const addLineItems = [
+        ...catalogItems.map((m: CatalogMatch) => ({
+          productId: m.matchedProduct!.id,
+          tier: m.matchedProduct!.tier as "TIER_1" | "TIER_2",
+          qtyNeeded: m.parsedItem.quantity,
+        })),
+        ...nonCatalogItems.map((m: CatalogMatch) => ({
+          tier: "TIER_2" as const,
+          qtyNeeded: m.parsedItem.quantity,
+          isNonCatalog: true,
+          nonCatalogName: m.parsedItem.name,
+          nonCatalogCategory: m.parsedItem.category ?? null,
+          nonCatalogUom: m.parsedItem.unitOfMeasure,
+        })),
+      ]
+
+      await updateBom.mutateAsync({ id, addLineItems })
+      toast.success(`Added ${addLineItems.length} item${addLineItems.length !== 1 ? "s" : ""} to BOM`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add items")
+    }
+  }
+
+  async function handleCheckoutAll(items: Array<{ bomLineItemId: string; type: "CHECKOUT"; quantity: number }>) {
+    // Auto-adjust qtyNeeded if checkout exceeds it
     const allItems = bom?.lineItems as Record<string, unknown>[] | undefined
     const qtyUpdates: Array<{ id: string; qtyNeeded: number }> = []
     if (allItems) {
@@ -130,7 +155,49 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
 
     try {
-      // Update qtyNeeded first if any items exceed their original amount
+      if (qtyUpdates.length > 0) {
+        await updateBom.mutateAsync({ id, updateLineItems: qtyUpdates })
+      }
+      await checkoutBom.mutateAsync({ id, items })
+      toast.success("All materials checked out")
+      resetMode()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Checkout failed")
+    }
+  }
+
+  async function handleCheckout() {
+    const items = Object.entries(checkoutQtys)
+      .filter(([, qty]) => qty > 0)
+      .map(([bomLineItemId, quantity]) => ({
+        bomLineItemId,
+        type: "CHECKOUT" as const,
+        quantity,
+      }))
+
+    if (items.length === 0) {
+      toast.error("Enter quantities to pull")
+      return
+    }
+
+    // Auto-adjust qtyNeeded if checkout exceeds it
+    const allItems = bom?.lineItems as Record<string, unknown>[] | undefined
+    const qtyUpdates: Array<{ id: string; qtyNeeded: number }> = []
+    if (allItems) {
+      for (const item of items) {
+        const lineItem = allItems.find((li) => (li.id as string) === item.bomLineItemId)
+        if (lineItem) {
+          const currentNeeded = Number(lineItem.qtyNeeded)
+          const alreadyCheckedOut = Number(lineItem.qtyCheckedOut || 0)
+          const totalAfterCheckout = alreadyCheckedOut + item.quantity
+          if (totalAfterCheckout > currentNeeded) {
+            qtyUpdates.push({ id: item.bomLineItemId, qtyNeeded: totalAfterCheckout })
+          }
+        }
+      }
+    }
+
+    try {
       if (qtyUpdates.length > 0) {
         await updateBom.mutateAsync({ id, updateLineItems: qtyUpdates })
       }
@@ -196,16 +263,37 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const hasCheckoutQtys = Object.values(checkoutQtys).some((q) => q > 0)
   const hasReturnQtys = Object.values(returnQtys).some((q) => q > 0)
 
-  // Check if any items have outstanding material for the return button
   const hasOutstandingMaterial = allItems.some((item) => {
     const checkedOut = Number(item.qtyCheckedOut || 0)
     const returned = Number(item.qtyReturned || 0)
     return checkedOut - returned > 0
   })
 
+  // Build checkout items for CheckoutAllButton
+  const checkoutItems = allItems.map((item) => {
+    const product = item.product as Record<string, unknown> | null
+    return {
+      id: item.id as string,
+      name: (item.isNonCatalog as boolean)
+        ? (item.nonCatalogName as string) || "Non-catalog item"
+        : (product?.name as string) || "Unknown",
+      qtyNeeded: Number(item.qtyNeeded),
+      qtyCheckedOut: Number(item.qtyCheckedOut || 0),
+      qtyReturned: Number(item.qtyReturned || 0),
+      unitOfMeasure: (item.isNonCatalog as boolean)
+        ? (item.nonCatalogUom as string) || ""
+        : (product?.unitOfMeasure as string) || "",
+      isNonCatalog: item.isNonCatalog as boolean,
+    }
+  })
+
   return (
     <div>
       <Header title={bom.jobName} showBack />
+      <Breadcrumb items={[
+        { label: "BOMs", href: "/boms" },
+        { label: bom.jobName },
+      ]} />
 
       <div className="p-4 space-y-4">
         {/* Status + Job Info */}
@@ -264,12 +352,28 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             </p>
           )}
 
-          {/* Add material mode — product picker */}
+          {/* Add material mode — product picker + AI input */}
           {mode === "add-material" && (
-            <div className="mb-3">
+            <div className="mb-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <Mic className="h-4 w-4 text-[#E8792B]" />
+                <p className="text-sm text-gray-500">Speak or type to add more items</p>
+              </div>
+              <AIInput
+                onParseComplete={handleAIAddItems}
+                placeholder={`"Also grabbing 2 tubes caulk and 10 zip ties..."`}
+              />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-2 text-gray-400">or search catalog</span>
+                </div>
+              </div>
               <ProductPicker
                 onSelect={handleAddProduct}
-                placeholder="Search catalog to add new items..."
+                placeholder="Search catalog to add items..."
                 excludeIds={existingProductIds}
               />
             </div>
@@ -341,7 +445,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             )
           })}
 
-          {/* Return mode — no items message */}
           {mode === "return" && !hasOutstandingMaterial && (
             <p className="text-center text-sm text-text-muted py-6">
               No outstanding material to return.
@@ -421,19 +524,33 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </>
             )}
 
-            {/* Approved — first checkout */}
+            {/* Approved — Check Out All as primary action */}
             {bom.status === "APPROVED" && canCheckout && (
-              <Button
-                onClick={() => setMode("add-material")}
-                className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-              >
-                Start Checkout
-              </Button>
+              <>
+                <CheckoutAllButton
+                  items={checkoutItems}
+                  onCheckoutAll={handleCheckoutAll}
+                  isPending={checkoutBom.isPending}
+                />
+                <Button
+                  onClick={() => setMode("add-material")}
+                  variant="outline"
+                  className="w-full h-12 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Adjust & Check Out
+                </Button>
+              </>
             )}
 
-            {/* In Progress — add material + return + complete */}
+            {/* In Progress — Check Out All + add material + return + complete */}
             {bom.status === "IN_PROGRESS" && canCheckout && (
               <>
+                <CheckoutAllButton
+                  items={checkoutItems}
+                  onCheckoutAll={handleCheckoutAll}
+                  isPending={checkoutBom.isPending}
+                />
                 <div className="flex gap-2">
                   <Button
                     onClick={() => setMode("add-material")}

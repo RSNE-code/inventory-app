@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatQuantity } from "@/lib/utils"
 import { getDisplayQty, getDisplayReorder } from "@/lib/units"
 import { Pencil, ArrowUpDown, MapPin, Clock, Ruler } from "lucide-react"
+import { Breadcrumb } from "@/components/layout/breadcrumb"
+import { StockoutRiskCard } from "@/components/inventory/stockout-risk-card"
+import { InventoryForecastChart } from "@/components/inventory/inventory-forecast-chart"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -54,6 +57,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         }
       />
 
+      <Breadcrumb items={[
+        { label: "Inventory", href: "/inventory" },
+        { label: product.name },
+      ]} />
+
       <div className="p-4 space-y-4">
         {/* Stock level card */}
         <Card className="p-6 rounded-xl border-border-custom text-center">
@@ -68,6 +76,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             Reorder at {formatQuantity(displayReorder.qty)} {displayReorder.unit}
           </p>
         </Card>
+
+        {/* Stockout Risk — Tier 1 only */}
+        {product.tier === "TIER_1" && product.transactions && (
+          <StockoutRiskCard
+            currentQty={qty}
+            reorderPoint={reorder}
+            transactions={product.transactions}
+            unitOfMeasure={display.unit}
+          />
+        )}
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">
@@ -158,6 +176,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           )}
         </Card>
+
+        {/* Inventory Forecast — Tier 1 only */}
+        {product.tier === "TIER_1" && product.transactions && (
+          <InventoryForecastChart
+            currentQty={qty}
+            reorderPoint={reorder}
+            transactions={product.transactions}
+          />
+        )}
 
         {/* Recent transactions */}
         {product.transactions && product.transactions.length > 0 && (

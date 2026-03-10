@@ -1,19 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Plus_Jakarta_Sans } from "next/font/google";
+import { Urbanist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { AppShell } from "@/components/layout/app-shell";
 
-const dmSans = DM_Sans({
+const urbanist = Urbanist({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
-  weight: ["400", "500", "600"],
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-  weight: ["500", "600", "700"],
+  variable: "--font-urbanist",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -35,11 +29,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.variable} ${plusJakarta.variable} font-sans antialiased`}
+        className={`${urbanist.variable} font-sans antialiased`}
       >
         <Providers>
-          <main className="pb-16">{children}</main>
-          <BottomNav />
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

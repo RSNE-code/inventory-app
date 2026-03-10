@@ -6,9 +6,22 @@ import { LowStockList } from "@/components/dashboard/low-stock-list"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { Card } from "@/components/ui/card"
 import { formatQuantity } from "@/lib/utils"
-import { ClipboardList } from "lucide-react"
+import { ClipboardList, AlertTriangle, AlertCircle, Info, Factory } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
+
+const alertIcons: Record<string, typeof AlertTriangle> = {
+  critical: AlertCircle,
+  warning: AlertTriangle,
+  info: Info,
+}
+
+const alertStyles: Record<string, string> = {
+  critical: "bg-red-50 border-red-200 text-red-700",
+  warning: "bg-yellow-50 border-yellow-200 text-yellow-700",
+  info: "bg-blue-50 border-blue-200 text-blue-700",
+}
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard()
@@ -43,50 +56,116 @@ export default function DashboardPage() {
           <div className="text-center py-12 text-text-muted">Loading dashboard...</div>
         ) : dashboard ? (
           <>
+            {/* Full-width items */}
             <StockSummaryCards summary={dashboard.summary} />
             <QuickActions />
 
-            {dashboard.activeBomCount > 0 && (
-              <Link href="/boms">
-                <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                      <ClipboardList className="h-5 w-5 text-brand-blue" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-navy">{dashboard.activeBomCount} Active BOM{dashboard.activeBomCount !== 1 ? "s" : ""}</p>
-                      <p className="text-xs text-text-muted">Tap to view</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+            {/* Alerts — full width */}
+            {dashboard.alerts && dashboard.alerts.length > 0 && (
+              <div className="space-y-2">
+                {dashboard.alerts.map((alert: { type: string; title: string; message: string; link?: string }, index: number) => {
+                  const Icon = alertIcons[alert.type] || Info
+                  const card = (
+                    <Card className={cn(
+                      "p-3 rounded-xl border",
+                      alertStyles[alert.type] || alertStyles.info
+                    )}>
+                      <div className="flex items-start gap-2.5">
+                        <Icon className="h-4 w-4 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold">{alert.title}</p>
+                          <p className="text-xs opacity-80">{alert.message}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  )
+
+                  return alert.link ? (
+                    <Link key={index} href={alert.link}>{card}</Link>
+                  ) : (
+                    <div key={index}>{card}</div>
+                  )
+                })}
+              </div>
             )}
 
-            <LowStockList items={dashboard.lowStockItems} />
-
-            {/* Recent activity */}
-            {dashboard.recentTransactions.length > 0 && (
-              <Card className="p-4 rounded-xl border-border-custom">
-                <h3 className="font-semibold text-navy mb-3">Recent Activity</h3>
-                <div className="space-y-2">
-                  {dashboard.recentTransactions.slice(0, 5).map((t) => (
-                    <div key={t.id} className="flex items-center justify-between py-2 border-b border-border-custom last:border-0">
+            {/* Responsive grid for secondary cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Active BOMs */}
+              {dashboard.activeBomCount > 0 && (
+                <Link href="/boms">
+                  <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow h-full">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                        <ClipboardList className="h-5 w-5 text-brand-blue" />
+                      </div>
                       <div>
-                        <p className="text-sm font-medium text-navy">{t.productName}</p>
-                        <p className="text-xs text-text-muted">
-                          {formatTransactionType(t.type)} by {t.userName}
+                        <p className="text-sm font-medium text-navy">{dashboard.activeBomCount} Active BOM{dashboard.activeBomCount !== 1 ? "s" : ""}</p>
+                        <p className="text-xs text-text-muted">Tap to view</p>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              )}
+
+              {/* Fabrication Status */}
+              {dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0) && (
+                <Link href="/assemblies">
+                  <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow h-full">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50">
+                        <Factory className="h-5 w-5 text-brand-orange" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-navy">Fabrication</p>
+                        <div className="flex gap-3 text-xs text-text-muted">
+                          {dashboard.fabrication.pendingApprovals > 0 && (
+                            <span className="text-yellow-600">{dashboard.fabrication.pendingApprovals} pending</span>
+                          )}
+                          {dashboard.fabrication.inProduction > 0 && (
+                            <span className="text-orange-600">{dashboard.fabrication.inProduction} building</span>
+                          )}
+                          {dashboard.fabrication.completed > 0 && (
+                            <span className="text-green-600">{dashboard.fabrication.completed} done</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              )}
+            </div>
+
+            {/* Two-column on desktop for low stock + recent activity */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <LowStockList items={dashboard.lowStockItems} />
+              </div>
+
+              {/* Recent activity */}
+              {dashboard.recentTransactions.length > 0 && (
+                <Card className="p-4 rounded-xl border-border-custom">
+                  <h3 className="font-semibold text-navy mb-3">Recent Activity</h3>
+                  <div className="space-y-2">
+                    {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }) => (
+                      <div key={t.id} className="flex items-center justify-between py-2 border-b border-border-custom last:border-0">
+                        <div>
+                          <p className="text-sm font-medium text-navy">{t.productName}</p>
+                          <p className="text-xs text-text-muted">
+                            {formatTransactionType(t.type)} by {t.userName}
+                          </p>
+                        </div>
+                        <p className={`text-sm font-semibold tabular-nums ${
+                          isPositiveType(t.type) ? "text-status-green" : "text-status-red"
+                        }`}>
+                          {isPositiveType(t.type) ? "+" : "-"}{formatQuantity(t.quantity)}
                         </p>
                       </div>
-                      <p className={`text-sm font-semibold tabular-nums ${
-                        isPositiveType(t.type) ? "text-status-green" : "text-status-red"
-                      }`}>
-                        {isPositiveType(t.type) ? "+" : "-"}{formatQuantity(t.quantity)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </div>
           </>
         ) : (
           <div className="text-center py-12 text-text-muted">No data available</div>

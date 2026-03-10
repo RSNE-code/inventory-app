@@ -20,11 +20,26 @@ export interface StockSummary {
   outOfStockCount: number
 }
 
+export interface DashboardAlert {
+  type: string
+  title: string
+  message: string
+  link?: string
+}
+
+export interface FabricationSummary {
+  pendingApprovals: number
+  inProduction: number
+  completed: number
+}
+
 export interface DashboardData {
   summary: StockSummary
   lowStockItems: LowStockItem[]
   recentTransactions: RecentTransaction[]
   activeBomCount: number
+  alerts: DashboardAlert[]
+  fabrication: FabricationSummary
 }
 
 export interface LowStockItem {
