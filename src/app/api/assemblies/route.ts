@@ -19,7 +19,7 @@ const createAssemblySchema = z.object({
   priority: z.number().int().default(0),
   notes: z.string().optional().nullable(),
   requiresApproval: z.boolean().default(false),
-  components: z.array(componentSchema).min(1),
+  components: z.array(componentSchema).default([]),
 })
 
 export async function GET(request: NextRequest) {
@@ -89,13 +89,16 @@ export async function POST(request: NextRequest) {
       ? "PENDING"
       : "NOT_REQUIRED"
 
-    // Get product costs for components
-    const productIds = data.components.map((c) => c.productId)
-    const products = await prisma.product.findMany({
-      where: { id: { in: productIds } },
-      select: { id: true, avgCost: true },
-    })
-    const costMap = new Map(products.map((p) => [p.id, Number(p.avgCost)]))
+    // Get product costs for components (if any)
+    let costMap = new Map<string, number>()
+    if (data.components.length > 0) {
+      const productIds = data.components.map((c) => c.productId)
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, avgCost: true },
+      })
+      costMap = new Map(products.map((p) => [p.id, Number(p.avgCost)]))
+    }
 
     const assembly = await prisma.assembly.create({
       data: {
@@ -111,18 +114,20 @@ export async function POST(request: NextRequest) {
         producedById: user.id,
         approvalStatus,
         notes: data.notes || null,
-        components: {
-          create: data.components.map((comp) => {
-            const unitCost = costMap.get(comp.productId) ?? 0
-            const totalQty = comp.qtyUsed * data.batchSize
-            return {
-              productId: comp.productId,
-              qtyUsed: new Prisma.Decimal(totalQty),
-              unitCost: new Prisma.Decimal(unitCost),
-              totalCost: new Prisma.Decimal(totalQty * unitCost),
-            }
-          }),
-        },
+        ...(data.components.length > 0 ? {
+          components: {
+            create: data.components.map((comp) => {
+              const unitCost = costMap.get(comp.productId) ?? 0
+              const totalQty = comp.qtyUsed * data.batchSize
+              return {
+                productId: comp.productId,
+                qtyUsed: new Prisma.Decimal(totalQty),
+                unitCost: new Prisma.Decimal(unitCost),
+                totalCost: new Prisma.Decimal(totalQty * unitCost),
+              }
+            }),
+          },
+        } : {}),
       },
       include: {
         template: { select: { id: true, name: true, type: true } },
@@ -140,7 +145,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: assembly }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      const msg = error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
+      return NextResponse.json({ error: msg }, { status: 400 })
     }
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
