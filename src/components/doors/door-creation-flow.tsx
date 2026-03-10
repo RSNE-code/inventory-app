@@ -29,6 +29,7 @@ import type {
 import {
   findSpecGaps,
   getDefaultSpecs,
+  getStandardHardware,
   resolveGapAnswer,
   FIELD_METADATA,
 } from "@/lib/door-specs"
@@ -107,6 +108,18 @@ export function DoorCreationFlow() {
   function handleGapAnswer(field: string, answer: string) {
     const resolved = resolveGapAnswer(field, answer)
     const newSpecs = { ...specs, ...resolved }
+
+    // Re-apply hardware defaults when door type or size changes
+    if (field === "doorCategory" || field === "widthInClear" || field === "temperatureType" || field === "openingType") {
+      const hw = getStandardHardware(newSpecs.doorCategory, newSpecs.widthInClear)
+      if (hw.hingeMfrName && !newSpecs.hingeMfrName) newSpecs.hingeMfrName = hw.hingeMfrName
+      if (hw.hingeModel && !newSpecs.hingeModel) newSpecs.hingeModel = hw.hingeModel
+      if (hw.latchMfrName && !newSpecs.latchMfrName) newSpecs.latchMfrName = hw.latchMfrName
+      if (hw.latchModel && !newSpecs.latchModel) newSpecs.latchModel = hw.latchModel
+      if (hw.closerModel && !newSpecs.closerModel) newSpecs.closerModel = hw.closerModel
+      if (hw.gasketType && !newSpecs.gasketType) newSpecs.gasketType = hw.gasketType
+    }
+
     setSpecs(newSpecs)
 
     // Recalculate gaps
@@ -165,9 +178,45 @@ export function DoorCreationFlow() {
       })
     )
     const templateSpecs = template.specs as Record<string, unknown> | null
-    if (templateSpecs) {
-      setSpecs((prev) => ({ ...prev, ...templateSpecs }))
+    const templateName = (template.name as string) || ""
+
+    // Derive door category and dimensions from template name
+    const isSlider = templateName.toLowerCase().includes("slider")
+    const isFreezer = templateName.toLowerCase().includes("freezer")
+    const isExterior = templateName.toLowerCase().includes("exterior")
+    const sizeMatch = templateName.match(/(\d+)'\s*x\s*(\d+)'/)
+    const widthFt = sizeMatch ? sizeMatch[1] : undefined
+    const widthInClear = widthFt ? `${parseInt(widthFt, 10) * 12}` : undefined
+
+    let doorCategory: DoorSpecs["doorCategory"] | undefined
+    if (isSlider) doorCategory = "SLIDING"
+    else if (isFreezer) doorCategory = "HINGED_FREEZER"
+    else doorCategory = "HINGED_COOLER"
+
+    // Get standard hardware for this door type and size
+    const hw = getStandardHardware(doorCategory, widthInClear, isExterior)
+
+    const newSpecs: Partial<DoorSpecs> = {
+      ...specs,
+      ...(templateSpecs || {}),
+      doorCategory,
+      temperatureType: isFreezer ? "FREEZER" : "COOLER",
+      openingType: isSlider ? "SLIDE" : "HINGE",
+      ...(widthInClear ? { widthInClear } : {}),
+      ...(sizeMatch ? { heightInClear: `${parseInt(sizeMatch[2], 10) * 12}` } : {}),
+      ...(hw.hingeMfrName ? { hingeMfrName: hw.hingeMfrName } : {}),
+      ...(hw.hingeModel ? { hingeModel: hw.hingeModel } : {}),
+      ...(hw.latchMfrName ? { latchMfrName: hw.latchMfrName } : {}),
+      ...(hw.latchModel ? { latchModel: hw.latchModel } : {}),
+      ...(hw.closerModel ? { closerModel: hw.closerModel } : {}),
+      ...(hw.gasketType ? { gasketType: hw.gasketType } : {}),
     }
+    setSpecs(newSpecs)
+
+    // Recalculate gaps with the new specs
+    const newGaps = findSpecGaps(newSpecs, newSpecs.doorCategory)
+    setGaps(newGaps)
+    setPhase("REVIEW")
   }
 
   // Submit to create assembly

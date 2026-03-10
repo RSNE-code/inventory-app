@@ -1,7 +1,7 @@
 import { generateText } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
 import type { DoorSpecs, GapQuestion } from "@/lib/door-specs"
-import { findSpecGaps, getDefaultSpecs } from "@/lib/door-specs"
+import { findSpecGaps, getDefaultSpecs, getStandardHardware } from "@/lib/door-specs"
 
 const MODEL = "claude-sonnet-4-5-20250929"
 
@@ -74,12 +74,13 @@ Hardware Manufacturers:
 - Kason — KDE series
 - DERA — DFE series
 
-RSNE Standard Hardware (default when nothing specific is mentioned):
-- Hinges: DENT D690CS
-- Latch: DENT D90
-- Closer: DENT D276
-If someone says "standard hardware" or doesn't mention specific hardware, use these defaults:
-  hingeMfrName = "DENT", hingeModel = "D690CS", latchMfrName = "DENT", latchModel = "D90", closerModel = "DENT D276"
+RSNE Standard Hardware (varies by door type and size — DO NOT default to a single set):
+- 3' wide hinged doors (cooler or freezer): DENT D690 hinges (2), DENT D90 latch, DENT D276 closer, MAGNETIC gasket
+- 4' wide hinged doors: Kason K1277 Cam-lift hinges (2), Kason K56 latch, no closer, NEOPRENE gasket
+- 5' wide hinged doors: Kason K1277 Cam-lift hinges (3), Kason K55 Complete latch, no closer, NEOPRENE gasket
+- Exterior hinged doors (any size): Kason K1245 hinges (2), Kason K56 latch, no closer, NEOPRENE gasket
+- Sliding doors: No hinges/latches/closers (they use floor rollers, strikers, tongues)
+If someone says "standard hardware" or doesn't mention specific hardware, leave hardware fields as null — the system will auto-fill based on door size
 
 Parsing Rules:
 - If someone says "freezer door" → temperatureType = FREEZER, doorCategory = HINGED_FREEZER (unless they specify sliding)
@@ -149,6 +150,21 @@ export async function parseDoorSpecs(text: string): Promise<DoorSpecParseResult>
     } else {
       specs.doorCategory = "HINGED_COOLER"
     }
+  }
+
+  // Apply standard hardware defaults based on door type + size (only for fields not already set)
+  if (specs.doorCategory) {
+    const hw = getStandardHardware(
+      specs.doorCategory,
+      specs.widthInClear,
+      specs.specialNotes?.toLowerCase().includes("exterior"),
+    )
+    if (hw.hingeMfrName && !specs.hingeMfrName) specs.hingeMfrName = hw.hingeMfrName
+    if (hw.hingeModel && !specs.hingeModel) specs.hingeModel = hw.hingeModel
+    if (hw.latchMfrName && !specs.latchMfrName) specs.latchMfrName = hw.latchMfrName
+    if (hw.latchModel && !specs.latchModel) specs.latchModel = hw.latchModel
+    if (hw.closerModel && !specs.closerModel) specs.closerModel = hw.closerModel
+    if (hw.gasketType && !specs.gasketType) specs.gasketType = hw.gasketType
   }
 
   // Find gaps for this door category

@@ -280,16 +280,103 @@ export function formatDoorSize(specs: Partial<DoorSpecs>): string {
   return `${specs.widthInClear} x ${specs.heightInClear}`
 }
 
-/** Default values for a new door spec — booleans default to false, quantity to 1 */
-/** Standard RSNE hardware — used when no specific hardware is indicated */
-export const STANDARD_HARDWARE = {
-  hingeMfrName: "DENT",
-  hingeModel: "D690CS",
-  latchMfrName: "DENT",
-  latchModel: "D90",
-  closerModel: "DENT D276",
-} as const
+/** Standard RSNE hardware lookup — varies by door type and size.
+ *  Derived from actual assembly templates in prisma/seed-assemblies.ts */
 
+export interface HardwareDefaults {
+  hingeMfrName?: string
+  hingeModel?: string
+  hingeQty?: number
+  latchMfrName?: string
+  latchModel?: string
+  closerModel?: string
+  gasketType?: GasketType
+}
+
+/**
+ * Parse a width string (e.g. "36\"", "48", "3'", "4ft") into inches.
+ * Returns 0 if unparseable.
+ */
+function parseWidthInches(w: string): number {
+  const s = w.replace(/["\s]/g, "").toLowerCase()
+  // Check for feet notation: 3', 3ft, 4ft
+  const ftMatch = s.match(/^(\d+)(?:ft|')$/)
+  if (ftMatch) return parseInt(ftMatch[1], 10) * 12
+  // Plain number — if <= 10 treat as feet, else inches
+  const n = parseFloat(s)
+  if (isNaN(n)) return 0
+  return n <= 10 ? n * 12 : n
+}
+
+/**
+ * Get standard hardware for a given door type and size.
+ * Based on RSNE assembly templates — hardware varies by door category and width.
+ */
+export function getStandardHardware(
+  category?: DoorCategory,
+  widthInClear?: string,
+  isExterior?: boolean,
+): HardwareDefaults {
+  if (!category || category === "SLIDING") {
+    // Sliders have no hinges/latches/closers — they use floor rollers, strikers, tongues
+    return {}
+  }
+
+  const widthIn = widthInClear ? parseWidthInches(widthInClear) : 0
+
+  // Exterior doors (cooler or freezer) — K1245 hinges, K56 latch, no closer
+  if (isExterior) {
+    return {
+      hingeMfrName: "Kason",
+      hingeModel: "K1245",
+      hingeQty: 2,
+      latchMfrName: "Kason",
+      latchModel: "K56",
+      closerModel: undefined,
+      gasketType: "NEOPRENE",
+    }
+  }
+
+  // 5' wide (60") and up — K1277 cam-lift (3), K55 Complete latch, no closer
+  if (widthIn >= 60) {
+    return {
+      hingeMfrName: "Kason",
+      hingeModel: "K1277 Cam-lift",
+      hingeQty: 3,
+      latchMfrName: "Kason",
+      latchModel: "K55 Complete",
+      closerModel: undefined,
+      gasketType: "NEOPRENE",
+    }
+  }
+
+  // 4' wide (48") — K1277 cam-lift (2), K56 latch, no closer
+  if (widthIn >= 48) {
+    return {
+      hingeMfrName: "Kason",
+      hingeModel: "K1277 Cam-lift",
+      hingeQty: 2,
+      latchMfrName: "Kason",
+      latchModel: "K56",
+      closerModel: undefined,
+      gasketType: "NEOPRENE",
+    }
+  }
+
+  // 3' wide (36") standard — DENT D690, D90, D276 closer
+  return {
+    hingeMfrName: "DENT",
+    hingeModel: "D690",
+    hingeQty: 2,
+    latchMfrName: "DENT",
+    latchModel: "D90",
+    closerModel: "DENT D276",
+    gasketType: "MAGNETIC",
+  }
+}
+
+/** Default values for a new door spec — booleans default to false, quantity to 1.
+ *  Hardware is NOT included here — call getStandardHardware() after type/size are known. */
 export function getDefaultSpecs(): Partial<DoorSpecs> {
   return {
     label: true,
@@ -299,8 +386,6 @@ export function getDefaultSpecs(): Partial<DoorSpecs> {
     weatherShield: false,
     thresholdPlate: false,
     quantity: 1,
-    // Standard RSNE hardware
-    ...STANDARD_HARDWARE,
   }
 }
 
