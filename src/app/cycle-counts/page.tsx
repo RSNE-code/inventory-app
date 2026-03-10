@@ -144,6 +144,14 @@ export default function CycleCountsPage() {
                     autoFocus
                   />
                 </div>
+                <div>
+                  <Input
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Reason for variance (optional)"
+                    className="h-10 text-center"
+                  />
+                </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={handleSubmitCount}
@@ -195,14 +203,6 @@ export default function CycleCountsPage() {
                       {showResult.variance > 0 ? "+" : ""}{formatQuantity(showResult.variance)} {showResult.unitOfMeasure}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Stock adjusted automatically</p>
-
-                    {/* Reason input if variance */}
-                    <Input
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      placeholder="Reason (optional)"
-                      className="mt-2 h-10 text-center"
-                    />
                   </div>
                 ) : (
                   <div className="text-center p-3 bg-green-50 rounded-lg">

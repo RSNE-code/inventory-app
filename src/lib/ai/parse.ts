@@ -75,8 +75,11 @@ export async function parseTextInput(text: string): Promise<ParsedLineItem[]> {
     prompt: `Parse the following into structured material line items. Return JSON matching this schema:\n${JSON_SCHEMA}\n\nInput: "${text}"`,
   })
 
-  const parsed = extractJSON(response) as { items: ParsedLineItem[] }
-  return parsed.items
+  const parsed = extractJSON(response) as { items?: unknown }
+  if (!Array.isArray(parsed.items)) {
+    throw new Error("AI response missing items array")
+  }
+  return parsed.items as ParsedLineItem[]
 }
 
 export async function parseImageInput(
@@ -110,14 +113,18 @@ export async function parseImageInput(
   })
 
   const parsed = extractJSON(response) as {
-    items: ParsedLineItem[]
+    items?: unknown
     supplier?: string
     poNumber?: string
     deliveryDate?: string
   }
 
+  if (!Array.isArray(parsed.items)) {
+    throw new Error("AI response missing items array")
+  }
+
   return {
-    items: parsed.items,
+    items: parsed.items as ParsedLineItem[],
     supplier: parsed.supplier,
     poNumber: parsed.poNumber,
     deliveryDate: parsed.deliveryDate,

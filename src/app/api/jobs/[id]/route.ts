@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+import { requireAuth, requireRole } from "@/lib/auth"
 import { z } from "zod"
 
 const updateJobSchema = z.object({
@@ -22,6 +22,7 @@ export async function GET(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
+    if (message.startsWith("Forbidden")) return NextResponse.json({ error: message }, { status: 403 })
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -31,7 +32,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
+    requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SALES_MANAGER"])
     const { id } = await params
     const body = await request.json()
     const data = updateJobSchema.parse(body)
@@ -43,6 +45,7 @@ export async function PUT(
     }
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
+    if (message.startsWith("Forbidden")) return NextResponse.json({ error: message }, { status: 403 })
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
