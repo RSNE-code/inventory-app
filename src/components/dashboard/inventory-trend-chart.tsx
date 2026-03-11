@@ -113,11 +113,11 @@ export function InventoryTrendChart() {
 
   // ─── Chart dimensions ───
   const chartW = 360
-  const chartH = 120
-  const padL = 38
-  const padR = 8
-  const padT = 12
-  const padB = 24
+  const chartH = 140
+  const padL = 36
+  const padR = 6
+  const padT = 6
+  const padB = 18
   const plotW = chartW - padL - padR
   const plotH = chartH - padT - padB
 
@@ -188,11 +188,11 @@ export function InventoryTrendChart() {
   const pctChange = firstVal > 0 ? ((currentVal - firstVal) / firstVal) * 100 : 0
 
   return (
-    <Card className="p-3 rounded-xl border-border-custom shadow-brand">
+    <Card className="px-3 pt-2.5 pb-2 rounded-xl border-border-custom shadow-brand">
       {/* Header */}
-      <div className="flex items-start justify-between mb-0.5">
+      <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-navy text-sm tracking-tight">Inventory Value</h3>
+          <h3 className="font-semibold text-navy text-sm tracking-tight leading-none">Inventory Value</h3>
           <div className="flex items-baseline gap-2 mt-0.5">
             <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight">
               {formatCurrency(currentVal)}
@@ -208,7 +208,7 @@ export function InventoryTrendChart() {
       </div>
 
       {/* Category filter pills */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1.5 mt-1 scrollbar-hide">
+      <div className="flex gap-1.5 overflow-x-auto pb-0.5 mt-0.5 scrollbar-hide">
         <button
           onClick={() => setCategoryId("")}
           className={cn(
@@ -239,7 +239,7 @@ export function InventoryTrendChart() {
       {/* Chart */}
       <svg
         viewBox={`0 0 ${chartW} ${chartH}`}
-        className="w-full mt-1"
+        className="w-full"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
@@ -341,7 +341,7 @@ export function InventoryTrendChart() {
         {/* Today label */}
         <text
           x={todayX}
-          y={padT + plotH + 14}
+          y={padT + plotH + 11}
           fontSize="8"
           fill="#8899AB"
           textAnchor="middle"
@@ -355,7 +355,7 @@ export function InventoryTrendChart() {
         {firstDate && (
           <text
             x={padL}
-            y={padT + plotH + 14}
+            y={padT + plotH + 11}
             fontSize="7"
             fill="#8899AB"
             textAnchor="start"
@@ -367,7 +367,7 @@ export function InventoryTrendChart() {
         {lastDate && (
           <text
             x={padL + plotW}
-            y={padT + plotH + 14}
+            y={padT + plotH + 11}
             fontSize="7"
             fill="#8899AB"
             textAnchor="end"
@@ -379,13 +379,13 @@ export function InventoryTrendChart() {
       </svg>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-1 text-[10px] text-text-muted font-medium">
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-brand-blue rounded-full inline-block" />
+      <div className="flex items-center justify-center gap-3 -mt-0.5 text-[9px] text-text-muted font-medium">
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-0.5 bg-brand-blue rounded-full inline-block" />
           Historical
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-brand-orange rounded-full inline-block opacity-80" style={{ backgroundImage: "repeating-linear-gradient(90deg, #E8792B 0, #E8792B 3px, transparent 3px, transparent 5px)" }} />
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-0.5 bg-brand-orange rounded-full inline-block opacity-80" style={{ backgroundImage: "repeating-linear-gradient(90deg, #E8792B 0, #E8792B 3px, transparent 3px, transparent 5px)" }} />
           Projected
         </span>
       </div>
