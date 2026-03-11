@@ -7,7 +7,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <SidebarNav />
-      <main className="pb-16 md:pb-0 md:ml-60">
+      <main className="pb-20 md:pb-0 md:ml-60">
         {children}
       </main>
       <BottomNav />

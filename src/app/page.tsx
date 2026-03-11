@@ -71,7 +71,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-3">
         {isLoading ? (
           <div className="space-y-4">
             {/* Skeleton loaders */}

@@ -113,7 +113,7 @@ export function InventoryTrendChart() {
 
   // ─── Chart dimensions ───
   const chartW = 360
-  const chartH = 160
+  const chartH = 120
   const padL = 38
   const padR = 8
   const padT = 12
@@ -188,9 +188,9 @@ export function InventoryTrendChart() {
   const pctChange = firstVal > 0 ? ((currentVal - firstVal) / firstVal) * 100 : 0
 
   return (
-    <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+    <Card className="p-3 rounded-xl border-border-custom shadow-brand">
       {/* Header */}
-      <div className="flex items-start justify-between mb-1">
+      <div className="flex items-start justify-between mb-0.5">
         <div>
           <h3 className="font-semibold text-navy text-sm tracking-tight">Inventory Value</h3>
           <div className="flex items-baseline gap-2 mt-0.5">
@@ -208,7 +208,7 @@ export function InventoryTrendChart() {
       </div>
 
       {/* Category filter pills */}
-      <div className="flex gap-1.5 overflow-x-auto pb-2 mt-2 scrollbar-hide">
+      <div className="flex gap-1.5 overflow-x-auto pb-1.5 mt-1 scrollbar-hide">
         <button
           onClick={() => setCategoryId("")}
           className={cn(
