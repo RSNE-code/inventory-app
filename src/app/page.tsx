@@ -31,7 +31,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Compact Header — logo + title inline */}
-      <header className="relative bg-navy px-4 py-3 overflow-hidden">
+      <header className="relative bg-navy px-4 py-3 z-50">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3 animate-fade-in">
@@ -45,7 +45,7 @@ export default function DashboardPage() {
                 priority
               />
             </div>
-            <h1 className="text-white text-base font-bold tracking-tight">Inventory Dashboard</h1>
+            <h1 className="text-white text-lg font-bold tracking-tight">Inventory Dashboard</h1>
           </div>
           {/* Menu button — opens additional options */}
           <div className="relative">
