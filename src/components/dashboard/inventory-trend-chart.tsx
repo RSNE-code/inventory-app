@@ -67,7 +67,7 @@ export function InventoryTrendChart() {
   // Chart dimensions
   const chartW = 360
   const chartH = 160
-  const padL = 8
+  const padL = 38
   const padR = 8
   const padT = 12
   const padB = 24
@@ -128,8 +128,13 @@ export function InventoryTrendChart() {
   // Today marker position
   const todayX = xPos(historicalCount - 1)
 
-  // Y-axis labels (3 ticks)
+  // Y-axis labels (3 ticks) with compact formatting
   const yLabels = [minVal, (minVal + maxVal) / 2, maxVal]
+  const formatYLabel = (val: number) => {
+    if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`
+    if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}k`
+    return `$${val.toFixed(0)}`
+  }
 
   // X-axis date labels (first, middle, last)
   const firstDate = trend.historical[0]?.date
@@ -212,17 +217,28 @@ export function InventoryTrendChart() {
           </linearGradient>
         </defs>
 
-        {/* Horizontal grid lines */}
+        {/* Horizontal grid lines + Y-axis labels */}
         {yLabels.map((val, i) => (
-          <line
-            key={i}
-            x1={padL}
-            y1={yPos(val)}
-            x2={padL + plotW}
-            y2={yPos(val)}
-            stroke="#E2E6EB"
-            strokeWidth="0.5"
-          />
+          <g key={i}>
+            <line
+              x1={padL}
+              y1={yPos(val)}
+              x2={padL + plotW}
+              y2={yPos(val)}
+              stroke="#E2E6EB"
+              strokeWidth="0.5"
+            />
+            <text
+              x={padL - 4}
+              y={yPos(val) + 3}
+              fontSize="7"
+              fill="#8899AB"
+              textAnchor="end"
+              fontFamily="Urbanist, sans-serif"
+            >
+              {formatYLabel(val)}
+            </text>
+          </g>
         ))}
 
         {/* Historical area fill */}
