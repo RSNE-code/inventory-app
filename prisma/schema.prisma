@@ -192,6 +192,9 @@ model PurchaseOrder {
   supplier         Supplier @relation(fields: [supplierId], references: [id])
   supplierId       String
   status           POStatus @default(OPEN)
+  amount           Decimal? @db.Decimal(12, 2)
+  jobName          String?
+  clientName       String?
   expectedDelivery DateTime?
   notes            String?
   createdAt        DateTime @default(now())

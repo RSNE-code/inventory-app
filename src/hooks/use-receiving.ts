@@ -1,6 +1,7 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import type { MatchedPO } from "@/lib/ai/types"
 
 export function useSupplierMatch() {
   return useMutation({
@@ -16,6 +17,42 @@ export function useSupplierMatch() {
       }
       const { data } = await res.json()
       return data as { id: string; name: string; confidence: number } | null
+    },
+  })
+}
+
+export function usePoMatch() {
+  return useMutation({
+    mutationFn: async (params: { poNumber?: string; vendorName?: string; amount?: number }) => {
+      const res = await fetch("/api/pos/match", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to match PO")
+      }
+      const { data } = await res.json()
+      return data as MatchedPO | null
+    },
+  })
+}
+
+export function usePoSearch(supplierId?: string, search?: string) {
+  const params = new URLSearchParams()
+  if (supplierId) params.set("supplierId", supplierId)
+  if (search) params.set("search", search)
+
+  return useQuery<{ data: MatchedPO[] }>({
+    queryKey: ["pos", supplierId, search],
+    queryFn: async () => {
+      const res = await fetch(`/api/pos?${params}`)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to search POs")
+      }
+      return res.json()
     },
   })
 }
@@ -43,6 +80,7 @@ export function useCreateReceipt() {
   return useMutation({
     mutationFn: async (data: {
       supplierId: string
+      purchaseOrderId?: string | null
       notes?: string | null
       items: Array<{
         productId: string

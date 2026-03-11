@@ -7,7 +7,8 @@ import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { SupplierPicker } from "@/components/receiving/supplier-picker"
 import { ReceivingConfirmationList } from "@/components/receiving/receiving-confirmation-card"
 import { ReceiptSummary } from "@/components/receiving/receipt-summary"
-import { useSupplierMatch, useCreateReceipt } from "@/hooks/use-receiving"
+import { POMatchCard } from "@/components/receiving/po-match-card"
+import { useSupplierMatch, usePoMatch, useCreateReceipt } from "@/hooks/use-receiving"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -16,12 +17,26 @@ import type {
   ReceivingParseResult,
   ParseResult,
   ConfirmedReceivingItem,
+  MatchedPO,
 } from "@/lib/ai/types"
 
-type Phase = "INPUT" | "REVIEW" | "SUMMARY"
+type Phase = "INPUT" | "PO_MATCH" | "REVIEW" | "SUMMARY"
 
-const RECEIVING_STEPS = ["Input", "Review", "Summary"]
-const PHASE_INDEX: Record<Phase, number> = { INPUT: 0, REVIEW: 1, SUMMARY: 2 }
+const STEPS_WITH_PO = ["Input", "PO Match", "Review", "Summary"]
+const STEPS_WITHOUT_PO = ["Input", "Review", "Summary"]
+
+function getSteps(hasPOStep: boolean) {
+  return hasPOStep ? STEPS_WITH_PO : STEPS_WITHOUT_PO
+}
+
+function getStepIndex(phase: Phase, hasPOStep: boolean): number {
+  if (hasPOStep) {
+    const map: Record<Phase, number> = { INPUT: 0, PO_MATCH: 1, REVIEW: 2, SUMMARY: 3 }
+    return map[phase]
+  }
+  const map: Record<Phase, number> = { INPUT: 0, PO_MATCH: 0, REVIEW: 1, SUMMARY: 2 }
+  return map[phase]
+}
 
 export function ReceivingFlow() {
   const [phase, setPhase] = useState<Phase>("INPUT")
@@ -36,6 +51,11 @@ export function ReceivingFlow() {
   const [supplierName, setSupplierName] = useState("")
   const [supplierAutoMatched, setSupplierAutoMatched] = useState(false)
 
+  // PO
+  const [purchaseOrderId, setPurchaseOrderId] = useState<string | null>(null)
+  const [matchedPO, setMatchedPO] = useState<MatchedPO | null>(null)
+  const [showPOStep, setShowPOStep] = useState(false)
+
   // Per-card edit overrides (keyed by rawText)
   const [editOverrides, setEditOverrides] = useState<Record<string, { quantity: number; unitCost: number }>>({})
 
@@ -43,12 +63,15 @@ export function ReceivingFlow() {
   const [notes, setNotes] = useState("")
 
   const supplierMatch = useSupplierMatch()
+  const poMatch = usePoMatch()
   const createReceipt = useCreateReceipt()
 
   const handleParseComplete = useCallback(
     async (result: ParseResult | ReceivingParseResult) => {
       setPendingMatches(result.items)
       setConfirmedItems([])
+
+      let matchedSupplierId = ""
 
       // Auto-match supplier if extracted from image
       if ("supplier" in result && result.supplier) {
@@ -58,16 +81,62 @@ export function ReceivingFlow() {
             setSupplierId(matched.id)
             setSupplierName(matched.name)
             setSupplierAutoMatched(true)
+            matchedSupplierId = matched.id
           }
         } catch {
           // Supplier match failed — user will pick manually
         }
       }
 
-      setPhase("REVIEW")
+      // Auto-match PO if extracted from image
+      if ("poNumber" in result && result.poNumber) {
+        try {
+          const po = await poMatch.mutateAsync({
+            poNumber: result.poNumber,
+            vendorName: "supplier" in result ? result.supplier : undefined,
+          })
+          setMatchedPO(po)
+          setShowPOStep(true)
+
+          // If PO matched and has a supplier, use that supplier
+          if (po && !matchedSupplierId) {
+            setSupplierId(po.supplierId)
+            setSupplierName(po.supplierName)
+            setSupplierAutoMatched(true)
+          }
+
+          setPhase("PO_MATCH")
+          return
+        } catch {
+          // PO match failed — still show PO step for manual search
+        }
+      }
+
+      // No PO number found — still offer PO search
+      setShowPOStep(true)
+      setPhase("PO_MATCH")
     },
-    [supplierMatch]
+    [supplierMatch, poMatch]
   )
+
+  function handlePOConfirm(po: MatchedPO) {
+    setPurchaseOrderId(po.id)
+    setMatchedPO(po)
+
+    // Also set supplier from PO if not already set
+    if (!supplierId) {
+      setSupplierId(po.supplierId)
+      setSupplierName(po.supplierName)
+      setSupplierAutoMatched(true)
+    }
+
+    setPhase("REVIEW")
+  }
+
+  function handlePOSkip() {
+    setPurchaseOrderId(null)
+    setPhase("REVIEW")
+  }
 
   function handleSupplierSelect(supplier: { id: string; name: string }) {
     setSupplierId(supplier.id)
@@ -144,6 +213,7 @@ export function ReceivingFlow() {
     try {
       await createReceipt.mutateAsync({
         supplierId,
+        purchaseOrderId: purchaseOrderId || null,
         notes: receiptNotes || null,
         items: catalogItems.map((i) => ({
           productId: i.productId!,
@@ -157,13 +227,7 @@ export function ReceivingFlow() {
       )
 
       // Reset everything
-      setPhase("INPUT")
-      setPendingMatches([])
-      setConfirmedItems([])
-      setSupplierId("")
-      setSupplierName("")
-      setSupplierAutoMatched(false)
-      setNotes("")
+      handleReset()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to log receipt")
     }
@@ -177,14 +241,20 @@ export function ReceivingFlow() {
     setSupplierId("")
     setSupplierName("")
     setSupplierAutoMatched(false)
+    setPurchaseOrderId(null)
+    setMatchedPO(null)
+    setShowPOStep(false)
     setNotes("")
   }
+
+  const steps = getSteps(showPOStep)
+  const currentStep = getStepIndex(phase, showPOStep)
 
   // Phase 1: INPUT
   if (phase === "INPUT") {
     return (
       <div className="space-y-4">
-        <StepProgress steps={RECEIVING_STEPS} currentStep={PHASE_INDEX[phase]} />
+        <StepProgress steps={steps} currentStep={currentStep} />
         {/* Hero prompt */}
         <div className="text-center py-6">
           <button
@@ -209,11 +279,51 @@ export function ReceivingFlow() {
     )
   }
 
-  // Phase 2: REVIEW
+  // Phase 2: PO MATCH
+  if (phase === "PO_MATCH") {
+    return (
+      <div className="space-y-4">
+        <StepProgress steps={steps} currentStep={currentStep} />
+
+        <POMatchCard
+          matchedPO={matchedPO}
+          supplierId={supplierId || undefined}
+          onConfirm={handlePOConfirm}
+          onSkip={handlePOSkip}
+        />
+
+        {/* Start over */}
+        <button
+          onClick={handleReset}
+          className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-2"
+        >
+          Start over
+        </button>
+      </div>
+    )
+  }
+
+  // Phase 3: REVIEW
   if (phase === "REVIEW") {
     return (
       <div className="space-y-4">
-        <StepProgress steps={RECEIVING_STEPS} currentStep={PHASE_INDEX[phase]} />
+        <StepProgress steps={steps} currentStep={currentStep} />
+
+        {/* PO badge (if matched) */}
+        {purchaseOrderId && matchedPO && (
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-brand-blue/5 border border-brand-blue/10">
+            <span className="text-xs font-semibold text-brand-blue">
+              PO #{matchedPO.poNumber} — {matchedPO.supplierName}
+            </span>
+            <button
+              onClick={() => setPhase("PO_MATCH")}
+              className="text-[10px] text-text-muted hover:text-navy font-medium"
+            >
+              Change
+            </button>
+          </div>
+        )}
+
         {/* Supplier section */}
         <Card className="p-4 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
@@ -300,10 +410,10 @@ export function ReceivingFlow() {
     )
   }
 
-  // Phase 3: SUMMARY
+  // Phase 4: SUMMARY
   return (
     <div className="space-y-4">
-      <StepProgress steps={RECEIVING_STEPS} currentStep={PHASE_INDEX[phase]} />
+      <StepProgress steps={steps} currentStep={currentStep} />
       <ReceiptSummary
         supplier={{ id: supplierId, name: supplierName }}
         items={confirmedItems}

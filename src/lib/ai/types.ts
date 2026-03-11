@@ -81,6 +81,18 @@ export interface ConfirmedBomItem {
   catalogMatch: CatalogMatch
 }
 
+export interface MatchedPO {
+  id: string
+  poNumber: string
+  supplierName: string
+  supplierId: string
+  amount: number | null
+  jobName: string | null
+  clientName: string | null
+  createdAt: string
+  confidence: number // 0-1
+}
+
 export interface ConfirmedReceivingItem {
   productId: string | null
   productName: string

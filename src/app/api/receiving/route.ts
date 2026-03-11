@@ -6,6 +6,7 @@ import { z } from "zod"
 
 const createReceiptSchema = z.object({
   supplierId: z.string().uuid(),
+  purchaseOrderId: z.string().uuid().optional().nullable(),
   notes: z.string().optional().nullable(),
   items: z
     .array(
@@ -30,9 +31,18 @@ export async function POST(request: NextRequest) {
       const receipt = await tx.receipt.create({
         data: {
           supplierId: data.supplierId,
+          purchaseOrderId: data.purchaseOrderId || null,
           notes: data.notes || null,
         },
       })
+
+      // Update PO status if linked
+      if (data.purchaseOrderId) {
+        await tx.purchaseOrder.update({
+          where: { id: data.purchaseOrderId },
+          data: { status: "PARTIALLY_RECEIVED" },
+        })
+      }
 
       for (const item of data.items) {
         await adjustStock({
