@@ -34,7 +34,7 @@ export default function DashboardPage() {
                 priority
               />
             </div>
-            <h1 className="text-white text-lg font-bold tracking-tight">Inventory Dashboard</h1>
+            <h1 className="text-white text-xl font-bold tracking-tight">Inventory Dashboard</h1>
           </div>
           {/* Menu button — opens additional options */}
           <div className="relative">
