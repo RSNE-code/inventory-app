@@ -1,9 +1,8 @@
 import { generateText } from "ai"
-import { anthropic } from "@ai-sdk/anthropic"
 import type { DoorSpecs, GapQuestion } from "@/lib/door-specs"
 import { findSpecGaps, getDefaultSpecs, getStandardHardware } from "@/lib/door-specs"
 
-const MODEL = "claude-opus-4-6"
+const MODEL = "anthropic/claude-opus-4.6"
 
 const DOOR_SPEC_SCHEMA = `{
   "doorCategory": "HINGED_COOLER | HINGED_FREEZER | SLIDING | null",
@@ -131,7 +130,7 @@ export interface DoorSpecParseResult {
 
 export async function parseDoorSpecs(text: string): Promise<DoorSpecParseResult> {
   const { text: response } = await generateText({
-    model: anthropic(MODEL),
+    model: MODEL,
     system: SYSTEM_PROMPT,
     prompt: `Parse the following door specification description into structured fields. Return JSON matching this schema:\n${DOOR_SPEC_SCHEMA}\n\nInput: "${text}"`,
   })

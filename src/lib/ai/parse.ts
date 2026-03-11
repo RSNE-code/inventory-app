@@ -1,8 +1,7 @@
 import { generateText } from "ai"
-import { anthropic } from "@ai-sdk/anthropic"
 import type { ParsedLineItem } from "./types"
 
-const MODEL = "claude-opus-4-6"
+const MODEL = "anthropic/claude-opus-4.6"
 
 const JSON_SCHEMA = `{
   "items": [
@@ -70,7 +69,7 @@ function extractJSON(text: string): unknown {
 
 export async function parseTextInput(text: string): Promise<ParsedLineItem[]> {
   const { text: response } = await generateText({
-    model: anthropic(MODEL),
+    model: MODEL,
     system: SYSTEM_PROMPT,
     prompt: `Parse the following into structured material line items. Return JSON matching this schema:\n${JSON_SCHEMA}\n\nInput: "${text}"`,
   })
@@ -92,7 +91,7 @@ export async function parseImageInput(
   deliveryDate?: string
 }> {
   const { text: response } = await generateText({
-    model: anthropic(MODEL),
+    model: MODEL,
     system: SYSTEM_PROMPT,
     messages: [
       {
