@@ -47,12 +47,51 @@ export function BomAIFlow() {
   const [notes, setNotes] = useState("")
   const [pendingMatches, setPendingMatches] = useState<CatalogMatch[]>([])
   const [confirmedItems, setConfirmedItems] = useState<ConfirmedBomItem[]>([])
+  const [qtyOverrides, setQtyOverrides] = useState<Record<string, number>>({})
 
   const handleParseComplete = useCallback(
     (result: ParseResult | ReceivingParseResult) => {
-      setPendingMatches((prev) => [...prev, ...result.items])
+      setPendingMatches((prev) => {
+        const merged = [...prev]
+        for (const newMatch of result.items) {
+          const newProductId = newMatch.matchedProduct?.id
+          // Check for duplicate by product ID in pending matches
+          const pendingIdx = newProductId
+            ? merged.findIndex((m) => m.matchedProduct?.id === newProductId)
+            : -1
+          if (pendingIdx >= 0) {
+            // Sum quantities into existing pending match
+            const existing = merged[pendingIdx]
+            merged[pendingIdx] = {
+              ...existing,
+              parsedItem: {
+                ...existing.parsedItem,
+                quantity: existing.parsedItem.quantity + newMatch.parsedItem.quantity,
+              },
+            }
+            continue
+          }
+          // Check for duplicate by product ID in confirmed items
+          if (newProductId) {
+            const confirmedIdx = confirmedItems.findIndex((c) => c.productId === newProductId)
+            if (confirmedIdx >= 0) {
+              // Sum into confirmed item
+              setConfirmedItems((prevConfirmed) =>
+                prevConfirmed.map((c, i) =>
+                  i === confirmedIdx
+                    ? { ...c, qtyNeeded: c.qtyNeeded + newMatch.parsedItem.quantity }
+                    : c
+                )
+              )
+              continue
+            }
+          }
+          merged.push(newMatch)
+        }
+        return merged
+      })
     },
-    []
+    [confirmedItems]
   )
 
   function handleAcceptItem(item: ConfirmedBomItem) {
@@ -68,16 +107,21 @@ export function BomAIFlow() {
     )
   }
 
+  function handleQtyOverride(rawText: string, qty: number) {
+    setQtyOverrides((prev) => ({ ...prev, [rawText]: qty }))
+  }
+
   function handleConfirmAll() {
     const newConfirmed: ConfirmedBomItem[] = pendingMatches.map((match) => {
       const product = match.matchedProduct
+      const qty = qtyOverrides[match.parsedItem.rawText] ?? match.parsedItem.quantity
       return {
         productId: product?.id ?? null,
         productName: product?.name ?? match.parsedItem.name,
         sku: product?.sku ?? null,
         unitOfMeasure: product?.unitOfMeasure ?? match.parsedItem.unitOfMeasure,
         tier: product?.tier === "TIER_1" ? "TIER_1" as const : "TIER_2" as const,
-        qtyNeeded: match.parsedItem.quantity,
+        qtyNeeded: qty,
         isNonCatalog: match.isNonCatalog,
         nonCatalogName: match.isNonCatalog ? match.parsedItem.name : null,
         nonCatalogCategory: match.isNonCatalog ? (match.parsedItem.category ?? null) : null,
@@ -95,6 +139,7 @@ export function BomAIFlow() {
 
     setConfirmedItems((prev) => [...prev, ...newConfirmed])
     setPendingMatches([])
+    setQtyOverrides({})
   }
 
   function handleRemoveConfirmed(index: number) {
@@ -183,6 +228,7 @@ export function BomAIFlow() {
             onAccept={handleAcceptItem}
             onReject={handleRejectItem}
             onConfirmAll={handleConfirmAll}
+            onQtyChange={handleQtyOverride}
           />
         </Card>
       )}

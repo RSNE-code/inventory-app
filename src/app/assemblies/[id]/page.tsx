@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useEffect } from "react"
 import { useAssembly, useUpdateAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
@@ -66,10 +66,14 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   const [approvalNotes, setApprovalNotes] = useState("")
 
   // Door sheet view toggle
-  const isShopRole = me && SHOP_ROLES.includes(me.role)
-  const [sheetView, setSheetView] = useState<"spec" | "manufacturing">(
-    isShopRole ? "manufacturing" : "spec"
-  )
+  const [sheetView, setSheetView] = useState<"spec" | "manufacturing">("spec")
+
+  useEffect(() => {
+    if (me) {
+      const isShop = SHOP_ROLES.includes(me.role)
+      if (isShop) setSheetView("manufacturing")
+    }
+  }, [me])
 
   const assembly = data?.data
 
@@ -145,6 +149,11 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   }
 
   async function handleStartBuild() {
+    const confirmed = window.confirm(
+      "Are you sure? This will deduct materials from inventory."
+    )
+    if (!confirmed) return
+
     try {
       await updateAssembly.mutateAsync({ id, status: "IN_PRODUCTION" })
       toast.success("Build started — materials deducted from inventory")

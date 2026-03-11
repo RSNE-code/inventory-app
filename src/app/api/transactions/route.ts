@@ -18,9 +18,17 @@ export async function GET(request: NextRequest) {
 
     const where: Prisma.TransactionWhereInput = {}
 
+    const VALID_TRANSACTION_TYPES = [
+      "RECEIVE", "CHECKOUT", "ADDITIONAL_PICKUP", "RETURN_FULL",
+      "RETURN_PARTIAL", "RETURN_SCRAP", "CONSUME", "PRODUCE",
+      "SHIP", "ADJUST_UP", "ADJUST_DOWN",
+    ]
+
     if (productId) where.productId = productId
     if (jobName) where.jobName = { contains: jobName, mode: "insensitive" }
-    if (type) where.type = type as Prisma.EnumTransactionTypeFilter
+    if (type && VALID_TRANSACTION_TYPES.includes(type)) {
+      where.type = type as Prisma.EnumTransactionTypeFilter
+    }
     if (from || to) {
       where.createdAt = {}
       if (from) where.createdAt.gte = new Date(from)

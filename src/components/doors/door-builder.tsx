@@ -18,6 +18,7 @@ type BuilderStep =
   | "SWING_HEIGHT"
   | "SWING_JAMB"
   | "SWING_FRAME"
+  | "SWING_FRAME_CUSTOM"
   | "SWING_CUTOUTS"
   | "SWING_CUTOUT_DETAIL"
   | "SWING_SILL"
@@ -27,12 +28,14 @@ type BuilderStep =
   | "SWING_HINGE"
   | "SWING_HARDWARE"
   | "SWING_HARDWARE_CUSTOM"
+  | "SWING_FINISH"
   | "SWING_EXTRAS"
   // Slider branch
   | "SLIDER_TEMP"
   | "SLIDER_SIDE"
   | "SLIDER_WIDTH"
   | "SLIDER_HEIGHT"
+  | "SLIDER_FINISH"
   // Done
   | "DONE"
 
@@ -43,10 +46,10 @@ interface DoorBuilderProps {
 
 const STEP_GROUPS: Record<string, number> = {
   TYPE: 0,
-  SWING_WIDTH: 1, SWING_HEIGHT: 1, SWING_JAMB: 1, SWING_FRAME: 1,
+  SWING_WIDTH: 1, SWING_HEIGHT: 1, SWING_JAMB: 1, SWING_FRAME: 1, SWING_FRAME_CUSTOM: 1,
   SWING_CUTOUTS: 1, SWING_CUTOUT_DETAIL: 1, SWING_SILL: 1, SWING_SILL_HEIGHT: 1,
-  SWING_TEMP: 2, SWING_HINGE: 2, SWING_HARDWARE: 2, SWING_HARDWARE_CUSTOM: 2, SWING_EXTRAS: 2,
-  SLIDER_TEMP: 1, SLIDER_SIDE: 1, SLIDER_WIDTH: 1, SLIDER_HEIGHT: 1,
+  SWING_TEMP: 2, SWING_HINGE: 2, SWING_HARDWARE: 2, SWING_HARDWARE_CUSTOM: 2, SWING_FINISH: 2, SWING_EXTRAS: 2,
+  SLIDER_TEMP: 1, SLIDER_SIDE: 1, SLIDER_WIDTH: 1, SLIDER_HEIGHT: 1, SLIDER_FINISH: 1,
   DONE: 3,
 }
 
@@ -65,10 +68,10 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
   // Temp state for dimension inputs
   const [inputValue, setInputValue] = useState("")
   const [cutouts, setCutouts] = useState<Cutout[]>([])
-  const [cutoutCount, setCutoutCount] = useState(0)
   const [customHinge, setCustomHinge] = useState("")
   const [customLatch, setCustomLatch] = useState("")
   const [customCloser, setCustomCloser] = useState("")
+  const [customFinish, setCustomFinish] = useState("")
   const [frameLHS, setFrameLHS] = useState("")
   const [frameRHS, setFrameRHS] = useState("")
   const [frameTop, setFrameTop] = useState("")
@@ -242,14 +245,14 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 setFrameRHS("")
                 setFrameTop("")
                 // Show custom frame inputs inline
-                goTo("SWING_FRAME_CUSTOM" as BuilderStep)
+                goTo("SWING_FRAME_CUSTOM")
               }}
             />
           </div>
         </InterviewStep>
       )}
 
-      {step === ("SWING_FRAME_CUSTOM" as BuilderStep) && (
+      {step === "SWING_FRAME_CUSTOM" && (
         <InterviewStep
           question="Custom Frame Dimensions"
           description="Enter the LHS, RHS, and Top jamb dimensions"
@@ -327,7 +330,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               label="Yes — Add Cutouts"
               onClick={() => {
                 setCutouts([{ floorToBottom: "", floorToTop: "", frameWidth: "" }])
-                setCutoutCount(1)
                 goTo("SWING_CUTOUT_DETAIL")
               }}
             />
@@ -559,7 +561,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                   closerModel: hw.closerModel,
                   gasketType: hw.gasketType || "MAGNETIC",
                 })
-                goTo("SWING_EXTRAS")
+                goTo("SWING_FINISH")
               }}
             />
             <ChoiceButton
@@ -619,12 +621,74 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                   latchModel: customLatch.trim() || undefined,
                   closerModel: customCloser.trim() || undefined,
                 })
-                goTo("SWING_EXTRAS")
+                goTo("SWING_FINISH")
               }}
               className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl"
             >
               Next
             </Button>
+          </div>
+        </InterviewStep>
+      )}
+
+      {step === "SWING_FINISH" && (
+        <InterviewStep
+          question="Door Finish?"
+          description="Select the skin / finish for this door"
+          onBack={goBack}
+        >
+          <div className="space-y-3">
+            <ChoiceButton
+              label="WPG (White Painted Galv)"
+              onClick={() => {
+                updateSpecs({ finish: "WPG" })
+                goTo("SWING_EXTRAS")
+              }}
+            />
+            <ChoiceButton
+              label="White/White"
+              onClick={() => {
+                updateSpecs({ finish: "White/White" })
+                goTo("SWING_EXTRAS")
+              }}
+            />
+            <ChoiceButton
+              label="Stainless Steel"
+              onClick={() => {
+                updateSpecs({ finish: "Stainless Steel" })
+                goTo("SWING_EXTRAS")
+              }}
+            />
+            <ChoiceButton
+              label="Galvalume"
+              onClick={() => {
+                updateSpecs({ finish: "Galvalume" })
+                goTo("SWING_EXTRAS")
+              }}
+            />
+            <div className="pt-1">
+              <label className="text-sm text-gray-500 mb-1 block">Other (custom)</label>
+              <div className="flex gap-2">
+                <Input
+                  value={customFinish}
+                  onChange={(e) => setCustomFinish(e.target.value)}
+                  placeholder="e.g. Brushed Aluminum"
+                  className="h-12 text-center flex-1"
+                />
+                <Button
+                  onClick={() => {
+                    if (customFinish.trim()) {
+                      updateSpecs({ finish: customFinish.trim() })
+                      goTo("SWING_EXTRAS")
+                    }
+                  }}
+                  disabled={!customFinish.trim()}
+                  className="h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl px-6"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
         </InterviewStep>
       )}
@@ -736,15 +800,63 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={() => {
-              const finalSpecs = {
+              updateSpecs({
                 heightInClear: inputValue.trim(),
-                // Sliders don't have jamb depth, hinges, closers, or frame type
-                gasketType: specs.temperatureType === "FREEZER" ? "NEOPRENE" as const : "NEOPRENE" as const,
-              }
-              finalize(finalSpecs)
+                gasketType: "NEOPRENE",
+              })
+              goTo("SLIDER_FINISH")
             }}
             placeholder='e.g. 84"'
           />
+        </InterviewStep>
+      )}
+
+      {step === "SLIDER_FINISH" && (
+        <InterviewStep
+          question="Door Finish?"
+          description="Select the skin / finish for this door"
+          onBack={goBack}
+        >
+          <div className="space-y-3">
+            <ChoiceButton
+              label="WPG (White Painted Galv)"
+              onClick={() => finalize({ finish: "WPG" })}
+            />
+            <ChoiceButton
+              label="White/White"
+              onClick={() => finalize({ finish: "White/White" })}
+            />
+            <ChoiceButton
+              label="Stainless Steel"
+              onClick={() => finalize({ finish: "Stainless Steel" })}
+            />
+            <ChoiceButton
+              label="Galvalume"
+              onClick={() => finalize({ finish: "Galvalume" })}
+            />
+            <div className="pt-1">
+              <label className="text-sm text-gray-500 mb-1 block">Other (custom)</label>
+              <div className="flex gap-2">
+                <Input
+                  value={customFinish}
+                  onChange={(e) => setCustomFinish(e.target.value)}
+                  placeholder="e.g. Brushed Aluminum"
+                  className="h-12 text-center flex-1"
+                />
+                <Button
+                  onClick={() => {
+                    if (customFinish.trim()) {
+                      finalize({ finish: customFinish.trim() })
+                    }
+                  }}
+                  disabled={!customFinish.trim()}
+                  className="h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl px-6"
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </div>
         </InterviewStep>
       )}
     </div>

@@ -35,6 +35,9 @@ export function ReceivingFlow() {
   const [supplierName, setSupplierName] = useState("")
   const [supplierAutoMatched, setSupplierAutoMatched] = useState(false)
 
+  // Per-card edit overrides (keyed by rawText)
+  const [editOverrides, setEditOverrides] = useState<Record<string, { quantity: number; unitCost: number }>>({})
+
   // Notes
   const [notes, setNotes] = useState("")
 
@@ -84,22 +87,30 @@ export function ReceivingFlow() {
     )
   }
 
+  function handleEditChange(rawText: string, edits: { quantity: number; unitCost: number }) {
+    setEditOverrides((prev) => ({ ...prev, [rawText]: edits }))
+  }
+
   function handleConfirmAll() {
-    const newConfirmed: ConfirmedReceivingItem[] = pendingMatches.map((match) => ({
-      productId: match.matchedProduct?.id ?? null,
-      productName: match.matchedProduct?.name ?? match.parsedItem.name,
-      quantity: match.parsedItem.quantity,
-      unitCost:
-        match.parsedItem.estimatedCost
+    const newConfirmed: ConfirmedReceivingItem[] = pendingMatches.map((match) => {
+      const override = editOverrides[match.parsedItem.rawText]
+      const defaultCost = match.parsedItem.estimatedCost
         ?? match.matchedProduct?.lastCost
-        ?? 0,
-      unitOfMeasure: match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure,
-      isNonCatalog: match.isNonCatalog,
-      catalogMatch: match,
-    }))
+        ?? 0
+      return {
+        productId: match.matchedProduct?.id ?? null,
+        productName: match.matchedProduct?.name ?? match.parsedItem.name,
+        quantity: override?.quantity ?? match.parsedItem.quantity,
+        unitCost: override?.unitCost ?? defaultCost,
+        unitOfMeasure: match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure,
+        isNonCatalog: match.isNonCatalog,
+        catalogMatch: match,
+      }
+    })
 
     setConfirmedItems((prev) => [...prev, ...newConfirmed])
     setPendingMatches([])
+    setEditOverrides({})
   }
 
   function handleContinueToSummary() {
@@ -161,6 +172,7 @@ export function ReceivingFlow() {
     setPhase("INPUT")
     setPendingMatches([])
     setConfirmedItems([])
+    setEditOverrides({})
     setSupplierId("")
     setSupplierName("")
     setSupplierAutoMatched(false)
@@ -218,6 +230,7 @@ export function ReceivingFlow() {
               onAccept={handleAcceptItem}
               onReject={handleRejectItem}
               onConfirmAll={handleConfirmAll}
+              onEditChange={handleEditChange}
             />
           </Card>
         )}

@@ -2,6 +2,8 @@ import { prisma } from "./db"
 import { calculateWAC } from "./cost"
 import { TransactionType, InventoryTier, Prisma } from "@prisma/client"
 
+type PrismaTransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+
 interface StockOperationInput {
   productId: string
   quantity: number
@@ -15,6 +17,7 @@ interface StockOperationInput {
   bomLineItemId?: string
   receiptId?: string
   assemblyId?: string
+  tx?: PrismaTransactionClient
 }
 
 const STOCK_INCREASING_TYPES: TransactionType[] = [
@@ -37,8 +40,7 @@ const NO_STOCK_IMPACT_TYPES: TransactionType[] = [
   "RETURN_SCRAP",
 ]
 
-export async function adjustStock(input: StockOperationInput) {
-  return prisma.$transaction(async (tx) => {
+async function adjustStockInner(input: StockOperationInput, tx: PrismaTransactionClient) {
     const product = await tx.product.findUniqueOrThrow({
       where: { id: input.productId },
     })
@@ -115,5 +117,13 @@ export async function adjustStock(input: StockOperationInput) {
     }
 
     return transaction
+}
+
+export async function adjustStock(input: StockOperationInput) {
+  if (input.tx) {
+    return adjustStockInner(input, input.tx)
+  }
+  return prisma.$transaction(async (tx) => {
+    return adjustStockInner(input, tx)
   })
 }

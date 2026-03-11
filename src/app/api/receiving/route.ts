@@ -15,7 +15,7 @@ const createReceiptSchema = z.object({
         unitCost: z.number().min(0),
       })
     )
-    .min(1),
+    .min(0),
 })
 
 export async function POST(request: NextRequest) {
@@ -26,32 +26,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = createReceiptSchema.parse(body)
 
-    const receipt = await prisma.receipt.create({
-      data: {
-        supplierId: data.supplierId,
-        notes: data.notes || null,
-      },
-    })
-
-    for (const item of data.items) {
-      await adjustStock({
-        productId: item.productId,
-        quantity: item.quantity,
-        type: "RECEIVE",
-        userId: user.id,
-        unitCost: item.unitCost,
-        receiptId: receipt.id,
-      })
-    }
-
-    const fullReceipt = await prisma.receipt.findUnique({
-      where: { id: receipt.id },
-      include: {
-        supplier: { select: { name: true } },
-        transactions: {
-          include: { product: { select: { name: true } } },
+    const fullReceipt = await prisma.$transaction(async (tx) => {
+      const receipt = await tx.receipt.create({
+        data: {
+          supplierId: data.supplierId,
+          notes: data.notes || null,
         },
-      },
+      })
+
+      for (const item of data.items) {
+        await adjustStock({
+          productId: item.productId,
+          quantity: item.quantity,
+          type: "RECEIVE",
+          userId: user.id,
+          unitCost: item.unitCost,
+          receiptId: receipt.id,
+          tx,
+        })
+      }
+
+      return tx.receipt.findUnique({
+        where: { id: receipt.id },
+        include: {
+          supplier: { select: { name: true } },
+          transactions: {
+            include: { product: { select: { name: true } } },
+          },
+        },
+      })
     })
 
     return NextResponse.json({ data: fullReceipt }, { status: 201 })

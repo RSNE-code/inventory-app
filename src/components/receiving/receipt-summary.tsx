@@ -110,13 +110,13 @@ export function ReceiptSummary({
       {/* Confirm */}
       <Button
         onClick={onConfirm}
-        disabled={isSubmitting || catalogItems.length === 0}
+        disabled={isSubmitting || items.length === 0}
         className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
       >
         <PackageCheck className="h-5 w-5 mr-2" />
         {isSubmitting
           ? "Processing..."
-          : `Confirm Receipt (${catalogItems.length} item${catalogItems.length !== 1 ? "s" : ""})`}
+          : `Confirm Receipt (${items.length} item${items.length !== 1 ? "s" : ""})`}
       </Button>
     </div>
   )

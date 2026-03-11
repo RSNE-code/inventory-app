@@ -76,18 +76,10 @@ export function ProductForm({ product }: ProductFormProps) {
 
   useEffect(() => {
     async function fetchCategories() {
-      const res = await fetch("/api/inventory?limit=500")
+      const res = await fetch("/api/categories")
+      if (!res.ok) return
       const json = await res.json()
-      const cats: Category[] = []
-      const seen = new Set<string>()
-      for (const p of json.data || []) {
-        if (p.category && !seen.has(p.category.id)) {
-          seen.add(p.category.id)
-          cats.push({ id: p.category.id, name: p.category.name })
-        }
-      }
-      cats.sort((a, b) => a.name.localeCompare(b.name))
-      setCategories(cats)
+      setCategories(json.data || [])
     }
     fetchCategories()
   }, [])

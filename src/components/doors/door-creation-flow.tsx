@@ -99,6 +99,7 @@ export function DoorCreationFlow() {
       doorCategory,
       temperatureType: isFreezer ? "FREEZER" : "COOLER",
       openingType: isSlider ? "SLIDE" : "HINGE",
+      ...(!isSlider ? { frameType: "FULL_FRAME" as const } : {}),
       isExterior: isExterior || undefined,
       ...(widthInClear ? { widthInClear } : {}),
       ...(sizeMatch ? { heightInClear: `${parseInt(sizeMatch[2], 10) * 12}` } : {}),

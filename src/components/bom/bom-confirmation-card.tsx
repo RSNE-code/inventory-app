@@ -35,15 +35,22 @@ interface BomConfirmationCardProps {
   match: CatalogMatch
   onAccept: (item: ConfirmedBomItem) => void
   onReject: (match: CatalogMatch) => void
+  onQtyChange?: (rawText: string, qty: number) => void
 }
 
 export function BomConfirmationCard({
   match,
   onAccept,
   onReject,
+  onQtyChange,
 }: BomConfirmationCardProps) {
   const [showAlternatives, setShowAlternatives] = useState(false)
   const [quantity, setQuantity] = useState(match.parsedItem.quantity)
+
+  function handleQtyChange(val: number) {
+    setQuantity(val)
+    onQtyChange?.(match.parsedItem.rawText, val)
+  }
 
   const stockLevel = getStockLevel(match, quantity)
   const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog
@@ -199,7 +206,7 @@ export function BomConfirmationCard({
             min={0}
             step="any"
             value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value) || 0)}
+            onChange={(e) => handleQtyChange(Number(e.target.value) || 0)}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -251,6 +258,7 @@ interface BomConfirmationListProps {
   onAccept: (item: ConfirmedBomItem) => void
   onReject: (match: CatalogMatch) => void
   onConfirmAll: () => void
+  onQtyChange?: (rawText: string, qty: number) => void
 }
 
 export function BomConfirmationList({
@@ -258,6 +266,7 @@ export function BomConfirmationList({
   onAccept,
   onReject,
   onConfirmAll,
+  onQtyChange,
 }: BomConfirmationListProps) {
   if (matches.length === 0) return null
 
@@ -285,6 +294,7 @@ export function BomConfirmationList({
           match={match}
           onAccept={onAccept}
           onReject={onReject}
+          onQtyChange={onQtyChange}
         />
       ))}
     </div>

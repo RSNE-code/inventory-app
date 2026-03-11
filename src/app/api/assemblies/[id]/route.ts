@@ -113,6 +113,13 @@ export async function PATCH(
 
     // Handle status transitions
     if (data.status) {
+      // Role checks for production status transitions
+      if (data.status === "IN_PRODUCTION" || data.status === "COMPLETED") {
+        requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "SHOP_FOREMAN", "DOOR_SHOP"])
+      } else if (data.status === "SHIPPED") {
+        requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER"])
+      }
+
       updateData.status = data.status
 
       if (data.status === "IN_PRODUCTION") {
@@ -199,7 +206,7 @@ export async function PATCH(
     return NextResponse.json({ data: updated })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 400 })
     }
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })

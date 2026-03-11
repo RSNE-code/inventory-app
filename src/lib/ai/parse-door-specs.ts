@@ -165,7 +165,7 @@ export async function parseDoorSpecs(text: string): Promise<DoorSpecParseResult>
     const hw = getStandardHardware(
       specs.doorCategory,
       specs.widthInClear,
-      specs.specialNotes?.toLowerCase().includes("exterior"),
+      specs.isExterior || specs.specialNotes?.toLowerCase().includes("exterior"),
     )
     if (hw.hingeMfrName && !specs.hingeMfrName) specs.hingeMfrName = hw.hingeMfrName
     if (hw.hingeModel && !specs.hingeModel) specs.hingeModel = hw.hingeModel

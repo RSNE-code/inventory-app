@@ -84,10 +84,10 @@ export function SliderDoorDiagram({
             y2={openingY + openingH / 2}
             stroke="#2563eb"
             strokeWidth={2}
-            markerEnd="url(#arrowhead)"
+            markerEnd="url(#slider-arrowhead)"
           />
           <defs>
-            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <marker id="slider-arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
               <polygon points="0 0, 8 3, 0 6" fill="#2563eb" />
             </marker>
           </defs>

@@ -129,7 +129,31 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         })),
       ]
 
-      await updateBom.mutateAsync({ id, addLineItems })
+      const result = await updateBom.mutateAsync({ id, addLineItems })
+
+      // Populate checkoutQtys for newly added items so they can be checked out immediately
+      const updatedBom = result?.data
+      if (updatedBom?.lineItems) {
+        const updatedItems = updatedBom.lineItems as Record<string, unknown>[]
+        const newCheckoutQtys: Record<string, number> = { ...checkoutQtys }
+
+        for (const catalogItem of catalogItems) {
+          const matchingLine = updatedItems.find((li) => {
+            const prod = li.product as Record<string, unknown> | null
+            return prod && prod.id === catalogItem.matchedProduct!.id
+          })
+          if (matchingLine) {
+            const lineId = matchingLine.id as string
+            const alreadyCheckedOut = Number(matchingLine.qtyCheckedOut || 0)
+            const remaining = catalogItem.parsedItem.quantity
+            if (remaining > 0) {
+              newCheckoutQtys[lineId] = remaining
+            }
+          }
+        }
+        setCheckoutQtys(newCheckoutQtys)
+      }
+
       toast.success(`Added ${addLineItems.length} item${addLineItems.length !== 1 ? "s" : ""} to BOM`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add items")

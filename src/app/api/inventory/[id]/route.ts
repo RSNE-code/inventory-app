@@ -78,7 +78,7 @@ export async function PUT(
     return NextResponse.json({ data: product })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 400 })
     }
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })

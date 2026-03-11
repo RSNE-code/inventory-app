@@ -317,9 +317,26 @@ export interface HardwareDefaults {
  */
 function parseWidthInches(w: string): number {
   const s = w.replace(/["\s]/g, "").toLowerCase()
+
+  // Feet-inches pattern: 3'-6, 3'6, 3'-6" → 3*12 + 6 = 42
+  const feetInchesMatch = s.match(/^(\d+)'[-]?(\d+)$/)
+  if (feetInchesMatch) {
+    return parseInt(feetInchesMatch[1], 10) * 12 + parseInt(feetInchesMatch[2], 10)
+  }
+
+  // Fraction pattern: 77-1/4 → 77.25
+  const fractionMatch = s.match(/^(\d+)-(\d+)\/(\d+)$/)
+  if (fractionMatch) {
+    const whole = parseInt(fractionMatch[1], 10)
+    const num = parseInt(fractionMatch[2], 10)
+    const den = parseInt(fractionMatch[3], 10)
+    return den !== 0 ? whole + num / den : whole
+  }
+
   // Check for feet notation: 3', 3ft, 4ft
   const ftMatch = s.match(/^(\d+)(?:ft|')$/)
   if (ftMatch) return parseInt(ftMatch[1], 10) * 12
+
   // Plain number — if <= 10 treat as feet, else inches
   const n = parseFloat(s)
   if (isNaN(n)) return 0

@@ -24,7 +24,7 @@ const alertStyles: Record<string, string> = {
 }
 
 export default function DashboardPage() {
-  const { data, isLoading } = useDashboard()
+  const { data, isLoading, error, refetch } = useDashboard()
   const dashboard = data?.data
 
   const greeting = getGreeting()
@@ -167,6 +167,17 @@ export default function DashboardPage() {
               )}
             </div>
           </>
+        ) : error ? (
+          <div className="text-center py-12">
+            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-status-red" />
+            <p className="text-text-muted mb-3">Failed to load dashboard data</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 text-sm font-medium text-white bg-brand-orange hover:bg-brand-orange-hover rounded-lg"
+            >
+              Try again
+            </button>
+          </div>
         ) : (
           <div className="text-center py-12 text-text-muted">No data available</div>
         )}

@@ -65,11 +65,20 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  if (isLoading || !product) {
+  if (isLoading) {
     return (
       <div>
         <Header title="Adjust Stock" showBack />
         <div className="p-4 text-center text-text-muted py-12">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!product) {
+    return (
+      <div>
+        <Header title="Adjust Stock" showBack />
+        <div className="p-4 text-center text-text-muted py-12">Product not found</div>
       </div>
     )
   }
@@ -147,6 +156,16 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
           </Card>
         )}
 
+        {/* Negative stock warning */}
+        {direction === "down" && qty > 0 && newDisplayQty < 0 && (
+          <Card className="p-3 rounded-xl bg-red-50 border border-red-200 text-center">
+            <p className="text-sm text-status-red font-medium">
+              This adjustment would result in negative stock ({formatQuantity(newDisplayQty)} {display.unit}).
+              Reduce the quantity or switch to Add.
+            </p>
+          </Card>
+        )}
+
         {/* Reason */}
         <div className="space-y-2">
           <Label>Reason *</Label>
@@ -190,7 +209,7 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
 
         <Button
           type="submit"
-          disabled={!qty || !finalReason || adjustMutation.isPending}
+          disabled={!qty || !finalReason || adjustMutation.isPending || (direction === "down" && newDisplayQty < 0)}
           className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base mt-4"
         >
           {adjustMutation.isPending ? "Adjusting..." : "Confirm Adjustment"}

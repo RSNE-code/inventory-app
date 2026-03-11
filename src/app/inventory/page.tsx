@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Plus, Package } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { useProducts } from "@/hooks/use-products"
 import { Header } from "@/components/layout/header"
 import { SearchInput } from "@/components/shared/search-input"
@@ -12,26 +13,42 @@ import { EmptyState } from "@/components/shared/empty-state"
 import { Button } from "@/components/ui/button"
 
 export default function InventoryPage() {
+  return (
+    <Suspense fallback={<div><Header title="Inventory" /><div className="text-center py-12 text-text-muted">Loading...</div></div>}>
+      <InventoryContent />
+    </Suspense>
+  )
+}
+
+function InventoryContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("")
+  const [status, setStatus] = useState("")
   const [page, setPage] = useState(1)
 
-  const { data, isLoading } = useProducts({ search, category, page, limit: 50 })
+  // Read URL query params on mount (for dashboard links like ?status=low)
+  useEffect(() => {
+    const urlStatus = searchParams.get("status")
+    if (urlStatus) setStatus(urlStatus)
+  }, [searchParams])
+
+  const { data, isLoading } = useProducts({ search, category, status, page, limit: 50 })
 
   const products = data?.data || []
   const totalPages = data?.totalPages || 1
 
-  // Extract unique categories from products for filter
-  const categories: { id: string; name: string }[] = []
-  const seen = new Set<string>()
-  for (const p of products) {
-    if (p.category && !seen.has(p.category.id)) {
-      seen.add(p.category.id)
-      categories.push({ id: p.category.id, name: p.category.name })
-    }
-  }
-  categories.sort((a, b) => a.name.localeCompare(b.name))
+  // Fetch all categories from dedicated endpoint
+  const { data: categoriesData } = useQuery<{ data: { id: string; name: string }[] }>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await fetch("/api/categories")
+      if (!res.ok) throw new Error("Failed to fetch categories")
+      return res.json()
+    },
+  })
+  const categories = categoriesData?.data || []
 
   return (
     <div>
@@ -44,12 +61,24 @@ export default function InventoryPage() {
           placeholder="Search products or SKUs..."
         />
 
-        {categories.length > 0 && (
-          <CategoryFilter
-            categories={categories}
-            selected={category}
-            onSelect={(id) => { setCategory(id); setPage(1) }}
-          />
+        <CategoryFilter
+          categories={categories}
+          selected={category}
+          onSelect={(id) => { setCategory(id); setPage(1) }}
+        />
+
+        {status && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-text-muted">
+              Showing: {status === "low" ? "Low stock" : status === "out" ? "Out of stock" : status}
+            </span>
+            <button
+              onClick={() => setStatus("")}
+              className="text-xs text-brand-blue hover:underline"
+            >
+              Clear filter
+            </button>
+          </div>
         )}
       </div>
 

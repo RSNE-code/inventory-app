@@ -11,12 +11,14 @@ interface ReceivingConfirmationCardProps {
   match: CatalogMatch
   onAccept: (item: ConfirmedReceivingItem) => void
   onReject: (match: CatalogMatch) => void
+  onEditChange?: (rawText: string, edits: { quantity: number; unitCost: number }) => void
 }
 
 export function ReceivingConfirmationCard({
   match,
   onAccept,
   onReject,
+  onEditChange,
 }: ReceivingConfirmationCardProps) {
   const [showAlternatives, setShowAlternatives] = useState(false)
   const [quantity, setQuantity] = useState(match.parsedItem.quantity)
@@ -24,6 +26,16 @@ export function ReceivingConfirmationCard({
     ?? match.matchedProduct?.lastCost
     ?? 0
   const [unitCost, setUnitCost] = useState(defaultCost)
+
+  function handleQtyChange(val: number) {
+    setQuantity(val)
+    onEditChange?.(match.parsedItem.rawText, { quantity: val, unitCost })
+  }
+
+  function handleCostChange(val: number) {
+    setUnitCost(val)
+    onEditChange?.(match.parsedItem.rawText, { quantity, unitCost: val })
+  }
 
   const confidenceColor =
     match.matchConfidence >= 0.8
@@ -124,7 +136,7 @@ export function ReceivingConfirmationCard({
             min={0}
             step="any"
             value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value) || 0)}
+            onChange={(e) => handleQtyChange(Number(e.target.value) || 0)}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -138,7 +150,7 @@ export function ReceivingConfirmationCard({
             min={0}
             step="0.01"
             value={unitCost}
-            onChange={(e) => setUnitCost(Number(e.target.value) || 0)}
+            onChange={(e) => handleCostChange(Number(e.target.value) || 0)}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -190,6 +202,7 @@ interface ReceivingConfirmationListProps {
   onAccept: (item: ConfirmedReceivingItem) => void
   onReject: (match: CatalogMatch) => void
   onConfirmAll: () => void
+  onEditChange?: (rawText: string, edits: { quantity: number; unitCost: number }) => void
 }
 
 export function ReceivingConfirmationList({
@@ -197,6 +210,7 @@ export function ReceivingConfirmationList({
   onAccept,
   onReject,
   onConfirmAll,
+  onEditChange,
 }: ReceivingConfirmationListProps) {
   if (matches.length === 0) return null
 
@@ -224,6 +238,7 @@ export function ReceivingConfirmationList({
           match={match}
           onAccept={onAccept}
           onReject={onReject}
+          onEditChange={onEditChange}
         />
       ))}
     </div>

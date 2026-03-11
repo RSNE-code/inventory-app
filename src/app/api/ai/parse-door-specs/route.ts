@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: result })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 400 })
     }
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized")

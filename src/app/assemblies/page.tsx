@@ -99,6 +99,30 @@ export default function AssembliesPage() {
           </button>
         </div>
 
+        {/* Status filter */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {([
+            { value: "all", label: "All" },
+            { value: "AWAITING_APPROVAL", label: "Pending" },
+            { value: "APPROVED", label: "Approved" },
+            { value: "IN_PRODUCTION", label: "Building" },
+            { value: "COMPLETED", label: "Done" },
+          ] as const).map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setStatusFilter(tab.value as StatusFilter)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                statusFilter === tab.value
+                  ? "bg-navy text-white"
+                  : "bg-surface-secondary text-text-muted hover:text-navy"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* Create button */}
         <Link href="/assemblies/new">
           <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl">
