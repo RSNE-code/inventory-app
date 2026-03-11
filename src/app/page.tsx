@@ -103,56 +103,40 @@ export default function DashboardPage() {
               <StockSummaryCards summary={dashboard.summary} />
             </div>
 
-            {/* Active BOMs + Fabrication — between cards and alerts */}
-            {(dashboard.activeBomCount > 0 || (dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0))) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up stagger-3">
-                {dashboard.activeBomCount > 0 && (
-                  <Link href="/boms">
-                    <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue/8 group-hover:bg-brand-blue/12 transition-colors">
-                          <ClipboardList className="h-5 w-5 text-brand-blue" />
-                        </div>
-                        <div>
-                          <p className="text-xl font-bold text-navy tabular-nums">{dashboard.activeBomCount}</p>
-                          <p className="text-xs text-text-muted font-medium">Active BOM{dashboard.activeBomCount !== 1 ? "s" : ""}</p>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                )}
+            {/* Active BOMs + Fabrication — same grid as stock cards */}
+            <div className="grid grid-cols-2 gap-4 animate-fade-in-up stagger-3">
+              <Link href="/boms">
+                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8 group-hover:bg-brand-blue/14 transition-colors">
+                      <ClipboardList className="h-[18px] w-[18px] text-brand-blue" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.activeBomCount}</p>
+                      <p className="text-text-muted text-[11px] mt-1 font-medium">Active BOMs</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
 
-                {dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0) && (
-                  <Link href="/assemblies">
-                    <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-orange/8 group-hover:bg-brand-orange/12 transition-colors">
-                          <Factory className="h-5 w-5 text-brand-orange" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-navy">Fabrication</p>
-                          <div className="flex gap-3 text-xs mt-0.5">
-                            {dashboard.fabrication.pendingApprovals > 0 && (
-                              <span className="text-status-yellow font-semibold">{dashboard.fabrication.pendingApprovals} pending</span>
-                            )}
-                            {dashboard.fabrication.inProduction > 0 && (
-                              <span className="text-brand-orange font-semibold">{dashboard.fabrication.inProduction} building</span>
-                            )}
-                            {dashboard.fabrication.completed > 0 && (
-                              <span className="text-status-green font-semibold">{dashboard.fabrication.completed} done</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                )}
-              </div>
-            )}
+              <Link href="/assemblies">
+                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-orange/8 group-hover:bg-brand-orange/14 transition-colors">
+                      <Factory className="h-[18px] w-[18px] text-brand-orange" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.fabrication ? dashboard.fabrication.inProduction + dashboard.fabrication.pendingApprovals : 0}</p>
+                      <p className="text-text-muted text-[11px] mt-1 font-medium">Active Builds</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </div>
 
             {/* Alerts */}
             {dashboard.alerts && dashboard.alerts.length > 0 && (
-              <div className="space-y-2 animate-fade-in-up stagger-4">
+              <div className="space-y-3 animate-fade-in-up stagger-4">
                 {dashboard.alerts.map((alert: { type: string; title: string; message: string; link?: string }, index: number) => {
                   const Icon = alertIcons[alert.type] || Info
                   const card = (
