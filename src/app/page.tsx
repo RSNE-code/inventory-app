@@ -6,22 +6,11 @@ import { StockSummaryCards } from "@/components/dashboard/stock-summary-card"
 import { LowStockList } from "@/components/dashboard/low-stock-list"
 import { Card } from "@/components/ui/card"
 import { formatQuantity } from "@/lib/utils"
-import { ClipboardList, AlertTriangle, AlertCircle, Info, Factory, Menu, Settings, ClipboardCheck, X } from "lucide-react"
+import { InventoryTrendChart } from "@/components/dashboard/inventory-trend-chart"
+import { ClipboardList, AlertCircle, Factory, Menu, Settings, ClipboardCheck, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-
-const alertIcons: Record<string, typeof AlertTriangle> = {
-  critical: AlertCircle,
-  warning: AlertTriangle,
-  info: Info,
-}
-
-const alertStyles: Record<string, string> = {
-  critical: "border-l-status-red bg-red-50/60 text-red-700",
-  warning: "border-l-status-yellow bg-yellow-50/60 text-yellow-700",
-  info: "border-l-brand-blue bg-blue-50/60 text-blue-700",
-}
 
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useDashboard()
@@ -134,38 +123,10 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Alerts */}
-            {dashboard.alerts && dashboard.alerts.length > 0 && (
-              <div className="space-y-3 animate-fade-in-up stagger-4">
-                {dashboard.alerts.map((alert: { type: string; title: string; message: string; link?: string }, index: number) => {
-                  const Icon = alertIcons[alert.type] || Info
-                  const card = (
-                    <Card className={cn(
-                      "p-3 rounded-xl border-l-4 border-t-0 border-r-0 border-b-0 shadow-brand animate-slide-in-right",
-                      alertStyles[alert.type] || alertStyles.info,
-                      `stagger-${index + 1}`
-                    )}>
-                      <div className="flex items-start gap-2.5">
-                        <Icon className={cn(
-                          "h-4 w-4 mt-0.5 shrink-0",
-                          alert.type === "critical" && "badge-critical-pulse"
-                        )} />
-                        <div>
-                          <p className="text-sm font-semibold">{alert.title}</p>
-                          <p className="text-xs opacity-70 mt-0.5">{alert.message}</p>
-                        </div>
-                      </div>
-                    </Card>
-                  )
-
-                  return alert.link ? (
-                    <Link key={index} href={alert.link}>{card}</Link>
-                  ) : (
-                    <div key={index}>{card}</div>
-                  )
-                })}
-              </div>
-            )}
+            {/* Inventory Value Trend Chart */}
+            <div className="animate-fade-in-up stagger-4">
+              <InventoryTrendChart />
+            </div>
 
             {/* Low stock + Recent activity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
