@@ -106,10 +106,9 @@ export function InventoryTrendChart() {
   const scaleRange = scaleMax - scaleMin || 1
 
   const formatYLabel = (val: number) => {
-    if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`
-    if (val >= 100_000) return `$${(val / 1_000).toFixed(0)}k`
-    if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}k`
-    return `$${val.toFixed(0)}`
+    if (val >= 1_000_000) return `$${Math.round(val / 1_000_000)}M`
+    if (val >= 1_000) return `$${Math.round(val / 1_000)}k`
+    return `$${Math.round(val)}`
   }
 
   // ─── Chart dimensions ───
@@ -202,7 +201,7 @@ export function InventoryTrendChart() {
               "text-xs font-semibold tabular-nums",
               pctChange >= 0 ? "text-status-green" : "text-status-red"
             )}>
-              {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(1)}%
+              {pctChange >= 0 ? "+" : ""}{Math.round(pctChange)}%
             </span>
           </div>
         </div>
