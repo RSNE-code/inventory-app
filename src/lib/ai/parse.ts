@@ -23,8 +23,8 @@ const JSON_SCHEMA = `{
 }`
 
 const RECEIVING_SCHEMA = `{
-  "supplier": "string|null — supplier/vendor name if visible",
-  "poNumber": "string|null — purchase order number if visible",
+  "supplier": "string|null — supplier/vendor name (the company that sent this, NOT the customer)",
+  "poNumber": "string|null — the CUSTOMER PO number (labeled 'Customer PO', 'PO #', 'PO Number', or 'Purchase Order'). This is RSNE's internal PO number, NOT a shipment number, order number, invoice number, or sales order number. It is typically a short number (1-4 digits).",
   "deliveryDate": "string|null — delivery date if visible (ISO format)",
   "items": [ ... same item schema as above ... ]
 }`
@@ -105,7 +105,14 @@ export async function parseImageInput(
           },
           {
             type: "text",
-            text: `Extract all material line items from this image. This may be a packing slip, invoice, handwritten BOM, or material list. Return JSON matching this schema:\n${RECEIVING_SCHEMA}`,
+            text: `Extract all material line items from this image. This may be a packing slip, invoice, handwritten BOM, or material list.
+
+IMPORTANT extraction rules:
+- For "supplier": extract the SENDER company name (the company that shipped/sold, usually at the top with their logo). NOT the customer/buyer.
+- For "poNumber": look specifically for a field labeled "Customer PO", "PO #", "PO Number", or "Purchase Order". This is typically a short number (1-4 digits). Do NOT use shipment numbers, order numbers, invoice numbers, or sales order numbers.
+- For item names: use the most specific product name available. If there is both an item code/SKU and a description, use the description as the name and include dimensional/spec details.
+
+Return JSON matching this schema:\n${RECEIVING_SCHEMA}`,
           },
         ],
       },
