@@ -81,10 +81,6 @@ export function InventoryTrendChart() {
     return padL + (i / Math.max(1, totalPoints - 1)) * plotW
   }
 
-  function yPos(val: number) {
-    return padT + plotH - ((val - minVal) / valRange) * plotH
-  }
-
   // Build smooth path using cardinal spline
   function buildPath(points: Array<{ x: number; y: number }>): string {
     if (points.length < 2) return ""
@@ -109,14 +105,14 @@ export function InventoryTrendChart() {
 
   const historicalPoints = trend.historical.map((p, i) => ({
     x: xPos(i),
-    y: yPos(p.value),
+    y: yPosNice(p.value),
   }))
 
   const projectedPoints = [
-    { x: xPos(historicalCount - 1), y: yPos(trend.historical[historicalCount - 1].value) },
+    { x: xPos(historicalCount - 1), y: yPosNice(trend.historical[historicalCount - 1].value) },
     ...trend.projected.map((p, i) => ({
       x: xPos(historicalCount + i),
-      y: yPos(p.value),
+      y: yPosNice(p.value),
     })),
   ]
 
@@ -128,11 +124,42 @@ export function InventoryTrendChart() {
   // Today marker position
   const todayX = xPos(historicalCount - 1)
 
-  // Y-axis labels (3 ticks) with compact formatting
-  const yLabels = [minVal, (minVal + maxVal) / 2, maxVal]
+  // Y-axis: compute "nice" rounded tick values
+  function niceNum(val: number, round: boolean): number {
+    const exp = Math.floor(Math.log10(val))
+    const frac = val / Math.pow(10, exp)
+    let nice: number
+    if (round) {
+      nice = frac < 1.5 ? 1 : frac < 3 ? 2 : frac < 7 ? 5 : 10
+    } else {
+      nice = frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 5 ? 5 : 10
+    }
+    return nice * Math.pow(10, exp)
+  }
+
+  const tickCount = 3
+  const rawRange = maxVal - minVal || 1
+  const tickSpacing = niceNum(rawRange / (tickCount - 1), true)
+  const niceMin = Math.floor(minVal / tickSpacing) * tickSpacing
+  const niceMax = Math.ceil(maxVal / tickSpacing) * tickSpacing
+  const yLabels: number[] = []
+  for (let v = niceMin; v <= niceMax + tickSpacing * 0.01; v += tickSpacing) {
+    yLabels.push(v)
+  }
+
+  // Recalculate scale to fit nice ticks
+  const scaleMin = yLabels[0]
+  const scaleMax = yLabels[yLabels.length - 1]
+  const scaleRange = scaleMax - scaleMin || 1
+
+  function yPosNice(val: number) {
+    return padT + plotH - ((val - scaleMin) / scaleRange) * plotH
+  }
+
   const formatYLabel = (val: number) => {
     if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`
-    if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}k`
+    if (val >= 100_000) return `$${(val / 1_000).toFixed(0)}k`
+    if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}k`
     return `$${val.toFixed(0)}`
   }
 
@@ -217,24 +244,35 @@ export function InventoryTrendChart() {
           </linearGradient>
         </defs>
 
-        {/* Horizontal grid lines + Y-axis labels */}
+        {/* Horizontal grid lines + Y-axis labels + tick marks */}
         {yLabels.map((val, i) => (
           <g key={i}>
             <line
               x1={padL}
-              y1={yPos(val)}
+              y1={yPosNice(val)}
               x2={padL + plotW}
-              y2={yPos(val)}
+              y2={yPosNice(val)}
               stroke="#E2E6EB"
               strokeWidth="0.5"
             />
+            <line
+              x1={padL - 3}
+              y1={yPosNice(val)}
+              x2={padL}
+              y2={yPosNice(val)}
+              stroke="#C8D1DB"
+              strokeWidth="0.75"
+            />
             <text
-              x={padL - 4}
-              y={yPos(val) + 3}
-              fontSize="7"
+              x={padL - 5}
+              y={yPosNice(val) + 2.5}
+              fontSize="7.5"
               fill="#8899AB"
               textAnchor="end"
               fontFamily="Urbanist, sans-serif"
+              fontWeight="500"
+              opacity="0.85"
+              letterSpacing="0.2"
             >
               {formatYLabel(val)}
             </text>
@@ -284,7 +322,7 @@ export function InventoryTrendChart() {
         {/* Today dot */}
         <circle
           cx={todayX}
-          cy={yPos(currentVal)}
+          cy={yPosNice(currentVal)}
           r="3.5"
           fill="#FFFFFF"
           stroke="#2E7DBA"
