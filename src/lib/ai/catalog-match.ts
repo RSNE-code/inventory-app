@@ -142,7 +142,8 @@ function calculateMatchScore(
   return Math.min(1.0, tokenScore + categoryBoost + abbrScore)
 }
 
-function normalize(text: string): string {
+function normalize(text: string | undefined | null): string {
+  if (!text) return ""
   return text
     .toLowerCase()
     .replace(/['"]/g, "") // remove quotes (inch/foot marks)
