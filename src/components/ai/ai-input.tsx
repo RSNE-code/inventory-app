@@ -28,6 +28,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingType, setProcessingType] = useState<"text" | "image">("text")
+  const [lastError, setLastError] = useState<string | null>(null)
   const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -46,6 +47,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     const value = input || text
     if (!value.trim() || isProcessing) return
 
+    setLastError(null)
     setIsProcessing(true)
     setProcessingType("text")
     try {
@@ -65,7 +67,8 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       setText("")
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Something went wrong"
-      toast.error(msg)
+      setLastError(msg)
+      toast.error(msg, { duration: 10000 })
       console.error("Parse error:", error)
     } finally {
       setIsProcessing(false)
@@ -76,6 +79,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     const file = e.target.files?.[0]
     if (!file || isProcessing) return
 
+    setLastError(null)
     setIsProcessing(true)
     setProcessingType("image")
     try {
@@ -96,7 +100,8 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       onParseComplete(data)
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Something went wrong"
-      toast.error(msg)
+      setLastError(msg)
+      toast.error(msg, { duration: 10000 })
       console.error("Image parse error:", error)
     } finally {
       setIsProcessing(false)
@@ -152,6 +157,19 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
           </div>
         )}
       </div>
+
+      {/* Error display */}
+      {lastError && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-t border-red-100">
+          <span className="text-xs font-medium text-red-700 flex-1">{lastError}</span>
+          <button
+            onClick={() => setLastError(null)}
+            className="text-red-400 hover:text-red-600 text-xs font-bold shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex items-center justify-between px-3 py-2.5 border-t border-border-custom/40">
