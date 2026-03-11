@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { StockBadge } from "./stock-badge"
 import { formatQuantity } from "@/lib/utils"
 import { getDisplayQty } from "@/lib/units"
-import { MapPin } from "lucide-react"
+import { MapPin, ChevronRight } from "lucide-react"
 
 interface ProductCardProps {
   id: string
@@ -30,7 +30,7 @@ export function ProductCard({
 
   return (
     <Link href={`/inventory/${id}`}>
-      <Card className="p-4 rounded-xl shadow-sm border-border-custom hover:shadow-md transition-shadow duration-200 active:scale-[0.98]">
+      <Card className="p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-navy text-sm leading-tight truncate">
@@ -42,17 +42,20 @@ export function ProductCard({
         </div>
         <div className="flex items-end justify-between mt-3">
           <div>
-            <span className="text-2xl font-semibold text-navy tabular-nums">
+            <span className="text-2xl font-bold text-navy tabular-nums tracking-tight">
               {formatQuantity(display.qty)}
             </span>
-            <span className="text-text-muted text-sm ml-1">{display.unit}</span>
+            <span className="text-text-muted text-sm ml-1.5 font-medium">{display.unit}</span>
           </div>
-          {location && (
-            <div className="flex items-center gap-1 text-text-muted text-xs">
-              <MapPin className="h-3 w-3" />
-              <span>{location}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {location && (
+              <div className="flex items-center gap-1 text-text-muted text-xs">
+                <MapPin className="h-3 w-3" />
+                <span>{location}</span>
+              </div>
+            )}
+            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+          </div>
         </div>
       </Card>
     </Link>

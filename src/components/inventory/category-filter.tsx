@@ -15,13 +15,13 @@ interface CategoryFilterProps {
 
 export function CategoryFilter({ categories, selected, onSelect }: CategoryFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
       <button
         onClick={() => onSelect("")}
         className={cn(
-          "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200",
+          "shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200",
           selected === ""
-            ? "bg-brand-blue text-white"
+            ? "bg-brand-blue text-white shadow-[0_2px_6px_rgba(46,125,186,0.25)]"
             : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
         )}
       >
@@ -32,9 +32,9 @@ export function CategoryFilter({ categories, selected, onSelect }: CategoryFilte
           key={cat.id}
           onClick={() => onSelect(cat.id)}
           className={cn(
-            "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 whitespace-nowrap",
+            "shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition-all duration-200 whitespace-nowrap",
             selected === cat.id
-              ? "bg-brand-blue text-white"
+              ? "bg-brand-blue text-white shadow-[0_2px_6px_rgba(46,125,186,0.25)]"
               : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
           )}
         >

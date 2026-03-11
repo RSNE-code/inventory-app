@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header"
 import { SearchInput } from "@/components/shared/search-input"
 import { BomCard } from "@/components/bom/bom-card"
 import { EmptyState } from "@/components/shared/empty-state"
+import { ListSkeleton } from "@/components/shared/skeleton"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -40,15 +41,15 @@ export default function BomsPage() {
           placeholder="Search by job name or number..."
         />
 
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
           {statuses.map((s) => (
             <button
               key={s.value}
               onClick={() => { setStatus(s.value); setPage(1) }}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all",
                 status === s.value
-                  ? "bg-brand-blue text-white"
+                  ? "bg-brand-blue text-white shadow-[0_2px_6px_rgba(46,125,186,0.25)]"
                   : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
               )}
             >
@@ -58,9 +59,9 @@ export default function BomsPage() {
         </div>
       </div>
 
-      <div className="px-4 space-y-3">
+      <div className="px-4 space-y-3 pb-24">
         {isLoading ? (
-          <div className="text-center py-12 text-text-muted">Loading...</div>
+          <ListSkeleton count={5} />
         ) : boms.length === 0 ? (
           <EmptyState
             icon={ClipboardList}
@@ -71,25 +72,26 @@ export default function BomsPage() {
           />
         ) : (
           <>
-            <p className="text-text-muted text-sm">{data?.total || 0} BOMs</p>
-            {boms.map((bom: Record<string, unknown>) => (
-              <BomCard
-                key={bom.id as string}
-                id={bom.id as string}
-                jobName={bom.jobName as string}
-                status={bom.status as string}
-                lineItemCount={(bom._count as Record<string, number>)?.lineItems || 0}
-                createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
-                createdAt={bom.createdAt as string}
-              />
+            <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">{data?.total || 0} BOMs</p>
+            {boms.map((bom: Record<string, unknown>, i: number) => (
+              <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 8)}`}>
+                <BomCard
+                  id={bom.id as string}
+                  jobName={bom.jobName as string}
+                  status={bom.status as string}
+                  lineItemCount={(bom._count as Record<string, number>)?.lineItems || 0}
+                  createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
+                  createdAt={bom.createdAt as string}
+                />
+              </div>
             ))}
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 py-4">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                <Button variant="outline" size="sm" className="rounded-lg" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                   Previous
                 </Button>
-                <span className="flex items-center text-sm text-text-secondary">{page} / {totalPages}</span>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                <span className="flex items-center text-sm text-text-secondary font-medium tabular-nums">{page} / {totalPages}</span>
+                <Button variant="outline" size="sm" className="rounded-lg" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
                   Next
                 </Button>
               </div>
@@ -100,7 +102,7 @@ export default function BomsPage() {
 
       <Button
         onClick={() => router.push("/boms/new")}
-        className="fixed bottom-20 right-4 h-14 w-14 rounded-full bg-brand-orange hover:bg-brand-orange-hover text-white shadow-lg z-30"
+        className="fixed bottom-20 right-4 h-14 w-14 rounded-full bg-brand-orange hover:bg-brand-orange-hover text-white shadow-[0_4px_14px_rgba(232,121,43,0.35)] hover:shadow-[0_6px_20px_rgba(232,121,43,0.45)] z-30 transition-all duration-300 md:bottom-6"
         size="icon"
       >
         <Plus className="h-6 w-6" />

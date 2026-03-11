@@ -11,16 +11,20 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-secondary mb-4">
-        <Icon className="h-8 w-8 text-text-muted" />
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
+      <div className="relative mb-5">
+        <div className="flex h-18 w-18 items-center justify-center rounded-2xl bg-surface-secondary">
+          <Icon className="h-8 w-8 text-text-muted/60" />
+        </div>
+        {/* Decorative ring */}
+        <div className="absolute -inset-2 rounded-3xl border-2 border-dashed border-border-custom/40" />
       </div>
-      <h3 className="text-lg font-semibold text-navy mb-1">{title}</h3>
-      <p className="text-text-secondary text-sm max-w-xs">{description}</p>
+      <h3 className="text-lg font-bold text-navy mb-1 tracking-tight">{title}</h3>
+      <p className="text-text-muted text-sm max-w-[260px] leading-relaxed">{description}</p>
       {actionLabel && onAction && (
         <Button
           onClick={onAction}
-          className="mt-4 bg-brand-orange hover:bg-brand-orange-hover text-white"
+          className="mt-5 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl px-6 shadow-[0_2px_8px_rgba(232,121,43,0.25)]"
         >
           {actionLabel}
         </Button>

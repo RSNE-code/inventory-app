@@ -32,8 +32,8 @@ export function SidebarNav() {
   return (
     <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-60 bg-navy z-50">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="rounded bg-white px-1.5 py-0.5 shrink-0">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
+        <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
           <Image
             src="/logo.jpg"
             alt="RSNE"
@@ -42,11 +42,11 @@ export function SidebarNav() {
             className="h-6 w-auto"
           />
         </div>
-        <span className="text-white/80 text-sm font-medium">Inventory</span>
+        <span className="text-white/70 text-sm font-semibold tracking-tight">Inventory</span>
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -59,13 +59,13 @@ export function SidebarNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-navy-light text-white"
-                  : "text-white/60 hover:text-white hover:bg-navy-light/50"
+                  ? "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/5"
               )}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive && "text-brand-blue-bright")} />
               {item.name}
             </Link>
           )
@@ -73,8 +73,8 @@ export function SidebarNav() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/10">
-        <p className="text-xs text-white/40">RSNE Inventory v1.0</p>
+      <div className="px-4 py-3 border-t border-white/8">
+        <p className="text-[11px] text-white/30 font-medium">RSNE Inventory v1.0</p>
       </div>
     </aside>
   )

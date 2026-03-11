@@ -25,12 +25,12 @@ export function SearchInput({ value, onChange, placeholder = "Search..." }: Sear
 
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted/60" />
       <Input
         defaultValue={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className="h-11 pl-9 bg-surface-secondary border-border-custom"
+        className="h-11 pl-9 bg-surface-secondary border-border-custom/60 rounded-xl focus:border-brand-blue/30 transition-all"
       />
     </div>
   )

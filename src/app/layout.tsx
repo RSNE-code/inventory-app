@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/app-shell";
 const urbanist = Urbanist({
   subsets: ["latin"],
   variable: "--font-urbanist",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {

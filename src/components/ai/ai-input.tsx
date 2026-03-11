@@ -22,6 +22,7 @@ export function AIInput({
 }: AIInputProps) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } =
@@ -83,7 +84,6 @@ export function AIInput({
       console.error("Image parse error:", error)
     } finally {
       setIsProcessing(false)
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
@@ -97,39 +97,44 @@ export function AIInput({
     }
   }
 
-  const displayText = isListening ? transcript || "Listening..." : text
-
   return (
-    <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm", className)}>
+    <div className={cn(
+      "bg-white rounded-2xl border border-border-custom shadow-brand transition-all duration-300",
+      isFocused && "ai-input-glow border-brand-blue/30",
+      isListening && "border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.15),0_2px_12px_rgba(239,68,68,0.08)]",
+      className
+    )}>
       {/* Text input area */}
       <div className="relative">
         <textarea
           value={isListening ? transcript : text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           disabled={disabled || isProcessing || isListening}
           rows={2}
           className={cn(
-            "w-full resize-none rounded-t-xl px-4 py-3 text-base",
+            "w-full resize-none rounded-t-2xl px-4 py-3.5 text-base font-medium",
             "border-0 focus:ring-0 focus:outline-none",
-            "placeholder:text-gray-400 disabled:bg-gray-50",
-            isListening && "text-blue-600"
+            "placeholder:text-text-muted/60 placeholder:font-normal disabled:bg-surface-secondary/50",
+            isListening && "text-brand-blue"
           )}
         />
         {isProcessing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-t-xl">
-            <div className="flex items-center gap-2 text-blue-600">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-t-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-2.5 text-brand-blue">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm font-medium">Processing...</span>
+              <span className="text-sm font-semibold">Processing...</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between px-3 py-2.5 border-t border-border-custom/40">
+        <div className="flex items-center gap-1.5">
           {/* Voice button */}
           {isSupported && (
             <Button
@@ -137,8 +142,10 @@ export function AIInput({
               size="icon"
               variant={isListening ? "default" : "ghost"}
               className={cn(
-                "h-10 w-10 rounded-full",
-                isListening && "bg-red-500 hover:bg-red-600 animate-pulse"
+                "h-10 w-10 rounded-full transition-all",
+                isListening
+                  ? "bg-status-red hover:bg-red-600 text-white animate-mic-pulse"
+                  : "text-text-muted hover:text-brand-blue hover:bg-brand-blue/6"
               )}
               onClick={isListening ? stopListening : startListening}
               disabled={disabled || isProcessing}
@@ -156,7 +163,7 @@ export function AIInput({
             type="button"
             size="icon"
             variant="ghost"
-            className="h-10 w-10 rounded-full"
+            className="h-10 w-10 rounded-full text-text-muted hover:text-brand-blue hover:bg-brand-blue/6 transition-all"
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isProcessing}
           >
@@ -176,7 +183,11 @@ export function AIInput({
         <Button
           type="button"
           size="icon"
-          className="h-10 w-10 rounded-full bg-[#E8792B] hover:bg-[#D06820]"
+          className={cn(
+            "h-10 w-10 rounded-full bg-brand-orange hover:bg-brand-orange-hover transition-all duration-200",
+            "shadow-[0_2px_8px_rgba(232,121,43,0.3)] hover:shadow-[0_4px_12px_rgba(232,121,43,0.4)]",
+            "disabled:shadow-none disabled:opacity-40"
+          )}
           onClick={() => handleTextSubmit()}
           disabled={disabled || isProcessing || (!text.trim() && !isListening)}
         >

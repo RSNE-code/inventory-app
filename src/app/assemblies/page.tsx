@@ -8,8 +8,9 @@ import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer } from "lucide-react"
+import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 
@@ -17,13 +18,23 @@ type QueueTab = "DOOR_SHOP" | "FABRICATION"
 type StatusFilter = "all" | "AWAITING_APPROVAL" | "APPROVED" | "PLANNED" | "IN_PRODUCTION" | "COMPLETED"
 
 const statusColors: Record<string, string> = {
-  PLANNED: "bg-gray-100 text-gray-700",
-  AWAITING_APPROVAL: "bg-yellow-100 text-yellow-700",
-  APPROVED: "bg-blue-100 text-blue-700",
-  IN_PRODUCTION: "bg-orange-100 text-orange-700",
-  COMPLETED: "bg-green-100 text-green-700",
+  PLANNED: "bg-gray-100 text-gray-600",
+  AWAITING_APPROVAL: "bg-status-yellow/8 text-status-yellow",
+  APPROVED: "bg-brand-blue/8 text-brand-blue",
+  IN_PRODUCTION: "bg-brand-orange/8 text-brand-orange",
+  COMPLETED: "bg-status-green/8 text-status-green",
   ALLOCATED: "bg-purple-100 text-purple-700",
   SHIPPED: "bg-gray-100 text-gray-500",
+}
+
+const statusDots: Record<string, string> = {
+  PLANNED: "bg-gray-400",
+  AWAITING_APPROVAL: "bg-status-yellow animate-pulse",
+  APPROVED: "bg-brand-blue",
+  IN_PRODUCTION: "bg-brand-orange animate-pulse",
+  COMPLETED: "bg-status-green",
+  ALLOCATED: "bg-purple-500",
+  SHIPPED: "bg-gray-400",
 }
 
 const statusLabels: Record<string, string> = {
@@ -55,7 +66,6 @@ export default function AssembliesPage() {
 
   const assemblies = data?.data || []
 
-  // Group by status for swimlane-like display
   const notStarted = assemblies.filter((a: Record<string, unknown>) =>
     ["PLANNED", "AWAITING_APPROVAL", "APPROVED"].includes(a.status as string)
   )
@@ -78,8 +88,8 @@ export default function AssembliesPage() {
             className={cn(
               "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5",
               queueTab === "DOOR_SHOP"
-                ? "bg-white text-navy shadow-sm"
-                : "text-text-muted"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
             )}
           >
             <DoorOpen className="h-4 w-4" />
@@ -90,8 +100,8 @@ export default function AssembliesPage() {
             className={cn(
               "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5",
               queueTab === "FABRICATION"
-                ? "bg-white text-navy shadow-sm"
-                : "text-text-muted"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
             )}
           >
             <Layers className="h-4 w-4" />
@@ -112,9 +122,9 @@ export default function AssembliesPage() {
               key={tab.value}
               onClick={() => setStatusFilter(tab.value as StatusFilter)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all",
                 statusFilter === tab.value
-                  ? "bg-navy text-white"
+                  ? "bg-navy text-white shadow-[0_2px_6px_rgba(11,29,58,0.2)]"
                   : "bg-surface-secondary text-text-muted hover:text-navy"
               )}
             >
@@ -125,19 +135,24 @@ export default function AssembliesPage() {
 
         {/* Create button */}
         <Link href="/assemblies/new">
-          <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl">
+          <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all">
             <Plus className="h-5 w-5 mr-2" />
             {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor"}
           </Button>
         </Link>
 
         {isLoading ? (
-          <div className="text-center py-12 text-text-muted">Loading queue...</div>
+          <ListSkeleton count={4} />
         ) : assemblies.length === 0 ? (
-          <div className="text-center py-12">
-            <Factory className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-text-muted">No assemblies in the queue</p>
-            <p className="text-xs text-gray-400 mt-1">
+          <div className="text-center py-16 animate-fade-in">
+            <div className="relative inline-block mb-5">
+              <div className="flex h-18 w-18 items-center justify-center rounded-2xl bg-surface-secondary">
+                <Factory className="h-8 w-8 text-text-muted/60" />
+              </div>
+              <div className="absolute -inset-2 rounded-3xl border-2 border-dashed border-border-custom/40" />
+            </div>
+            <p className="text-text-secondary font-semibold">No assemblies in the queue</p>
+            <p className="text-xs text-text-muted mt-1">
               Tap the button above to start a new build
             </p>
           </div>
@@ -145,10 +160,14 @@ export default function AssembliesPage() {
           <>
             {/* Not Started */}
             {notStarted.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Not Started ({notStarted.length})
-                </h3>
+              <div className="space-y-2 animate-fade-in-up stagger-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                  <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                    Not Started
+                  </h3>
+                  <span className="text-xs text-text-muted/60 tabular-nums">{notStarted.length}</span>
+                </div>
                 {notStarted.map((assembly: Record<string, unknown>) => (
                   <AssemblyCard key={assembly.id as string} assembly={assembly} />
                 ))}
@@ -157,10 +176,14 @@ export default function AssembliesPage() {
 
             {/* In Progress */}
             {inProgress.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-orange-600 uppercase tracking-wide">
-                  In Progress ({inProgress.length})
-                </h3>
+              <div className="space-y-2 animate-fade-in-up stagger-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse" />
+                  <h3 className="text-xs font-bold text-brand-orange uppercase tracking-wider">
+                    In Progress
+                  </h3>
+                  <span className="text-xs text-brand-orange/60 tabular-nums">{inProgress.length}</span>
+                </div>
                 {inProgress.map((assembly: Record<string, unknown>) => (
                   <AssemblyCard key={assembly.id as string} assembly={assembly} />
                 ))}
@@ -169,10 +192,14 @@ export default function AssembliesPage() {
 
             {/* Completed */}
             {completed.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-xs font-semibold text-green-600 uppercase tracking-wide">
-                  Completed ({completed.length})
-                </h3>
+              <div className="space-y-2 animate-fade-in-up stagger-5">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-status-green" />
+                  <h3 className="text-xs font-bold text-status-green uppercase tracking-wider">
+                    Completed
+                  </h3>
+                  <span className="text-xs text-status-green/60 tabular-nums">{completed.length}</span>
+                </div>
                 {completed.map((assembly: Record<string, unknown>) => (
                   <AssemblyCard key={assembly.id as string} assembly={assembly} />
                 ))}
@@ -195,22 +222,23 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
 
   return (
     <Link href={`/assemblies/${assembly.id}`}>
-      <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow">
+      <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-navy text-sm">{name as string}</p>
-              <Badge className={cn("text-xs px-1.5 py-0", statusColors[status])}>
+              <Badge className={cn("text-[10px] px-1.5 py-0 gap-1", statusColors[status])}>
+                <span className={cn("h-1 w-1 rounded-full shrink-0", statusDots[status])} />
                 {statusLabels[status] || status}
               </Badge>
             </div>
-            <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
+            <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium">
               <span>{typeLabels[assembly.type as string]}</span>
               {Number(assembly.batchSize) > 1 && (
                 <span>Batch: {assembly.batchSize as number}</span>
               )}
             </div>
-            {/* Door-specific specs on queue card */}
+            {/* Door-specific specs */}
             {assembly.type === "DOOR" && specs && (() => {
               const ds = specs as Record<string, unknown>
               const w = ds.widthInClear ? String(ds.widthInClear) : null
@@ -220,16 +248,16 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
               return (
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {w && h && (
-                    <span className="text-xs font-medium text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+                    <span className="text-xs font-semibold text-navy/70 bg-surface-secondary px-1.5 py-0.5 rounded">
                       {w} x {h}
                     </span>
                   )}
                   {temp && (
                     <Badge className={cn(
-                      "text-[10px] px-1.5 py-0",
+                      "text-[10px] px-1.5 py-0 border-0",
                       temp === "FREEZER"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-cyan-100 text-cyan-700"
+                        ? "bg-blue-50 text-blue-600"
+                        : "bg-cyan-50 text-cyan-600"
                     )}>
                       {temp === "FREEZER" ? (
                         <><Snowflake className="h-2.5 w-2.5 mr-0.5" />Freezer</>
@@ -239,7 +267,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                     </Badge>
                   )}
                   {frame && (
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] text-text-muted font-medium">
                       {frame.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </span>
                   )}
@@ -247,20 +275,21 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
               )
             })()}
             {assembly.jobName ? (
-              <p className="text-xs text-brand-blue mt-1">
+              <p className="text-xs text-brand-blue font-medium mt-1">
                 Job: {String(assembly.jobName)}
               </p>
             ) : null}
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-text-muted mt-1">
               By {producedBy.name as string}
             </p>
           </div>
-          <div className="text-right shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {assembly.priority !== undefined && Number(assembly.priority) > 0 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs font-semibold">
                 P{assembly.priority as number}
               </Badge>
             )}
+            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
           </div>
         </div>
       </Card>

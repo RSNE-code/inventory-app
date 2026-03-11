@@ -13,7 +13,8 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
       value: summary.totalProducts.toString(),
       icon: Package,
       color: "text-brand-blue",
-      bg: "bg-brand-blue/10",
+      bg: "bg-brand-blue/8",
+      bgHover: "group-hover:bg-brand-blue/14",
       href: "/inventory",
     },
     {
@@ -21,7 +22,8 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
       value: formatCurrency(summary.totalValue),
       icon: DollarSign,
       color: "text-brand-blue",
-      bg: "bg-brand-blue/10",
+      bg: "bg-brand-blue/8",
+      bgHover: "group-hover:bg-brand-blue/14",
       href: "/inventory",
     },
     {
@@ -29,7 +31,8 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
       value: summary.lowStockCount.toString(),
       icon: AlertTriangle,
       color: "text-status-yellow",
-      bg: "bg-status-yellow/10",
+      bg: "bg-status-yellow/8",
+      bgHover: "group-hover:bg-status-yellow/14",
       href: "/inventory?status=low",
     },
     {
@@ -37,21 +40,22 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
       value: summary.outOfStockCount.toString(),
       icon: XCircle,
       color: "text-status-red",
-      bg: "bg-status-red/10",
+      bg: "bg-status-red/8",
+      bgHover: "group-hover:bg-status-red/14",
       href: "/inventory?status=out",
     },
   ]
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {cards.map((card) => (
+      {cards.map((card, i) => (
         <Link key={card.label} href={card.href}>
-          <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow duration-200">
-            <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.bg} mb-2`}>
-              <card.icon className={`h-5 w-5 ${card.color}`} />
+          <Card className={`p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group animate-fade-in-up stagger-${i + 1}`}>
+            <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.bg} ${card.bgHover} mb-3 transition-colors`}>
+              <card.icon className={`h-4.5 w-4.5 ${card.color}`} />
             </div>
-            <p className="text-xl font-bold text-navy tabular-nums">{card.value}</p>
-            <p className="text-text-muted text-xs mt-0.5">{card.label}</p>
+            <p className="text-2xl font-extrabold text-navy tabular-nums tracking-tight leading-none animate-count-reveal">{card.value}</p>
+            <p className="text-text-muted text-xs mt-1.5 font-medium">{card.label}</p>
           </Card>
         </Link>
       ))}
