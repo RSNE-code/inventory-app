@@ -25,11 +25,13 @@ export function useCreateReceipt() {
   return useMutation({
     mutationFn: async (data: {
       supplierId: string
+      purchaseOrderId?: string | null
       notes?: string | null
       items: Array<{
         productId: string
         quantity: number
         unitCost: number
+        poLineItemId?: string | null
       }>
     }) => {
       const res = await fetch("/api/receiving", {
@@ -46,6 +48,7 @@ export function useCreateReceipt() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] })
       queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] })
     },
   })
 }

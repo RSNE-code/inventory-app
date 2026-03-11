@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth"
 import { adjustStock } from "@/lib/stock"
+import { Prisma } from "@prisma/client"
 import { z } from "zod"
 
 const createReceiptSchema = z.object({
   supplierId: z.string().uuid(),
+  purchaseOrderId: z.string().uuid().optional().nullable(),
   notes: z.string().optional().nullable(),
   items: z
     .array(
@@ -13,6 +15,7 @@ const createReceiptSchema = z.object({
         productId: z.string().uuid(),
         quantity: z.number().positive(),
         unitCost: z.number().min(0),
+        poLineItemId: z.string().uuid().optional().nullable(),
       })
     )
     .min(1),
@@ -29,6 +32,7 @@ export async function POST(request: NextRequest) {
     const receipt = await prisma.receipt.create({
       data: {
         supplierId: data.supplierId,
+        purchaseOrderId: data.purchaseOrderId || null,
         notes: data.notes || null,
       },
     })
@@ -42,12 +46,47 @@ export async function POST(request: NextRequest) {
         unitCost: item.unitCost,
         receiptId: receipt.id,
       })
+
+      // Update PO line item qtyReceived
+      if (item.poLineItemId) {
+        await prisma.pOLineItem.update({
+          where: { id: item.poLineItemId },
+          data: {
+            qtyReceived: {
+              increment: new Prisma.Decimal(item.quantity),
+            },
+          },
+        })
+      }
+    }
+
+    // Update PO status based on received quantities
+    if (data.purchaseOrderId) {
+      const po = await prisma.purchaseOrder.findUnique({
+        where: { id: data.purchaseOrderId },
+        include: { lineItems: true },
+      })
+
+      if (po) {
+        const allReceived = po.lineItems.every(
+          (li) => Number(li.qtyReceived) >= Number(li.qtyOrdered)
+        )
+        const anyReceived = po.lineItems.some((li) => Number(li.qtyReceived) > 0)
+
+        await prisma.purchaseOrder.update({
+          where: { id: data.purchaseOrderId },
+          data: {
+            status: allReceived ? "RECEIVED" : anyReceived ? "PARTIALLY_RECEIVED" : "OPEN",
+          },
+        })
+      }
     }
 
     const fullReceipt = await prisma.receipt.findUnique({
       where: { id: receipt.id },
       include: {
         supplier: { select: { name: true } },
+        purchaseOrder: { select: { poNumber: true, status: true } },
         transactions: {
           include: { product: { select: { name: true } } },
         },

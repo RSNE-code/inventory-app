@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
-import { LogOut, Users, Info, PackageCheck, ChevronRight } from "lucide-react"
+import { LogOut, Users, Info, PackageCheck, FileText, ChevronRight } from "lucide-react"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -31,6 +31,21 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="font-semibold text-navy">Receive Material</h3>
                   <p className="text-text-muted text-xs">Log incoming deliveries</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-text-muted" />
+            </div>
+          </Card>
+        </Link>
+
+        <Link href="/purchase-orders">
+          <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-brand-blue" />
+                <div>
+                  <h3 className="font-semibold text-navy">Purchase Orders</h3>
+                  <p className="text-text-muted text-xs">Create and track POs</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-text-muted" />
