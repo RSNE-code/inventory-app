@@ -1,7 +1,8 @@
 import { generateText } from "ai"
+import { anthropic } from "@ai-sdk/anthropic"
 import type { ParsedLineItem } from "./types"
 
-const MODEL = "anthropic/claude-opus-4.6"
+const MODEL = anthropic("claude-opus-4-6")
 
 const JSON_SCHEMA = `{
   "items": [
