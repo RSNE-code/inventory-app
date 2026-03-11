@@ -4,6 +4,7 @@ import { useState, useRef, useImperativeHandle, forwardRef } from "react"
 import { Mic, MicOff, Camera, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
 import type { ParseResult, ReceivingParseResult } from "@/lib/ai/types"
 
@@ -26,6 +27,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
 }, ref) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const [processingType, setProcessingType] = useState<"text" | "image">("text")
   const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -45,6 +47,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     if (!value.trim() || isProcessing) return
 
     setIsProcessing(true)
+    setProcessingType("text")
     try {
       const res = await fetch("/api/ai/parse", {
         method: "POST",
@@ -53,14 +56,16 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || "Failed to parse input")
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `Failed to parse input (${res.status})`)
       }
 
       const { data } = await res.json()
       onParseComplete(data)
       setText("")
     } catch (error) {
+      const msg = error instanceof Error ? error.message : "Something went wrong"
+      toast.error(msg)
       console.error("Parse error:", error)
     } finally {
       setIsProcessing(false)
@@ -72,6 +77,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     if (!file || isProcessing) return
 
     setIsProcessing(true)
+    setProcessingType("image")
     try {
       const formData = new FormData()
       formData.append("image", file)
@@ -82,13 +88,15 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || "Failed to parse image")
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `Failed to parse image (${res.status})`)
       }
 
       const { data } = await res.json()
       onParseComplete(data)
     } catch (error) {
+      const msg = error instanceof Error ? error.message : "Something went wrong"
+      toast.error(msg)
       console.error("Image parse error:", error)
     } finally {
       setIsProcessing(false)
@@ -131,11 +139,16 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
           )}
         />
         {isProcessing && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/90 rounded-t-2xl backdrop-blur-sm">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 rounded-t-2xl backdrop-blur-sm">
             <div className="flex items-center gap-2.5 text-brand-blue">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm font-semibold">Processing...</span>
+              <span className="text-sm font-semibold">
+                {processingType === "image" ? "Reading image..." : "Processing..."}
+              </span>
             </div>
+            {processingType === "image" && (
+              <p className="text-[11px] text-text-muted mt-1">This may take a few seconds</p>
+            )}
           </div>
         )}
       </div>
