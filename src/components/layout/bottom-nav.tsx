@@ -2,15 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ClipboardList, Package, Factory, MoreHorizontal } from "lucide-react"
+import { LayoutDashboard, PackageCheck, Package, ClipboardList, Factory } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const tabs = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "BOMs", href: "/boms", icon: ClipboardList },
+  { name: "Receive", href: "/receiving", icon: PackageCheck },
   { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "BOMs", href: "/boms", icon: ClipboardList },
   { name: "Assemblies", href: "/assemblies", icon: Factory },
-  { name: "More", href: "/settings", icon: MoreHorizontal },
 ]
 
 export function BottomNav() {

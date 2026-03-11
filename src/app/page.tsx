@@ -1,12 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { useDashboard } from "@/hooks/use-dashboard"
 import { StockSummaryCards } from "@/components/dashboard/stock-summary-card"
 import { LowStockList } from "@/components/dashboard/low-stock-list"
-import { QuickActions } from "@/components/dashboard/quick-actions"
 import { Card } from "@/components/ui/card"
 import { formatQuantity } from "@/lib/utils"
-import { ClipboardList, AlertTriangle, AlertCircle, Info, Factory } from "lucide-react"
+import { ClipboardList, AlertTriangle, AlertCircle, Info, Factory, Menu, Settings, ClipboardCheck, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
@@ -26,65 +26,133 @@ const alertStyles: Record<string, string> = {
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useDashboard()
   const dashboard = data?.data
-
-  const greeting = getGreeting()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div>
-      {/* Hero Header */}
-      <header className="relative bg-navy px-4 pt-7 pb-6 overflow-hidden">
-        {/* Subtle gradient overlay */}
+      {/* Compact Header — logo + title inline */}
+      <header className="relative bg-navy px-4 py-3 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4 animate-fade-in">
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3 animate-fade-in">
             <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
               <Image
                 src="/logo.jpg"
                 alt="RSNE"
                 width={100}
                 height={40}
-                className="h-8 w-auto"
+                className="h-7 w-auto"
                 priority
               />
             </div>
+            <h1 className="text-white text-base font-bold tracking-tight">Inventory Dashboard</h1>
           </div>
-          <p className="text-white/50 text-sm font-medium tracking-wide uppercase animate-fade-in-up stagger-1">{greeting}</p>
-          <h1 className="text-white text-3xl font-extrabold tracking-tight animate-fade-in-up stagger-2">Inventory</h1>
+          {/* Menu button — opens additional options */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all"
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-brand-md border border-border-custom z-50 py-1 animate-fade-in">
+                  <Link
+                    href="/cycle-counts"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
+                  >
+                    <ClipboardCheck className="h-4 w-4 text-text-muted" />
+                    Cycle Counts
+                  </Link>
+                  <Link
+                    href="/settings"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
+                  >
+                    <Settings className="h-4 w-4 text-text-muted" />
+                    Settings
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
-      <div className="p-4 space-y-5">
+      <div className="p-4 space-y-4">
         {isLoading ? (
           <div className="space-y-4">
             {/* Skeleton loaders */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className={cn("h-28 rounded-xl bg-surface-secondary animate-pulse", `stagger-${i + 1}`)}>
-                  <div className="p-4 space-y-3">
-                    <div className="h-9 w-9 rounded-lg bg-border-custom/50" />
-                    <div className="h-5 w-16 rounded bg-border-custom/50" />
-                    <div className="h-3 w-20 rounded bg-border-custom/30" />
-                  </div>
-                </div>
+                <div key={i} className={cn("h-16 rounded-xl bg-surface-secondary animate-pulse", `stagger-${i + 1}`)} />
               ))}
             </div>
-            <div className="h-16 rounded-xl bg-surface-secondary animate-pulse" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="h-20 rounded-xl bg-surface-secondary animate-pulse" />
+              <div className="h-20 rounded-xl bg-surface-secondary animate-pulse" />
+            </div>
           </div>
         ) : dashboard ? (
           <>
-            {/* Stock Summary */}
+            {/* Stock Summary Cards */}
             <div className="animate-fade-in-up stagger-1">
               <StockSummaryCards summary={dashboard.summary} />
             </div>
 
-            {/* Quick Actions */}
-            <div className="animate-fade-in-up stagger-3">
-              <QuickActions />
-            </div>
+            {/* Active BOMs + Fabrication — between cards and alerts */}
+            {(dashboard.activeBomCount > 0 || (dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0))) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in-up stagger-3">
+                {dashboard.activeBomCount > 0 && (
+                  <Link href="/boms">
+                    <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue/8 group-hover:bg-brand-blue/12 transition-colors">
+                          <ClipboardList className="h-5 w-5 text-brand-blue" />
+                        </div>
+                        <div>
+                          <p className="text-xl font-bold text-navy tabular-nums">{dashboard.activeBomCount}</p>
+                          <p className="text-xs text-text-muted font-medium">Active BOM{dashboard.activeBomCount !== 1 ? "s" : ""}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                )}
 
-            {/* Alerts — slide in from right */}
+                {dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0) && (
+                  <Link href="/assemblies">
+                    <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-orange/8 group-hover:bg-brand-orange/12 transition-colors">
+                          <Factory className="h-5 w-5 text-brand-orange" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-navy">Fabrication</p>
+                          <div className="flex gap-3 text-xs mt-0.5">
+                            {dashboard.fabrication.pendingApprovals > 0 && (
+                              <span className="text-status-yellow font-semibold">{dashboard.fabrication.pendingApprovals} pending</span>
+                            )}
+                            {dashboard.fabrication.inProduction > 0 && (
+                              <span className="text-brand-orange font-semibold">{dashboard.fabrication.inProduction} building</span>
+                            )}
+                            {dashboard.fabrication.completed > 0 && (
+                              <span className="text-status-green font-semibold">{dashboard.fabrication.completed} done</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Alerts */}
             {dashboard.alerts && dashboard.alerts.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-2 animate-fade-in-up stagger-4">
                 {dashboard.alerts.map((alert: { type: string; title: string; message: string; link?: string }, index: number) => {
                   const Icon = alertIcons[alert.type] || Info
                   const card = (
@@ -115,62 +183,14 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Secondary cards grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Active BOMs */}
-              {dashboard.activeBomCount > 0 && (
-                <Link href="/boms" className="animate-fade-in-up stagger-5">
-                  <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-blue/8 group-hover:bg-brand-blue/12 transition-colors">
-                        <ClipboardList className="h-5 w-5 text-brand-blue" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-navy tabular-nums">{dashboard.activeBomCount}</p>
-                        <p className="text-xs text-text-muted font-medium">Active BOM{dashboard.activeBomCount !== 1 ? "s" : ""}</p>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              )}
-
-              {/* Fabrication Status */}
-              {dashboard.fabrication && (dashboard.fabrication.inProduction > 0 || dashboard.fabrication.completed > 0 || dashboard.fabrication.pendingApprovals > 0) && (
-                <Link href="/assemblies" className="animate-fade-in-up stagger-6">
-                  <Card className="p-4 rounded-xl border-border-custom hover:shadow-brand-md transition-shadow duration-300 h-full group">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-orange/8 group-hover:bg-brand-orange/12 transition-colors">
-                        <Factory className="h-5 w-5 text-brand-orange" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-navy">Fabrication</p>
-                        <div className="flex gap-3 text-xs mt-0.5">
-                          {dashboard.fabrication.pendingApprovals > 0 && (
-                            <span className="text-status-yellow font-semibold">{dashboard.fabrication.pendingApprovals} pending</span>
-                          )}
-                          {dashboard.fabrication.inProduction > 0 && (
-                            <span className="text-brand-orange font-semibold">{dashboard.fabrication.inProduction} building</span>
-                          )}
-                          {dashboard.fabrication.completed > 0 && (
-                            <span className="text-status-green font-semibold">{dashboard.fabrication.completed} done</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              )}
-            </div>
-
             {/* Low stock + Recent activity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="animate-fade-in-up stagger-7">
+              <div className="animate-fade-in-up stagger-5">
                 <LowStockList items={dashboard.lowStockItems} />
               </div>
 
-              {/* Recent activity */}
               {dashboard.recentTransactions.length > 0 && (
-                <div className="animate-fade-in-up stagger-8">
+                <div className="animate-fade-in-up stagger-6">
                   <Card className="p-4 rounded-xl border-border-custom shadow-brand">
                     <h3 className="font-semibold text-navy mb-3 text-sm tracking-tight">Recent Activity</h3>
                     <div className="space-y-0">
@@ -217,13 +237,6 @@ export default function DashboardPage() {
       </div>
     </div>
   )
-}
-
-function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Good morning"
-  if (hour < 17) return "Good afternoon"
-  return "Good evening"
 }
 
 function formatTransactionType(type: string): string {

@@ -47,15 +47,19 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-4">
       {cards.map((card, i) => (
         <Link key={card.label} href={card.href}>
-          <Card className={`p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group animate-fade-in-up stagger-${i + 1}`}>
-            <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${card.bg} ${card.bgHover} mb-3 transition-colors`}>
-              <card.icon className={`h-4.5 w-4.5 ${card.color}`} />
+          <Card className={`px-3 py-3 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group animate-fade-in-up stagger-${i + 1}`}>
+            <div className="flex items-center gap-3">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${card.bg} ${card.bgHover} transition-colors`}>
+                <card.icon className={`h-4 w-4 ${card.color}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg font-extrabold text-navy tabular-nums tracking-tight leading-none truncate">{card.value}</p>
+                <p className="text-text-muted text-[10px] mt-0.5 font-medium">{card.label}</p>
+              </div>
             </div>
-            <p className="text-2xl font-extrabold text-navy tabular-nums tracking-tight leading-none animate-count-reveal">{card.value}</p>
-            <p className="text-text-muted text-xs mt-1.5 font-medium">{card.label}</p>
           </Card>
         </Link>
       ))}
