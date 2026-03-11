@@ -58,73 +58,15 @@ export function InventoryTrendChart() {
     )
   }
 
+  // ─── Scale computation ───
   const allPoints = [...trend.historical, ...trend.projected]
   const allValues = allPoints.map((p) => p.value)
-  const minVal = Math.min(...allValues) * 0.95
-  const maxVal = Math.max(...allValues) * 1.05
-  const valRange = maxVal - minVal || 1
+  const rawMin = Math.min(...allValues)
+  const rawMax = Math.max(...allValues)
+  const minVal = rawMin * 0.95
+  const maxVal = rawMax * 1.05
 
-  // Chart dimensions
-  const chartW = 360
-  const chartH = 160
-  const padL = 38
-  const padR = 8
-  const padT = 12
-  const padB = 24
-  const plotW = chartW - padL - padR
-  const plotH = chartH - padT - padB
-
-  const totalPoints = allPoints.length
-  const historicalCount = trend.historical.length
-
-  function xPos(i: number) {
-    return padL + (i / Math.max(1, totalPoints - 1)) * plotW
-  }
-
-  // Build smooth path using cardinal spline
-  function buildPath(points: Array<{ x: number; y: number }>): string {
-    if (points.length < 2) return ""
-    let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`
-    for (let i = 1; i < points.length; i++) {
-      d += ` L ${points[i].x.toFixed(1)} ${points[i].y.toFixed(1)}`
-    }
-    return d
-  }
-
-  // Build gradient area path
-  function buildAreaPath(points: Array<{ x: number; y: number }>): string {
-    if (points.length < 2) return ""
-    const bottomY = padT + plotH
-    let d = `M ${points[0].x.toFixed(1)} ${bottomY}`
-    for (const p of points) {
-      d += ` L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
-    }
-    d += ` L ${points[points.length - 1].x.toFixed(1)} ${bottomY} Z`
-    return d
-  }
-
-  const historicalPoints = trend.historical.map((p, i) => ({
-    x: xPos(i),
-    y: yPosNice(p.value),
-  }))
-
-  const projectedPoints = [
-    { x: xPos(historicalCount - 1), y: yPosNice(trend.historical[historicalCount - 1].value) },
-    ...trend.projected.map((p, i) => ({
-      x: xPos(historicalCount + i),
-      y: yPosNice(p.value),
-    })),
-  ]
-
-  const historicalPath = buildPath(historicalPoints)
-  const historicalArea = buildAreaPath(historicalPoints)
-  const projectedPath = buildPath(projectedPoints)
-  const projectedArea = buildAreaPath(projectedPoints)
-
-  // Today marker position
-  const todayX = xPos(historicalCount - 1)
-
-  // Y-axis: compute "nice" rounded tick values
+  // Nice rounded tick values for Y-axis
   function niceNum(val: number, round: boolean): number {
     if (val <= 0 || !isFinite(val)) return 1
     const exp = Math.floor(Math.log10(val))
@@ -145,7 +87,6 @@ export function InventoryTrendChart() {
   let scaleMax: number
 
   if (rawRange < 0.01 || !isFinite(rawRange)) {
-    // All values are essentially the same (or zero)
     const center = maxVal || 1
     scaleMin = center * 0.9
     scaleMax = center * 1.1
@@ -164,10 +105,6 @@ export function InventoryTrendChart() {
 
   const scaleRange = scaleMax - scaleMin || 1
 
-  function yPosNice(val: number) {
-    return padT + plotH - ((val - scaleMin) / scaleRange) * plotH
-  }
-
   const formatYLabel = (val: number) => {
     if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`
     if (val >= 100_000) return `$${(val / 1_000).toFixed(0)}k`
@@ -175,7 +112,70 @@ export function InventoryTrendChart() {
     return `$${val.toFixed(0)}`
   }
 
-  // X-axis date labels (first, middle, last)
+  // ─── Chart dimensions ───
+  const chartW = 360
+  const chartH = 160
+  const padL = 38
+  const padR = 8
+  const padT = 12
+  const padB = 24
+  const plotW = chartW - padL - padR
+  const plotH = chartH - padT - padB
+
+  const totalPoints = allPoints.length
+  const historicalCount = trend.historical.length
+
+  function xPos(i: number) {
+    return padL + (i / Math.max(1, totalPoints - 1)) * plotW
+  }
+
+  function yPos(val: number) {
+    return padT + plotH - ((val - scaleMin) / scaleRange) * plotH
+  }
+
+  // ─── Path builders ───
+  function buildPath(points: Array<{ x: number; y: number }>): string {
+    if (points.length < 2) return ""
+    let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x.toFixed(1)} ${points[i].y.toFixed(1)}`
+    }
+    return d
+  }
+
+  function buildAreaPath(points: Array<{ x: number; y: number }>): string {
+    if (points.length < 2) return ""
+    const bottomY = padT + plotH
+    let d = `M ${points[0].x.toFixed(1)} ${bottomY}`
+    for (const p of points) {
+      d += ` L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+    }
+    d += ` L ${points[points.length - 1].x.toFixed(1)} ${bottomY} Z`
+    return d
+  }
+
+  // ─── Data points ───
+  const historicalPoints = trend.historical.map((p, i) => ({
+    x: xPos(i),
+    y: yPos(p.value),
+  }))
+
+  const projectedPoints = [
+    { x: xPos(historicalCount - 1), y: yPos(trend.historical[historicalCount - 1].value) },
+    ...trend.projected.map((p, i) => ({
+      x: xPos(historicalCount + i),
+      y: yPos(p.value),
+    })),
+  ]
+
+  const historicalPath = buildPath(historicalPoints)
+  const historicalArea = buildAreaPath(historicalPoints)
+  const projectedPath = buildPath(projectedPoints)
+  const projectedArea = buildAreaPath(projectedPoints)
+
+  const todayX = xPos(historicalCount - 1)
+
+  // X-axis date labels
   const firstDate = trend.historical[0]?.date
   const lastDate = trend.projected[trend.projected.length - 1]?.date
   const formatLabel = (d: string) => {
@@ -244,12 +244,10 @@ export function InventoryTrendChart() {
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
-          {/* Historical gradient */}
           <linearGradient id="historicalGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#2E7DBA" stopOpacity="0.15" />
             <stop offset="100%" stopColor="#2E7DBA" stopOpacity="0.02" />
           </linearGradient>
-          {/* Projected gradient */}
           <linearGradient id="projectedGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#E8792B" stopOpacity="0.1" />
             <stop offset="100%" stopColor="#E8792B" stopOpacity="0.01" />
@@ -261,23 +259,23 @@ export function InventoryTrendChart() {
           <g key={i}>
             <line
               x1={padL}
-              y1={yPosNice(val)}
+              y1={yPos(val)}
               x2={padL + plotW}
-              y2={yPosNice(val)}
+              y2={yPos(val)}
               stroke="#E2E6EB"
               strokeWidth="0.5"
             />
             <line
               x1={padL - 3}
-              y1={yPosNice(val)}
+              y1={yPos(val)}
               x2={padL}
-              y2={yPosNice(val)}
+              y2={yPos(val)}
               stroke="#C8D1DB"
               strokeWidth="0.75"
             />
             <text
               x={padL - 5}
-              y={yPosNice(val) + 2.5}
+              y={yPos(val) + 2.5}
               fontSize="7.5"
               fill="#8899AB"
               textAnchor="end"
@@ -334,7 +332,7 @@ export function InventoryTrendChart() {
         {/* Today dot */}
         <circle
           cx={todayX}
-          cy={yPosNice(currentVal)}
+          cy={yPos(currentVal)}
           r="3.5"
           fill="#FFFFFF"
           stroke="#2E7DBA"
