@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { parseTextInput } from "@/lib/ai/parse"
-import { matchItemsToCatalog } from "@/lib/ai/catalog-match"
 import { getCurrentUser } from "@/lib/auth"
 import type { ParseResult } from "@/lib/ai/types"
 
@@ -20,8 +19,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const parsedItems = await parseTextInput(text)
-    const matchedItems = await matchItemsToCatalog(parsedItems)
+    // Single AI call handles parsing AND catalog matching
+    const matchedItems = await parseTextInput(text)
 
     const result: ParseResult = {
       items: matchedItems,
@@ -31,6 +30,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: result })
   } catch (error) {
+    console.error("[parse] Error:", error)
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
     return NextResponse.json({ error: message }, { status: 500 })

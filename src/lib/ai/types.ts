@@ -56,7 +56,9 @@ export interface ParseResult {
 
 export interface ReceivingParseResult extends ParseResult {
   supplier?: string
+  supplierId?: string
   poNumber?: string
+  poId?: string
   deliveryDate?: string
 }
 

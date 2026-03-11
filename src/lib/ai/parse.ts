@@ -1,96 +1,238 @@
 import { generateText } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
-import type { ParsedLineItem } from "./types"
+import { prisma } from "@/lib/db"
+import type { ParsedLineItem, CatalogMatch } from "./types"
 
 const MODEL = anthropic("claude-opus-4-6")
 
-const JSON_SCHEMA = `{
-  "items": [
-    {
-      "rawText": "string — original text this item was parsed from",
-      "name": "string — product name, as specific as possible",
-      "quantity": "number — quantity needed",
-      "unitOfMeasure": "string — each, linear ft, sq ft, sheet, tube, box, case, roll, etc.",
-      "category": "string|null — best guess: Insulated Metal Panel, Door Hardware, Metal Raw Materials, Sealants & Adhesives, Fasteners, Insulation, etc.",
-      "dimensions": { "length": "number|null", "lengthUnit": "string|null", "width": "number|null", "widthUnit": "string|null", "thickness": "number|null", "thicknessUnit": "string|null" },
-      "finish": "string|null — White, Galvalume, Stainless, etc.",
-      "material": "string|null — steel, aluminum, copper, etc.",
-      "specs": "object|null — any other specs (shape, type, grade)",
-      "estimatedCost": "number|null — cost per unit if mentioned",
-      "confidence": "number 0-1 — how confident in this parse"
-    }
-  ]
-}`
+// ─── Load context data for AI matching ───
 
-const RECEIVING_SCHEMA = `{
-  "supplier": "string|null — supplier/vendor name (the company that sent this, NOT the customer)",
-  "poNumber": "string|null — the CUSTOMER PO number (labeled 'Customer PO', 'PO #', 'PO Number', or 'Purchase Order'). This is RSNE's internal PO number, NOT a shipment number, order number, invoice number, or sales order number. It is typically a short number (1-4 digits).",
-  "deliveryDate": "string|null — delivery date if visible (ISO format)",
-  "items": [ ... same item schema as above ... ]
-}`
+async function loadCatalogContext(): Promise<string> {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      sku: true,
+      unitOfMeasure: true,
+      currentQty: true,
+      tier: true,
+      category: { select: { name: true } },
+      lastCost: true,
+      avgCost: true,
+      reorderPoint: true,
+      dimLength: true,
+      dimLengthUnit: true,
+      dimWidth: true,
+      dimWidthUnit: true,
+    },
+    orderBy: { name: "asc" },
+  })
 
-const SYSTEM_PROMPT = `You are a materials parser for RSNE (Refrigerated Structures of New England), a company that builds walk-in coolers and freezers.
+  return products
+    .map((p) => {
+      const dims = p.dimLength
+        ? `${p.dimLength}${p.dimLengthUnit || ""}${p.dimWidth ? ` x ${p.dimWidth}${p.dimWidthUnit || ""}` : ""}`
+        : ""
+      return `ID:${p.id} | ${p.name}${p.sku ? ` (SKU: ${p.sku})` : ""} | ${p.category.name} | ${p.unitOfMeasure}${dims ? ` | ${dims}` : ""} | qty:${Number(p.currentQty)} | cost:$${Number(p.lastCost ?? p.avgCost ?? 0)}`
+    })
+    .join("\n")
+}
 
-Your job is to take natural language input — spoken, typed, or extracted from photos — and convert it into structured material line items.
+async function loadSupplierContext(): Promise<string> {
+  const suppliers = await prisma.supplier.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  })
+  return suppliers.map((s) => `ID:${s.id} | ${s.name}`).join("\n")
+}
 
-Context about RSNE's inventory:
-- They stock insulated metal panels (IMP), door hardware (hinges, latches, closers), metal trim and flashing, sealants/adhesives (caulk, foam, silicone), gaskets, heater wire, FRP (fiberglass reinforced panels), plywood, fasteners, insulation materials
-- Common abbreviations: IMP = Insulated Metal Panel, W/W = White/White, FRP = Fiberglass Reinforced Panel, SS = Stainless Steel, Galv = Galvalume/Galvanized
-- Panel dimensions are often expressed as thickness x width x length (e.g., "4in IMP W/W 3x20" = 4-inch thick Insulated Metal Panel, White/White finish, 3ft wide by 20ft long)
-- Units vary: panels are counted in sheets or pieces, metal is in linear ft or sheets, sealants in tubes/cases, hardware in each
+async function loadOpenPOContext(): Promise<string> {
+  const pos = await prisma.purchaseOrder.findMany({
+    where: { status: { in: ["OPEN", "PARTIALLY_RECEIVED"] } },
+    include: {
+      supplier: { select: { name: true } },
+      lineItems: {
+        select: { description: true, sku: true, qtyOrdered: true, qtyReceived: true, unitCost: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  })
 
-Rules:
-- Parse EVERY item mentioned, even if vague
-- If quantity isn't specified, default to 1
-- Use your best judgment for units of measure based on the material type
-- Distinguish between items that are likely in a catalog (standard materials) vs. custom/non-standard items
-- Set confidence lower for ambiguous items
-- Preserve all dimensional and spec information — downstream matching depends on it
+  return pos
+    .map((po) => {
+      const items = po.lineItems
+        .map((li) => `  - ${li.description}${li.sku ? ` (${li.sku})` : ""} qty:${Number(li.qtyOrdered)} received:${Number(li.qtyReceived)} @$${Number(li.unitCost)}`)
+        .join("\n")
+      return `PO#${po.poNumber} | ${po.supplier.name} | $${Number(po.amount ?? 0)} | ${po.jobName || "no job"} | ${po.createdAt.toISOString().slice(0, 10)}\n${items}`
+    })
+    .join("\n\n")
+}
 
-IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`
+// ─── Build product lookup for enriching AI results ───
+
+interface ProductData {
+  id: string
+  name: string
+  sku: string | null
+  unitOfMeasure: string
+  currentQty: number
+  tier: string
+  categoryName: string
+  lastCost: number
+  avgCost: number
+  reorderPoint: number
+  dimLength: number | null
+  dimLengthUnit: string | null
+  dimWidth: number | null
+  dimWidthUnit: string | null
+}
+
+async function loadProductMap(): Promise<Map<string, ProductData>> {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      sku: true,
+      unitOfMeasure: true,
+      currentQty: true,
+      tier: true,
+      category: { select: { name: true } },
+      lastCost: true,
+      avgCost: true,
+      reorderPoint: true,
+      dimLength: true,
+      dimLengthUnit: true,
+      dimWidth: true,
+      dimWidthUnit: true,
+    },
+  })
+
+  const map = new Map<string, ProductData>()
+  for (const p of products) {
+    map.set(p.id, {
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      unitOfMeasure: p.unitOfMeasure,
+      currentQty: Number(p.currentQty),
+      tier: p.tier,
+      categoryName: p.category.name,
+      lastCost: Number(p.lastCost ?? 0),
+      avgCost: Number(p.avgCost ?? 0),
+      reorderPoint: Number(p.reorderPoint ?? 0),
+      dimLength: p.dimLength ? Number(p.dimLength) : null,
+      dimLengthUnit: p.dimLengthUnit,
+      dimWidth: p.dimWidth ? Number(p.dimWidth) : null,
+      dimWidthUnit: p.dimWidthUnit,
+    })
+  }
+  return map
+}
+
+// ─── JSON extraction helper ───
 
 function extractJSON(text: string): unknown {
-  // Try direct parse first
   try {
     return JSON.parse(text)
   } catch {
-    // Try to extract JSON from markdown code fences
     const match = text.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (match) {
-      return JSON.parse(match[1].trim())
-    }
-    // Try to find first { or [ and parse from there
+    if (match) return JSON.parse(match[1].trim())
     const start = text.search(/[{[]/)
-    if (start >= 0) {
-      return JSON.parse(text.slice(start))
-    }
+    if (start >= 0) return JSON.parse(text.slice(start))
     throw new Error("Could not extract JSON from response")
   }
 }
 
-export async function parseTextInput(text: string): Promise<ParsedLineItem[]> {
+// ─── System prompt ───
+
+const SYSTEM_PROMPT = `You are the AI brain for RSNE (Refrigerated Structures of New England), a company that builds walk-in coolers and freezers. You help their team receive materials, match products, and identify purchase orders.
+
+You think like an experienced warehouse manager who knows the product catalog, recognizes suppliers by name, and can match a packing slip to the right PO using common sense.
+
+Industry context:
+- RSNE stocks: insulated metal panels (IMP), door hardware, metal trim/flashing, sealants/adhesives, gaskets, heater wire, FRP panels, plywood, fasteners, insulation
+- Common abbreviations: IMP = Insulated Metal Panel, W/W = White/White, FRP = Fiberglass Reinforced Panel, SS = Stainless Steel, Galv = Galvalume/Galvanized
+- Foam kits like "FROTH-PAK" are common sealant/insulation items
+- Panel dimensions: thickness x width x length (e.g., "4in IMP W/W 3x20")
+
+IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`
+
+// ─── Text input (used for BOM builder, quick adds) ───
+
+export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
+  const [catalogContext, productMap] = await Promise.all([
+    loadCatalogContext(),
+    loadProductMap(),
+  ])
+
   const { text: response } = await generateText({
     model: MODEL,
     system: SYSTEM_PROMPT,
-    prompt: `Parse the following into structured material line items. Return JSON matching this schema:\n${JSON_SCHEMA}\n\nInput: "${text}"`,
+    prompt: `A warehouse worker typed or spoke this:
+"${text}"
+
+Please parse each item they mentioned and match it to the best product in our catalog. Use your judgment — product names won't be exact matches. Think about what the person likely means given the industry context.
+
+CATALOG (one product per line):
+${catalogContext}
+
+Return JSON:
+{
+  "items": [
+    {
+      "rawText": "the original text for this item",
+      "name": "your best description of what they want",
+      "quantity": 1,
+      "unitOfMeasure": "each|linear ft|sq ft|sheet|tube|box|case|roll|etc",
+      "category": "best category guess or null",
+      "estimatedCost": null,
+      "confidence": 0.95,
+      "matchedProductId": "product ID from catalog or null if no good match",
+      "matchConfidence": 0.9,
+      "alternativeProductIds": ["2nd best ID", "3rd best ID"]
+    }
+  ]
+}
+
+Rules:
+- Match generously — "froth pak" matches "FROTH-PAK 200", "IMP white" matches insulated metal panels
+- If an item clearly matches a catalog product, set matchedProductId and high matchConfidence
+- If it's ambiguous between 2-3 products, pick the best and include alternatives
+- If nothing in the catalog matches, set matchedProductId to null (it's a non-catalog item)
+- Parse EVERY item mentioned, even vague ones`,
   })
 
-  const parsed = extractJSON(response) as { items?: unknown }
-  if (!Array.isArray(parsed.items)) {
-    throw new Error("AI response missing items array")
-  }
-  return parsed.items as ParsedLineItem[]
+  const parsed = extractJSON(response) as { items?: AIMatchedItem[] }
+  if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
+
+  return parsed.items.map((item) => toCatalogMatch(item, productMap))
+}
+
+// ─── Image input (packing slips, invoices, BOMs) ───
+
+export interface ImageParseResult {
+  items: CatalogMatch[]
+  supplier?: string
+  supplierId?: string
+  poNumber?: string
+  poId?: string
+  deliveryDate?: string
 }
 
 export async function parseImageInput(
   imageBase64: string,
   mimeType: string
-): Promise<{
-  items: ParsedLineItem[]
-  supplier?: string
-  poNumber?: string
-  deliveryDate?: string
-}> {
+): Promise<ImageParseResult> {
+  const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
+    loadCatalogContext(),
+    loadSupplierContext(),
+    loadOpenPOContext(),
+    loadProductMap(),
+  ])
+
   const { text: response } = await generateText({
     model: MODEL,
     system: SYSTEM_PROMPT,
@@ -105,14 +247,52 @@ export async function parseImageInput(
           },
           {
             type: "text",
-            text: `Extract all material line items from this image. This may be a packing slip, invoice, handwritten BOM, or material list.
+            text: `Please analyze this image (likely a packing slip, invoice, or material list) and do the following:
 
-IMPORTANT extraction rules:
-- For "supplier": extract the SENDER company name (the company that shipped/sold, usually at the top with their logo). NOT the customer/buyer.
-- For "poNumber": look specifically for a field labeled "Customer PO", "PO #", "PO Number", or "Purchase Order". This is typically a short number (1-4 digits). Do NOT use shipment numbers, order numbers, invoice numbers, or sales order numbers.
-- For item names: use the most specific product name available. If there is both an item code/SKU and a description, use the description as the name and include dimensional/spec details.
+1. IDENTIFY THE SUPPLIER — Who sent this? Match the sender company to one of our known suppliers.
 
-Return JSON matching this schema:\n${RECEIVING_SCHEMA}`,
+SUPPLIERS:
+${supplierContext}
+
+2. FIND THE PURCHASE ORDER — Look for a "Customer PO" number (usually 1-4 digits). Then try to match it against our open POs. Use common sense: a more recent PO is likely more relevant. If the PO number doesn't match exactly, try matching by supplier + items + quantities.
+
+OPEN PURCHASE ORDERS:
+${poContext}
+
+3. EXTRACT & MATCH ITEMS — Parse every line item and match each to the best product in our catalog. Product names on packing slips often differ from catalog names — use your judgment.
+
+CATALOG:
+${catalogContext}
+
+Return JSON:
+{
+  "supplier": "supplier name as shown on document",
+  "supplierId": "matched supplier ID from list above, or null",
+  "poNumber": "PO number as shown on document, or null",
+  "matchedPoId": "matched PO ID from list above, or null",
+  "poMatchReasoning": "brief explanation of why you matched (or didn't match) this PO",
+  "deliveryDate": "ISO date if visible, or null",
+  "items": [
+    {
+      "rawText": "original text from the document for this line",
+      "name": "your best description of the item",
+      "quantity": 12,
+      "unitOfMeasure": "each",
+      "category": "category guess or null",
+      "estimatedCost": 25.50,
+      "confidence": 0.95,
+      "matchedProductId": "product ID from catalog or null",
+      "matchConfidence": 0.85,
+      "alternativeProductIds": ["2nd best", "3rd best"]
+    }
+  ]
+}
+
+Think step by step:
+- The supplier logo/name is usually at the top
+- Customer PO is RSNE's PO number, NOT the supplier's order/shipment number
+- Match items by meaning, not exact text — "FROTH-PAK 200 1.75PCF LOW GWP FOAM SEALANT KIT" should match a catalog item called "FROTH-PAK 200"
+- If the PO number is on the document but doesn't match any open PO, still return it — the PO may be closed or not in the system`,
           },
         ],
       },
@@ -120,20 +300,106 @@ Return JSON matching this schema:\n${RECEIVING_SCHEMA}`,
   })
 
   const parsed = extractJSON(response) as {
-    items?: unknown
+    items?: AIMatchedItem[]
     supplier?: string
+    supplierId?: string
     poNumber?: string
+    matchedPoId?: string
+    poMatchReasoning?: string
     deliveryDate?: string
   }
 
-  if (!Array.isArray(parsed.items)) {
-    throw new Error("AI response missing items array")
+  if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
+
+  return {
+    items: parsed.items.map((item) => toCatalogMatch(item, productMap)),
+    supplier: parsed.supplier,
+    supplierId: parsed.supplierId || undefined,
+    poNumber: parsed.poNumber,
+    poId: parsed.matchedPoId || undefined,
+    deliveryDate: parsed.deliveryDate,
+  }
+}
+
+// ─── Convert AI result to CatalogMatch type ───
+
+interface AIMatchedItem {
+  rawText?: string
+  name?: string
+  quantity?: number
+  unitOfMeasure?: string
+  category?: string
+  dimensions?: ParsedLineItem["dimensions"]
+  finish?: string
+  material?: string
+  specs?: Record<string, string>
+  estimatedCost?: number
+  confidence?: number
+  matchedProductId?: string | null
+  matchConfidence?: number
+  alternativeProductIds?: string[]
+}
+
+function toCatalogMatch(
+  item: AIMatchedItem,
+  productMap: Map<string, ProductData>
+): CatalogMatch {
+  const parsedItem: ParsedLineItem = {
+    rawText: item.rawText || item.name || "",
+    name: item.name || "",
+    quantity: item.quantity || 1,
+    unitOfMeasure: item.unitOfMeasure || "each",
+    category: item.category,
+    dimensions: item.dimensions,
+    finish: item.finish,
+    material: item.material,
+    specs: item.specs,
+    estimatedCost: item.estimatedCost,
+    confidence: item.confidence ?? 0.5,
+  }
+
+  const matchedProduct = item.matchedProductId
+    ? productMap.get(item.matchedProductId)
+    : undefined
+
+  const alternatives = (item.alternativeProductIds || [])
+    .map((id) => productMap.get(id))
+    .filter((p): p is ProductData => !!p)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      matchConfidence: (item.matchConfidence ?? 0.5) - 0.1,
+    }))
+
+  if (matchedProduct) {
+    return {
+      parsedItem,
+      matchedProduct: {
+        id: matchedProduct.id,
+        name: matchedProduct.name,
+        sku: matchedProduct.sku,
+        unitOfMeasure: matchedProduct.unitOfMeasure,
+        currentQty: matchedProduct.currentQty,
+        tier: matchedProduct.tier,
+        categoryName: matchedProduct.categoryName,
+        lastCost: matchedProduct.lastCost,
+        avgCost: matchedProduct.avgCost,
+        reorderPoint: matchedProduct.reorderPoint,
+        dimLength: matchedProduct.dimLength,
+        dimLengthUnit: matchedProduct.dimLengthUnit,
+        dimWidth: matchedProduct.dimWidth,
+        dimWidthUnit: matchedProduct.dimWidthUnit,
+      },
+      matchConfidence: item.matchConfidence ?? 0.8,
+      isNonCatalog: false,
+      alternativeMatches: alternatives.length > 0 ? alternatives : undefined,
+    }
   }
 
   return {
-    items: parsed.items as ParsedLineItem[],
-    supplier: parsed.supplier,
-    poNumber: parsed.poNumber,
-    deliveryDate: parsed.deliveryDate,
+    parsedItem,
+    matchedProduct: null,
+    matchConfidence: 0,
+    isNonCatalog: true,
   }
 }

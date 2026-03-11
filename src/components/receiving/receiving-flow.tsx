@@ -8,7 +8,7 @@ import { SupplierPicker } from "@/components/receiving/supplier-picker"
 import { ReceivingConfirmationList } from "@/components/receiving/receiving-confirmation-card"
 import { ReceiptSummary } from "@/components/receiving/receipt-summary"
 import { POMatchCard } from "@/components/receiving/po-match-card"
-import { useSupplierMatch, usePoMatch, useCreateReceipt } from "@/hooks/use-receiving"
+import { usePoMatch, useCreateReceipt } from "@/hooks/use-receiving"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -62,7 +62,6 @@ export function ReceivingFlow() {
   // Notes
   const [notes, setNotes] = useState("")
 
-  const supplierMatch = useSupplierMatch()
   const poMatch = usePoMatch()
   const createReceipt = useCreateReceipt()
 
@@ -71,52 +70,72 @@ export function ReceivingFlow() {
       setPendingMatches(result.items)
       setConfirmedItems([])
 
-      let matchedSupplierId = ""
-
-      // Auto-match supplier if extracted from image
-      if ("supplier" in result && result.supplier) {
-        try {
-          const matched = await supplierMatch.mutateAsync(result.supplier)
-          if (matched) {
-            setSupplierId(matched.id)
-            setSupplierName(matched.name)
-            setSupplierAutoMatched(true)
-            matchedSupplierId = matched.id
-          }
-        } catch {
-          // Supplier match failed — user will pick manually
-        }
+      // AI now handles supplier and PO matching in one call
+      if ("supplierId" in result && result.supplierId) {
+        // AI matched a supplier directly
+        setSupplierId(result.supplierId)
+        setSupplierName(result.supplier || "")
+        setSupplierAutoMatched(true)
+      } else if ("supplier" in result && result.supplier) {
+        // AI found a supplier name but couldn't match to our list
+        setSupplierName(result.supplier)
       }
 
-      // Auto-match PO if extracted from image
-      if ("poNumber" in result && result.poNumber) {
+      // AI matched a PO directly
+      if ("poId" in result && result.poId) {
+        try {
+          // Fetch the full PO data (with line items) for the match card
+          const po = await poMatch.mutateAsync({
+            poNumber: result.poNumber || "",
+            vendorName: result.supplier,
+          })
+          if (po) {
+            setMatchedPO(po)
+            setShowPOStep(true)
+
+            // Use PO's supplier if not already set
+            if (!result.supplierId) {
+              setSupplierId(po.supplierId)
+              setSupplierName(po.supplierName)
+              setSupplierAutoMatched(true)
+            }
+
+            setPhase("PO_MATCH")
+            return
+          }
+        } catch {
+          // Fall through to manual PO search
+        }
+      } else if ("poNumber" in result && result.poNumber) {
+        // AI found a PO number but couldn't match — try the old match endpoint
         try {
           const po = await poMatch.mutateAsync({
             poNumber: result.poNumber,
-            vendorName: "supplier" in result ? result.supplier : undefined,
+            vendorName: result.supplier,
           })
-          setMatchedPO(po)
-          setShowPOStep(true)
+          if (po) {
+            setMatchedPO(po)
+            setShowPOStep(true)
 
-          // If PO matched and has a supplier, use that supplier
-          if (po && !matchedSupplierId) {
-            setSupplierId(po.supplierId)
-            setSupplierName(po.supplierName)
-            setSupplierAutoMatched(true)
+            if (!result.supplierId) {
+              setSupplierId(po.supplierId)
+              setSupplierName(po.supplierName)
+              setSupplierAutoMatched(true)
+            }
+
+            setPhase("PO_MATCH")
+            return
           }
-
-          setPhase("PO_MATCH")
-          return
         } catch {
-          // PO match failed — still show PO step for manual search
+          // PO match failed — still show PO step
         }
       }
 
-      // No PO number found — still offer PO search
+      // Show PO step for manual search
       setShowPOStep(true)
       setPhase("PO_MATCH")
     },
-    [supplierMatch, poMatch]
+    [poMatch]
   )
 
   function handlePOConfirm(po: MatchedPO) {

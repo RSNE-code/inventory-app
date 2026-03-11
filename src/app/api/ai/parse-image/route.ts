@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { parseImageInput } from "@/lib/ai/parse"
-import { matchItemsToCatalog } from "@/lib/ai/catalog-match"
 import { getCurrentUser } from "@/lib/auth"
-import type { ReceivingParseResult } from "@/lib/ai/types"
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,19 +38,21 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const base64 = Buffer.from(bytes).toString("base64")
 
-    const parsed = await parseImageInput(base64, file.type)
-    const matchedItems = await matchItemsToCatalog(parsed.items)
+    // Single AI call handles parsing, catalog matching, supplier matching, and PO matching
+    const result = await parseImageInput(base64, file.type)
 
-    const result: ReceivingParseResult = {
-      items: matchedItems,
-      rawInput: "[image]",
-      inputType: "image",
-      supplier: parsed.supplier,
-      poNumber: parsed.poNumber,
-      deliveryDate: parsed.deliveryDate,
-    }
-
-    return NextResponse.json({ data: result })
+    return NextResponse.json({
+      data: {
+        items: result.items,
+        rawInput: "[image]",
+        inputType: "image" as const,
+        supplier: result.supplier,
+        supplierId: result.supplierId,
+        poNumber: result.poNumber,
+        poId: result.poId,
+        deliveryDate: result.deliveryDate,
+      },
+    })
   } catch (error) {
     console.error("[parse-image] Error:", error)
     const message = error instanceof Error ? error.message : "Internal server error"
