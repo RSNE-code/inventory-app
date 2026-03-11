@@ -215,7 +215,7 @@ function POSearchView({
         </div>
 
         {/* Results */}
-        <div className="max-h-[200px] overflow-y-auto space-y-1">
+        <div className="max-h-[200px] overflow-y-auto divide-y divide-border-custom/40">
           {isLoading ? (
             <div className="py-4 text-center">
               <div className="h-4 w-4 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin mx-auto" />
@@ -229,7 +229,7 @@ function POSearchView({
               <button
                 key={po.id}
                 onClick={() => onSelect(po)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-brand-blue/5 transition-colors text-left group"
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-brand-blue/5 transition-colors text-left group first:rounded-t-lg last:rounded-b-lg"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -253,12 +253,14 @@ function POSearchView({
         </div>
 
         {/* Skip */}
-        <button
-          onClick={onSkip}
-          className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
-        >
-          No PO — ad hoc purchase
-        </button>
+        <div className="pt-1 border-t border-border-custom/40">
+          <button
+            onClick={onSkip}
+            className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2.5 rounded-lg hover:bg-surface-secondary transition-colors"
+          >
+            No PO — ad hoc purchase
+          </button>
+        </div>
       </div>
     </Card>
   )

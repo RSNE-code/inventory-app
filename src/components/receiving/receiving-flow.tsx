@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import { Camera, PackageCheck } from "lucide-react"
+import { Camera, PackageCheck, FileText } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { SupplierPicker } from "@/components/receiving/supplier-picker"
@@ -311,13 +311,19 @@ export function ReceivingFlow() {
 
         {/* PO badge (if matched) */}
         {purchaseOrderId && matchedPO && (
-          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-brand-blue/5 border border-brand-blue/10">
-            <span className="text-xs font-semibold text-brand-blue">
-              PO #{matchedPO.poNumber} — {matchedPO.supplierName}
-            </span>
+          <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-blue/5 border border-brand-blue/10">
+            <div className="flex items-center gap-2">
+              <FileText className="h-3.5 w-3.5 text-brand-blue" />
+              <span className="text-xs font-semibold text-brand-blue">
+                PO #{matchedPO.poNumber}
+              </span>
+              <span className="text-[11px] text-text-muted">
+                {matchedPO.supplierName}
+              </span>
+            </div>
             <button
               onClick={() => setPhase("PO_MATCH")}
-              className="text-[10px] text-text-muted hover:text-navy font-medium"
+              className="text-[10px] text-text-muted hover:text-brand-blue font-semibold transition-colors"
             >
               Change
             </button>
