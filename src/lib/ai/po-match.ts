@@ -12,13 +12,16 @@ export async function matchPO(params: MatchParams): Promise<MatchedPO | null> {
 
   if (!poNumber && !vendorName) return null
 
-  // Load open POs with supplier
+  // Load open POs with supplier and line items
   const openPOs = await prisma.purchaseOrder.findMany({
     where: {
       status: { in: ["OPEN", "PARTIALLY_RECEIVED"] },
     },
     include: {
       supplier: { select: { id: true, name: true } },
+      lineItems: {
+        include: { product: { select: { name: true } } },
+      },
     },
     orderBy: { createdAt: "desc" },
   })
@@ -166,6 +169,9 @@ export async function searchPOs(params: {
     where,
     include: {
       supplier: { select: { id: true, name: true } },
+      lineItems: {
+        include: { product: { select: { name: true } } },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -203,6 +209,16 @@ function toMatchedPO(
     clientName: string | null
     createdAt: Date
     supplier: { id: string; name: string }
+    lineItems?: Array<{
+      id: string
+      description: string
+      sku: string | null
+      productId: string | null
+      product: { name: string } | null
+      qtyOrdered: { toString(): string }
+      qtyReceived: { toString(): string }
+      unitCost: { toString(): string }
+    }>
   },
   confidence: number
 ): MatchedPO {
@@ -216,5 +232,15 @@ function toMatchedPO(
     clientName: po.clientName,
     createdAt: po.createdAt.toISOString(),
     confidence,
+    lineItems: (po.lineItems ?? []).map((li) => ({
+      id: li.id,
+      description: li.description,
+      sku: li.sku,
+      productId: li.productId,
+      productName: li.product?.name ?? null,
+      qtyOrdered: Number(li.qtyOrdered),
+      qtyReceived: Number(li.qtyReceived),
+      unitCost: Number(li.unitCost),
+    })),
   }
 }

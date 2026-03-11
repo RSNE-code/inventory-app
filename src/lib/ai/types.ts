@@ -81,6 +81,17 @@ export interface ConfirmedBomItem {
   catalogMatch: CatalogMatch
 }
 
+export interface POLineItemData {
+  id: string
+  description: string
+  sku: string | null
+  productId: string | null
+  productName: string | null
+  qtyOrdered: number
+  qtyReceived: number
+  unitCost: number
+}
+
 export interface MatchedPO {
   id: string
   poNumber: string
@@ -91,6 +102,7 @@ export interface MatchedPO {
   clientName: string | null
   createdAt: string
   confidence: number // 0-1
+  lineItems: POLineItemData[]
 }
 
 export interface ConfirmedReceivingItem {
