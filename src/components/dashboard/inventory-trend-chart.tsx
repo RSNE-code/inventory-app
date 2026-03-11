@@ -126,6 +126,7 @@ export function InventoryTrendChart() {
 
   // Y-axis: compute "nice" rounded tick values
   function niceNum(val: number, round: boolean): number {
+    if (val <= 0 || !isFinite(val)) return 1
     const exp = Math.floor(Math.log10(val))
     const frac = val / Math.pow(10, exp)
     let nice: number
@@ -138,18 +139,29 @@ export function InventoryTrendChart() {
   }
 
   const tickCount = 3
-  const rawRange = maxVal - minVal || 1
-  const tickSpacing = niceNum(rawRange / (tickCount - 1), true)
-  const niceMin = Math.floor(minVal / tickSpacing) * tickSpacing
-  const niceMax = Math.ceil(maxVal / tickSpacing) * tickSpacing
-  const yLabels: number[] = []
-  for (let v = niceMin; v <= niceMax + tickSpacing * 0.01; v += tickSpacing) {
-    yLabels.push(v)
+  const rawRange = maxVal - minVal
+  let yLabels: number[]
+  let scaleMin: number
+  let scaleMax: number
+
+  if (rawRange < 0.01 || !isFinite(rawRange)) {
+    // All values are essentially the same (or zero)
+    const center = maxVal || 1
+    scaleMin = center * 0.9
+    scaleMax = center * 1.1
+    yLabels = [scaleMin, center, scaleMax]
+  } else {
+    const tickSpacing = niceNum(rawRange / (tickCount - 1), true)
+    const computedMin = Math.floor(minVal / tickSpacing) * tickSpacing
+    const computedMax = Math.ceil(maxVal / tickSpacing) * tickSpacing
+    yLabels = []
+    for (let v = computedMin; v <= computedMax + tickSpacing * 0.01 && yLabels.length < 6; v += tickSpacing) {
+      yLabels.push(v)
+    }
+    scaleMin = yLabels[0]
+    scaleMax = yLabels[yLabels.length - 1]
   }
 
-  // Recalculate scale to fit nice ticks
-  const scaleMin = yLabels[0]
-  const scaleMax = yLabels[yLabels.length - 1]
   const scaleRange = scaleMax - scaleMin || 1
 
   function yPosNice(val: number) {
