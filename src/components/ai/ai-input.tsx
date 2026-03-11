@@ -1,11 +1,15 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useImperativeHandle, forwardRef } from "react"
 import { Mic, MicOff, Camera, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useVoiceInput } from "@/hooks/use-voice-input"
 import type { ParseResult, ReceivingParseResult } from "@/lib/ai/types"
+
+export interface AIInputHandle {
+  triggerCamera: () => void
+}
 
 interface AIInputProps {
   onParseComplete: (result: ParseResult | ReceivingParseResult) => void
@@ -14,16 +18,20 @@ interface AIInputProps {
   disabled?: boolean
 }
 
-export function AIInput({
+export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput({
   onParseComplete,
   placeholder = "Type or speak what you need...",
   className,
   disabled = false,
-}: AIInputProps) {
+}, ref) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    triggerCamera: () => fileInputRef.current?.click(),
+  }))
 
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } =
     useVoiceInput((finalTranscript) => {
@@ -173,7 +181,6 @@ export function AIInput({
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             onChange={handleImageCapture}
           />
@@ -196,4 +203,4 @@ export function AIInput({
       </div>
     </div>
   )
-}
+})

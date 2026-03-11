@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Camera, PackageCheck } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { AIInput } from "@/components/ai/ai-input"
+import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { SupplierPicker } from "@/components/receiving/supplier-picker"
 import { ReceivingConfirmationList } from "@/components/receiving/receiving-confirmation-card"
 import { ReceiptSummary } from "@/components/receiving/receipt-summary"
@@ -25,6 +25,7 @@ const PHASE_INDEX: Record<Phase, number> = { INPUT: 0, REVIEW: 1, SUMMARY: 2 }
 
 export function ReceivingFlow() {
   const [phase, setPhase] = useState<Phase>("INPUT")
+  const aiInputRef = useRef<AIInputHandle>(null)
 
   // AI parse results
   const [pendingMatches, setPendingMatches] = useState<CatalogMatch[]>([])
@@ -186,9 +187,13 @@ export function ReceivingFlow() {
         <StepProgress steps={RECEIVING_STEPS} currentStep={PHASE_INDEX[phase]} />
         {/* Hero prompt */}
         <div className="text-center py-6">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 mb-3">
+          <button
+            type="button"
+            onClick={() => aiInputRef.current?.triggerCamera()}
+            className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 mb-3 hover:bg-orange-100 transition-colors active:scale-95"
+          >
             <Camera className="h-8 w-8 text-[#E8792B]" />
-          </div>
+          </button>
           <h2 className="text-lg font-semibold text-gray-900">Snap a packing slip</h2>
           <p className="text-sm text-gray-500 mt-1">
             Take a photo, type, or speak — AI will parse the items for you
@@ -196,6 +201,7 @@ export function ReceivingFlow() {
         </div>
 
         <AIInput
+          ref={aiInputRef}
           onParseComplete={handleParseComplete}
           placeholder="Or type/speak: '20 sheets 4in IMP white, 5 boxes hinges...'"
         />

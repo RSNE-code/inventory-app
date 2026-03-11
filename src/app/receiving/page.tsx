@@ -31,7 +31,7 @@ export default function ReceivingPage() {
 
   return (
     <div>
-      <Header title="Receive Material" showBack />
+      <Header title="Receive Material" showBack showMenu />
       <Breadcrumb items={[{ label: "Receiving" }]} />
 
       {/* Tab bar */}
