@@ -70,136 +70,96 @@ async function main() {
   const catMap = new Map(categories.map((c) => [c.name, c.id]))
   console.log(`Created ${categories.length} categories`)
 
-  // ─── SUPPLIERS ───
-  const suppliers = await Promise.all([
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Adfast" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Adfast" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Barbour Plastics" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Barbour Plastics" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Bluelinx" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Bluelinx" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Chase" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Chase" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Dent" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Dent" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Dupont" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Dupont" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Energy Door Company" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Energy Door Company" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Fastener Systems Inc." },
-    }).catch(() => prisma.supplier.create({ data: { name: "Fastener Systems Inc." } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Hadco" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Hadco" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Industrial Products" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Industrial Products" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Insulation Technology" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Insulation Technology" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Jamison" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Jamison" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Kamco" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Kamco" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Kason" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Kason" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Lineage" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Lineage" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "MetlSpan" },
-    }).catch(() => prisma.supplier.create({ data: { name: "MetlSpan" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Millennium Metals" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Millennium Metals" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "NEFCO" },
-    }).catch(() => prisma.supplier.create({ data: { name: "NEFCO" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Norfab" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Norfab" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Pierce Aluminum" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Pierce Aluminum" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "PolyCel" },
-    }).catch(() => prisma.supplier.create({ data: { name: "PolyCel" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "QXO" },
-    }).catch(() => prisma.supplier.create({ data: { name: "QXO" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Refrigeration Hardware Supply Corp" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Refrigeration Hardware Supply Corp" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Senneca" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Senneca" } })),
-    prisma.supplier.upsert({
-      where: { id: undefined },
-      update: {},
-      create: { name: "Tricomp" },
-    }).catch(() => prisma.supplier.create({ data: { name: "Tricomp" } })),
-  ])
+  // ─── SUPPLIERS (official RSNE supplier list) ───
+  const supplierNames = [
+    "Jamison Door Company (Parts)",
+    "Turner Steel Co. Inc",
+    "Industrial Products",
+    "Kason Central",
+    "Security Lock",
+    "Dent Design Hardware Ltd.",
+    "Loxley Electrical Services, LLC",
+    "Advanced Concrete Cutting, LLC",
+    "Hadco Metal Trading Co., LLC",
+    "Tri-State Fasteners",
+    "Insulation Technology Inc.",
+    "Jamison Door Company (Doors)",
+    "Fastener Systems Inc.",
+    "Adfast USA Inc.",
+    "Senneca Holdings",
+    "Hilti Inc",
+    "Uline",
+    "CSI of Virginia, Inc.",
+    "Lineage Metals",
+    "Anthony, Inc.",
+    "Frank Lowe",
+    "Pierce Aluminum Company Inc.",
+    "All Weather Insulated Panels",
+    "Nucor - Metlspan",
+    "Kamco Supply Corp of Boston",
+    "Beacon Roofing Supply",
+    "Rytec Corporation",
+    "bluelinx",
+    "Granite City Electric Supply",
+    "Tricomp Inc.",
+    "Refrigeration Hardware Supply Corp",
+    "All Metals Industries, Inc.",
+    "Norfab Inc.",
+    "Automak Assembly Inc.",
+    "Poly Cel Incorporated",
+    "National Lumber",
+    "NEFCO",
+    "Axle Logistics, LLC",
+    "ERC Wiping Products",
+    "Chase Industries Inc",
+    "Millennia Metals",
+    "McMaster-Carr",
+    "tbp Converting",
+    "Supply House",
+    "North Bridge Building Products",
+    "Tempco Manufacturing",
+    "Thermoseal - Advanced Equipment Sales",
+    "Northeast Installation Group, LLC",
+    "Energy Door Company",
+    "Component Hardware",
+    "Dupont",
+    "F.W. Webb Company",
+    "Rexel",
+    "4Front Engineering Solutions (Dynaco)",
+    "Patriot Supply",
+    "Barbour Plastics",
+    "H&H Custom Metal Fabricating Inc",
+    "Gernatt Spray Foam LLC",
+    "CCI Surety, Inc.",
+    "American Material Handling Corp",
+    "Tb Philly",
+    "BEA INC",
+    "NFI - Nameplates for Industry",
+    "Independent Mechanical Contractors Inc",
+    "Hormann",
+    "Nautical Heating & Air Conditioning LLC",
+    "SPS CleanTech, LLC",
+    "McElroy Metals",
+    "Home Depot",
+  ]
 
-  console.log(`Created ${suppliers.length} suppliers`)
+  // Check existing suppliers to avoid duplicates
+  const existingSuppliers = await prisma.supplier.findMany({
+    select: { name: true },
+  })
+  const existingNames = new Set(existingSuppliers.map((s) => s.name.toLowerCase()))
+
+  const newSuppliers = supplierNames.filter(
+    (name) => !existingNames.has(name.toLowerCase())
+  )
+
+  if (newSuppliers.length > 0) {
+    await prisma.supplier.createMany({
+      data: newSuppliers.map((name) => ({ name, isActive: true })),
+    })
+  }
+
+  console.log(`Suppliers: ${existingSuppliers.length} existing, ${newSuppliers.length} added (${supplierNames.length} total)`)
 
   // ─── ADMIN USER ───
   const admin = await prisma.user.upsert({
