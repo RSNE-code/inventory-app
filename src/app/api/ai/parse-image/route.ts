@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: result })
   } catch (error) {
+    console.error("[parse-image] Error:", error)
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
     return NextResponse.json({ error: message }, { status: 500 })
