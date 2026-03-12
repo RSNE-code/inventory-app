@@ -207,6 +207,87 @@ Rules:
   return parsed.items.map((item) => toCatalogMatch(item, productMap))
 }
 
+// ─── Text input with receiving context (extracts supplier/PO info) ───
+
+export async function parseReceivingTextInput(text: string): Promise<ImageParseResult> {
+  const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
+    loadCatalogContext(),
+    loadSupplierContext(),
+    loadPOContext(),
+    loadProductMap(),
+  ])
+
+  const { text: response } = await generateText({
+    model: MODEL,
+    system: SYSTEM_PROMPT,
+    prompt: `A warehouse worker typed or spoke this while receiving materials:
+"${text}"
+
+Please do TWO things:
+
+1. IDENTIFY SUPPLIER & PO — Look for any mention of a supplier name or PO number. Match against our known suppliers and open POs.
+
+SUPPLIERS:
+${supplierContext}
+
+PURCHASE ORDERS (recent, most relevant):
+${poContext}
+
+2. PARSE & MATCH ITEMS — Parse each item mentioned and match to our catalog.
+
+CATALOG (one product per line):
+${catalogContext}
+
+Return JSON:
+{
+  "supplier": "supplier name if mentioned, or null",
+  "supplierId": "matched supplier ID from list above, or null",
+  "poNumber": "PO number if mentioned, or null",
+  "matchedPoId": "matched PO ID from list above, or null",
+  "items": [
+    {
+      "rawText": "the original text for this item",
+      "name": "your best description of what they want",
+      "quantity": 1,
+      "unitOfMeasure": "each|linear ft|sq ft|sheet|tube|box|case|roll|etc",
+      "category": "best category guess or null",
+      "estimatedCost": null,
+      "confidence": 0.95,
+      "matchedProductId": "product ID from catalog or null if no good match",
+      "matchConfidence": 0.9,
+      "alternativeProductIds": ["2nd best ID", "3rd best ID"]
+    }
+  ]
+}
+
+Rules:
+- Look for supplier names like "from Hadco", "Metl-Span delivery", etc.
+- Look for PO references like "PO 345", "purchase order 12", "on PO number 88"
+- Match supplier names generously — "Hadco" matches "Hadco Metal Trading Co., LLC"
+- Match PO numbers exactly
+- Match items generously — "froth pak" matches "FROTH-PAK 200"
+- If no supplier or PO is mentioned, set those fields to null
+- Parse EVERY item mentioned, even vague ones`,
+  })
+
+  const parsed = extractJSON(response) as {
+    items?: AIMatchedItem[]
+    supplier?: string
+    supplierId?: string
+    poNumber?: string
+    matchedPoId?: string
+  }
+  if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
+
+  return {
+    items: parsed.items.map((item) => toCatalogMatch(item, productMap)),
+    supplier: parsed.supplier || undefined,
+    supplierId: parsed.supplierId || undefined,
+    poNumber: parsed.poNumber || undefined,
+    poId: parsed.matchedPoId || undefined,
+  }
+}
+
 // ─── Image input (packing slips, invoices, BOMs) ───
 
 export interface ImageParseResult {

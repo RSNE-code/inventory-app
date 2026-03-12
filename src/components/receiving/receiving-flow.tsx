@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import { Camera, PackageCheck, FileText } from "lucide-react"
+import { Camera, PackageCheck, FileText, ClipboardList } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { SupplierPicker } from "@/components/receiving/supplier-picker"
@@ -9,10 +9,12 @@ import { ReceivingConfirmationList } from "@/components/receiving/receiving-conf
 import { ReceiptSummary } from "@/components/receiving/receipt-summary"
 import { POMatchCard } from "@/components/receiving/po-match-card"
 import { POReceiveCard } from "@/components/receiving/po-receive-card"
+import { POBrowser } from "@/components/receiving/po-browser"
 import { usePoMatch, useCreateReceipt } from "@/hooks/use-receiving"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { StepProgress } from "@/components/layout/step-progress"
+import { cn } from "@/lib/utils"
 import type {
   CatalogMatch,
   ReceivingParseResult,
@@ -21,9 +23,9 @@ import type {
   MatchedPO,
 } from "@/lib/ai/types"
 
-type Phase = "INPUT" | "PO_MATCH" | "PO_RECEIVE" | "REVIEW" | "SUMMARY"
+type Phase = "INPUT" | "PO_MATCH" | "PO_BROWSE" | "PO_RECEIVE" | "REVIEW" | "SUMMARY"
 
-const STEPS_PO = ["Input", "PO Match", "Receive", "Summary"]
+const STEPS_PO = ["Input", "Select PO", "Receive", "Summary"]
 const STEPS_NO_PO = ["Input", "Review", "Summary"]
 
 function getSteps(hasPO: boolean) {
@@ -35,6 +37,7 @@ function getStepIndex(phase: Phase, hasPO: boolean): number {
     const map: Record<Phase, number> = {
       INPUT: 0,
       PO_MATCH: 1,
+      PO_BROWSE: 1,
       PO_RECEIVE: 2,
       REVIEW: 2,
       SUMMARY: 3,
@@ -44,6 +47,7 @@ function getStepIndex(phase: Phase, hasPO: boolean): number {
   const map: Record<Phase, number> = {
     INPUT: 0,
     PO_MATCH: 0,
+    PO_BROWSE: 0,
     PO_RECEIVE: 1,
     REVIEW: 1,
     SUMMARY: 2,
@@ -156,13 +160,11 @@ export function ReceivingFlow() {
       setSupplierAutoMatched(true)
     }
 
-    // Go to PO receive phase (show PO items as checklist)
     setPhase("PO_RECEIVE")
   }
 
   function handlePOSkip() {
     setPurchaseOrderId(null)
-    // No PO — go to ad-hoc review with AI-parsed items
     setPhase("REVIEW")
   }
 
@@ -243,7 +245,6 @@ export function ReceivingFlow() {
     }
 
     try {
-      // Build PO line item updates
       const poLineItemUpdates = confirmedItems
         .filter((i) => i.poLineItemId)
         .map((i) => ({
@@ -290,39 +291,89 @@ export function ReceivingFlow() {
   const steps = getSteps(showPOStep)
   const currentStep = getStepIndex(phase, showPOStep)
 
-  // Phase 1: INPUT
+  // ─── Phase 1: INPUT — Two entry paths ───
   if (phase === "INPUT") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-5 animate-fade-in-up">
         <StepProgress steps={steps} currentStep={currentStep} />
-        {/* Hero prompt */}
-        <div className="text-center py-6">
+
+        {/* Entry path cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* AI Receive */}
           <button
             type="button"
             onClick={() => aiInputRef.current?.triggerCamera()}
-            className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 mb-3 hover:bg-orange-100 transition-colors active:scale-95"
+            className={cn(
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-dashed",
+              "border-brand-orange/30 bg-gradient-to-b from-orange-50/80 to-white",
+              "hover:border-brand-orange/50 hover:shadow-[0_4px_20px_rgba(232,121,43,0.12)]",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
           >
-            <Camera className="h-8 w-8 text-[#E8792B]" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange/10 group-hover:bg-brand-orange/15 transition-colors">
+              <Camera className="h-7 w-7 text-brand-orange" />
+            </div>
+            <div className="text-center">
+              <p className="text-[15px] font-extrabold text-navy tracking-tight">
+                AI Receive
+              </p>
+              <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-tight">
+                Photo, voice, or type
+              </p>
+            </div>
           </button>
-          <h2 className="text-lg font-semibold text-gray-900">Snap a packing slip</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Take a photo, type, or speak — AI will parse the items for you
-          </p>
+
+          {/* Browse POs */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowPOStep(true)
+              setPhase("PO_BROWSE")
+            }}
+            className={cn(
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-dashed",
+              "border-brand-blue/30 bg-gradient-to-b from-blue-50/80 to-white",
+              "hover:border-brand-blue/50 hover:shadow-[0_4px_20px_rgba(46,125,186,0.12)]",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue/10 group-hover:bg-brand-blue/15 transition-colors">
+              <ClipboardList className="h-7 w-7 text-brand-blue" />
+            </div>
+            <div className="text-center">
+              <p className="text-[15px] font-extrabold text-navy tracking-tight">
+                Browse POs
+              </p>
+              <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-tight">
+                Find & select a PO
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 px-2">
+          <div className="flex-1 h-px bg-border-custom/60" />
+          <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
+            or type / speak below
+          </span>
+          <div className="flex-1 h-px bg-border-custom/60" />
         </div>
 
         <AIInput
           ref={aiInputRef}
           onParseComplete={handleParseComplete}
-          placeholder="Or type/speak: '20 sheets 4in IMP white, 5 boxes hinges...'"
+          context="receiving"
+          placeholder="'20 panels from Metl-Span on PO 345...'"
         />
       </div>
     )
   }
 
-  // Phase 2: PO MATCH
+  // ─── Phase 2a: PO MATCH (after AI parse, with auto-match) ───
   if (phase === "PO_MATCH") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up">
         <StepProgress steps={steps} currentStep={currentStep} />
 
         <POMatchCard
@@ -334,7 +385,7 @@ export function ReceivingFlow() {
 
         <button
           onClick={handleReset}
-          className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-2"
+          className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
         >
           Start over
         </button>
@@ -342,28 +393,41 @@ export function ReceivingFlow() {
     )
   }
 
-  // Phase 3: PO RECEIVE — show PO line items as a receiving checklist
-  if (phase === "PO_RECEIVE" && matchedPO) {
+  // ─── Phase 2b: PO BROWSE (direct PO browser, no AI parse) ───
+  if (phase === "PO_BROWSE") {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up">
         <StepProgress steps={steps} currentStep={currentStep} />
 
-        <POReceiveCard
-          po={matchedPO}
-          onConfirm={handlePOReceiveConfirm}
-          onBack={() => setPhase("PO_MATCH")}
+        <POBrowser
+          onSelect={handlePOConfirm}
+          onBack={handleReset}
         />
       </div>
     )
   }
 
-  // Phase 4: REVIEW (ad-hoc, no PO)
-  if (phase === "REVIEW") {
+  // ─── Phase 3: PO RECEIVE — show PO line items as a receiving checklist ───
+  if (phase === "PO_RECEIVE" && matchedPO) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up">
         <StepProgress steps={steps} currentStep={currentStep} />
 
-        {/* PO badge (if somehow matched but skipped PO receive) */}
+        <POReceiveCard
+          po={matchedPO}
+          onConfirm={handlePOReceiveConfirm}
+          onBack={() => setPhase(pendingMatches.length > 0 ? "PO_MATCH" : "PO_BROWSE")}
+        />
+      </div>
+    )
+  }
+
+  // ─── Phase 4: REVIEW (ad-hoc, no PO) ───
+  if (phase === "REVIEW") {
+    return (
+      <div className="space-y-4 animate-fade-in-up">
+        <StepProgress steps={steps} currentStep={currentStep} />
+
         {purchaseOrderId && matchedPO && (
           <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-blue/5 border border-brand-blue/10">
             <div className="flex items-center gap-2">
@@ -384,7 +448,6 @@ export function ReceivingFlow() {
           </div>
         )}
 
-        {/* Supplier section */}
         <Card className="p-4 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">Supplier</h3>
@@ -398,7 +461,6 @@ export function ReceivingFlow() {
           />
         </Card>
 
-        {/* Pending items to review */}
         {pendingMatches.length > 0 && (
           <Card className="p-4 rounded-xl border-border-custom space-y-3">
             <ReceivingConfirmationList
@@ -411,7 +473,6 @@ export function ReceivingFlow() {
           </Card>
         )}
 
-        {/* Confirmed items */}
         {confirmedItems.length > 0 && (
           <Card className="p-4 rounded-xl border-border-custom space-y-2">
             <h3 className="font-semibold text-sm text-green-700">
@@ -438,7 +499,6 @@ export function ReceivingFlow() {
           </Card>
         )}
 
-        {/* Add more items */}
         <Card className="p-4 rounded-xl border-border-custom space-y-2">
           <h3 className="text-sm font-medium text-gray-500">Add more items</h3>
           <AIInput
@@ -449,7 +509,6 @@ export function ReceivingFlow() {
           />
         </Card>
 
-        {/* Continue button */}
         <Button
           onClick={handleContinueToSummary}
           disabled={confirmedItems.length === 0 || !supplierId}
@@ -461,7 +520,7 @@ export function ReceivingFlow() {
 
         <button
           onClick={handleReset}
-          className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-2"
+          className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
         >
           Start over
         </button>
@@ -469,9 +528,9 @@ export function ReceivingFlow() {
     )
   }
 
-  // Phase 5: SUMMARY
+  // ─── Phase 5: SUMMARY ───
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in-up">
       <StepProgress steps={steps} currentStep={currentStep} />
       <ReceiptSummary
         supplier={{ id: supplierId, name: supplierName }}

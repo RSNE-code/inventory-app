@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { parseTextInput } from "@/lib/ai/parse"
+import { parseTextInput, parseReceivingTextInput } from "@/lib/ai/parse"
 import { getCurrentUser } from "@/lib/auth"
-import type { ParseResult } from "@/lib/ai/types"
+import type { ParseResult, ReceivingParseResult } from "@/lib/ai/types"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { text } = await request.json()
+    const { text, context } = await request.json()
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -19,7 +19,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Single AI call handles parsing AND catalog matching
+    // Receiving context: also extract supplier/PO info from text
+    if (context === "receiving") {
+      const result = await parseReceivingTextInput(text)
+
+      const data: ReceivingParseResult = {
+        items: result.items,
+        rawInput: text,
+        inputType: "text",
+        supplier: result.supplier,
+        supplierId: result.supplierId,
+        poNumber: result.poNumber,
+        poId: result.poId,
+        deliveryDate: result.deliveryDate,
+      }
+
+      return NextResponse.json({ data })
+    }
+
+    // Default: items only (BOM, quick add)
     const matchedItems = await parseTextInput(text)
 
     const result: ParseResult = {

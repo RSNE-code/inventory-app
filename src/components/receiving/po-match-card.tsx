@@ -12,6 +12,7 @@ import {
   Briefcase,
   ChevronRight,
   Package,
+  Building2,
 } from "lucide-react"
 import { cn, formatCurrency } from "@/lib/utils"
 import { usePoSearch } from "@/hooks/use-receiving"
@@ -319,7 +320,7 @@ function POSearchView({
             type="text"
             value={searchText}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by PO #, project, or client..."
+            placeholder="Search by PO #, supplier, or job..."
             className="w-full rounded-xl border border-border-custom pl-9 pr-8 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue/40 placeholder:text-text-muted/50 transition-all"
           />
           {searchText && (
@@ -366,16 +367,23 @@ function POSearchView({
                         </span>
                       )}
                     </div>
-                    <p className="text-[12px] text-text-muted truncate mt-0.5">
-                      {po.supplierName}
-                      {po.jobName && (
-                        <> · <span className="text-brand-blue font-semibold">{po.jobName}</span></>
-                      )}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Building2 className="h-3 w-3 text-text-muted/50 shrink-0" />
+                      <p className="text-[12px] text-text-secondary font-semibold truncate">
+                        {po.supplierName}
+                      </p>
+                    </div>
+                    {po.jobName && (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Briefcase className="h-3 w-3 text-brand-blue shrink-0" />
+                        <span className="text-[11px] font-semibold text-brand-blue truncate">
+                          {po.jobName}
+                        </span>
+                      </div>
+                    )}
                     {po.lineItems.length > 0 && (
                       <p className="text-[10px] text-text-muted/60 mt-0.5 font-medium">
-                        {po.lineItems.length} item
-                        {po.lineItems.length !== 1 ? "s" : ""}
+                        {po.lineItems.length} item{po.lineItems.length !== 1 ? "s" : ""}
                       </p>
                     )}
                   </div>

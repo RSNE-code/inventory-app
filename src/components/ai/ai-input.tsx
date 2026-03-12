@@ -17,6 +17,7 @@ interface AIInputProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  context?: "general" | "receiving"
 }
 
 export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput({
@@ -24,6 +25,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   placeholder = "Type or speak what you need...",
   className,
   disabled = false,
+  context = "general",
 }, ref) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -55,7 +57,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       const res = await fetch("/api/ai/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: value.trim() }),
+        body: JSON.stringify({ text: value.trim(), context }),
       })
 
       if (!res.ok) {

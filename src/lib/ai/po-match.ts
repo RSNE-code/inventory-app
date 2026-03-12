@@ -157,6 +157,7 @@ export async function searchPOs(params: {
       { poNumber: { contains: search, mode: "insensitive" } },
       { jobName: { contains: search, mode: "insensitive" } },
       { clientName: { contains: search, mode: "insensitive" } },
+      { supplier: { name: { contains: search, mode: "insensitive" } } },
     ]
   }
 
