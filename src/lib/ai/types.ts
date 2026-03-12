@@ -94,6 +94,17 @@ export interface POLineItemData {
   unitCost: number
 }
 
+export interface POReceiptHistoryItem {
+  id: string
+  receivedAt: string
+  isVoided: boolean
+  items: Array<{
+    productName: string
+    quantity: number
+    unitCost: number | null
+  }>
+}
+
 export interface MatchedPO {
   id: string
   poNumber: string
@@ -105,6 +116,7 @@ export interface MatchedPO {
   createdAt: string
   confidence: number // 0-1
   lineItems: POLineItemData[]
+  receipts?: POReceiptHistoryItem[]
 }
 
 export interface ConfirmedReceivingItem {

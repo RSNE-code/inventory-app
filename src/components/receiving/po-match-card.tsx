@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Package,
   Building2,
+  Clock,
 } from "lucide-react"
 import { cn, formatCurrency } from "@/lib/utils"
 import { usePoSearch } from "@/hooks/use-receiving"
@@ -134,6 +135,13 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
     year: "numeric",
   })
 
+  // Find last non-voided receipt
+  const activeReceipts = (po.receipts ?? []).filter((r) => !r.isVoided && r.items.length > 0)
+  const lastReceipt = activeReceipts[0]
+  const lastReceivedDate = lastReceipt
+    ? new Date(lastReceipt.receivedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : null
+
   return (
     <div
       className={cn(
@@ -175,6 +183,14 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
               <Briefcase className="h-3 w-3 text-brand-blue shrink-0" />
               <span className="text-xs font-semibold text-brand-blue truncate">
                 {po.jobName}
+              </span>
+            </div>
+          )}
+          {lastReceivedDate && (
+            <div className="flex items-center gap-1 mt-1">
+              <Clock className="h-2.5 w-2.5 text-brand-orange/60 shrink-0" />
+              <span className="text-[10px] font-medium text-brand-orange/80">
+                Last received {lastReceivedDate}
               </span>
             </div>
           )}

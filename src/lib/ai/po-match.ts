@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db"
-import type { MatchedPO } from "./types"
+import type { MatchedPO, POReceiptHistoryItem } from "./types"
 
 interface MatchParams {
   poNumber?: string
@@ -12,12 +12,21 @@ export async function matchPO(params: MatchParams): Promise<MatchedPO | null> {
 
   if (!poNumber && !vendorName) return null
 
-  // Load all POs with supplier and line items
+  // Load all POs with supplier, line items, and receipt history
   const openPOs = await prisma.purchaseOrder.findMany({
     include: {
       supplier: { select: { id: true, name: true } },
       lineItems: {
         include: { product: { select: { name: true } } },
+      },
+      receipts: {
+        include: {
+          transactions: {
+            where: { type: "RECEIVE" },
+            include: { product: { select: { name: true } } },
+          },
+        },
+        orderBy: { receivedAt: "desc" },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -168,6 +177,15 @@ export async function searchPOs(params: {
       lineItems: {
         include: { product: { select: { name: true } } },
       },
+      receipts: {
+        include: {
+          transactions: {
+            where: { type: "RECEIVE" },
+            include: { product: { select: { name: true } } },
+          },
+        },
+        orderBy: { receivedAt: "desc" },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -215,9 +233,33 @@ function toMatchedPO(
       qtyReceived: { toString(): string }
       unitCost: { toString(): string }
     }>
+    receipts?: Array<{
+      id: string
+      receivedAt: Date
+      notes: string | null
+      transactions: Array<{
+        quantity: { toString(): string }
+        unitCost: { toString(): string } | null
+        product: { name: string }
+      }>
+    }>
   },
   confidence: number
 ): MatchedPO {
+  // Map receipts to history items (exclude voided, only include receipts with transactions)
+  const receipts: POReceiptHistoryItem[] = (po.receipts ?? [])
+    .map((r) => ({
+      id: r.id,
+      receivedAt: r.receivedAt.toISOString(),
+      isVoided: r.notes?.includes("[VOIDED]") ?? false,
+      items: r.transactions.map((t) => ({
+        productName: t.product.name,
+        quantity: Number(t.quantity),
+        unitCost: t.unitCost ? Number(t.unitCost) : null,
+      })),
+    }))
+    .filter((r) => r.items.length > 0)
+
   return {
     id: po.id,
     poNumber: po.poNumber,
@@ -238,5 +280,6 @@ function toMatchedPO(
       qtyReceived: Number(li.qtyReceived),
       unitCost: Number(li.unitCost),
     })),
+    receipts: receipts.length > 0 ? receipts : undefined,
   }
 }

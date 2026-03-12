@@ -9,11 +9,13 @@ import {
   FileText,
   Briefcase,
   ArrowLeft,
+  Clock,
+  ChevronDown,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn, formatCurrency } from "@/lib/utils"
-import type { MatchedPO, POLineItemData, ConfirmedReceivingItem } from "@/lib/ai/types"
+import type { MatchedPO, POLineItemData, POReceiptHistoryItem, ConfirmedReceivingItem } from "@/lib/ai/types"
 
 interface POReceiveCardProps {
   po: MatchedPO
@@ -31,6 +33,9 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
   }
 
   const itemsToReceive = po.lineItems.filter((_, i) => quantities[i] > 0)
+
+  // Filter to only non-voided receipts with items
+  const activeReceipts = (po.receipts ?? []).filter((r) => !r.isVoided && r.items.length > 0)
 
   function handleConfirm() {
     const items: ConfirmedReceivingItem[] = po.lineItems
@@ -78,6 +83,11 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
           )}
         </div>
 
+        {/* Receipt history panel — shows previous receipts against this PO */}
+        {activeReceipts.length > 0 && (
+          <ReceiptHistoryPanel receipts={activeReceipts} />
+        )}
+
         {/* Column header */}
         <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[10px] font-bold text-text-muted uppercase tracking-[0.08em]">
           <span className="flex-1">Item</span>
@@ -118,6 +128,127 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to PO selection
       </button>
+    </div>
+  )
+}
+
+// ─── Receipt History Panel ───
+// Collapsible timeline of past receipts against this PO
+
+function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const totalItemsReceived = receipts.reduce((sum, r) => sum + r.items.length, 0)
+  const lastReceipt = receipts[0] // already sorted desc by receivedAt
+  const lastDate = new Date(lastReceipt.receivedAt)
+  const formattedLastDate = lastDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  })
+
+  return (
+    <div className="border-b border-border-custom">
+      {/* Summary bar — tap to expand */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className={cn(
+          "w-full flex items-center gap-2.5 px-4 py-2.5 text-left transition-colors",
+          "bg-amber-50/60 hover:bg-amber-50"
+        )}
+      >
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-orange/10">
+          <Clock className="h-3.5 w-3.5 text-brand-orange" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-[12px] font-bold text-brand-orange">
+            {receipts.length} prior receipt{receipts.length !== 1 ? "s" : ""}
+          </span>
+          <span className="text-[11px] text-text-muted ml-1.5">
+            · last {formattedLastDate}
+          </span>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 text-brand-orange/50 transition-transform duration-300",
+            expanded && "rotate-180"
+          )}
+        />
+      </button>
+
+      {/* Expanded receipt timeline */}
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="px-4 pb-3 pt-1 space-y-2 bg-amber-50/30">
+            {receipts.map((receipt, ri) => {
+              const date = new Date(receipt.receivedAt)
+              const formattedDate = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+              const formattedTime = date.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+
+              return (
+                <div
+                  key={receipt.id}
+                  className={cn(
+                    "relative pl-5 animate-fade-in",
+                    // Timeline connector line
+                    ri < receipts.length - 1 && "pb-2"
+                  )}
+                  style={{ animationDelay: `${ri * 60}ms` }}
+                >
+                  {/* Timeline dot */}
+                  <div className="absolute left-0 top-[7px] h-2.5 w-2.5 rounded-full bg-brand-orange/70 ring-2 ring-amber-50/80" />
+
+                  {/* Timeline connector */}
+                  {ri < receipts.length - 1 && (
+                    <div className="absolute left-[4.5px] top-[18px] bottom-0 w-[1px] bg-brand-orange/15" />
+                  )}
+
+                  {/* Receipt content */}
+                  <div>
+                    <p className="text-[11px] font-bold text-navy/80 tabular-nums">
+                      {formattedDate}
+                      <span className="text-text-muted/50 font-medium ml-1.5">
+                        {formattedTime}
+                      </span>
+                    </p>
+                    <div className="mt-1 space-y-0.5">
+                      {receipt.items.map((item, ii) => (
+                        <div
+                          key={ii}
+                          className="flex items-baseline gap-2 text-[11px]"
+                        >
+                          <span className="font-bold text-navy/60 tabular-nums w-6 text-right shrink-0">
+                            ×{item.quantity}
+                          </span>
+                          <span className="text-text-secondary font-medium truncate">
+                            {item.productName}
+                          </span>
+                          {item.unitCost != null && (
+                            <span className="text-text-muted/50 tabular-nums shrink-0">
+                              @ {formatCurrency(item.unitCost)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -170,7 +301,9 @@ function ReceiveLineRow({
                   : "text-brand-orange bg-orange-50"
               )}
             >
-              {isFullyReceived ? "COMPLETE" : `${lineItem.qtyReceived} prev. received`}
+              {isFullyReceived
+                ? "COMPLETE"
+                : `${lineItem.qtyReceived} of ${lineItem.qtyOrdered} received`}
             </span>
           )}
           {lineItem.unitCost > 0 && (
