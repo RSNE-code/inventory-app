@@ -186,9 +186,7 @@ async function main() {
 
     const createdDate = parseDate(po.purchaseDate)
 
-    const allReceived = po.items.length > 0 && po.items.every((i) => i.qtyReceived >= i.quantity)
-    const someReceived = po.items.some((i) => i.qtyReceived > 0)
-    const status = allReceived ? "CLOSED" as const : someReceived ? "PARTIALLY_RECEIVED" as const : "OPEN" as const
+    const status = "OPEN" as const // All POs start open — receiving happens through the app
 
     const createdPO = await prisma.purchaseOrder.create({
       data: {
@@ -212,7 +210,7 @@ async function main() {
           productId,
           description: item.description,
           qtyOrdered: new Prisma.Decimal(isNaN(item.quantity) ? 0 : item.quantity),
-          qtyReceived: new Prisma.Decimal(isNaN(item.qtyReceived) ? 0 : item.qtyReceived),
+          qtyReceived: new Prisma.Decimal(0), // Always start at 0 — receiving happens through the app
           unitCost: new Prisma.Decimal(isNaN(item.unitCost) ? 0 : item.unitCost),
         },
       })
