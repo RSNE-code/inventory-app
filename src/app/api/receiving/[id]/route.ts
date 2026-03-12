@@ -57,19 +57,47 @@ export async function DELETE(
 
       // Reverse PO line item qtyReceived
       if (receipt.purchaseOrderId && receipt.purchaseOrder) {
-        // Find which line items were affected by looking at transactions
-        // Each transaction has a quantity that was received
-        for (const txn of receipt.transactions) {
-          if (txn.type === "RECEIVE") {
-            // Find matching PO line item by productId
-            const matchingLineItem = receipt.purchaseOrder.lineItems.find(
-              (li) => li.productId === txn.productId
+        const receiveTransactions = receipt.transactions.filter(
+          (t) => t.type === "RECEIVE"
+        )
+
+        for (const txn of receiveTransactions) {
+          const qtyToReverse = Number(txn.quantity)
+
+          // Match PO line item: try productId first, then fall back to finding
+          // any line item for this product that has received quantity
+          let matchingLineItem = receipt.purchaseOrder.lineItems.find(
+            (li) => li.productId === txn.productId
+          )
+
+          // If no match by productId, try matching by product name in description
+          if (!matchingLineItem && txn.product) {
+            matchingLineItem = receipt.purchaseOrder.lineItems.find(
+              (li) =>
+                li.description.toLowerCase().includes(txn.product.name.toLowerCase()) ||
+                txn.product.name.toLowerCase().includes(li.description.toLowerCase())
             )
-            if (matchingLineItem) {
-              const newQtyReceived = Math.max(
-                0,
-                Number(matchingLineItem.qtyReceived) - Number(txn.quantity)
-              )
+          }
+
+          // If still no match, find any line item with qtyReceived > 0
+          // that hasn't been fully reversed yet
+          if (!matchingLineItem) {
+            matchingLineItem = receipt.purchaseOrder.lineItems.find(
+              (li) => Number(li.qtyReceived) > 0
+            )
+          }
+
+          if (matchingLineItem) {
+            // Use decrement to handle concurrent updates properly
+            // Read the CURRENT value from DB (not the stale snapshot)
+            const freshLineItem = await tx.pOLineItem.findUnique({
+              where: { id: matchingLineItem.id },
+            })
+
+            if (freshLineItem) {
+              const currentReceived = Number(freshLineItem.qtyReceived)
+              const newQtyReceived = Math.max(0, currentReceived - qtyToReverse)
+
               await tx.pOLineItem.update({
                 where: { id: matchingLineItem.id },
                 data: {
@@ -80,7 +108,7 @@ export async function DELETE(
           }
         }
 
-        // Recalculate PO status
+        // Recalculate PO status from fresh data
         const updatedPO = await tx.purchaseOrder.findUnique({
           where: { id: receipt.purchaseOrderId },
           include: { lineItems: true },
@@ -90,7 +118,7 @@ export async function DELETE(
           const anyReceived = updatedPO.lineItems.some(
             (li) => Number(li.qtyReceived) > 0
           )
-          const allReceived = updatedPO.lineItems.every(
+          const allReceived = updatedPO.lineItems.length > 0 && updatedPO.lineItems.every(
             (li) => Number(li.qtyReceived) >= Number(li.qtyOrdered)
           )
 
