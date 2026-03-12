@@ -49,7 +49,7 @@ export function ReceiptHistory() {
       {isLoading ? (
         <div className="py-10 text-center">
           <div className="h-5 w-5 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-text-muted mt-2 font-medium">Loading receipts...</p>
+          <p className="text-sm text-text-muted mt-2 font-medium">Loading receipts...</p>
         </div>
       ) : receipts.length === 0 ? (
         <div className="py-10 text-center">
@@ -144,7 +144,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
             {receipt.purchaseOrder && (
               <div className="flex items-center gap-1">
                 <FileText className="h-3 w-3 text-brand-blue shrink-0" />
-                <span className="text-[12px] font-semibold text-brand-blue">
+                <span className="text-sm font-semibold text-brand-blue">
                   PO #{receipt.purchaseOrder.poNumber}
                 </span>
               </div>
@@ -152,7 +152,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
             {receipt.purchaseOrder?.jobName && (
               <div className="flex items-center gap-1">
                 <Briefcase className="h-3 w-3 text-text-muted/40 shrink-0" />
-                <span className="text-[12px] text-text-muted truncate">
+                <span className="text-sm text-text-muted truncate">
                   {receipt.purchaseOrder.jobName}
                 </span>
               </div>
@@ -160,11 +160,11 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
           </div>
 
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[12px] text-text-muted/60 font-medium tabular-nums">
+            <span className="text-sm text-text-muted/60 font-medium tabular-nums">
               {itemCount} item{itemCount !== 1 ? "s" : ""}
             </span>
             {isVoided && (
-              <span className="text-[12px] font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-sm font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Voided
               </span>
             )}
@@ -201,7 +201,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
         <div className="overflow-hidden">
           <div className="border-t border-border-custom/50">
             {/* Column header */}
-            <div className="flex items-center px-4 py-1.5 bg-surface-secondary/70 text-[12px] font-bold text-text-muted uppercase tracking-[0.08em]">
+            <div className="flex items-center px-4 py-1.5 bg-surface-secondary/70 text-sm font-bold text-text-muted uppercase tracking-[0.08em]">
               <span className="flex-1">Item</span>
               <span className="w-14 text-center">Qty</span>
             </div>
@@ -218,14 +218,14 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                   style={expanded ? { animationDelay: `${i * 30}ms` } : undefined}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-navy truncate">
+                    <p className="text-sm font-semibold text-navy truncate">
                       {txn.product.name}
                     </p>
-                    <p className="text-[12px] text-text-muted">
+                    <p className="text-sm text-text-muted">
                       {txn.product.unitOfMeasure}
                     </p>
                   </div>
-                  <span className="w-14 text-center text-[13px] font-bold text-navy tabular-nums">
+                  <span className="w-14 text-center text-sm font-bold text-navy tabular-nums">
                     {Number(txn.quantity)}
                   </span>
                 </div>
@@ -235,13 +235,13 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
             {/* Footer with time + notes + undo */}
             <div className="px-4 py-3 bg-surface-secondary/30 border-t border-border-custom/30 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[12px] text-text-muted/60 font-medium">
+                <span className="text-sm text-text-muted/60 font-medium">
                   {formattedDate} at {formattedTime}
                 </span>
               </div>
 
               {receipt.notes && !receipt.notes.startsWith("[VOIDED]") && (
-                <p className="text-[12px] text-text-muted italic">
+                <p className="text-sm text-text-muted italic">
                   {receipt.notes}
                 </p>
               )}
@@ -251,24 +251,24 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                 <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 border border-red-100 animate-fade-in">
                   <AlertTriangle className="h-4 w-4 text-status-red shrink-0" />
                   <div className="flex-1">
-                    <p className="text-[12px] font-bold text-status-red">
+                    <p className="text-sm font-bold text-status-red">
                       Undo this receipt?
                     </p>
-                    <p className="text-[12px] text-red-600/70 mt-0.5">
+                    <p className="text-sm text-red-600/70 mt-0.5">
                       Stock will be reversed for all {itemCount} item{itemCount !== 1 ? "s" : ""}
                     </p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
                     <button
                       onClick={() => setShowVoidConfirm(false)}
-                      className="px-3 py-1.5 text-[12px] font-bold text-text-muted rounded-lg hover:bg-white transition-colors"
+                      className="px-3 py-1.5 text-sm font-bold text-text-muted rounded-lg hover:bg-white transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleVoid}
                       disabled={voidReceipt.isPending}
-                      className="px-3 py-1.5 text-[12px] font-bold text-white bg-status-red rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 text-sm font-bold text-white bg-status-red rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
                     >
                       {voidReceipt.isPending ? "Undoing..." : "Confirm"}
                     </button>
@@ -277,7 +277,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
               ) : (
                 <button
                   onClick={() => setShowVoidConfirm(true)}
-                  className="flex items-center gap-1.5 text-[13px] font-semibold text-status-red hover:text-red-700 transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-status-red hover:text-red-700 transition-colors"
                 >
                   <Undo2 className="h-3.5 w-3.5" />
                   Undo Receipt
