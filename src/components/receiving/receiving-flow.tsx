@@ -71,7 +71,7 @@ export function ReceivingFlow() {
   // PO
   const [purchaseOrderId, setPurchaseOrderId] = useState<string | null>(null)
   const [matchedPO, setMatchedPO] = useState<MatchedPO | null>(null)
-  const [showPOStep, setShowPOStep] = useState(false)
+  const [showPOStep, setShowPOStep] = useState(true)
 
   // Per-card edit overrides (keyed by rawText) — for ad-hoc flow
   const [editOverrides, setEditOverrides] = useState<Record<string, { quantity: number; unitCost: number }>>({})
@@ -284,7 +284,7 @@ export function ReceivingFlow() {
     setSupplierAutoMatched(false)
     setPurchaseOrderId(null)
     setMatchedPO(null)
-    setShowPOStep(false)
+    setShowPOStep(true)
     setNotes("")
   }
 
