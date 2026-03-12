@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   FileText,
   Briefcase,
+  ArrowLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -21,7 +22,6 @@ interface POReceiveCardProps {
 }
 
 export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
-  // Every item gets an editable qty, pre-filled with remaining (ordered - already received)
   const [quantities, setQuantities] = useState<number[]>(() =>
     po.lineItems.map((li) => Math.max(0, li.qtyOrdered - li.qtyReceived))
   )
@@ -53,20 +53,20 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4 animate-fade-in-up">
       {/* PO Header */}
-      <Card className="rounded-xl border-border-custom overflow-hidden">
-        <div className="bg-navy/[0.03] px-4 py-3 border-b border-border-custom/60">
+      <Card className="rounded-xl border-border-custom shadow-brand-md overflow-hidden">
+        <div className="bg-navy px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
-                <FileText className="h-5 w-5 text-brand-blue" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <FileText className="h-5 w-5 text-white/80" />
               </div>
               <div>
-                <p className="text-lg font-extrabold text-navy tabular-nums tracking-tight">
+                <p className="text-lg font-extrabold text-white tabular-nums tracking-tight">
                   PO #{po.poNumber}
                 </p>
-                <p className="text-xs text-text-muted font-medium">
+                <p className="text-xs text-white/60 font-medium">
                   {po.supplierName}
                 </p>
               </div>
@@ -75,21 +75,21 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
 
           {/* Job name */}
           {po.jobName && (
-            <div className="flex items-center gap-2 mt-2 pl-[52px]">
-              <Briefcase className="h-3.5 w-3.5 text-brand-blue" />
-              <span className="text-sm font-semibold text-navy">{po.jobName}</span>
+            <div className="flex items-center gap-2 mt-2.5 pl-[52px]">
+              <Briefcase className="h-3.5 w-3.5 text-brand-blue-bright" />
+              <span className="text-sm font-semibold text-white/90">{po.jobName}</span>
             </div>
           )}
         </div>
 
         {/* Column header */}
-        <div className="flex items-center px-4 py-2 bg-surface-secondary/50 border-b border-border-custom/40 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+        <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[10px] font-bold text-text-muted uppercase tracking-[0.08em]">
           <span className="flex-1">Item</span>
-          <span className="w-16 text-center">Ordered</span>
-          <span className="w-24 text-center">Receiving</span>
+          <span className="w-14 text-center">Ordered</span>
+          <span className="w-28 text-center">Receiving</span>
         </div>
 
-        {/* Line items — always show qty input */}
+        {/* Line items */}
         <div className="divide-y divide-border-custom/30">
           {po.lineItems.map((li, index) => (
             <ReceiveLineRow
@@ -97,16 +97,17 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
               lineItem={li}
               qtyToReceive={quantities[index]}
               onQtyChange={(qty) => updateQty(index, qty)}
+              index={index}
             />
           ))}
         </div>
 
         {/* Total footer */}
-        <div className="flex items-center justify-between px-4 py-3 bg-surface-secondary/30 border-t border-border-custom/60">
-          <span className="text-sm font-semibold text-text-secondary">
+        <div className="flex items-center justify-between px-4 py-3.5 bg-navy/[0.03] border-t border-border-custom">
+          <span className="text-sm font-bold text-text-secondary uppercase tracking-wide">
             Receipt Total
           </span>
-          <span className="text-base font-bold text-navy tabular-nums">
+          <span className="text-lg font-extrabold text-navy tabular-nums">
             {formatCurrency(totalCost)}
           </span>
         </div>
@@ -116,7 +117,7 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
       <Button
         onClick={handleConfirm}
         disabled={itemsToReceive.length === 0}
-        className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] disabled:shadow-none"
+        className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl shadow-[0_3px_12px_rgba(232,121,43,0.3)] hover:shadow-[0_4px_16px_rgba(232,121,43,0.4)] disabled:shadow-none transition-all active:scale-[0.98]"
       >
         <PackageCheck className="h-5 w-5 mr-2" />
         Confirm Receipt ({itemsToReceive.length} item{itemsToReceive.length !== 1 ? "s" : ""})
@@ -125,8 +126,9 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
       {/* Back */}
       <button
         onClick={onBack}
-        className="w-full text-center text-sm text-gray-400 hover:text-gray-600 py-2"
+        className="w-full flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
       >
+        <ArrowLeft className="h-3.5 w-3.5" />
         Back to PO selection
       </button>
     </div>
@@ -139,42 +141,53 @@ function ReceiveLineRow({
   lineItem,
   qtyToReceive,
   onQtyChange,
+  index,
 }: {
   lineItem: POLineItemData
   qtyToReceive: number
   onQtyChange: (qty: number) => void
+  index: number
 }) {
   const remaining = Math.max(0, lineItem.qtyOrdered - lineItem.qtyReceived)
   const isFullyReceived = remaining === 0
+  const isReceivingFull = qtyToReceive === remaining && remaining > 0
+  const isReceivingPartial = qtyToReceive > 0 && qtyToReceive < remaining
+  const isReceivingNone = qtyToReceive === 0 && !isFullyReceived
 
   return (
     <div
       className={cn(
-        "flex items-center px-4 py-3 gap-3",
-        isFullyReceived && "opacity-40 bg-gray-50/50",
-        qtyToReceive === 0 && !isFullyReceived && "opacity-60"
+        "flex items-center px-4 py-3.5 gap-3 transition-all duration-200 animate-fade-in",
+        // Color-coded left border for instant visual feedback
+        isReceivingFull && "border-l-[3px] border-l-status-green bg-green-50/30",
+        isReceivingPartial && "border-l-[3px] border-l-brand-orange bg-orange-50/20",
+        isReceivingNone && "border-l-[3px] border-l-transparent opacity-40",
+        isFullyReceived && "border-l-[3px] border-l-transparent opacity-30 bg-surface-secondary/30",
+        // Items that aren't color-coded get default border
+        !isReceivingFull && !isReceivingPartial && !isReceivingNone && !isFullyReceived && "border-l-[3px] border-l-transparent"
       )}
+      style={{ animationDelay: `${index * 50}ms` }}
     >
       {/* Item name + status */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-navy leading-tight truncate">
+        <p className="text-[13px] font-bold text-navy leading-tight truncate">
           {lineItem.productName || lineItem.description}
         </p>
         <div className="flex items-center gap-2 mt-1">
           {lineItem.qtyReceived > 0 && (
             <span
               className={cn(
-                "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+                "text-[10px] font-bold px-2 py-0.5 rounded-full",
                 isFullyReceived
                   ? "text-status-green bg-green-50"
                   : "text-brand-orange bg-orange-50"
               )}
             >
-              {isFullyReceived ? "COMPLETE" : `${lineItem.qtyReceived} received`}
+              {isFullyReceived ? "COMPLETE" : `${lineItem.qtyReceived} prev. received`}
             </span>
           )}
           {lineItem.unitCost > 0 && (
-            <span className="text-[11px] text-text-muted tabular-nums">
+            <span className="text-[10px] text-text-muted tabular-nums font-medium">
               @ {formatCurrency(lineItem.unitCost)}
             </span>
           )}
@@ -182,46 +195,61 @@ function ReceiveLineRow({
       </div>
 
       {/* Qty ordered */}
-      <div className="w-16 text-center">
-        <span className="text-sm font-bold text-navy tabular-nums">
+      <div className="w-14 text-center">
+        <span className="text-sm font-extrabold text-navy tabular-nums">
           {lineItem.qtyOrdered}
         </span>
       </div>
 
-      {/* Qty to receive — always visible */}
-      <div className="w-24">
+      {/* Qty to receive — always visible, large touch targets */}
+      <div className="w-28">
         {isFullyReceived ? (
-          <div className="text-center text-xs text-text-muted font-medium">—</div>
+          <div className="text-center text-xs text-text-muted font-semibold py-2">
+            — done
+          </div>
         ) : (
-          <div className="flex items-center bg-white rounded-lg border border-border-custom/80 shadow-sm">
+          <div
+            className={cn(
+              "flex items-center rounded-xl border-2 transition-colors",
+              isReceivingFull
+                ? "border-status-green/40 bg-green-50/50"
+                : isReceivingPartial
+                  ? "border-brand-orange/30 bg-orange-50/30"
+                  : "border-border-custom bg-white"
+            )}
+          >
             <button
               onClick={() => onQtyChange(qtyToReceive - 1)}
               disabled={qtyToReceive <= 0}
-              className="h-9 w-8 flex items-center justify-center text-text-muted hover:text-navy disabled:opacity-20 transition-colors rounded-l-lg hover:bg-surface-secondary/60"
+              className="h-11 w-11 flex items-center justify-center text-text-muted hover:text-navy hover:bg-surface-secondary/80 disabled:opacity-20 transition-colors rounded-l-[10px] active:scale-90"
             >
-              <Minus className="h-3 w-3" />
+              <Minus className="h-4 w-4" />
             </button>
             <input
               type="number"
               min={0}
               value={qtyToReceive}
               onChange={(e) => onQtyChange(Number(e.target.value) || 0)}
-              className="w-10 text-center text-sm font-bold text-navy bg-transparent border-0 focus:outline-none focus:ring-0 tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className={cn(
+                "w-full text-center text-base font-extrabold bg-transparent border-0 focus:outline-none focus:ring-0 tabular-nums",
+                "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                isReceivingFull ? "text-status-green" : isReceivingPartial ? "text-brand-orange" : "text-navy"
+              )}
             />
             <button
               onClick={() => onQtyChange(qtyToReceive + 1)}
-              className="h-9 w-8 flex items-center justify-center text-text-muted hover:text-navy transition-colors rounded-r-lg hover:bg-surface-secondary/60"
+              className="h-11 w-11 flex items-center justify-center text-text-muted hover:text-navy hover:bg-surface-secondary/80 transition-colors rounded-r-[10px] active:scale-90"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-4 w-4" />
             </button>
           </div>
         )}
 
         {/* Over-receiving warning */}
         {qtyToReceive > remaining && !isFullyReceived && (
-          <div className="flex items-center justify-center gap-1 mt-1 text-brand-orange">
-            <AlertTriangle className="h-2.5 w-2.5" />
-            <span className="text-[9px] font-medium">Over qty</span>
+          <div className="flex items-center justify-center gap-1 mt-1.5 text-brand-orange animate-fade-in">
+            <AlertTriangle className="h-3 w-3" />
+            <span className="text-[10px] font-bold">Over qty</span>
           </div>
         )}
       </div>
