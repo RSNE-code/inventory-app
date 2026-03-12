@@ -10,41 +10,60 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get("image") as File | null
 
-    if (!file) {
+    // Support single "image" field or multiple "images" fields
+    const files: File[] = []
+    const singleFile = formData.get("image") as File | null
+    if (singleFile) {
+      files.push(singleFile)
+    }
+    const multiFiles = formData.getAll("images") as File[]
+    files.push(...multiFiles)
+
+    if (files.length === 0) {
       return NextResponse.json(
-        { error: "Image file is required" },
+        { error: "At least one image file is required" },
         { status: 400 }
       )
     }
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Image must be JPEG, PNG, WebP, or GIF" },
-        { status: 400 }
-      )
+
+    // Validate all files
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json(
+          { error: "Images must be JPEG, PNG, WebP, or GIF" },
+          { status: 400 }
+        )
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: "Each image must be under 10MB" },
+          { status: 400 }
+        )
+      }
     }
 
-    // 10MB limit
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: "Image must be under 10MB" },
-        { status: 400 }
-      )
+    // Convert all files to base64
+    const base64Images: string[] = []
+    const mimeTypes: string[] = []
+    for (const file of files) {
+      const bytes = await file.arrayBuffer()
+      base64Images.push(Buffer.from(bytes).toString("base64"))
+      mimeTypes.push(file.type)
     }
 
-    const bytes = await file.arrayBuffer()
-    const base64 = Buffer.from(bytes).toString("base64")
-
-    // Single AI call handles parsing, catalog matching, supplier matching, and PO matching
-    const result = await parseImageInput(base64, file.type)
+    // Single AI call handles all pages
+    const result = await parseImageInput(
+      base64Images.length === 1 ? base64Images[0] : base64Images,
+      mimeTypes.length === 1 ? mimeTypes[0] : mimeTypes
+    )
 
     return NextResponse.json({
       data: {
         items: result.items,
-        rawInput: "[image]",
+        rawInput: `[${files.length} image${files.length !== 1 ? "s" : ""}]`,
         inputType: "image" as const,
         supplier: result.supplier,
         supplierId: result.supplierId,

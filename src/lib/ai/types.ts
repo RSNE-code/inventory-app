@@ -114,5 +114,6 @@ export interface ConfirmedReceivingItem {
   unitCost: number
   unitOfMeasure: string
   isNonCatalog: boolean
-  catalogMatch: CatalogMatch
+  catalogMatch?: CatalogMatch
+  poLineItemId?: string
 }

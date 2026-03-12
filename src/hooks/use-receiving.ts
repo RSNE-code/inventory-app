@@ -87,6 +87,10 @@ export function useCreateReceipt() {
         quantity: number
         unitCost: number
       }>
+      poLineItemUpdates?: Array<{
+        poLineItemId: string
+        qtyReceived: number
+      }>
     }) => {
       const res = await fetch("/api/receiving", {
         method: "POST",

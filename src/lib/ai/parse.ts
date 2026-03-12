@@ -219,8 +219,8 @@ export interface ImageParseResult {
 }
 
 export async function parseImageInput(
-  imageBase64: string,
-  mimeType: string
+  imageBase64: string | string[],
+  mimeType: string | string[]
 ): Promise<ImageParseResult> {
   const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
     loadCatalogContext(),
@@ -229,6 +229,20 @@ export async function parseImageInput(
     loadProductMap(),
   ])
 
+  // Support single or multiple images
+  const images = Array.isArray(imageBase64) ? imageBase64 : [imageBase64]
+  const mimeTypes = Array.isArray(mimeType) ? mimeType : [mimeType]
+
+  const imageParts = images.map((img, i) => ({
+    type: "image" as const,
+    image: img,
+    mediaType: mimeTypes[i] || mimeTypes[0],
+  }))
+
+  const multiPageNote = images.length > 1
+    ? `\n\nIMPORTANT: You are looking at ${images.length} pages of the SAME document. Combine all line items from ALL pages into a single items array. The supplier and PO info may appear on any page (usually the first).`
+    : ""
+
   const { text: response } = await generateText({
     model: MODEL,
     system: SYSTEM_PROMPT,
@@ -236,14 +250,10 @@ export async function parseImageInput(
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            image: imageBase64,
-            mediaType: mimeType,
-          },
+          ...imageParts,
           {
             type: "text",
-            text: `Please analyze this image (likely a packing slip, invoice, or material list) and do the following:
+            text: `Please analyze ${images.length > 1 ? "these images (multiple pages of the same document)" : "this image"} (likely a packing slip, invoice, or material list) and do the following:${multiPageNote}
 
 1. IDENTIFY THE SUPPLIER — Who sent this? Match the sender company to one of our known suppliers.
 

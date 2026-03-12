@@ -28,6 +28,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingType, setProcessingType] = useState<"text" | "image">("text")
+  const [imageCount, setImageCount] = useState(0)
   const [lastError, setLastError] = useState<string | null>(null)
   const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -76,15 +77,22 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   }
 
   async function handleImageCapture(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || isProcessing) return
+    const files = e.target.files
+    if (!files || files.length === 0 || isProcessing) return
 
     setLastError(null)
     setIsProcessing(true)
     setProcessingType("image")
+    setImageCount(files.length)
     try {
       const formData = new FormData()
-      formData.append("image", file)
+      if (files.length === 1) {
+        formData.append("image", files[0])
+      } else {
+        for (let i = 0; i < files.length; i++) {
+          formData.append("images", files[i])
+        }
+      }
 
       const res = await fetch("/api/ai/parse-image", {
         method: "POST",
@@ -148,7 +156,11 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
             <div className="flex items-center gap-2.5 text-brand-blue">
               <Loader2 className="h-5 w-5 animate-spin" />
               <span className="text-sm font-semibold">
-                {processingType === "image" ? "Reading image..." : "Processing..."}
+                {processingType === "image"
+                  ? imageCount > 1
+                    ? `Reading ${imageCount} pages...`
+                    : "Reading image..."
+                  : "Processing..."}
               </span>
             </div>
             {processingType === "image" && (
@@ -212,6 +224,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
             onChange={handleImageCapture}
           />
