@@ -546,7 +546,6 @@ export function ReceivingFlow() {
         notes={notes}
         onNotesChange={setNotes}
         onConfirm={handleSubmitReceipt}
-        onBack={() => setPhase(matchedPO ? "PO_RECEIVE" : "REVIEW")}
         isSubmitting={createReceipt.isPending}
       />
     </div>

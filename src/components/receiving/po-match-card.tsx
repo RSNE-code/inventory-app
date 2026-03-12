@@ -15,7 +15,7 @@ import {
   Building2,
   Clock,
 } from "lucide-react"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { usePoSearch } from "@/hooks/use-receiving"
 import type { MatchedPO } from "@/lib/ai/types"
 
@@ -169,11 +169,6 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
             <span className="text-base font-extrabold text-navy tracking-tight">
               PO #{po.poNumber}
             </span>
-            {po.amount != null && (
-              <span className="text-xs font-bold text-text-muted tabular-nums">
-                {formatCurrency(po.amount)}
-              </span>
-            )}
           </div>
           <p className="text-[13px] text-text-secondary font-medium mt-0.5 truncate">
             {po.supplierName}
@@ -247,11 +242,6 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
                         <p className="text-[13px] font-semibold text-navy truncate">
                           {li.productName || li.description}
                         </p>
-                        {li.unitCost > 0 && (
-                          <p className="text-[10px] text-text-muted tabular-nums mt-0.5">
-                            @ {formatCurrency(li.unitCost)}
-                          </p>
-                        )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-3">
                         <span className="text-sm font-bold text-navy tabular-nums">
@@ -278,7 +268,6 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
                 <Package className="h-3.5 w-3.5 text-text-muted" />
                 <span className="text-[11px] font-semibold text-text-muted">
                   {po.lineItems.length} item{po.lineItems.length !== 1 ? "s" : ""}
-                  {po.amount != null && <> · {formatCurrency(po.amount)} total</>}
                   {" · "}{formattedDate}
                 </span>
               </div>
@@ -377,11 +366,6 @@ function POSearchView({
                       <span className="text-sm font-bold text-navy tabular-nums">
                         PO #{po.poNumber}
                       </span>
-                      {po.amount != null && (
-                        <span className="text-xs text-text-muted tabular-nums">
-                          {formatCurrency(po.amount)}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <Building2 className="h-3 w-3 text-text-muted/50 shrink-0" />

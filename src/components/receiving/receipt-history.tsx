@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   PackageCheck,
 } from "lucide-react"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { useReceiptHistory, useVoidReceipt } from "@/hooks/use-receiving"
 import type { ReceiptData } from "@/hooks/use-receiving"
 import { toast } from "sonner"
@@ -79,10 +79,6 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
   const isVoided = receipt.notes?.includes("[VOIDED]") ?? false
   const receiveTransactions = receipt.transactions.filter((t) => t.type === "RECEIVE")
   const itemCount = receiveTransactions.length
-  const totalCost = receiveTransactions.reduce(
-    (sum, t) => sum + Number(t.quantity) * Number(t.unitCost ?? 0),
-    0
-  )
 
   const date = new Date(receipt.receivedAt)
   const formattedDate = date.toLocaleDateString("en-US", {
@@ -166,7 +162,6 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-[10px] text-text-muted/60 font-medium tabular-nums">
               {itemCount} item{itemCount !== 1 ? "s" : ""}
-              {totalCost > 0 && <> · {formatCurrency(totalCost)}</>}
             </span>
             {isVoided && (
               <span className="text-[9px] font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -209,7 +204,6 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
             <div className="flex items-center px-4 py-1.5 bg-surface-secondary/70 text-[9px] font-bold text-text-muted uppercase tracking-[0.08em]">
               <span className="flex-1">Item</span>
               <span className="w-14 text-center">Qty</span>
-              <span className="w-16 text-right">Cost</span>
             </div>
 
             {/* Items */}
@@ -233,9 +227,6 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                   </div>
                   <span className="w-14 text-center text-[12px] font-bold text-navy tabular-nums">
                     {Number(txn.quantity)}
-                  </span>
-                  <span className="w-16 text-right text-[12px] font-medium text-text-muted tabular-nums">
-                    {txn.unitCost ? formatCurrency(Number(txn.unitCost)) : "—"}
                   </span>
                 </div>
               ))}

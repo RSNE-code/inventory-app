@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import type { MatchedPO, POLineItemData, POReceiptHistoryItem, ConfirmedReceivingItem } from "@/lib/ai/types"
 
 interface POReceiveCardProps {
@@ -234,11 +234,6 @@ function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] })
                           <span className="text-text-secondary font-medium truncate">
                             {item.productName}
                           </span>
-                          {item.unitCost != null && (
-                            <span className="text-text-muted/50 tabular-nums shrink-0">
-                              @ {formatCurrency(item.unitCost)}
-                            </span>
-                          )}
                         </div>
                       ))}
                     </div>
@@ -304,11 +299,6 @@ function ReceiveLineRow({
               {isFullyReceived
                 ? "COMPLETE"
                 : `${lineItem.qtyReceived} of ${lineItem.qtyOrdered} received`}
-            </span>
-          )}
-          {lineItem.unitCost > 0 && (
-            <span className="text-[10px] text-text-muted tabular-nums font-medium">
-              @ {formatCurrency(lineItem.unitCost)}
             </span>
           )}
         </div>

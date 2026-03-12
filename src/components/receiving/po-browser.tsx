@@ -12,9 +12,9 @@ import {
   Building2,
   Clock,
 } from "lucide-react"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { usePoSearch } from "@/hooks/use-receiving"
-import type { MatchedPO, POLineItemData } from "@/lib/ai/types"
+import type { MatchedPO } from "@/lib/ai/types"
 
 interface POBrowserProps {
   onSelect: (po: MatchedPO) => void
@@ -176,11 +176,6 @@ function ExpandablePORow({
             <span className="text-sm font-extrabold text-navy tabular-nums tracking-tight">
               PO #{po.poNumber}
             </span>
-            {po.amount != null && (
-              <span className="text-[11px] font-bold text-text-muted tabular-nums">
-                {formatCurrency(po.amount)}
-              </span>
-            )}
           </div>
 
           {/* Supplier name — prominent */}
@@ -272,11 +267,6 @@ function ExpandablePORow({
                         <p className="text-[12px] font-semibold text-navy truncate">
                           {li.productName || li.description}
                         </p>
-                        {li.unitCost > 0 && (
-                          <p className="text-[10px] text-text-muted tabular-nums">
-                            @ {formatCurrency(li.unitCost)}
-                          </p>
-                        )}
                       </div>
                       <span className="w-12 text-center text-[12px] font-bold text-navy tabular-nums">
                         {li.qtyOrdered}

@@ -1,9 +1,8 @@
 "use client"
 
-import { PackageCheck, ArrowLeft } from "lucide-react"
+import { PackageCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { formatCurrency } from "@/lib/utils"
 import type { ConfirmedReceivingItem } from "@/lib/ai/types"
 
 interface ReceiptSummaryProps {
@@ -12,7 +11,6 @@ interface ReceiptSummaryProps {
   notes: string
   onNotesChange: (notes: string) => void
   onConfirm: () => void
-  onBack: () => void
   isSubmitting: boolean
 }
 
@@ -22,23 +20,13 @@ export function ReceiptSummary({
   notes,
   onNotesChange,
   onConfirm,
-  onBack,
   isSubmitting,
 }: ReceiptSummaryProps) {
   const catalogItems = items.filter((i) => !i.isNonCatalog)
   const nonCatalogItems = items.filter((i) => i.isNonCatalog)
-  const totalCost = items.reduce((sum, i) => sum + i.quantity * i.unitCost, 0)
 
   return (
     <div className="space-y-4">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to review
-      </button>
-
       <Card className="p-4 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy mb-3">Receipt Summary</h3>
 
@@ -59,12 +47,9 @@ export function ReceiptSummary({
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {item.productName}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {item.quantity} {item.unitOfMeasure} @ {formatCurrency(item.unitCost)}
-                </p>
               </div>
-              <span className="text-sm font-medium text-gray-700 ml-3">
-                {formatCurrency(item.quantity * item.unitCost)}
+              <span className="text-sm font-bold text-navy ml-3 tabular-nums">
+                {item.quantity} {item.unitOfMeasure}
               </span>
             </div>
           ))}
@@ -79,20 +64,22 @@ export function ReceiptSummary({
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-700 truncate">{item.productName}</p>
-                    <p className="text-xs text-gray-400">
-                      {item.quantity} {item.unitOfMeasure}
-                    </p>
                   </div>
+                  <span className="text-sm text-gray-500 ml-3 tabular-nums">
+                    {item.quantity} {item.unitOfMeasure}
+                  </span>
                 </div>
               ))}
             </>
           )}
         </div>
 
-        {/* Total */}
+        {/* Item count */}
         <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-200">
           <span className="text-sm font-semibold text-gray-700">Total</span>
-          <span className="text-lg font-semibold text-navy">{formatCurrency(totalCost)}</span>
+          <span className="text-sm font-semibold text-navy">
+            {items.length} item{items.length !== 1 ? "s" : ""}
+          </span>
         </div>
       </Card>
 

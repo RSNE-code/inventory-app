@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Check, X, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { cn, formatCurrency } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import type { CatalogMatch, ConfirmedReceivingItem } from "@/lib/ai/types"
 
 interface ReceivingConfirmationCardProps {
@@ -25,16 +25,10 @@ export function ReceivingConfirmationCard({
   const defaultCost = match.parsedItem.estimatedCost
     ?? match.matchedProduct?.lastCost
     ?? 0
-  const [unitCost, setUnitCost] = useState(defaultCost)
 
   function handleQtyChange(val: number) {
     setQuantity(val)
-    onEditChange?.(match.parsedItem.rawText, { quantity: val, unitCost })
-  }
-
-  function handleCostChange(val: number) {
-    setUnitCost(val)
-    onEditChange?.(match.parsedItem.rawText, { quantity, unitCost: val })
+    onEditChange?.(match.parsedItem.rawText, { quantity: val, unitCost: defaultCost })
   }
 
   const confidenceColor =
@@ -52,7 +46,7 @@ export function ReceivingConfirmationCard({
       productId: overrideProductId ?? product?.id ?? null,
       productName: product?.name ?? match.parsedItem.name,
       quantity,
-      unitCost,
+      unitCost: defaultCost,
       unitOfMeasure: product?.unitOfMeasure ?? match.parsedItem.unitOfMeasure,
       isNonCatalog: overrideProductId ? false : match.isNonCatalog,
       catalogMatch: match,
@@ -81,11 +75,6 @@ export function ReceivingConfirmationCard({
               <span className="text-xs text-gray-500">
                 In stock: {match.matchedProduct.currentQty} {match.matchedProduct.unitOfMeasure}
               </span>
-              {match.matchedProduct.lastCost > 0 && (
-                <span className="text-xs text-gray-400">
-                  Last cost: {formatCurrency(match.matchedProduct.lastCost)}
-                </span>
-              )}
             </div>
           )}
 
@@ -127,7 +116,7 @@ export function ReceivingConfirmationCard({
         </div>
       </div>
 
-      {/* Editable fields: qty + cost */}
+      {/* Editable field: qty only */}
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <label className="text-xs text-gray-500 mb-1 block">Qty Received</label>
@@ -142,20 +131,6 @@ export function ReceivingConfirmationCard({
         </div>
         <div className="text-xs text-gray-400 pt-5">
           {match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure}
-        </div>
-        <div className="flex-1">
-          <label className="text-xs text-gray-500 mb-1 block">Unit Cost</label>
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={unitCost}
-            onChange={(e) => handleCostChange(Number(e.target.value) || 0)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="text-sm font-medium text-gray-700 pt-5 min-w-[70px] text-right">
-          {formatCurrency(quantity * unitCost)}
         </div>
       </div>
 
