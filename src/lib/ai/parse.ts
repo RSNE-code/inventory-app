@@ -3,7 +3,7 @@ import { anthropic } from "@ai-sdk/anthropic"
 import { prisma } from "@/lib/db"
 import type { ParsedLineItem, CatalogMatch } from "./types"
 
-const MODEL = anthropic("claude-opus-4-6")
+const MODEL = anthropic("claude-sonnet-4-6")
 
 // ─── Load context data for AI matching ───
 
@@ -29,13 +29,9 @@ async function loadCatalogContext(): Promise<string> {
     orderBy: { name: "asc" },
   })
 
+  // Compact format: ID|name|SKU|category|UOM — minimize tokens
   return products
-    .map((p) => {
-      const dims = p.dimLength
-        ? `${p.dimLength}${p.dimLengthUnit || ""}${p.dimWidth ? ` x ${p.dimWidth}${p.dimWidthUnit || ""}` : ""}`
-        : ""
-      return `ID:${p.id} | ${p.name}${p.sku ? ` (SKU: ${p.sku})` : ""} | ${p.category.name} | ${p.unitOfMeasure}${dims ? ` | ${dims}` : ""} | qty:${Number(p.currentQty)} | cost:$${Number(p.lastCost ?? p.avgCost ?? 0)}`
-    })
+    .map((p) => `${p.id}|${p.name}${p.sku ? `|${p.sku}` : ""}|${p.category.name}|${p.unitOfMeasure}`)
     .join("\n")
 }
 
@@ -60,14 +56,15 @@ async function loadOpenPOContext(): Promise<string> {
     orderBy: { createdAt: "desc" },
   })
 
+  // Compact format to minimize tokens
   return pos
     .map((po) => {
       const items = po.lineItems
-        .map((li) => `  - ${li.description}${li.sku ? ` (${li.sku})` : ""} qty:${Number(li.qtyOrdered)} received:${Number(li.qtyReceived)} @$${Number(li.unitCost)}`)
+        .map((li) => `  ${li.description} x${Number(li.qtyOrdered)}`)
         .join("\n")
-      return `PO#${po.poNumber} | ${po.supplier.name} | $${Number(po.amount ?? 0)} | ${po.jobName || "no job"} | ${po.createdAt.toISOString().slice(0, 10)}\n${items}`
+      return `PO#${po.poNumber}|${po.supplier.name}|$${Number(po.amount ?? 0)}|${po.createdAt.toISOString().slice(0, 10)}\n${items}`
     })
-    .join("\n\n")
+    .join("\n")
 }
 
 // ─── Build product lookup for enriching AI results ───

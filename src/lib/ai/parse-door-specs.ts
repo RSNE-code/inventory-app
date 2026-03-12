@@ -3,7 +3,7 @@ import { anthropic } from "@ai-sdk/anthropic"
 import type { DoorSpecs, GapQuestion } from "@/lib/door-specs"
 import { findSpecGaps, getDefaultSpecs, getStandardHardware } from "@/lib/door-specs"
 
-const MODEL = anthropic("claude-opus-4-6")
+const MODEL = anthropic("claude-sonnet-4-6")
 
 const DOOR_SPEC_SCHEMA = `{
   "doorCategory": "HINGED_COOLER | HINGED_FREEZER | SLIDING | null",
