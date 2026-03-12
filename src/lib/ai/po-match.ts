@@ -12,11 +12,8 @@ export async function matchPO(params: MatchParams): Promise<MatchedPO | null> {
 
   if (!poNumber && !vendorName) return null
 
-  // Load open POs with supplier and line items
+  // Load all POs with supplier and line items
   const openPOs = await prisma.purchaseOrder.findMany({
-    where: {
-      status: { in: ["OPEN", "PARTIALLY_RECEIVED"] },
-    },
     include: {
       supplier: { select: { id: true, name: true } },
       lineItems: {
@@ -149,9 +146,7 @@ export async function searchPOs(params: {
 }): Promise<MatchedPO[]> {
   const { supplierId, search, limit = 20 } = params
 
-  const where: Record<string, unknown> = {
-    status: { in: ["OPEN", "PARTIALLY_RECEIVED"] },
-  }
+  const where: Record<string, unknown> = {}
 
   if (supplierId) {
     where.supplierId = supplierId

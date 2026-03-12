@@ -3,7 +3,7 @@ import { PrismaClient, Prisma } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import path from "path"
 
-const XLSX_PATH = path.resolve(__dirname, "../../reference/Knowify RSNE POs and Items Export.xlsx")
+const XLSX_PATH = path.resolve(__dirname, "../../reference/Knowify RSNE Purchases Summary.xlsx")
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
 const prisma = new PrismaClient({ adapter })
@@ -64,8 +64,6 @@ function matchSupplierName(
   return bestMatch && bestMatch.confidence >= 0.5 ? { id: bestMatch.id, name: bestMatch.name } : null
 }
 
-// ─── Parse date strings like "04/09/2025" ───
-
 function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null
   const parts = dateStr.split("/")
@@ -75,25 +73,18 @@ function parseDate(dateStr: string): Date | null {
   return new Date(year, month - 1, day)
 }
 
-// ─── Types for spreadsheet rows ───
-
 interface SpreadsheetRow {
-  Vendor?: string | number
-  "Purchase date"?: string | number
-  "PO #"?: string | number
-  "Item description"?: string | number
-  "Catalog item"?: string | number
-  "Item Number / SKU"?: string | number
+  Item?: string | number
   Quantity?: string | number
+  Received?: string | number
+  "PO#"?: string | number
+  Vendor?: string | number
   "Unit cost"?: string | number
-  "Item total"?: string | number
-  "Purchase total"?: string | number
-  "Quantity received"?: string | number
-  "Delivery/Pickup on"?: string | number
-  "Job name"?: string | number
-  Phase?: string | number
-  "Vendor type"?: string | number
-  "Purchase Type"?: string | number
+  Total?: string | number
+  "Client/Department"?: string | number
+  "Project/Budget"?: string | number
+  Date?: string | number
+  "Delivery date"?: string | number
 }
 
 interface POData {
@@ -102,10 +93,9 @@ interface POData {
   poNumber: string
   purchaseTotal: number
   jobName: string
+  clientName: string
   items: Array<{
     description: string
-    catalogItem: string
-    sku: string
     quantity: number
     unitCost: number
     qtyReceived: number
@@ -116,7 +106,7 @@ async function main() {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const XLSX = require(path.resolve(__dirname, "../../node_modules/xlsx/xlsx.js"))
 
-  console.log("Reading PO + Items spreadsheet...")
+  console.log("Reading Purchases Summary spreadsheet...")
   const workbook = XLSX.readFile(XLSX_PATH)
   const sheet = workbook.Sheets[workbook.SheetNames[0]]
   const rows: SpreadsheetRow[] = XLSX.utils.sheet_to_json(sheet)
@@ -125,36 +115,39 @@ async function main() {
   const poMap = new Map<string, POData>()
 
   for (const row of rows) {
-    const poNumber = String(row["PO #"] || "").trim()
+    const poNumber = String(row["PO#"] || "").trim()
     if (!poNumber) continue
 
     if (!poMap.has(poNumber)) {
       poMap.set(poNumber, {
         vendorName: String(row["Vendor"] || "").trim(),
-        purchaseDate: String(row["Purchase date"] || "").trim(),
+        purchaseDate: String(row["Date"] || "").trim(),
         poNumber,
-        purchaseTotal: parseFloat(String(row["Purchase total"] || "0").replace(/[$,]/g, "")),
-        jobName: String(row["Job name"] || "").trim(),
+        purchaseTotal: 0,
+        jobName: String(row["Project/Budget"] || "").trim(),
+        clientName: String(row["Client/Department"] || "").trim(),
         items: [],
       })
     }
 
-    const description = String(row["Item description"] || "").trim()
+    const po = poMap.get(poNumber)!
+    const itemTotal = parseFloat(String(row["Total"] || "0").replace(/[$,]/g, ""))
+    if (!isNaN(itemTotal)) po.purchaseTotal += itemTotal
+
+    const description = String(row["Item"] || "").trim()
     if (!description) continue
 
-    poMap.get(poNumber)!.items.push({
+    po.items.push({
       description,
-      catalogItem: String(row["Catalog item"] || "").trim(),
-      sku: String(row["Item Number / SKU"] || "").trim(),
       quantity: parseFloat(String(row["Quantity"] || "0")),
       unitCost: parseFloat(String(row["Unit cost"] || "0").replace(/[$,]/g, "")),
-      qtyReceived: parseFloat(String(row["Quantity received"] || "0")),
+      qtyReceived: parseFloat(String(row["Received"] || "0")),
     })
   }
 
   console.log(`Found ${poMap.size} unique POs with ${rows.length} total line items`)
 
-  // Load suppliers and products for matching
+  // Load suppliers and products
   const suppliers = await prisma.supplier.findMany({
     where: { isActive: true },
     select: { id: true, name: true },
@@ -167,15 +160,12 @@ async function main() {
   })
   console.log(`Loaded ${products.length} products for item matching`)
 
-  // Build product lookup by SKU and normalized name
-  const productBySku = new Map<string, string>()
   const productByName = new Map<string, string>()
   for (const p of products) {
-    if (p.sku) productBySku.set(p.sku.toLowerCase().trim(), p.id)
     productByName.set(normalize(p.name), p.id)
   }
 
-  // Delete existing POs and line items for a clean reseed
+  // Clean slate
   const deleted = await prisma.pOLineItem.deleteMany({})
   console.log(`Deleted ${deleted.count} existing line items`)
   const deletedPOs = await prisma.purchaseOrder.deleteMany({})
@@ -196,7 +186,6 @@ async function main() {
 
     const createdDate = parseDate(po.purchaseDate)
 
-    // Determine PO status based on received quantities
     const allReceived = po.items.length > 0 && po.items.every((i) => i.qtyReceived >= i.quantity)
     const someReceived = po.items.some((i) => i.qtyReceived > 0)
     const status = allReceived ? "CLOSED" as const : someReceived ? "PARTIALLY_RECEIVED" as const : "OPEN" as const
@@ -206,33 +195,22 @@ async function main() {
         poNumber: po.poNumber,
         supplierId: supplierMatch.id,
         status,
-        amount: isNaN(po.purchaseTotal) ? null : new Prisma.Decimal(po.purchaseTotal),
+        amount: isNaN(po.purchaseTotal) ? null : new Prisma.Decimal(Math.round(po.purchaseTotal * 100) / 100),
         jobName: po.jobName || null,
+        clientName: po.clientName || null,
         createdAt: createdDate || new Date(),
       },
     })
 
-    // Create line items
     for (const item of po.items) {
-      // Try to match item to catalog product
       let productId: string | null = null
-
-      // Match by SKU first
-      if (item.sku) {
-        productId = productBySku.get(item.sku.toLowerCase().trim()) || null
-      }
-
-      // Match by catalog item name
-      if (!productId && item.catalogItem) {
-        productId = productByName.get(normalize(item.catalogItem)) || null
-      }
+      productId = productByName.get(normalize(item.description)) || null
 
       await prisma.pOLineItem.create({
         data: {
           purchaseOrderId: createdPO.id,
           productId,
           description: item.description,
-          sku: item.sku || null,
           qtyOrdered: new Prisma.Decimal(isNaN(item.quantity) ? 0 : item.quantity),
           qtyReceived: new Prisma.Decimal(isNaN(item.qtyReceived) ? 0 : item.qtyReceived),
           unitCost: new Prisma.Decimal(isNaN(item.unitCost) ? 0 : item.unitCost),

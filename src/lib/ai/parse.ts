@@ -44,13 +44,12 @@ async function loadSupplierContext(): Promise<string> {
   return suppliers.map((s) => `ID:${s.id} | ${s.name}`).join("\n")
 }
 
-async function loadOpenPOContext(): Promise<string> {
+async function loadPOContext(): Promise<string> {
   const pos = await prisma.purchaseOrder.findMany({
-    where: { status: { in: ["OPEN", "PARTIALLY_RECEIVED"] } },
     include: {
       supplier: { select: { name: true } },
       lineItems: {
-        select: { description: true, sku: true, qtyOrdered: true, qtyReceived: true, unitCost: true },
+        select: { description: true, qtyOrdered: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -62,7 +61,7 @@ async function loadOpenPOContext(): Promise<string> {
       const items = po.lineItems
         .map((li) => `  ${li.description} x${Number(li.qtyOrdered)}`)
         .join("\n")
-      return `PO#${po.poNumber}|${po.supplier.name}|$${Number(po.amount ?? 0)}|${po.createdAt.toISOString().slice(0, 10)}\n${items}`
+      return `PO#${po.poNumber}|${po.supplier.name}|${po.status}|$${Number(po.amount ?? 0)}\n${items}`
     })
     .join("\n")
 }
@@ -226,7 +225,7 @@ export async function parseImageInput(
   const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
     loadCatalogContext(),
     loadSupplierContext(),
-    loadOpenPOContext(),
+    loadPOContext(),
     loadProductMap(),
   ])
 
@@ -251,9 +250,9 @@ export async function parseImageInput(
 SUPPLIERS:
 ${supplierContext}
 
-2. FIND THE PURCHASE ORDER — Look for a "Customer PO" number (usually 1-4 digits). Then try to match it against our open POs. Use common sense: a more recent PO is likely more relevant. If the PO number doesn't match exactly, try matching by supplier + items + quantities.
+2. FIND THE PURCHASE ORDER — Look for a "Customer PO" number (usually 1-4 digits). Then match it EXACTLY against our POs below. IMPORTANT: PO numbers must match exactly — PO#344 is NOT PO#34. If the exact number isn't found, try matching by supplier + items + quantities. Prefer OPEN or PARTIALLY_RECEIVED POs, but match CLOSED ones too.
 
-OPEN PURCHASE ORDERS:
+PURCHASE ORDERS:
 ${poContext}
 
 3. EXTRACT & MATCH ITEMS — Parse every line item and match each to the best product in our catalog. Product names on packing slips often differ from catalog names — use your judgment.
