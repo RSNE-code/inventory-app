@@ -166,7 +166,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
               </span>
             </div>
             {processingType === "image" && (
-              <p className="text-[11px] text-text-muted mt-1">This may take a few seconds</p>
+              <p className="text-[12px] text-text-muted mt-1">This may take a few seconds</p>
             )}
           </div>
         )}

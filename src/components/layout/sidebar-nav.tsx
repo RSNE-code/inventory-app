@@ -74,7 +74,7 @@ export function SidebarNav() {
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-white/8">
-        <p className="text-[11px] text-white/30 font-medium">RSNE Inventory v1.0</p>
+        <p className="text-[12px] text-white/30 font-medium">RSNE Inventory v1.0</p>
       </div>
     </aside>
   )

@@ -57,7 +57,7 @@ export function StockSummaryCards({ summary }: { summary: StockSummary }) {
               </div>
               <div className="min-w-0">
                 <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none truncate">{card.value}</p>
-                <p className="text-text-muted text-[11px] mt-1 font-medium">{card.label}</p>
+                <p className="text-text-muted text-[12px] mt-1 font-medium">{card.label}</p>
               </div>
             </div>
           </Card>

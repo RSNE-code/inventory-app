@@ -50,7 +50,7 @@ export function StepProgress({ steps, currentStep, className, onStepClick }: Ste
               </div>
               <span
                 className={cn(
-                  "text-[11px] leading-tight text-center hidden min-[400px]:block transition-colors",
+                  "text-[12px] leading-tight text-center hidden min-[400px]:block transition-colors",
                   isCompleted && "text-brand-blue font-medium",
                   isCurrent && "text-brand-blue font-semibold",
                   isFuture && "text-gray-400",

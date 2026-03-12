@@ -362,7 +362,7 @@ export function ReceivingFlow() {
         {/* Divider */}
         <div className="flex items-center gap-3 px-2">
           <div className="flex-1 h-px bg-border-custom/60" />
-          <span className="text-[11px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
+          <span className="text-[12px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
             or type / speak below
           </span>
           <div className="flex-1 h-px bg-border-custom/60" />
@@ -443,13 +443,13 @@ export function ReceivingFlow() {
               <span className="text-xs font-semibold text-brand-blue">
                 PO #{matchedPO.poNumber}
               </span>
-              <span className="text-[11px] text-text-muted">
+              <span className="text-[12px] text-text-muted">
                 {matchedPO.supplierName}
               </span>
             </div>
             <button
               onClick={() => setPhase("PO_MATCH")}
-              className="text-[11px] text-text-muted hover:text-brand-blue font-semibold transition-colors"
+              className="text-[12px] text-text-muted hover:text-brand-blue font-semibold transition-colors"
             >
               Change
             </button>

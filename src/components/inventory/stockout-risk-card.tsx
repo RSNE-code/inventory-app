@@ -189,15 +189,15 @@ export function StockoutRiskCard({
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="bg-surface-secondary rounded-lg p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">{formatQuantity(available)}</p>
-          <p className="text-[11px] text-text-muted uppercase tracking-wide">Available</p>
+          <p className="text-[12px] text-text-muted uppercase tracking-wide">Available</p>
         </div>
         <div className="bg-surface-secondary rounded-lg p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">0</p>
-          <p className="text-[11px] text-text-muted uppercase tracking-wide">Allocated</p>
+          <p className="text-[12px] text-text-muted uppercase tracking-wide">Allocated</p>
         </div>
         <div className="bg-surface-secondary rounded-lg p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">{formatQuantity(safetyStock)}</p>
-          <p className="text-[11px] text-text-muted uppercase tracking-wide">Safety Stock</p>
+          <p className="text-[12px] text-text-muted uppercase tracking-wide">Safety Stock</p>
         </div>
       </div>
 

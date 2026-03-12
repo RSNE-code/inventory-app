@@ -20,7 +20,7 @@ export function QuickActions() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-brand group-hover:shadow-brand-md transition-shadow">
               <action.icon className="h-5 w-5 text-brand-blue" />
             </div>
-            <span className="text-[11px] font-semibold text-text-secondary text-center leading-tight">{action.label}</span>
+            <span className="text-[12px] font-semibold text-text-secondary text-center leading-tight">{action.label}</span>
           </div>
         </Link>
       ))}

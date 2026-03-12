@@ -102,7 +102,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.activeBomCount}</p>
-                      <p className="text-text-muted text-[11px] mt-1 font-medium">Active BOMs</p>
+                      <p className="text-text-muted text-[12px] mt-1 font-medium">Active BOMs</p>
                     </div>
                   </div>
                 </Card>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.fabrication ? dashboard.fabrication.inProduction + dashboard.fabrication.pendingApprovals : 0}</p>
-                      <p className="text-text-muted text-[11px] mt-1 font-medium">Active Builds</p>
+                      <p className="text-text-muted text-[12px] mt-1 font-medium">Active Builds</p>
                     </div>
                   </div>
                 </Card>

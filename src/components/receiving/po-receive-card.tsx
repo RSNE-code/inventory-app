@@ -89,7 +89,7 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
         )}
 
         {/* Column header */}
-        <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
+        <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[12px] font-bold text-text-muted uppercase tracking-[0.08em]">
           <span className="flex-1">Item</span>
           <span className="w-14 text-center">Ordered</span>
           <span className="w-28 text-center">Receiving</span>
@@ -160,10 +160,10 @@ function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] })
           <Clock className="h-3.5 w-3.5 text-brand-orange" />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-[12px] font-bold text-brand-orange">
+          <span className="text-[13px] font-bold text-brand-orange">
             {receipts.length} prior receipt{receipts.length !== 1 ? "s" : ""}
           </span>
-          <span className="text-[11px] text-text-muted ml-1.5">
+          <span className="text-[12px] text-text-muted ml-1.5">
             · last {formattedLastDate}
           </span>
         </div>
@@ -216,7 +216,7 @@ function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] })
 
                   {/* Receipt content */}
                   <div>
-                    <p className="text-[11px] font-bold text-navy/80 tabular-nums">
+                    <p className="text-[12px] font-bold text-navy/80 tabular-nums">
                       {formattedDate}
                       <span className="text-text-muted/50 font-medium ml-1.5">
                         {formattedTime}
@@ -226,7 +226,7 @@ function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] })
                       {receipt.items.map((item, ii) => (
                         <div
                           key={ii}
-                          className="flex items-baseline gap-2 text-[11px]"
+                          className="flex items-baseline gap-2 text-[12px]"
                         >
                           <span className="font-bold text-navy/60 tabular-nums w-6 text-right shrink-0">
                             ×{item.quantity}
@@ -283,14 +283,14 @@ function ReceiveLineRow({
     >
       {/* Item name + status */}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-navy leading-tight truncate">
+        <p className="text-sm font-bold text-navy leading-tight truncate">
           {lineItem.productName || lineItem.description}
         </p>
         <div className="flex items-center gap-2 mt-1">
           {lineItem.qtyReceived > 0 && (
             <span
               className={cn(
-                "text-[11px] font-bold px-2 py-0.5 rounded-full",
+                "text-[12px] font-bold px-2 py-0.5 rounded-full",
                 isFullyReceived
                   ? "text-status-green bg-green-50"
                   : "text-brand-orange bg-orange-50"
@@ -359,7 +359,7 @@ function ReceiveLineRow({
         {qtyToReceive > remaining && !isFullyReceived && (
           <div className="flex items-center justify-center gap-1 mt-1.5 text-brand-orange animate-fade-in">
             <AlertTriangle className="h-3 w-3" />
-            <span className="text-[11px] font-bold">Over qty</span>
+            <span className="text-[12px] font-bold">Over qty</span>
           </div>
         )}
       </div>

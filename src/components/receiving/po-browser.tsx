@@ -38,7 +38,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
             <span className="text-sm font-bold text-white tracking-wide">
               Purchase Orders
             </span>
-            <p className="text-[11px] text-white/50 font-medium">
+            <p className="text-[12px] text-white/50 font-medium">
               Select a PO to receive against
             </p>
           </div>
@@ -165,7 +165,7 @@ function ExpandablePORow({
       >
         {/* PO number badge */}
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-navy text-white">
-          <span className="text-[11px] font-extrabold tabular-nums tracking-tight leading-none">
+          <span className="text-[12px] font-extrabold tabular-nums tracking-tight leading-none">
             {po.poNumber}
           </span>
         </div>
@@ -181,7 +181,7 @@ function ExpandablePORow({
           {/* Supplier name — prominent */}
           <div className="flex items-center gap-1.5 mt-0.5">
             <Building2 className="h-3 w-3 text-text-muted/50 shrink-0" />
-            <p className="text-[12px] text-text-secondary font-semibold truncate">
+            <p className="text-[13px] text-text-secondary font-semibold truncate">
               {po.supplierName}
             </p>
           </div>
@@ -190,7 +190,7 @@ function ExpandablePORow({
           {po.jobName && (
             <div className="flex items-center gap-1.5 mt-0.5">
               <Briefcase className="h-3 w-3 text-brand-blue shrink-0" />
-              <span className="text-[11px] font-semibold text-brand-blue truncate">
+              <span className="text-[12px] font-semibold text-brand-blue truncate">
                 {po.jobName}
               </span>
             </div>
@@ -200,7 +200,7 @@ function ExpandablePORow({
           {lastReceivedDate && (
             <div className="flex items-center gap-1 mt-0.5">
               <Clock className="h-2.5 w-2.5 text-brand-orange/60 shrink-0" />
-              <span className="text-[11px] font-medium text-brand-orange/80">
+              <span className="text-[12px] font-medium text-brand-orange/80">
                 Last received {lastReceivedDate}
               </span>
             </div>
@@ -225,7 +225,7 @@ function ExpandablePORow({
             />
           </div>
           {!expanded && (
-            <span className="text-[11px] font-bold text-text-muted/40 tabular-nums">
+            <span className="text-[12px] font-bold text-text-muted/40 tabular-nums">
               {openItems}/{totalItems}
             </span>
           )}
@@ -243,7 +243,7 @@ function ExpandablePORow({
           {po.lineItems.length > 0 && (
             <div className="border-t border-border-custom/50">
               {/* Column header */}
-              <div className="flex items-center px-3.5 py-1.5 bg-surface-secondary/70 text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
+              <div className="flex items-center px-3.5 py-1.5 bg-surface-secondary/70 text-[12px] font-bold text-text-muted uppercase tracking-[0.08em]">
                 <span className="flex-1">Item</span>
                 <span className="w-12 text-center">Ord</span>
                 <span className="w-12 text-center">Rcvd</span>
@@ -264,16 +264,16 @@ function ExpandablePORow({
                       style={expanded ? { animationDelay: `${i * 30}ms` } : undefined}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-semibold text-navy truncate">
+                        <p className="text-[13px] font-semibold text-navy truncate">
                           {li.productName || li.description}
                         </p>
                       </div>
-                      <span className="w-12 text-center text-[12px] font-bold text-navy tabular-nums">
+                      <span className="w-12 text-center text-[13px] font-bold text-navy tabular-nums">
                         {li.qtyOrdered}
                       </span>
                       <span
                         className={cn(
-                          "w-12 text-center text-[12px] font-bold tabular-nums",
+                          "w-12 text-center text-[13px] font-bold tabular-nums",
                           isComplete
                             ? "text-status-green"
                             : li.qtyReceived > 0
@@ -290,7 +290,7 @@ function ExpandablePORow({
 
               {/* Footer with date + select button */}
               <div className="flex items-center justify-between px-3.5 py-2.5 bg-surface-secondary/50 border-t border-border-custom/30">
-                <span className="text-[11px] font-semibold text-text-muted">
+                <span className="text-[12px] font-semibold text-text-muted">
                   {totalItems} item{totalItems !== 1 ? "s" : ""} · {formattedDate}
                 </span>
                 <button
@@ -299,7 +299,7 @@ function ExpandablePORow({
                     onSelect()
                   }}
                   className={cn(
-                    "px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all",
+                    "px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all",
                     "bg-brand-orange text-white hover:bg-brand-orange-hover",
                     "shadow-[0_2px_8px_rgba(232,121,43,0.25)]",
                     "active:scale-[0.96]"
