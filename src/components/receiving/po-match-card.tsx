@@ -83,7 +83,7 @@ export function POMatchCard({ matchedPO, supplierId, onConfirm, onSkip }: POMatc
         </div>
         <span
           className={cn(
-            "text-[10px] font-bold px-2.5 py-1 rounded-full border",
+            "text-[11px] font-bold px-2.5 py-1 rounded-full border",
             confidenceColor
           )}
         >
@@ -184,7 +184,7 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
           {lastReceivedDate && (
             <div className="flex items-center gap-1 mt-1">
               <Clock className="h-2.5 w-2.5 text-brand-orange/60 shrink-0" />
-              <span className="text-[10px] font-medium text-brand-orange/80">
+              <span className="text-[11px] font-medium text-brand-orange/80">
                 Last received {lastReceivedDate}
               </span>
             </div>
@@ -207,7 +207,7 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
             />
           </div>
           {!expanded && po.lineItems.length > 0 && (
-            <span className="text-[9px] font-bold text-text-muted/60 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-text-muted/60 uppercase tracking-wider">
               {po.lineItems.length} items
             </span>
           )}
@@ -248,12 +248,12 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
                           x{li.qtyOrdered}
                         </span>
                         {isComplete && (
-                          <span className="text-[9px] font-bold text-status-green bg-green-50 px-2 py-0.5 rounded-full">
+                          <span className="text-[11px] font-bold text-status-green bg-green-50 px-2 py-0.5 rounded-full">
                             RECEIVED
                           </span>
                         )}
                         {li.qtyReceived > 0 && !isComplete && (
-                          <span className="text-[9px] font-bold text-brand-orange bg-orange-50 px-2 py-0.5 rounded-full">
+                          <span className="text-[11px] font-bold text-brand-orange bg-orange-50 px-2 py-0.5 rounded-full">
                             {li.qtyReceived}/{li.qtyOrdered}
                           </span>
                         )}
@@ -382,7 +382,7 @@ function POSearchView({
                       </div>
                     )}
                     {po.lineItems.length > 0 && (
-                      <p className="text-[10px] text-text-muted/60 mt-0.5 font-medium">
+                      <p className="text-[11px] text-text-muted/60 mt-0.5 font-medium">
                         {po.lineItems.length} item{po.lineItems.length !== 1 ? "s" : ""}
                       </p>
                     )}

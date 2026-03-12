@@ -89,7 +89,7 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
         )}
 
         {/* Column header */}
-        <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[10px] font-bold text-text-muted uppercase tracking-[0.08em]">
+        <div className="flex items-center px-4 py-2.5 bg-surface-secondary border-b border-border-custom text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
           <span className="flex-1">Item</span>
           <span className="w-14 text-center">Ordered</span>
           <span className="w-28 text-center">Receiving</span>
@@ -290,7 +290,7 @@ function ReceiveLineRow({
           {lineItem.qtyReceived > 0 && (
             <span
               className={cn(
-                "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                "text-[11px] font-bold px-2 py-0.5 rounded-full",
                 isFullyReceived
                   ? "text-status-green bg-green-50"
                   : "text-brand-orange bg-orange-50"
@@ -359,7 +359,7 @@ function ReceiveLineRow({
         {qtyToReceive > remaining && !isFullyReceived && (
           <div className="flex items-center justify-center gap-1 mt-1.5 text-brand-orange animate-fade-in">
             <AlertTriangle className="h-3 w-3" />
-            <span className="text-[10px] font-bold">Over qty</span>
+            <span className="text-[11px] font-bold">Over qty</span>
           </div>
         )}
       </div>

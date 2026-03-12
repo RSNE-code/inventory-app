@@ -38,7 +38,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
             <span className="text-sm font-bold text-white tracking-wide">
               Purchase Orders
             </span>
-            <p className="text-[10px] text-white/50 font-medium">
+            <p className="text-[11px] text-white/50 font-medium">
               Select a PO to receive against
             </p>
           </div>
@@ -200,7 +200,7 @@ function ExpandablePORow({
           {lastReceivedDate && (
             <div className="flex items-center gap-1 mt-0.5">
               <Clock className="h-2.5 w-2.5 text-brand-orange/60 shrink-0" />
-              <span className="text-[10px] font-medium text-brand-orange/80">
+              <span className="text-[11px] font-medium text-brand-orange/80">
                 Last received {lastReceivedDate}
               </span>
             </div>
@@ -225,7 +225,7 @@ function ExpandablePORow({
             />
           </div>
           {!expanded && (
-            <span className="text-[9px] font-bold text-text-muted/40 tabular-nums">
+            <span className="text-[11px] font-bold text-text-muted/40 tabular-nums">
               {openItems}/{totalItems}
             </span>
           )}
@@ -243,7 +243,7 @@ function ExpandablePORow({
           {po.lineItems.length > 0 && (
             <div className="border-t border-border-custom/50">
               {/* Column header */}
-              <div className="flex items-center px-3.5 py-1.5 bg-surface-secondary/70 text-[9px] font-bold text-text-muted uppercase tracking-[0.08em]">
+              <div className="flex items-center px-3.5 py-1.5 bg-surface-secondary/70 text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
                 <span className="flex-1">Item</span>
                 <span className="w-12 text-center">Ord</span>
                 <span className="w-12 text-center">Rcvd</span>
@@ -290,7 +290,7 @@ function ExpandablePORow({
 
               {/* Footer with date + select button */}
               <div className="flex items-center justify-between px-3.5 py-2.5 bg-surface-secondary/50 border-t border-border-custom/30">
-                <span className="text-[10px] font-semibold text-text-muted">
+                <span className="text-[11px] font-semibold text-text-muted">
                   {totalItems} item{totalItems !== 1 ? "s" : ""} · {formattedDate}
                 </span>
                 <button

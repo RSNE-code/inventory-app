@@ -160,11 +160,11 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
           </div>
 
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[10px] text-text-muted/60 font-medium tabular-nums">
+            <span className="text-[11px] text-text-muted/60 font-medium tabular-nums">
               {itemCount} item{itemCount !== 1 ? "s" : ""}
             </span>
             {isVoided && (
-              <span className="text-[9px] font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Voided
               </span>
             )}
@@ -201,7 +201,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
         <div className="overflow-hidden">
           <div className="border-t border-border-custom/50">
             {/* Column header */}
-            <div className="flex items-center px-4 py-1.5 bg-surface-secondary/70 text-[9px] font-bold text-text-muted uppercase tracking-[0.08em]">
+            <div className="flex items-center px-4 py-1.5 bg-surface-secondary/70 text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
               <span className="flex-1">Item</span>
               <span className="w-14 text-center">Qty</span>
             </div>
@@ -221,7 +221,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                     <p className="text-[12px] font-semibold text-navy truncate">
                       {txn.product.name}
                     </p>
-                    <p className="text-[10px] text-text-muted">
+                    <p className="text-[11px] text-text-muted">
                       {txn.product.unitOfMeasure}
                     </p>
                   </div>
@@ -235,7 +235,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
             {/* Footer with time + notes + undo */}
             <div className="px-4 py-3 bg-surface-secondary/30 border-t border-border-custom/30 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-text-muted/60 font-medium">
+                <span className="text-[11px] text-text-muted/60 font-medium">
                   {formattedDate} at {formattedTime}
                 </span>
               </div>
@@ -254,7 +254,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                     <p className="text-[11px] font-bold text-status-red">
                       Undo this receipt?
                     </p>
-                    <p className="text-[10px] text-red-600/70 mt-0.5">
+                    <p className="text-[11px] text-red-600/70 mt-0.5">
                       Stock will be reversed for all {itemCount} item{itemCount !== 1 ? "s" : ""}
                     </p>
                   </div>
