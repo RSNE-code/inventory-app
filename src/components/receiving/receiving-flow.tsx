@@ -291,36 +291,48 @@ export function ReceivingFlow() {
   const steps = getSteps(showPOStep)
   const currentStep = getStepIndex(phase, showPOStep)
 
+  function handleStepClick(stepIndex: number) {
+    if (stepIndex === currentStep) return
+
+    if (showPOStep) {
+      // PO flow: Input(0) → Select PO(1) → Receive(2) → Summary(3)
+      const phaseMap: Phase[] = ["INPUT", matchedPO ? "PO_MATCH" : "PO_BROWSE", "PO_RECEIVE", "SUMMARY"]
+      const target = phaseMap[stepIndex]
+      if (target) setPhase(target)
+    } else {
+      // Ad-hoc flow: Input(0) → Review(1) → Summary(2)
+      const phaseMap: Phase[] = ["INPUT", "REVIEW", "SUMMARY"]
+      const target = phaseMap[stepIndex]
+      if (target) setPhase(target)
+    }
+  }
+
   // ─── Phase 1: INPUT — Two entry paths ───
   if (phase === "INPUT") {
     return (
       <div className="space-y-5 animate-fade-in-up">
-        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
         {/* Entry path cards */}
         <div className="grid grid-cols-2 gap-3">
-          {/* AI Receive */}
+          {/* Packing Slip */}
           <button
             type="button"
             onClick={() => aiInputRef.current?.triggerCamera()}
             className={cn(
-              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-dashed",
-              "border-brand-orange/30 bg-gradient-to-b from-orange-50/80 to-white",
-              "hover:border-brand-orange/50 hover:shadow-[0_4px_20px_rgba(232,121,43,0.12)]",
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "border-brand-orange/25 bg-gradient-to-b from-orange-50/80 to-white",
+              "shadow-[0_2px_12px_rgba(232,121,43,0.08)]",
+              "hover:border-brand-orange/40 hover:shadow-[0_6px_24px_rgba(232,121,43,0.15)]",
               "active:scale-[0.97] transition-all duration-200"
             )}
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange/10 group-hover:bg-brand-orange/15 transition-colors">
               <Camera className="h-7 w-7 text-brand-orange" />
             </div>
-            <div className="text-center">
-              <p className="text-[15px] font-extrabold text-navy tracking-tight">
-                AI Receive
-              </p>
-              <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-tight">
-                Photo, voice, or type
-              </p>
-            </div>
+            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+              Packing Slip
+            </p>
           </button>
 
           {/* Browse POs */}
@@ -331,23 +343,19 @@ export function ReceivingFlow() {
               setPhase("PO_BROWSE")
             }}
             className={cn(
-              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 border-dashed",
-              "border-brand-blue/30 bg-gradient-to-b from-blue-50/80 to-white",
-              "hover:border-brand-blue/50 hover:shadow-[0_4px_20px_rgba(46,125,186,0.12)]",
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "border-brand-blue/25 bg-gradient-to-b from-blue-50/80 to-white",
+              "shadow-[0_2px_12px_rgba(46,125,186,0.08)]",
+              "hover:border-brand-blue/40 hover:shadow-[0_6px_24px_rgba(46,125,186,0.15)]",
               "active:scale-[0.97] transition-all duration-200"
             )}
           >
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue/10 group-hover:bg-brand-blue/15 transition-colors">
               <ClipboardList className="h-7 w-7 text-brand-blue" />
             </div>
-            <div className="text-center">
-              <p className="text-[15px] font-extrabold text-navy tracking-tight">
-                Browse POs
-              </p>
-              <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-tight">
-                Find & select a PO
-              </p>
-            </div>
+            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+              Browse POs
+            </p>
           </button>
         </div>
 
@@ -374,7 +382,7 @@ export function ReceivingFlow() {
   if (phase === "PO_MATCH") {
     return (
       <div className="space-y-4 animate-fade-in-up">
-        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
         <POMatchCard
           matchedPO={matchedPO}
@@ -397,7 +405,7 @@ export function ReceivingFlow() {
   if (phase === "PO_BROWSE") {
     return (
       <div className="space-y-4 animate-fade-in-up">
-        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
         <POBrowser
           onSelect={handlePOConfirm}
@@ -411,7 +419,7 @@ export function ReceivingFlow() {
   if (phase === "PO_RECEIVE" && matchedPO) {
     return (
       <div className="space-y-4 animate-fade-in-up">
-        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
         <POReceiveCard
           po={matchedPO}
@@ -426,7 +434,7 @@ export function ReceivingFlow() {
   if (phase === "REVIEW") {
     return (
       <div className="space-y-4 animate-fade-in-up">
-        <StepProgress steps={steps} currentStep={currentStep} />
+        <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
 
         {purchaseOrderId && matchedPO && (
           <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-brand-blue/5 border border-brand-blue/10">
@@ -531,7 +539,7 @@ export function ReceivingFlow() {
   // ─── Phase 5: SUMMARY ───
   return (
     <div className="space-y-4 animate-fade-in-up">
-      <StepProgress steps={steps} currentStep={currentStep} />
+      <StepProgress steps={steps} currentStep={currentStep} onStepClick={handleStepClick} />
       <ReceiptSummary
         supplier={{ id: supplierId, name: supplierName }}
         items={confirmedItems}

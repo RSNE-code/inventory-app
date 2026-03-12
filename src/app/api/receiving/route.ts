@@ -123,15 +123,27 @@ export async function GET(request: NextRequest) {
     await requireAuth()
 
     const { searchParams } = request.nextUrl
-    const limit = parseInt(searchParams.get("limit") || "10")
+    const limit = parseInt(searchParams.get("limit") || "30")
+    const search = searchParams.get("search") || undefined
+
+    const where: Record<string, unknown> = {}
+    if (search) {
+      where.OR = [
+        { supplier: { name: { contains: search, mode: "insensitive" } } },
+        { purchaseOrder: { poNumber: { contains: search, mode: "insensitive" } } },
+        { notes: { contains: search, mode: "insensitive" } },
+      ]
+    }
 
     const receipts = await prisma.receipt.findMany({
+      where,
       orderBy: { receivedAt: "desc" },
       take: limit,
       include: {
         supplier: { select: { name: true } },
+        purchaseOrder: { select: { poNumber: true, jobName: true } },
         transactions: {
-          include: { product: { select: { name: true } } },
+          include: { product: { select: { name: true, unitOfMeasure: true } } },
         },
       },
     })

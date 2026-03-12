@@ -74,6 +74,66 @@ export function useSuppliers(search?: string) {
   })
 }
 
+// ─── Receipt History ───
+
+export interface ReceiptData {
+  id: string
+  supplierId: string
+  purchaseOrderId: string | null
+  receivedAt: string
+  notes: string | null
+  supplier: { name: string }
+  purchaseOrder: { poNumber: string; jobName: string | null } | null
+  transactions: Array<{
+    id: string
+    type: string
+    productId: string
+    quantity: string
+    unitCost: string | null
+    product: { name: string; unitOfMeasure: string }
+  }>
+}
+
+export function useReceiptHistory(search?: string) {
+  const params = new URLSearchParams()
+  if (search) params.set("search", search)
+
+  return useQuery<{ data: ReceiptData[] }>({
+    queryKey: ["receipts", search],
+    queryFn: async () => {
+      const res = await fetch(`/api/receiving?${params}`)
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to load receipts")
+      }
+      return res.json()
+    },
+  })
+}
+
+export function useVoidReceipt() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (receiptId: string) => {
+      const res = await fetch(`/api/receiving/${receiptId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to void receipt")
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["receipts"] })
+      queryClient.invalidateQueries({ queryKey: ["products"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["pos"] })
+    },
+  })
+}
+
 export function useCreateReceipt() {
   const queryClient = useQueryClient()
 

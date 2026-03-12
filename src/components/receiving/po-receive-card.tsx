@@ -31,10 +31,6 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
   }
 
   const itemsToReceive = po.lineItems.filter((_, i) => quantities[i] > 0)
-  const totalCost = po.lineItems.reduce(
-    (sum, li, i) => sum + quantities[i] * li.unitCost,
-    0
-  )
 
   function handleConfirm() {
     const items: ConfirmedReceivingItem[] = po.lineItems
@@ -102,15 +98,6 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
           ))}
         </div>
 
-        {/* Total footer */}
-        <div className="flex items-center justify-between px-4 py-3.5 bg-navy/[0.03] border-t border-border-custom">
-          <span className="text-sm font-bold text-text-secondary uppercase tracking-wide">
-            Receipt Total
-          </span>
-          <span className="text-lg font-extrabold text-navy tabular-nums">
-            {formatCurrency(totalCost)}
-          </span>
-        </div>
       </Card>
 
       {/* Confirm button */}
