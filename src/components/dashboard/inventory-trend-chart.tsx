@@ -212,7 +212,7 @@ export function InventoryTrendChart() {
         <button
           onClick={() => setCategoryId("")}
           className={cn(
-            "shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold transition-all duration-200",
+            "shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-all duration-200",
             categoryId === ""
               ? "bg-navy text-white"
               : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
@@ -225,7 +225,7 @@ export function InventoryTrendChart() {
             key={cat.id}
             onClick={() => setCategoryId(cat.id)}
             className={cn(
-              "shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold transition-all duration-200 whitespace-nowrap",
+              "shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold transition-all duration-200 whitespace-nowrap",
               categoryId === cat.id
                 ? "bg-navy text-white"
                 : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
@@ -379,7 +379,7 @@ export function InventoryTrendChart() {
       </svg>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-3 -mt-0.5 text-[9px] text-text-muted font-medium">
+      <div className="flex items-center justify-center gap-3 -mt-0.5 text-[11px] text-text-muted font-medium">
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-0.5 bg-brand-blue rounded-full inline-block" />
           Historical

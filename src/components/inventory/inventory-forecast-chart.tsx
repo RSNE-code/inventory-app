@@ -189,7 +189,7 @@ export function InventoryForecastChart({
       </svg>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-text-muted">
+      <div className="flex items-center justify-center gap-4 mt-2 text-[11px] text-text-muted">
         <span className="flex items-center gap-1">
           <span className="w-4 h-0.5 bg-brand-blue inline-block" /> Actual
         </span>

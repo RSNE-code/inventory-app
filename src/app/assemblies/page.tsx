@@ -227,7 +227,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-navy text-sm">{name as string}</p>
-              <Badge className={cn("text-[10px] px-1.5 py-0 gap-1", statusColors[status])}>
+              <Badge className={cn("text-[11px] px-1.5 py-0 gap-1", statusColors[status])}>
                 <span className={cn("h-1 w-1 rounded-full shrink-0", statusDots[status])} />
                 {statusLabels[status] || status}
               </Badge>
@@ -254,7 +254,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   )}
                   {temp && (
                     <Badge className={cn(
-                      "text-[10px] px-1.5 py-0 border-0",
+                      "text-[11px] px-1.5 py-0 border-0",
                       temp === "FREEZER"
                         ? "bg-blue-50 text-blue-600"
                         : "bg-cyan-50 text-cyan-600"
@@ -267,7 +267,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                     </Badge>
                   )}
                   {frame && (
-                    <span className="text-[10px] text-text-muted font-medium">
+                    <span className="text-[11px] text-text-muted font-medium">
                       {frame.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </span>
                   )}

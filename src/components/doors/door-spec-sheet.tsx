@@ -54,7 +54,7 @@ function CheckboxRow({
             : "border-gray-300 bg-white"
         )}
       >
-        {checked && <span className="text-[10px] font-bold">&#10003;</span>}
+        {checked && <span className="text-[11px] font-bold">&#10003;</span>}
       </div>
       <span className="text-sm text-gray-700">{label}</span>
     </div>
@@ -84,7 +84,7 @@ export function DoorSpecSheet({
       <div className="bg-navy text-white px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-gray-300">
+            <p className="text-[11px] uppercase tracking-widest text-gray-300">
               Refrigerated Structures of New England
             </p>
             <h3 className="text-base font-bold mt-0.5">

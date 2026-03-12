@@ -42,7 +42,7 @@ export function BottomNav() {
             >
               <Icon className={cn("h-5 w-5", isActive && "scale-110")} />
               <span className={cn(
-                "text-[10px] font-semibold",
+                "text-[11px] font-semibold",
                 isActive && "text-brand-blue"
               )}>{tab.name}</span>
             </Link>

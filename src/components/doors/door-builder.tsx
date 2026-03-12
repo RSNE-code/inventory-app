@@ -361,7 +361,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[10px] text-gray-500">Floor→Bottom</label>
+                    <label className="text-[11px] text-gray-500">Floor→Bottom</label>
                     <Input
                       value={cutout.floorToBottom}
                       onChange={(e) => {
@@ -374,7 +374,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500">Floor→Top</label>
+                    <label className="text-[11px] text-gray-500">Floor→Top</label>
                     <Input
                       value={cutout.floorToTop}
                       onChange={(e) => {
@@ -387,7 +387,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] text-gray-500">Width</label>
+                    <label className="text-[11px] text-gray-500">Width</label>
                     <Input
                       value={cutout.frameWidth}
                       onChange={(e) => {

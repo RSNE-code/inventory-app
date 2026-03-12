@@ -34,7 +34,7 @@ export function LowStockList({ items }: { items: LowStockItem[] }) {
                     <p className="text-sm font-bold text-status-yellow tabular-nums">
                       {formatQuantity(display.qty)} {display.unit}
                     </p>
-                    <p className="text-[10px] text-text-muted tabular-nums">
+                    <p className="text-[11px] text-text-muted tabular-nums">
                       Reorder at {formatQuantity(reorder.qty)}
                     </p>
                   </div>
