@@ -18,6 +18,7 @@ export async function GET(
         createdBy: { select: { id: true, name: true } },
         approvedBy: { select: { id: true, name: true } },
         lineItems: {
+          where: { isActive: true },
           include: {
             product: {
               select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
@@ -53,11 +54,15 @@ const updateBomSchema = z.object({
         tier: z.enum(["TIER_1", "TIER_2"]).default("TIER_1"),
         qtyNeeded: z.number().positive(),
         isNonCatalog: z.boolean().default(false),
-        nonCatalogName: z.string().optional().nullable(),
-        nonCatalogCategory: z.string().optional().nullable(),
-        nonCatalogUom: z.string().optional().nullable(),
+        nonCatalogName: z.string().max(255).optional().nullable(),
+        nonCatalogCategory: z.string().max(255).optional().nullable(),
+        nonCatalogUom: z.string().max(50).optional().nullable(),
         nonCatalogEstCost: z.number().optional().nullable(),
-      })
+        nonCatalogSpecs: z.any().optional().nullable(),
+      }).refine(
+        (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
+        { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
+      )
     )
     .optional(),
   removeLineItemIds: z.array(z.string().uuid()).optional(),
@@ -77,6 +82,7 @@ export async function PUT(
 ) {
   try {
     const user = await requireAuth()
+    requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SALES_MANAGER", "SHOP_FOREMAN"])
     const { id } = await params
 
     const body = await request.json()
@@ -91,7 +97,7 @@ export async function PUT(
     if (data.status) {
       const validTransitions: Record<string, string[]> = {
         DRAFT: ["APPROVED", "CANCELLED"],
-        APPROVED: ["IN_PROGRESS", "DRAFT", "CANCELLED"],
+        APPROVED: ["IN_PROGRESS", "CANCELLED"],
         IN_PROGRESS: ["COMPLETED", "CANCELLED"],
         COMPLETED: [],
         CANCELLED: [],
@@ -127,40 +133,67 @@ export async function PUT(
       }
     }
 
-    // Remove line items
+    // Soft-delete line items (set isActive = false)
     if (data.removeLineItemIds && data.removeLineItemIds.length > 0) {
-      await prisma.bomLineItem.deleteMany({
+      await prisma.bomLineItem.updateMany({
         where: { id: { in: data.removeLineItemIds }, bomId: id },
+        data: { isActive: false },
       })
     }
 
-    // Update line item quantities
+    // Update line item quantities (parallel, validated against bomId + isActive)
     if (data.updateLineItems && data.updateLineItems.length > 0) {
-      for (const item of data.updateLineItems) {
-        await prisma.bomLineItem.update({
-          where: { id: item.id },
-          data: { qtyNeeded: new Prisma.Decimal(item.qtyNeeded) },
-        })
-      }
+      await Promise.all(
+        data.updateLineItems.map((item) =>
+          prisma.bomLineItem.update({
+            where: { id: item.id, bomId: id, isActive: true },
+            data: { qtyNeeded: new Prisma.Decimal(item.qtyNeeded) },
+          })
+        )
+      )
     }
 
-    // Add line items
+    // Add line items (merge into existing if same productId)
     if (data.addLineItems && data.addLineItems.length > 0) {
-      await prisma.bomLineItem.createMany({
-        data: data.addLineItems.map((item) => ({
-          bomId: id,
-          productId: item.isNonCatalog ? null : item.productId,
-          tier: item.tier,
-          qtyNeeded: new Prisma.Decimal(item.qtyNeeded),
-          isNonCatalog: item.isNonCatalog,
-          nonCatalogName: item.nonCatalogName || null,
-          nonCatalogCategory: item.nonCatalogCategory || null,
-          nonCatalogUom: item.nonCatalogUom || null,
-          nonCatalogEstCost: item.nonCatalogEstCost
-            ? new Prisma.Decimal(item.nonCatalogEstCost)
-            : null,
-        })),
+      const existingLineItems = await prisma.bomLineItem.findMany({
+        where: { bomId: id, isActive: true },
+        select: { id: true, productId: true, qtyNeeded: true },
       })
+
+      for (const item of data.addLineItems) {
+        const existingMatch = !item.isNonCatalog && item.productId
+          ? existingLineItems.find((li) => li.productId === item.productId)
+          : null
+
+        if (existingMatch) {
+          // Merge: add quantity to existing line item
+          await prisma.bomLineItem.update({
+            where: { id: existingMatch.id },
+            data: {
+              qtyNeeded: new Prisma.Decimal(
+                Number(existingMatch.qtyNeeded) + item.qtyNeeded
+              ),
+            },
+          })
+        } else {
+          await prisma.bomLineItem.create({
+            data: {
+              bomId: id,
+              productId: item.isNonCatalog ? null : item.productId,
+              tier: item.tier,
+              qtyNeeded: new Prisma.Decimal(item.qtyNeeded),
+              isNonCatalog: item.isNonCatalog,
+              nonCatalogName: item.nonCatalogName || null,
+              nonCatalogCategory: item.nonCatalogCategory || null,
+              nonCatalogUom: item.nonCatalogUom || null,
+              nonCatalogEstCost: item.nonCatalogEstCost
+                ? new Prisma.Decimal(item.nonCatalogEstCost)
+                : null,
+              nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
+            },
+          })
+        }
+      }
     }
 
     // Update BOM
@@ -186,6 +219,7 @@ export async function PUT(
         createdBy: { select: { id: true, name: true } },
         approvedBy: { select: { id: true, name: true } },
         lineItems: {
+          where: { isActive: true },
           include: {
             product: {
               select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },

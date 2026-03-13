@@ -62,6 +62,7 @@ export function useCreateBom() {
         nonCatalogCategory?: string | null
         nonCatalogUom?: string | null
         nonCatalogEstCost?: number | null
+        nonCatalogSpecs?: Record<string, unknown> | null
       }>
     }) => {
       const res = await fetch("/api/boms", {
@@ -121,6 +122,45 @@ export function useUpdateBom() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["bom", variables.id] })
       queryClient.invalidateQueries({ queryKey: ["boms"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}
+
+export function usePanelCheckout() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      bomId,
+      bomLineItemId,
+      brand,
+      width,
+      thickness,
+      breakout,
+    }: {
+      bomId: string
+      bomLineItemId: string
+      brand: string
+      width?: number
+      thickness?: number
+      breakout: Array<{ height: number; quantity: number }>
+    }) => {
+      const res = await fetch(`/api/boms/${bomId}/panel-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bomLineItemId, brand, width, thickness, breakout }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to checkout panels")
+      }
+      return res.json()
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["bom", variables.bomId] })
+      queryClient.invalidateQueries({ queryKey: ["boms"] })
+      queryClient.invalidateQueries({ queryKey: ["products"] })
       queryClient.invalidateQueries({ queryKey: ["dashboard"] })
     },
   })

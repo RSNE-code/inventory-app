@@ -4,12 +4,12 @@ import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Mic, ClipboardList, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { AIInput } from "@/components/ai/ai-input"
 import { BomConfirmationList } from "@/components/bom/bom-confirmation-card"
+import { JobPicker } from "@/components/bom/job-picker"
 import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn, formatQuantity } from "@/lib/utils"
@@ -20,30 +20,16 @@ import type {
   ReceivingParseResult,
   ConfirmedBomItem,
 } from "@/lib/ai/types"
+import { getItemStockLevel, stockDotColor } from "@/lib/bom-utils"
 
 const BOM_STEPS = ["Job Info", "Add Materials", "Review & Submit"]
-
-type StockLevel = "sufficient" | "low" | "out" | "unknown"
-
-function getItemStockLevel(item: ConfirmedBomItem): StockLevel {
-  if (item.isNonCatalog) return "unknown"
-  if (item.currentQty <= 0) return "out"
-  if (item.currentQty < item.qtyNeeded) return "low"
-  return "sufficient"
-}
-
-const stockDotColor: Record<StockLevel, string> = {
-  sufficient: "bg-green-500",
-  low: "bg-yellow-500",
-  out: "bg-red-500",
-  unknown: "bg-gray-300",
-}
 
 export function BomAIFlow() {
   const router = useRouter()
   const createBom = useCreateBom()
 
   const [jobName, setJobName] = useState("")
+  const [jobNumber, setJobNumber] = useState<string | null>(null)
   const [notes, setNotes] = useState("")
   const [pendingMatches, setPendingMatches] = useState<CatalogMatch[]>([])
   const [confirmedItems, setConfirmedItems] = useState<ConfirmedBomItem[]>([])
@@ -55,10 +41,13 @@ export function BomAIFlow() {
         const merged = [...prev]
         for (const newMatch of result.items) {
           const newProductId = newMatch.matchedProduct?.id
-          // Check for duplicate by product ID in pending matches
+          // Check for duplicate by product ID or name (non-catalog) in pending matches
           const pendingIdx = newProductId
             ? merged.findIndex((m) => m.matchedProduct?.id === newProductId)
-            : -1
+            : merged.findIndex((m) =>
+                !m.matchedProduct?.id &&
+                m.parsedItem.name.toLowerCase() === newMatch.parsedItem.name.toLowerCase()
+              )
           if (pendingIdx >= 0) {
             // Sum quantities into existing pending match
             const existing = merged[pendingIdx]
@@ -71,20 +60,23 @@ export function BomAIFlow() {
             }
             continue
           }
-          // Check for duplicate by product ID in confirmed items
-          if (newProductId) {
-            const confirmedIdx = confirmedItems.findIndex((c) => c.productId === newProductId)
-            if (confirmedIdx >= 0) {
-              // Sum into confirmed item
-              setConfirmedItems((prevConfirmed) =>
-                prevConfirmed.map((c, i) =>
-                  i === confirmedIdx
-                    ? { ...c, qtyNeeded: c.qtyNeeded + newMatch.parsedItem.quantity }
-                    : c
-                )
+          // Check for duplicate by product ID or name (non-catalog) in confirmed items
+          const confirmedIdx = newProductId
+            ? confirmedItems.findIndex((c) => c.productId === newProductId)
+            : confirmedItems.findIndex((c) =>
+                !c.productId &&
+                c.nonCatalogName?.toLowerCase() === newMatch.parsedItem.name.toLowerCase()
               )
-              continue
-            }
+          if (confirmedIdx >= 0) {
+            // Sum into confirmed item
+            setConfirmedItems((prevConfirmed) =>
+              prevConfirmed.map((c, i) =>
+                i === confirmedIdx
+                  ? { ...c, qtyNeeded: c.qtyNeeded + newMatch.parsedItem.quantity }
+                  : c
+              )
+            )
+            continue
           }
           merged.push(newMatch)
         }
@@ -165,6 +157,7 @@ export function BomAIFlow() {
     try {
       const result = await createBom.mutateAsync({
         jobName: jobName.trim(),
+        jobNumber: jobNumber || undefined,
         notes: notes.trim() || null,
         lineItems: confirmedItems.map((item) => ({
           productId: item.productId,
@@ -190,19 +183,17 @@ export function BomAIFlow() {
     <div className="space-y-4">
       <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
-      {/* Job name */}
+      {/* Job picker */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">Job</h3>
-        <div>
-          <Label htmlFor="ai-jobName">Job Name *</Label>
-          <Input
-            id="ai-jobName"
-            value={jobName}
-            onChange={(e) => setJobName(e.target.value)}
-            placeholder="e.g., ABC Corp Walk-in Cooler"
-            className="h-12 mt-1"
-          />
-        </div>
+        <h3 className="font-semibold text-navy">Job *</h3>
+        <JobPicker
+          onSelect={(job) => {
+            setJobName(job.name)
+            setJobNumber(job.number)
+          }}
+          selectedName={jobName || undefined}
+          selectedNumber={jobNumber}
+        />
       </Card>
 
       {/* AI Input — always visible */}

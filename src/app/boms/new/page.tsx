@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Header } from "@/components/layout/header"
-import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,22 +11,31 @@ import { ProductPicker } from "@/components/bom/product-picker"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
 import { BomAIFlow } from "@/components/bom/bom-ai-flow"
 import { useCreateBom } from "@/hooks/use-boms"
+import { useBomTemplate } from "@/hooks/use-bom-templates"
+import { JobPicker } from "@/components/bom/job-picker"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { Plus } from "lucide-react"
+import { Plus, Layers } from "lucide-react"
+import { PanelLineItemForm, type PanelLineItem } from "@/components/bom/panel-line-item-form"
 
 type Tab = "ai" | "manual"
 
 export default function NewBomPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("ai")
+  return (
+    <Suspense>
+      <NewBomPageContent />
+    </Suspense>
+  )
+}
+
+function NewBomPageContent() {
+  const searchParams = useSearchParams()
+  const templateId = searchParams.get("templateId")
+  const [activeTab, setActiveTab] = useState<Tab>(templateId ? "manual" : "ai")
 
   return (
     <div>
-      <Header title="New BOM" showBack />
-      <Breadcrumb items={[
-        { label: "BOMs", href: "/boms" },
-        { label: "New BOM" },
-      ]} />
+      <Header title="New BOM" showMenu />
 
       {/* Tab bar */}
       <div className="flex border-b border-gray-200 px-4">
@@ -36,7 +44,7 @@ export default function NewBomPage() {
           className={cn(
             "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
             activeTab === "ai"
-              ? "border-[#E8792B] text-[#E8792B]"
+              ? "border-brand-orange text-brand-orange"
               : "border-transparent text-gray-500 hover:text-gray-700"
           )}
         >
@@ -47,7 +55,7 @@ export default function NewBomPage() {
           className={cn(
             "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
             activeTab === "manual"
-              ? "border-[#E8792B] text-[#E8792B]"
+              ? "border-brand-orange text-brand-orange"
               : "border-transparent text-gray-500 hover:text-gray-700"
           )}
         >
@@ -56,7 +64,7 @@ export default function NewBomPage() {
       </div>
 
       <div className="p-4">
-        {activeTab === "ai" ? <BomAIFlow /> : <ManualBomForm />}
+        {activeTab === "ai" ? <BomAIFlow /> : <ManualBomForm templateId={templateId} />}
       </div>
     </div>
   )
@@ -80,21 +88,56 @@ interface LineItem {
   nonCatalogCategory?: string | null
   nonCatalogUom?: string | null
   nonCatalogEstCost?: number | null
+  nonCatalogSpecs?: Record<string, unknown> | null
 }
 
-function ManualBomForm() {
+function ManualBomForm({ templateId }: { templateId?: string | null }) {
   const router = useRouter()
   const createBom = useCreateBom()
+  const { data: templateData } = useBomTemplate(templateId || "")
 
   const [jobName, setJobName] = useState("")
+  const [jobNumber, setJobNumber] = useState<string | null>(null)
   const [notes, setNotes] = useState("")
   const [lineItems, setLineItems] = useState<LineItem[]>([])
+  const [templateLoaded, setTemplateLoaded] = useState(false)
+
+  // Pre-fill line items from template
+  useEffect(() => {
+    if (!templateId || templateLoaded || !templateData?.data) return
+    const template = templateData.data
+    const items: LineItem[] = (template.lineItems || []).map((li: Record<string, unknown>) => {
+      const product = li.product as Record<string, unknown> | null
+      return {
+        tempId: crypto.randomUUID(),
+        productId: (li.productId as string) || null,
+        productName: product ? (product.name as string) : (li.nonCatalogName as string) || "Unknown",
+        sku: product ? (product.sku as string | null) : null,
+        unitOfMeasure: (li.unitOfMeasure as string) || "",
+        dimLength: product?.dimLength ? Number(product.dimLength) : null,
+        dimLengthUnit: product?.dimLengthUnit as string | null ?? null,
+        dimWidth: product?.dimWidth ? Number(product.dimWidth) : null,
+        dimWidthUnit: product?.dimWidthUnit as string | null ?? null,
+        tier: (li.tier as "TIER_1" | "TIER_2") || "TIER_1",
+        qtyNeeded: Number(li.defaultQty) || 1,
+        isNonCatalog: (li.isNonCatalog as boolean) || false,
+        nonCatalogName: (li.nonCatalogName as string) || null,
+        nonCatalogCategory: (li.nonCatalogCategory as string) || null,
+        nonCatalogUom: (li.isNonCatalog as boolean) ? (li.unitOfMeasure as string) || null : null,
+      }
+    })
+    setLineItems(items)
+    setTemplateLoaded(true)
+    toast.success(`Loaded template: ${template.name}`)
+  }, [templateId, templateData, templateLoaded])
+  const [showPanel, setShowPanel] = useState(false)
   const [showNonCatalog, setShowNonCatalog] = useState(false)
   const [ncName, setNcName] = useState("")
   const [ncCategory, setNcCategory] = useState("")
   const [ncUom, setNcUom] = useState("")
   const [ncQty, setNcQty] = useState("")
   const [ncCost, setNcCost] = useState("")
+  const [ncErrors, setNcErrors] = useState<Record<string, string>>({})
 
   function handleProductSelect(product: {
     id: string
@@ -127,10 +170,15 @@ function ManualBomForm() {
   }
 
   function handleAddNonCatalog() {
-    if (!ncName || !ncUom || !ncQty) {
-      toast.error("Fill in name, unit, and quantity")
+    const errors: Record<string, string> = {}
+    if (!ncName.trim()) errors.name = "Item name is required"
+    if (!ncUom.trim()) errors.uom = "Unit is required"
+    if (!ncQty || parseFloat(ncQty) <= 0) errors.qty = "Quantity must be greater than 0"
+    if (Object.keys(errors).length > 0) {
+      setNcErrors(errors)
       return
     }
+    setNcErrors({})
     setLineItems((prev) => [
       ...prev,
       {
@@ -170,6 +218,7 @@ function ManualBomForm() {
     try {
       const result = await createBom.mutateAsync({
         jobName: jobName.trim(),
+        jobNumber: jobNumber || undefined,
         notes: notes.trim() || null,
         lineItems: lineItems.map((item) => ({
           productId: item.productId,
@@ -180,6 +229,7 @@ function ManualBomForm() {
           nonCatalogCategory: item.nonCatalogCategory,
           nonCatalogUom: item.nonCatalogUom,
           nonCatalogEstCost: item.nonCatalogEstCost,
+          nonCatalogSpecs: item.nonCatalogSpecs,
         })),
       })
       toast.success("BOM created")
@@ -195,17 +245,15 @@ function ManualBomForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Job Info */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">Job</h3>
-        <div>
-          <Label htmlFor="jobName">Job Name *</Label>
-          <Input
-            id="jobName"
-            value={jobName}
-            onChange={(e) => setJobName(e.target.value)}
-            placeholder="e.g., ABC Corp Walk-in Cooler"
-            className="h-12 mt-1"
-          />
-        </div>
+        <h3 className="font-semibold text-navy">Job *</h3>
+        <JobPicker
+          onSelect={(job) => {
+            setJobName(job.name)
+            setJobNumber(job.number)
+          }}
+          selectedName={jobName || undefined}
+          selectedNumber={jobNumber}
+        />
       </Card>
 
       {/* Line Items */}
@@ -260,16 +308,30 @@ function ManualBomForm() {
           </div>
         )}
 
+        {/* Panel line item form */}
+        {showPanel && (
+          <PanelLineItemForm
+            onAdd={(panelItem: PanelLineItem) => {
+              setLineItems((prev) => [...prev, panelItem])
+              setShowPanel(false)
+            }}
+            onCancel={() => setShowPanel(false)}
+          />
+        )}
+
         {/* Non-catalog item form */}
         {showNonCatalog ? (
           <div className="space-y-2 p-3 bg-surface-secondary rounded-lg">
             <p className="text-sm font-medium text-navy">Non-Catalog Item</p>
-            <Input
-              value={ncName}
-              onChange={(e) => setNcName(e.target.value)}
-              placeholder="Item name *"
-              className="h-10"
-            />
+            <div>
+              <Input
+                value={ncName}
+                onChange={(e) => { setNcName(e.target.value); setNcErrors((prev) => { const { name, ...rest } = prev; return rest }) }}
+                placeholder="Item name *"
+                className={cn("h-10", ncErrors.name && "border-status-red")}
+              />
+              {ncErrors.name && <p className="text-xs text-status-red mt-0.5">{ncErrors.name}</p>}
+            </div>
             <Input
               value={ncCategory}
               onChange={(e) => setNcCategory(e.target.value)}
@@ -277,21 +339,27 @@ function ManualBomForm() {
               className="h-10"
             />
             <div className="flex gap-2">
-              <Input
-                value={ncUom}
-                onChange={(e) => setNcUom(e.target.value)}
-                placeholder="Unit *"
-                className="h-10 flex-1"
-              />
-              <Input
-                type="number"
-                value={ncQty}
-                onChange={(e) => setNcQty(e.target.value)}
-                placeholder="Qty *"
-                className="h-10 w-20"
-                min={0}
-                step="any"
-              />
+              <div className="flex-1">
+                <Input
+                  value={ncUom}
+                  onChange={(e) => { setNcUom(e.target.value); setNcErrors((prev) => { const { uom, ...rest } = prev; return rest }) }}
+                  placeholder="Unit *"
+                  className={cn("h-10", ncErrors.uom && "border-status-red")}
+                />
+                {ncErrors.uom && <p className="text-xs text-status-red mt-0.5">{ncErrors.uom}</p>}
+              </div>
+              <div className="w-20">
+                <Input
+                  type="number"
+                  value={ncQty}
+                  onChange={(e) => { setNcQty(e.target.value); setNcErrors((prev) => { const { qty, ...rest } = prev; return rest }) }}
+                  placeholder="Qty *"
+                  className={cn("h-10", ncErrors.qty && "border-status-red")}
+                  min={0}
+                  step="any"
+                />
+                {ncErrors.qty && <p className="text-xs text-status-red mt-0.5">{ncErrors.qty}</p>}
+              </div>
             </div>
             <Input
               type="number"
@@ -322,16 +390,30 @@ function ManualBomForm() {
             </div>
           </div>
         ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNonCatalog(true)}
-            className="w-full"
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Add Non-Catalog Item
-          </Button>
+          <div className="flex gap-2">
+            {!showPanel && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => { setShowPanel(true); setShowNonCatalog(false) }}
+                className="flex-1"
+              >
+                <Layers className="h-4 w-4 mr-1" />
+                Add Panel
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => { setShowNonCatalog(true); setShowPanel(false) }}
+              className="flex-1"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Non-Catalog Item
+            </Button>
+          </div>
         )}
       </Card>
 

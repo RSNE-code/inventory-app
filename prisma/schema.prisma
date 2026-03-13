@@ -176,6 +176,8 @@ model Category {
 model Supplier {
   id          String   @id @default(uuid())
   name        String
+  website     String?
+  logoUrl     String?
   contactInfo String?
   notes       String?
   isActive    Boolean  @default(true)
@@ -245,6 +247,11 @@ model Transaction {
   receiptId     String?
   assembly      Assembly?    @relation(fields: [assemblyId], references: [id])
   assemblyId    String?
+
+  @@index([bomId])
+  @@index([bomLineItemId])
+  @@index([productId])
+  @@index([createdAt])
 }
 
 model Bom {
@@ -286,12 +293,16 @@ model BomLineItem {
   qtyReturned   Decimal  @default(0) @db.Decimal(12, 4)
   qtyConsumed   Decimal  @default(0) @db.Decimal(12, 4)
   isAdditional  Boolean  @default(false)
+  isActive      Boolean  @default(true)
   pickupDate    DateTime?
   createdAt     DateTime @default(now())
 
   transactions Transaction[]
   assembly     Assembly? @relation(fields: [assemblyId], references: [id])
   assemblyId   String?
+
+  @@index([bomId])
+  @@index([productId])
 }
 
 model BomTemplate {

@@ -59,7 +59,7 @@ export function CheckoutAllButton({
   }
 
   return (
-    <Card className="p-4 rounded-xl border-[#E8792B] border-2 space-y-3">
+    <Card className="p-4 rounded-xl border-brand-orange border-2 space-y-3">
       <h3 className="font-semibold text-navy">Confirm Full Checkout</h3>
       <div className="space-y-1 max-h-48 overflow-y-auto">
         {remainingItems.map((item) => {

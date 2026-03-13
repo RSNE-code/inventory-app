@@ -265,6 +265,7 @@ function toMatchedPO(
     poNumber: po.poNumber,
     supplierName: po.supplier.name,
     supplierId: po.supplier.id,
+    supplierLogoUrl: (po.supplier as Record<string, unknown>).logoUrl as string | null ?? null,
     amount: po.amount ? Number(po.amount) : null,
     jobName: po.jobName,
     clientName: po.clientName,

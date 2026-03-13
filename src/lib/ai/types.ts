@@ -109,6 +109,7 @@ export interface MatchedPO {
   id: string
   poNumber: string
   supplierName: string
+  supplierLogoUrl: string | null
   supplierId: string
   amount: number | null
   jobName: string | null
@@ -128,4 +129,12 @@ export interface ConfirmedReceivingItem {
   isNonCatalog: boolean
   catalogMatch?: CatalogMatch
   poLineItemId?: string
+  // Panel breakout fields (set when item comes from panel breakout)
+  isPanelBreakout?: boolean
+  panelHeight?: number
+  panelBrand?: string
+  panelThickness?: number
+  panelColor?: string
+  panelWidth?: number
+  panelProfile?: string
 }

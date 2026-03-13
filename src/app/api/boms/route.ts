@@ -9,11 +9,26 @@ const bomLineItemSchema = z.object({
   tier: z.enum(["TIER_1", "TIER_2"]).default("TIER_1"),
   qtyNeeded: z.number().positive(),
   isNonCatalog: z.boolean().default(false),
-  nonCatalogName: z.string().optional().nullable(),
-  nonCatalogCategory: z.string().optional().nullable(),
-  nonCatalogUom: z.string().optional().nullable(),
+  nonCatalogName: z.string().max(255).optional().nullable(),
+  nonCatalogCategory: z.string().max(255).optional().nullable(),
+  nonCatalogUom: z.string().max(50).optional().nullable(),
   nonCatalogEstCost: z.number().optional().nullable(),
-})
+  nonCatalogSpecs: z.union([
+    z.object({
+      type: z.literal("panel"),
+      thickness: z.number().positive(),
+      cutLengthFt: z.number().positive(),
+      cutLengthDisplay: z.string(),
+      widthIn: z.number().positive(),
+      profile: z.string(),
+      color: z.string(),
+    }),
+    z.record(z.string(), z.unknown()),
+  ]).optional().nullable(),
+}).refine(
+  (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
+  { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
+)
 
 const createBomSchema = z.object({
   jobName: z.string().min(1),
@@ -101,6 +116,7 @@ export async function POST(request: NextRequest) {
             nonCatalogEstCost: item.nonCatalogEstCost
               ? new Prisma.Decimal(item.nonCatalogEstCost)
               : null,
+            nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
           })),
         },
       },
