@@ -14,7 +14,8 @@ import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
 import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
-import { Calendar, User, Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers } from "lucide-react"
+import { Calendar, User, Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
@@ -328,7 +329,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <div>
-      <Header title={bom.jobName} showMenu />
+      <Header title="BOM Detail" showMenu />
 
       <div className="px-4 pt-3">
         <StepProgress steps={BOM_LIFECYCLE} currentStep={bomStepIndex} />
@@ -346,7 +347,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
       )}
 
       <div className="p-4 space-y-4">
-        {/* Status + Job Info */}
+        {/* Job Details */}
         <Card className="p-4 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">Job Details</h3>
@@ -354,9 +355,15 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
           </div>
 
           <div className="space-y-2 text-sm">
+            <div>
+              <p className="text-lg font-semibold text-navy">{bom.jobName}</p>
+              {bom.jobNumber && (
+                <p className="text-text-secondary">Job #{bom.jobNumber}</p>
+              )}
+            </div>
             <div className="flex items-center gap-2 text-text-secondary">
               <User className="h-4 w-4 text-text-muted" />
-              <span>Created by {bom.createdBy.name}</span>
+              <span>Sales: {bom.createdBy.name}</span>
             </div>
             <div className="flex items-center gap-2 text-text-secondary">
               <Calendar className="h-4 w-4 text-text-muted" />
@@ -456,7 +463,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     ? (item.nonCatalogName as string) || "Non-catalog item"
                     : (product?.name as string) || "Unknown"
                 }
-                sku={product?.sku as string | null}
                 unitOfMeasure={
                   (item.isNonCatalog as boolean)
                     ? (item.nonCatalogUom as string) || ""
@@ -603,86 +609,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </>
             )}
 
-            {/* Confirmation card for approve/cancel/complete */}
-            {confirmAction === "approve" && (
-              <Card className="p-4 rounded-xl border-brand-blue border-2 space-y-3">
-                <h3 className="font-semibold text-navy">Confirm Approval</h3>
-                <p className="text-sm text-text-secondary">
-                  Approve this BOM with {allItems.length} item{allItems.length !== 1 ? "s" : ""} for job {bom.jobName}?
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => { setConfirmAction(null); handleStatusChange("APPROVED") }}
-                    disabled={updateBom.isPending}
-                    className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
-                  >
-                    {updateBom.isPending ? "Approving..." : "Confirm"}
-                  </Button>
-                  <Button onClick={() => setConfirmAction(null)} variant="outline" className="h-12">
-                    Cancel
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {confirmAction === "cancel" && (
-              <Card className="p-4 rounded-xl border-status-red border-2 space-y-3">
-                <h3 className="font-semibold text-navy">Confirm Cancellation</h3>
-                {hasOutstandingMaterial ? (
-                  <div className="flex items-start gap-2 p-2 rounded-lg bg-status-red/5">
-                    <AlertTriangle className="h-4 w-4 text-status-red shrink-0 mt-0.5" />
-                    <p className="text-sm text-status-red">
-                      This BOM has checked-out materials. Cancelling will leave {allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length} item{allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length !== 1 ? "s" : ""} unresolved.
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-sm text-text-secondary">Are you sure you want to cancel this BOM?</p>
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => { setConfirmAction(null); handleStatusChange("CANCELLED") }}
-                    disabled={updateBom.isPending}
-                    className="flex-1 h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
-                  >
-                    {updateBom.isPending ? "Cancelling..." : "Confirm"}
-                  </Button>
-                  <Button onClick={() => setConfirmAction(null)} variant="outline" className="h-12">
-                    Cancel
-                  </Button>
-                </div>
-              </Card>
-            )}
-
-            {confirmAction === "complete" && (() => {
-              const incompleteItems = allItems.filter((item) => Number(item.qtyCheckedOut || 0) < Number(item.qtyNeeded))
-              return (
-                <Card className="p-4 rounded-xl border-status-green border-2 space-y-3">
-                  <h3 className="font-semibold text-navy">Confirm Completion</h3>
-                  {incompleteItems.length > 0 ? (
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-status-yellow/10">
-                      <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
-                      <p className="text-sm text-amber-700">
-                        {incompleteItems.length} item{incompleteItems.length !== 1 ? "s" : ""} haven&apos;t been fully checked out. Complete anyway?
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-text-secondary">Mark this BOM as completed?</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => { setConfirmAction(null); handleStatusChange("COMPLETED") }}
-                      disabled={updateBom.isPending}
-                      className="flex-1 h-12 bg-status-green hover:bg-status-green/90 text-white font-semibold"
-                    >
-                      {updateBom.isPending ? "Completing..." : "Confirm"}
-                    </Button>
-                    <Button onClick={() => setConfirmAction(null)} variant="outline" className="h-12">
-                      Cancel
-                    </Button>
-                  </div>
-                </Card>
-              )
-            })()}
+            {/* Confirmation dialogs rendered at bottom of component */}
 
             {/* Approved — Check Out All as primary action */}
             {bom.status === "APPROVED" && canCheckout && (
@@ -751,6 +678,101 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
           </div>
         )}
       </div>
+
+      {/* Approval Confirmation Dialog */}
+      <Dialog open={confirmAction === "approve"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex justify-center mb-2">
+              <div className="h-12 w-12 rounded-full bg-brand-blue/10 flex items-center justify-center">
+                <ClipboardCheck className="h-6 w-6 text-brand-blue" />
+              </div>
+            </div>
+            <DialogTitle className="text-center">Approve BOM</DialogTitle>
+            <DialogDescription className="text-center">
+              I have reviewed the {allItems.length} item{allItems.length !== 1 ? "s" : ""} on this BOM for <span className="font-semibold text-navy">{bom.jobName}</span> and confirm they are accurate and ready for checkout.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:flex-col gap-2">
+            <Button
+              onClick={() => { setConfirmAction(null); handleStatusChange("APPROVED") }}
+              disabled={updateBom.isPending}
+              className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+            >
+              {updateBom.isPending ? "Approving..." : "Yes, Approve BOM"}
+            </Button>
+            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-12">
+              Go Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancellation Confirmation Dialog */}
+      <Dialog open={confirmAction === "cancel"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex justify-center mb-2">
+              <div className="h-12 w-12 rounded-full bg-status-red/10 flex items-center justify-center">
+                <AlertTriangle className="h-6 w-6 text-status-red" />
+              </div>
+            </div>
+            <DialogTitle className="text-center">Cancel BOM</DialogTitle>
+            <DialogDescription className="text-center">
+              {hasOutstandingMaterial
+                ? `This BOM has checked-out materials. Cancelling will leave ${allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length} item${allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length !== 1 ? "s" : ""} unresolved.`
+                : "Are you sure you want to cancel this BOM? This action cannot be undone."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:flex-col gap-2">
+            <Button
+              onClick={() => { setConfirmAction(null); handleStatusChange("CANCELLED") }}
+              disabled={updateBom.isPending}
+              className="w-full h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
+            >
+              {updateBom.isPending ? "Cancelling..." : "Yes, Cancel BOM"}
+            </Button>
+            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-12">
+              Go Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Completion Confirmation Dialog */}
+      <Dialog open={confirmAction === "complete"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <div className="flex justify-center mb-2">
+              <div className="h-12 w-12 rounded-full bg-status-green/10 flex items-center justify-center">
+                <ClipboardCheck className="h-6 w-6 text-status-green" />
+              </div>
+            </div>
+            <DialogTitle className="text-center">Complete BOM</DialogTitle>
+            <DialogDescription className="text-center">
+              {(() => {
+                const incompleteItems = allItems.filter((item) => Number(item.qtyCheckedOut || 0) < Number(item.qtyNeeded))
+                return incompleteItems.length > 0
+                  ? `${incompleteItems.length} item${incompleteItems.length !== 1 ? "s" : ""} haven't been fully checked out. Mark this BOM as completed anyway?`
+                  : "All items have been checked out. Mark this BOM as completed?"
+              })()}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:flex-col gap-2">
+            <Button
+              onClick={() => { setConfirmAction(null); handleStatusChange("COMPLETED") }}
+              disabled={updateBom.isPending}
+              className="w-full h-12 bg-status-green hover:bg-status-green/90 text-white font-semibold"
+            >
+              {updateBom.isPending ? "Completing..." : "Yes, Mark Completed"}
+            </Button>
+            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-12">
+              Go Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Panel Checkout Sheet */}
       {panelCheckoutItem && (() => {

@@ -140,7 +140,10 @@ export function BomLineItemRow({
               <Input
                 type="number"
                 value={returnQty || ""}
-                onChange={(e) => onReturnQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? 0 : parseFloat(e.target.value)
+                  onReturnQtyChange?.(Math.min(Math.max(isNaN(val) ? 0 : val, 0), outstanding))
+                }}
                 placeholder="0"
                 className="h-11 w-24 text-center text-base"
                 min={0}
@@ -228,9 +231,9 @@ export function BomLineItemRow({
 
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="text-sm text-text-secondary">
-            {isNonCatalog ? (nonCatalogCategory || "Non-catalog") : (sku || "No SKU")}
-          </p>
+          {isNonCatalog && nonCatalogCategory && (
+            <p className="text-sm text-text-secondary">{nonCatalogCategory}</p>
+          )}
           {qtyCheckedOut > 0 && (
             <p className="text-sm text-text-secondary mt-0.5">
               {formatQuantity(qtyCheckedOut)} of {formatQuantity(qtyNeeded)} {activeInputUnit} pulled
@@ -285,8 +288,9 @@ export function BomLineItemRow({
               type="button"
               variant="ghost"
               size="icon"
+              aria-label="Remove item"
               onClick={onRemove}
-              className="h-9 w-9 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
+              className="h-11 w-11 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

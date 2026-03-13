@@ -73,18 +73,37 @@ export default function BomsPage() {
         ) : (
           <>
             <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">{data?.total || 0} BOMs</p>
-            {boms.map((bom: Record<string, unknown>, i: number) => (
-              <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 8)}`}>
-                <BomCard
-                  id={bom.id as string}
-                  jobName={bom.jobName as string}
-                  status={bom.status as string}
-                  lineItemCount={(bom._count as Record<string, number>)?.lineItems || 0}
-                  createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
-                  createdAt={bom.createdAt as string}
-                />
-              </div>
-            ))}
+            {(() => {
+              // Count BOMs per job name to determine if sequencing is needed
+              const jobNameCounts: Record<string, number> = {}
+              const jobNameSeq: Record<string, number> = {}
+              for (const b of boms) {
+                const jn = b.jobName as string
+                jobNameCounts[jn] = (jobNameCounts[jn] || 0) + 1
+              }
+              return boms.map((bom: Record<string, unknown>, i: number) => {
+                const jn = bom.jobName as string
+                let sequenceLabel: string | null = null
+                if (jobNameCounts[jn] > 1) {
+                  jobNameSeq[jn] = (jobNameSeq[jn] || 0) + 1
+                  sequenceLabel = `BOM ${jobNameSeq[jn]}`
+                }
+                return (
+                  <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 8)}`}>
+                    <BomCard
+                      id={bom.id as string}
+                      jobName={jn}
+                      jobNumber={bom.jobNumber as string | null}
+                      status={bom.status as string}
+                      lineItemCount={(bom._count as Record<string, number>)?.lineItems || 0}
+                      createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
+                      createdAt={bom.createdAt as string}
+                      sequenceLabel={sequenceLabel}
+                    />
+                  </div>
+                )
+              })
+            })()}
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 py-4">
                 <Button variant="outline" size="sm" className="rounded-lg" disabled={page <= 1} onClick={() => setPage(page - 1)}>

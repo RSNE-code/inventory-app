@@ -8,19 +8,29 @@ import { ChevronRight } from "lucide-react"
 interface BomCardProps {
   id: string
   jobName: string
+  jobNumber?: string | null
   status: string
   lineItemCount: number
   createdByName: string
   createdAt: string
+  sequenceLabel?: string | null
 }
 
-export function BomCard({ id, jobName, status, lineItemCount, createdByName, createdAt }: BomCardProps) {
+export function BomCard({ id, jobName, jobNumber, status, lineItemCount, createdByName, createdAt, sequenceLabel }: BomCardProps) {
   return (
     <Link href={`/boms/${id}`}>
       <Card className="p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-navy text-sm leading-tight truncate">{jobName}</h3>
+            <h3 className="font-semibold text-navy text-sm leading-tight">
+              {jobName}
+              {sequenceLabel && (
+                <span className="text-text-muted font-normal"> — {sequenceLabel}</span>
+              )}
+            </h3>
+            {jobNumber && (
+              <p className="text-xs text-text-muted mt-0.5">Job #{jobNumber}</p>
+            )}
           </div>
           <BomStatusBadge status={status} />
         </div>
