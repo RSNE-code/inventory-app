@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db"
 import { isPanelProduct, isPanelLineItem } from "@/lib/panels"
 import type { ParsedLineItem, CatalogMatch } from "./types"
 
-const MODEL = anthropic("claude-sonnet-4-6")
+const MODEL_FAST = anthropic("claude-haiku-4-5-20251001")
+const MODEL_VISION = anthropic("claude-sonnet-4-6")
 
 // ─── Load context data for AI matching ───
 
@@ -15,24 +16,13 @@ async function loadCatalogContext(): Promise<string> {
       id: true,
       name: true,
       sku: true,
-      unitOfMeasure: true,
-      currentQty: true,
-      tier: true,
-      category: { select: { name: true } },
-      lastCost: true,
-      avgCost: true,
-      reorderPoint: true,
-      dimLength: true,
-      dimLengthUnit: true,
-      dimWidth: true,
-      dimWidthUnit: true,
     },
     orderBy: { name: "asc" },
   })
 
-  // Compact format: ID|name|SKU|category|UOM — minimize tokens
+  // Ultra-compact: ID|name|SKU — minimize tokens for rate limit headroom
   return products
-    .map((p) => `${p.id}|${p.name}${p.sku ? `|${p.sku}` : ""}|${p.category.name}|${p.unitOfMeasure}`)
+    .map((p) => `${p.id}|${p.name}${p.sku ? `|${p.sku}` : ""}`)
     .join("\n")
 }
 
@@ -166,7 +156,7 @@ export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
   ])
 
   const { text: response } = await generateText({
-    model: MODEL,
+    model: MODEL_FAST,
     system: SYSTEM_PROMPT,
     prompt: `A warehouse worker typed or spoke this:
 "${text}"
@@ -219,7 +209,7 @@ export async function parseReceivingTextInput(text: string): Promise<ImageParseR
   ])
 
   const { text: response } = await generateText({
-    model: MODEL,
+    model: MODEL_FAST,
     system: SYSTEM_PROMPT,
     prompt: `A warehouse worker typed or spoke this while receiving materials:
 "${text}"
@@ -300,7 +290,7 @@ export async function parsePanelVoiceInput(
   context: { brand: string; thickness: number; bundleSize: number }
 ): Promise<PanelVoiceResult> {
   const { text: response } = await generateText({
-    model: MODEL,
+    model: MODEL_FAST,
     system: `You extract panel sizes and quantities from warehouse speech. Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`,
     prompt: `A warehouse worker is receiving ${context.brand} ${context.thickness}" insulated metal panels. They said:
 "${text}"
@@ -385,7 +375,7 @@ export async function parseImageInput(
     : ""
 
   const { text: response } = await generateText({
-    model: MODEL,
+    model: MODEL_VISION,
     system: SYSTEM_PROMPT,
     messages: [
       {
