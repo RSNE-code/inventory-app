@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { parseImageInput } from "@/lib/ai/parse"
 import { getCurrentUser } from "@/lib/auth"
 
+// Allow up to 20MB uploads (phone photos can be 5-10MB each)
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser()

@@ -80,6 +80,55 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     }
   }
 
+  // Compress an image file to fit under maxSizeKB using canvas
+  async function compressImage(file: File, maxSizeKB = 1500): Promise<File> {
+    // Skip if already small enough
+    if (file.size <= maxSizeKB * 1024) return file
+
+    return new Promise((resolve) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        const canvas = document.createElement("canvas")
+        // Scale down large images (max 2000px on longest side)
+        const maxDim = 2000
+        let { width, height } = img
+        if (width > maxDim || height > maxDim) {
+          const scale = maxDim / Math.max(width, height)
+          width = Math.round(width * scale)
+          height = Math.round(height * scale)
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext("2d")!
+        ctx.drawImage(img, 0, 0, width, height)
+        // Try quality levels until under size limit
+        let quality = 0.7
+        const tryCompress = () => {
+          canvas.toBlob(
+            (blob) => {
+              if (blob && (blob.size <= maxSizeKB * 1024 || quality <= 0.3)) {
+                resolve(new File([blob], file.name, { type: "image/jpeg" }))
+              } else {
+                quality -= 0.15
+                tryCompress()
+              }
+            },
+            "image/jpeg",
+            quality
+          )
+        }
+        tryCompress()
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        resolve(file) // fallback to original
+      }
+      img.src = url
+    })
+  }
+
   async function handleImageCapture(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0 || isProcessing) return
@@ -89,12 +138,18 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     setProcessingType("image")
     setImageCount(files.length)
     try {
+      // Compress images to avoid 413 payload too large errors
+      const compressed: File[] = []
+      for (let i = 0; i < files.length; i++) {
+        compressed.push(await compressImage(files[i]))
+      }
+
       const formData = new FormData()
-      if (files.length === 1) {
-        formData.append("image", files[0])
+      if (compressed.length === 1) {
+        formData.append("image", compressed[0])
       } else {
-        for (let i = 0; i < files.length; i++) {
-          formData.append("images", files[i])
+        for (const file of compressed) {
+          formData.append("images", file)
         }
       }
 
