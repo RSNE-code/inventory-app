@@ -136,6 +136,15 @@ export function PanelCheckoutSheet({
     return sum + panelSqFt(r.height, panelSpecs.widthIn) * r.quantity
   }, 0)
 
+  // Sq ft equivalence calculations
+  const sqFtPerBomPanel = panelSqFt(panelSpecs.cutLengthFt, panelSpecs.widthIn)
+  const remainingSqFt = sqFtPerBomPanel * remaining
+  const equivalentBomPanels = sqFtPerBomPanel > 0
+    ? Math.min(remaining, Math.floor(totalSqFtValue / sqFtPerBomPanel))
+    : totalPanels
+  const isFulfilled = remainingSqFt > 0 && totalSqFtValue >= remainingSqFt * 0.99
+  const hasLargerPanels = rows.some(r => r.height && r.height > panelSpecs.cutLengthFt)
+
   // Minimum stock height that can cover the cut length
   const minHeight = Math.ceil(panelSpecs.cutLengthFt)
 
@@ -332,25 +341,47 @@ export function PanelCheckoutSheet({
                     <div className="text-right">
                       <span className={cn(
                         "text-lg font-bold tabular-nums",
-                        totalPanels === remaining ? "text-green-600" :
-                        totalPanels > remaining ? "text-red-500" : "text-navy"
+                        isFulfilled ? "text-green-600" :
+                        totalSqFtValue > remainingSqFt * 1.01 ? "text-red-500" : "text-navy"
                       )}>
-                        {totalPanels}
+                        {totalPanels} stock panel{totalPanels !== 1 ? "s" : ""}
                       </span>
-                      <span className="text-sm text-text-muted ml-1">
-                        of {remaining} panels
-                      </span>
+                      {hasLargerPanels && equivalentBomPanels > 0 && (
+                        <span className="text-sm text-text-muted ml-1">
+                          → {equivalentBomPanels} BOM panel{equivalentBomPanels !== 1 ? "s" : ""}
+                          {isFulfilled && " \u2713"}
+                        </span>
+                      )}
                     </div>
                   </div>
+
+                  {/* Cut-down context */}
+                  {hasLargerPanels && (
+                    <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
+                      <svg className="h-3 w-3 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="8" cy="8" r="5.5" />
+                        <circle cx="8" cy="8" r="2" />
+                        <line x1="8" y1="0.5" x2="8" y2="3" />
+                        <line x1="8" y1="13" x2="8" y2="15.5" />
+                        <line x1="0.5" y1="8" x2="3" y2="8" />
+                        <line x1="13" y1="8" x2="15.5" y2="8" />
+                      </svg>
+                      Cut from larger stock to {panelSpecs.cutLengthDisplay} pieces
+                    </p>
+                  )}
+
+                  {/* Coverage info */}
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-text-muted">Square footage</span>
+                    <span className="text-xs text-text-muted">Coverage</span>
                     <span className="text-sm font-medium text-navy tabular-nums">
                       {formatQuantity(totalSqFtValue)} sq ft
                     </span>
                   </div>
-                  {totalPanels > remaining && (
+
+                  {/* Exceeds warning */}
+                  {totalSqFtValue > remainingSqFt * 1.01 && (
                     <p className="text-xs text-red-500 mt-1">
-                      Exceeds remaining by {totalPanels - remaining} panels
+                      Exceeds need by ~{Math.ceil((totalSqFtValue - remainingSqFt) / sqFtPerBomPanel)} panel{Math.ceil((totalSqFtValue - remainingSqFt) / sqFtPerBomPanel) !== 1 ? "s" : ""} worth
                     </p>
                   )}
                 </div>
@@ -378,7 +409,7 @@ export function PanelCheckoutSheet({
               panelCheckout.isPending ||
               !selectedBrand ||
               totalPanels === 0 ||
-              totalPanels > remaining
+              totalSqFtValue > remainingSqFt * 1.01
             }
             className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
           >

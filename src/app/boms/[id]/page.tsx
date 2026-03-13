@@ -14,7 +14,7 @@ import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
 import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
-import { Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck } from "lucide-react"
+import { Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck, Check } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -60,6 +60,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [returnQtys, setReturnQtys] = useState<Record<string, number>>({})
   const [confirmAction, setConfirmAction] = useState<"approve" | "cancel" | "complete" | null>(null)
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
+  const [showAddItems, setShowAddItems] = useState(false)
 
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom && ["DRAFT", "APPROVED"].includes(bom.status)
@@ -238,6 +239,17 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
+  function handleReturnAllPrefill() {
+    const prefilled: Record<string, number> = {}
+    allItems.forEach((item) => {
+      const outstanding = Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0)
+      if (outstanding > 0) {
+        prefilled[item.id as string] = outstanding
+      }
+    })
+    setReturnQtys(prefilled)
+  }
+
   async function handleReturnAll() {
     const items = Object.entries(returnQtys)
       .filter(([, qty]) => qty > 0)
@@ -296,6 +308,13 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     const checkedOut = Number(item.qtyCheckedOut || 0)
     const returned = Number(item.qtyReturned || 0)
     return checkedOut - returned > 0
+  })
+
+  // Return gating: only show return when ALL items have been fully checked out
+  const allItemsFullyCheckedOut = allItems.every((item) => {
+    const needed = Number(item.qtyNeeded)
+    const checkedOut = Number(item.qtyCheckedOut || 0)
+    return needed > 0 && checkedOut >= needed
   })
 
   // Build checkout items for CheckoutAllButton — exclude panel items (they use panel checkout)
@@ -375,18 +394,42 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <h3 className="text-sm font-semibold text-navy">
               {mode === "return" ? "Return Material" : `Items (${visibleItems.length})`}
             </h3>
-            {canEdit && mode === "view" && (
+            {mode === "return" && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setMode("edit")}
-                className="text-brand-blue"
+                onClick={handleReturnAllPrefill}
+                className="text-status-green text-xs font-semibold"
               >
-                <Pencil className="h-3.5 w-3.5 mr-1" />
-                Edit
+                Return All
               </Button>
             )}
+            <div className="flex items-center gap-1">
+              {canCheckout && mode === "view" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAddItems(!showAddItems)}
+                  className="h-8 w-8 text-brand-blue"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+              {canEdit && mode === "view" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMode("edit")}
+                  className="text-brand-blue"
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1" />
+                  Edit
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Return mode instructions */}
@@ -487,13 +530,22 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   setReturnQtys((prev) => ({ ...prev, [lineId]: qty }))
                 }
               />
-              {/* Panel checkout button */}
+              {/* Panel checkout button / fulfilled badge */}
               {isPanelItem && canCheckout && mode === "view" && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && (
                 (() => {
                   const panelQtyNeeded = Number(item.qtyNeeded)
                   const panelQtyCheckedOut = Number(item.qtyCheckedOut || 0)
                   const panelRemaining = panelQtyNeeded - panelQtyCheckedOut
-                  if (panelRemaining <= 0) return null
+
+                  if (panelRemaining <= 0) {
+                    return (
+                      <div className="w-full flex items-center justify-center gap-1.5 py-2 px-3 -mt-1 mb-2 rounded-lg bg-status-green/10">
+                        <Check className="h-4 w-4 text-status-green" />
+                        <span className="text-status-green text-sm font-semibold">Panels Fulfilled</span>
+                      </div>
+                    )
+                  }
+
                   return (
                     <button
                       type="button"
@@ -514,6 +566,29 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <p className="text-center text-sm text-text-muted py-6">
               No outstanding material to return.
             </p>
+          )}
+
+          {/* Inline add items — shown via + button */}
+          {showAddItems && mode === "view" && (
+            <div className="mt-2 space-y-2 pt-2 border-t border-border-custom">
+              <ProductPicker
+                onSelect={(product) => {
+                  handleAddProduct(product)
+                  toast.success(`Added ${product.name}`)
+                }}
+                placeholder="Search catalog to add items..."
+                excludeIds={existingProductIds}
+              />
+              <div className="flex items-center gap-2 px-1">
+                <div className="flex-1 h-px bg-border-custom/60" />
+                <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or voice / text</span>
+                <div className="flex-1 h-px bg-border-custom/60" />
+              </div>
+              <AIInput
+                onParseComplete={handleAIAddItems}
+                placeholder={`"Also grabbing 2 tubes caulk and 10 zip ties..."`}
+              />
+            </div>
           )}
         </Card>
 
@@ -641,9 +716,20 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     <Plus className="h-4 w-4 mr-1.5" />
                     Add Material
                   </Button>
-                  {hasOutstandingMaterial && (
+                  {hasOutstandingMaterial && allItemsFullyCheckedOut && (
                     <Button
-                      onClick={() => setMode("return")}
+                      onClick={() => {
+                        setMode("return")
+                        // Auto-prefill all return quantities to outstanding amounts
+                        const prefilled: Record<string, number> = {}
+                        allItems.forEach((item) => {
+                          const outstanding = Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0)
+                          if (outstanding > 0) {
+                            prefilled[item.id as string] = outstanding
+                          }
+                        })
+                        setReturnQtys(prefilled)
+                      }}
                       variant="outline"
                       className="flex-1 h-10 text-sm border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold"
                     >

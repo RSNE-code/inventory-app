@@ -127,21 +127,26 @@ export function BomLineItemRow({
             </div>
             <p className="text-xs text-text-muted">{formatQuantity(outstanding)} {activeInputUnit} out</p>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Input
-              type="number"
-              value={returnQty || ""}
-              onChange={(e) => {
-                const val = e.target.value === "" ? 0 : parseFloat(e.target.value)
-                onReturnQtyChange?.(Math.min(Math.max(isNaN(val) ? 0 : val, 0), outstanding))
-              }}
-              placeholder="0"
-              className="h-9 w-20 text-center text-sm"
-              min={0}
-              max={outstanding}
-              step="any"
-            />
-            <span className="text-xs text-text-muted w-8">{activeInputUnit}</span>
+          <div className="flex items-center gap-0 shrink-0">
+            <button
+              type="button"
+              onClick={() => onReturnQtyChange?.(Math.max(0, (returnQty ?? outstanding) - 1))}
+              className="h-9 w-9 flex items-center justify-center rounded-l-lg border border-border-custom bg-surface-secondary text-navy font-bold text-lg hover:bg-gray-100 active:bg-gray-200"
+            >
+              −
+            </button>
+            <div className="h-9 w-14 flex items-center justify-center border-y border-border-custom text-sm font-semibold text-navy tabular-nums">
+              {returnQty ?? outstanding}
+            </div>
+            <button
+              type="button"
+              onClick={() => onReturnQtyChange?.(Math.min(outstanding, (returnQty ?? outstanding) + 1))}
+              disabled={(returnQty ?? outstanding) >= outstanding}
+              className="h-9 w-9 flex items-center justify-center rounded-r-lg border border-border-custom bg-surface-secondary text-navy font-bold text-lg hover:bg-gray-100 active:bg-gray-200 disabled:opacity-30"
+            >
+              +
+            </button>
+            <span className="text-xs text-text-muted w-8 ml-1.5">{activeInputUnit}</span>
           </div>
         </div>
       </div>

@@ -62,15 +62,29 @@ export async function POST(
         throw new Error("Panel thickness and width are required")
       }
 
-      // Total panels in breakout must not exceed remaining qty
       const totalBreakoutPanels = data.breakout.reduce((sum, r) => sum + r.quantity, 0)
       const alreadyCheckedOut = Number(lineItem.qtyCheckedOut)
       const needed = Number(lineItem.qtyNeeded)
-      const remaining = needed - alreadyCheckedOut
 
-      if (totalBreakoutPanels > remaining + 0.0001) {
+      // Calculate sq ft for validation (sq ft equivalence instead of panel count)
+      const cutLengthFt = specs.cutLengthFt as number
+      const sqFtPerBomPanel = panelSqFt(cutLengthFt, width)
+      const totalNeededSqFt = sqFtPerBomPanel * needed
+
+      const newCheckoutSqFt = data.breakout.reduce((sum, r) =>
+        sum + panelSqFt(r.height, width) * r.quantity, 0)
+
+      // Get existing sq ft from prior checkout transactions
+      const existingSqFtAgg = await tx.transaction.aggregate({
+        _sum: { quantity: true },
+        where: { bomLineItemId: lineItem.id, type: "CHECKOUT" },
+      })
+      const existingSqFtTotal = Number(existingSqFtAgg._sum.quantity || 0)
+
+      // Validate: total sq ft must not exceed needed (1% tolerance for floating point)
+      if (existingSqFtTotal + newCheckoutSqFt > totalNeededSqFt * 1.01) {
         throw new Error(
-          `Breakout total (${totalBreakoutPanels}) exceeds remaining panels (${remaining})`
+          `Checkout would exceed needed coverage (${(existingSqFtTotal + newCheckoutSqFt).toFixed(1)} sq ft > ${totalNeededSqFt.toFixed(1)} sq ft needed)`
         )
       }
 
@@ -139,12 +153,22 @@ export async function POST(
         transactions.push(transaction)
       }
 
-      // Update bomLineItem.qtyCheckedOut (in panels)
+      // Aggregate total sq ft checked out (includes transactions just created above)
+      const sqFtAgg = await tx.transaction.aggregate({
+        _sum: { quantity: true },
+        where: { bomLineItemId: lineItem.id, type: "CHECKOUT" },
+      })
+      const totalSqFtCheckedOut = Number(sqFtAgg._sum.quantity || 0)
+
+      // Convert to equivalent BOM panel count (Math.floor — 9.8 panels ≠ 10 fulfilled)
+      const equivalentPanels = sqFtPerBomPanel > 0
+        ? Math.min(needed, Math.floor(totalSqFtCheckedOut / sqFtPerBomPanel))
+        : alreadyCheckedOut + totalBreakoutPanels
+
+      // Update qtyCheckedOut to reflect sq ft equivalence
       await tx.bomLineItem.update({
         where: { id: lineItem.id },
-        data: {
-          qtyCheckedOut: new Prisma.Decimal(alreadyCheckedOut + totalBreakoutPanels),
-        },
+        data: { qtyCheckedOut: new Prisma.Decimal(equivalentPanels) },
       })
 
       // Auto-transition APPROVED → IN_PROGRESS

@@ -131,6 +131,15 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
     setTemplateLoaded(true)
     toast.success(`Loaded template: ${template.name}`)
   }, [templateId, templateData, templateLoaded])
+  // Nav-away protection — warn when unsaved BOM data exists
+  const hasUnsavedChanges = lineItems.length > 0 || jobName.trim() !== ""
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [hasUnsavedChanges])
+
   const [showPanel, setShowPanel] = useState(false)
   const [showNonCatalog, setShowNonCatalog] = useState(false)
   const [ncName, setNcName] = useState("")

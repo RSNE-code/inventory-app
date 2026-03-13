@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Camera, Mic, PenLine, ClipboardList, Trash2, Plus, Search } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -237,6 +237,15 @@ export function BomAIFlow() {
     setJobNumber(null)
     setNotes("")
   }
+
+  // Nav-away protection — warn when unsaved BOM data exists
+  const hasUnsavedChanges = confirmedItems.length > 0 || pendingMatches.length > 0
+  useEffect(() => {
+    if (!hasUnsavedChanges) return
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [hasUnsavedChanges])
 
   const bomCurrentStep = phase === "INPUT" ? 0 : confirmedItems.length > 0 ? 2 : 1
 
