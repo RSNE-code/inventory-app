@@ -195,10 +195,10 @@ Return JSON:
 }
 
 Rules:
-- Match generously — "froth pak" matches "FROTH-PAK 200", "IMP white" matches insulated metal panels
-- If an item clearly matches a catalog product, set matchedProductId and high matchConfidence
-- If it's ambiguous between 2-3 products, pick the best and include alternatives
-- If nothing in the catalog matches, set matchedProductId to null (it's a non-catalog item)
+- Only match to a catalog product if you're genuinely confident it's the right item. Set matchConfidence honestly (0.0-1.0).
+- Obvious matches: "froth pak" → "FROTH-PAK 200" (matchConfidence: 0.95)
+- Ambiguous: if 2-3 products could match, pick the best but set matchConfidence lower (0.5-0.7) and include alternatives
+- No good match: set matchedProductId to null — it's fine to leave items unmatched. A wrong match is worse than no match.
 - Parse EVERY item mentioned, even vague ones`,
   })
 
@@ -266,7 +266,7 @@ Rules:
 - Look for PO references like "PO 345", "purchase order 12", "on PO number 88"
 - Match supplier names generously — "Hadco" matches "Hadco Metal Trading Co., LLC"
 - Match PO numbers exactly
-- Match items generously — "froth pak" matches "FROTH-PAK 200"
+- Only match items to catalog products if you're genuinely confident. Set matchConfidence honestly (0.0-1.0). A wrong match is worse than no match.
 - If no supplier or PO is mentioned, set those fields to null
 - Parse EVERY item mentioned, even vague ones`,
   })
@@ -438,7 +438,8 @@ Return JSON:
 Think step by step:
 - The supplier logo/name is usually at the top
 - Customer PO is RSNE's PO number, NOT the supplier's order/shipment number
-- Match items by meaning, not exact text — "FROTH-PAK 200 1.75PCF LOW GWP FOAM SEALANT KIT" should match a catalog item called "FROTH-PAK 200"
+- Match items by meaning, not exact text — "FROTH-PAK 200 1.75PCF LOW GWP FOAM SEALANT KIT" should match "FROTH-PAK 200"
+- Only match if genuinely confident. Set matchConfidence honestly (0.0-1.0). A wrong match is worse than no match — unmatched items still get added to the BOM.
 - If the PO number is on the document but doesn't match any open PO, still return it — the PO may be closed or not in the system`,
           },
         ],
@@ -587,6 +588,23 @@ function toCatalogMatch(
   const matchedProduct = item.matchedProductId
     ? productMap.get(item.matchedProductId)
     : undefined
+
+  // Confidence threshold gate — reject weak matches instead of showing misleading suggestions.
+  // T1 (tracked inventory) gets a lower bar because matching matters for stock deduction.
+  // T2/unknown gets a higher bar — bad matches just slow down BOM building.
+  const confidence = item.matchConfidence ?? 0
+  if (matchedProduct && confidence < (matchedProduct.tier === "TIER1" ? 0.65 : 0.80)) {
+    // Below threshold — treat as non-catalog so the parsed name goes straight to the BOM
+    return {
+      parsedItem: {
+        ...parsedItem,
+        // Keep the AI's parsed name as-is
+      },
+      matchedProduct: null,
+      matchConfidence: 0,
+      isNonCatalog: true,
+    }
+  }
 
   // Intercept panel items — never match to branded catalog panels.
   // Convert to generic non-catalog panel with specs for checkout-time brand selection.

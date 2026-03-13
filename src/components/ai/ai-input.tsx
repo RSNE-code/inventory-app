@@ -81,7 +81,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   }
 
   // Compress an image file to fit under maxSizeKB using canvas
-  async function compressImage(file: File, maxSizeKB = 1500): Promise<File> {
+  async function compressImage(file: File, maxSizeKB = 800): Promise<File> {
     // Skip if already small enough
     if (file.size <= maxSizeKB * 1024) return file
 
@@ -91,8 +91,8 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       img.onload = () => {
         URL.revokeObjectURL(url)
         const canvas = document.createElement("canvas")
-        // Scale down large images (max 2000px on longest side)
-        const maxDim = 2000
+        // Scale down — 1200px is plenty for text documents like packing slips
+        const maxDim = 1200
         let { width, height } = img
         if (width > maxDim || height > maxDim) {
           const scale = maxDim / Math.max(width, height)
@@ -138,11 +138,10 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     setProcessingType("image")
     setImageCount(files.length)
     try {
-      // Compress images to avoid 413 payload too large errors
-      const compressed: File[] = []
-      for (let i = 0; i < files.length; i++) {
-        compressed.push(await compressImage(files[i]))
-      }
+      // Compress images in parallel to avoid 413 errors and speed up upload
+      const compressed = await Promise.all(
+        Array.from(files).map((file) => compressImage(file))
+      )
 
       const formData = new FormData()
       if (compressed.length === 1) {
