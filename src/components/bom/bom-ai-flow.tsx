@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Mic, ClipboardList, Trash2 } from "lucide-react"
+import { Camera, Mic, PenLine, ClipboardList, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AIInput } from "@/components/ai/ai-input"
+import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { BomConfirmationList } from "@/components/bom/bom-confirmation-card"
 import { JobPicker } from "@/components/bom/job-picker"
 import { useCreateBom } from "@/hooks/use-boms"
@@ -22,12 +22,14 @@ import type {
 } from "@/lib/ai/types"
 import { getItemStockLevel, stockDotColor } from "@/lib/bom-utils"
 
-const BOM_STEPS = ["Job Info", "Add Materials", "Review & Submit"]
+const BOM_STEPS = ["Input", "Job Info", "Review & Submit"]
 
 export function BomAIFlow() {
   const router = useRouter()
   const createBom = useCreateBom()
+  const aiInputRef = useRef<AIInputHandle>(null)
 
+  const [phase, setPhase] = useState<"INPUT" | "BUILD">("INPUT")
   const [jobName, setJobName] = useState("")
   const [jobNumber, setJobNumber] = useState<string | null>(null)
   const [notes, setNotes] = useState("")
@@ -41,7 +43,6 @@ export function BomAIFlow() {
         const merged = [...prev]
         for (const newMatch of result.items) {
           const newProductId = newMatch.matchedProduct?.id
-          // Check for duplicate by product ID or name (non-catalog) in pending matches
           const pendingIdx = newProductId
             ? merged.findIndex((m) => m.matchedProduct?.id === newProductId)
             : merged.findIndex((m) =>
@@ -49,7 +50,6 @@ export function BomAIFlow() {
                 m.parsedItem.name.toLowerCase() === newMatch.parsedItem.name.toLowerCase()
               )
           if (pendingIdx >= 0) {
-            // Sum quantities into existing pending match
             const existing = merged[pendingIdx]
             merged[pendingIdx] = {
               ...existing,
@@ -60,7 +60,6 @@ export function BomAIFlow() {
             }
             continue
           }
-          // Check for duplicate by product ID or name (non-catalog) in confirmed items
           const confirmedIdx = newProductId
             ? confirmedItems.findIndex((c) => c.productId === newProductId)
             : confirmedItems.findIndex((c) =>
@@ -68,7 +67,6 @@ export function BomAIFlow() {
                 c.nonCatalogName?.toLowerCase() === newMatch.parsedItem.name.toLowerCase()
               )
           if (confirmedIdx >= 0) {
-            // Sum into confirmed item
             setConfirmedItems((prevConfirmed) =>
               prevConfirmed.map((c, i) =>
                 i === confirmedIdx
@@ -82,6 +80,8 @@ export function BomAIFlow() {
         }
         return merged
       })
+      // Transition to BUILD phase after first AI parse
+      setPhase("BUILD")
     },
     [confirmedItems]
   )
@@ -178,10 +178,88 @@ export function BomAIFlow() {
     }
   }
 
-  const bomCurrentStep = confirmedItems.length > 0 ? 2 : (jobName.trim() ? 1 : 0)
+  function handleReset() {
+    setPhase("INPUT")
+    setPendingMatches([])
+    setConfirmedItems([])
+    setQtyOverrides({})
+    setJobName("")
+    setJobNumber(null)
+    setNotes("")
+  }
 
+  const bomCurrentStep = phase === "INPUT" ? 0 : confirmedItems.length > 0 ? 2 : 1
+
+  // ─── INPUT phase — entry-path cards (mirrors receiving module) ───
+  if (phase === "INPUT") {
+    return (
+      <div className="space-y-5 animate-fade-in-up">
+        <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
+
+        {/* Entry path cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Photo / Camera */}
+          <button
+            type="button"
+            onClick={() => aiInputRef.current?.triggerCamera()}
+            className={cn(
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "border-brand-orange/25 bg-gradient-to-b from-orange-50/80 to-white",
+              "shadow-[0_2px_12px_rgba(232,121,43,0.08)]",
+              "hover:border-brand-orange/40 hover:shadow-[0_6px_24px_rgba(232,121,43,0.15)]",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange/10 group-hover:bg-brand-orange/15 transition-colors">
+              <Camera className="h-7 w-7 text-brand-orange" />
+            </div>
+            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+              Photo BOM
+            </p>
+          </button>
+
+          {/* Manual Entry */}
+          <button
+            type="button"
+            onClick={() => router.push("/boms/new?tab=manual")}
+            className={cn(
+              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "border-brand-blue/25 bg-gradient-to-b from-blue-50/80 to-white",
+              "shadow-[0_2px_12px_rgba(46,125,186,0.08)]",
+              "hover:border-brand-blue/40 hover:shadow-[0_6px_24px_rgba(46,125,186,0.15)]",
+              "active:scale-[0.97] transition-all duration-200"
+            )}
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue/10 group-hover:bg-brand-blue/15 transition-colors">
+              <PenLine className="h-7 w-7 text-brand-blue" />
+            </div>
+            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+              Manual Entry
+            </p>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 px-2">
+          <div className="flex-1 h-px bg-border-custom/60" />
+          <span className="text-[12px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
+            or type / speak below
+          </span>
+          <div className="flex-1 h-px bg-border-custom/60" />
+        </div>
+
+        <AIInput
+          ref={aiInputRef}
+          onParseComplete={handleParseComplete}
+          placeholder={`"20 sheets 4in IMP white, 5 boxes hinges, 2 tubes caulk..."`}
+        />
+      </div>
+    )
+  }
+
+  // ─── BUILD phase — job picker, items review, submit ───
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 animate-fade-in-up">
       <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
       {/* Job picker */}
@@ -197,7 +275,7 @@ export function BomAIFlow() {
         />
       </Card>
 
-      {/* AI Input — always visible */}
+      {/* AI Input — always visible to add more items */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
         <div className="flex items-center gap-2">
           <Mic className="h-5 w-5 text-[#E8792B]" />
@@ -333,13 +411,13 @@ export function BomAIFlow() {
         </Button>
       )}
 
-      {/* Empty state when no items yet and no pending */}
-      {confirmedItems.length === 0 && pendingMatches.length === 0 && (
-        <div className="text-center py-6 text-gray-400">
-          <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-40" />
-          <p className="text-sm">Use the input above to add materials to your BOM</p>
-        </div>
-      )}
+      {/* Start over */}
+      <button
+        onClick={handleReset}
+        className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
+      >
+        Start over
+      </button>
     </div>
   )
 }

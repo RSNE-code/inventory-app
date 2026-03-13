@@ -31,7 +31,8 @@ export default function NewBomPage() {
 function NewBomPageContent() {
   const searchParams = useSearchParams()
   const templateId = searchParams.get("templateId")
-  const [activeTab, setActiveTab] = useState<Tab>(templateId ? "manual" : "ai")
+  const tabParam = searchParams.get("tab")
+  const [activeTab, setActiveTab] = useState<Tab>(tabParam === "manual" || templateId ? "manual" : "ai")
 
   return (
     <div>
