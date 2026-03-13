@@ -14,7 +14,7 @@ import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
 import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
-import { Calendar, User, Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck } from "lucide-react"
+import { Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -331,13 +331,13 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     <div>
       <Header title="BOM Detail" showMenu />
 
-      <div className="px-4 pt-3">
+      <div className="px-4 pt-2">
         <StepProgress steps={BOM_LIFECYCLE} currentStep={bomStepIndex} />
       </div>
 
       {mode !== "view" && (
         <div className={cn(
-          "mx-4 mt-2 px-3 py-2 rounded-lg text-sm font-medium",
+          "mx-4 mt-1 px-3 py-1.5 rounded-lg text-sm font-medium",
           mode === "edit" && "bg-brand-blue/10 text-brand-blue",
           mode === "add-material" && "bg-brand-orange/10 text-brand-orange",
           mode === "return" && "bg-status-green/10 text-status-green",
@@ -346,45 +346,31 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      <div className="p-4 space-y-4">
-        {/* Job Details */}
-        <Card className="p-4 rounded-xl border-border-custom space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-navy">Job Details</h3>
+      <div className="p-4 space-y-3">
+        {/* Job Info */}
+        <Card className="px-4 py-3 rounded-xl border-border-custom">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-navy leading-tight">{bom.jobName}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-text-muted">
+                {bom.jobNumber && <span>Job #{bom.jobNumber}</span>}
+                <span>{bom.createdBy.name}</span>
+                <span>{new Date(bom.createdAt).toLocaleDateString()}</span>
+                {bom.approvedBy && (
+                  <span className="text-status-green">Approved by {bom.approvedBy.name}</span>
+                )}
+              </div>
+            </div>
             <BomStatusBadge status={bom.status} />
           </div>
-
-          <div className="space-y-2 text-sm">
-            <div>
-              <p className="text-lg font-semibold text-navy">{bom.jobName}</p>
-              {bom.jobNumber && (
-                <p className="text-text-secondary">Job #{bom.jobNumber}</p>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-text-secondary">
-              <User className="h-4 w-4 text-text-muted" />
-              <span>Sales: {bom.createdBy.name}</span>
-            </div>
-            <div className="flex items-center gap-2 text-text-secondary">
-              <Calendar className="h-4 w-4 text-text-muted" />
-              <span>{new Date(bom.createdAt).toLocaleDateString()}</span>
-            </div>
-            {bom.approvedBy && (
-              <div className="flex items-center gap-2 text-text-secondary">
-                <User className="h-4 w-4 text-status-green" />
-                <span>Approved by {bom.approvedBy.name} on {new Date(bom.approvedAt).toLocaleDateString()}</span>
-              </div>
-            )}
-          </div>
-
           {bom.notes && (
-            <p className="text-sm text-text-secondary bg-surface-secondary p-3 rounded-lg">{bom.notes}</p>
+            <p className="text-xs text-text-secondary bg-surface-secondary px-2.5 py-2 rounded-lg mt-2">{bom.notes}</p>
           )}
         </Card>
 
         {/* Line Items */}
-        <Card className="p-4 rounded-xl border-border-custom">
-          <div className="flex items-center justify-between mb-2">
+        <Card className="px-4 py-3 rounded-xl border-border-custom">
+          <div className="flex items-center justify-between mb-1">
             <h3 className="font-semibold text-navy">
               {mode === "return" ? "Return Material" : `Items (${visibleItems.length})`}
             </h3>
