@@ -9,12 +9,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
-import { ProductPicker } from "@/components/bom/product-picker"
 import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
-import { AIInput } from "@/components/ai/ai-input"
+import { AIInput, type ProductResult } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
-import { Pencil, Plus, Undo2, Mic, AlertTriangle, Info, Layers, ClipboardCheck, Check } from "lucide-react"
+import { Pencil, Plus, Undo2, AlertTriangle, Info, Layers, ClipboardCheck, Check } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -439,39 +438,13 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             </p>
           )}
 
-          {/* Add material mode — product picker + AI input */}
-          {mode === "add-material" && (
-            <div className="mb-2 space-y-2">
-              <div className="flex items-center gap-2">
-                <Mic className="h-4 w-4 text-brand-orange" />
-                <p className="text-sm text-gray-500">Speak or type to add more items</p>
-              </div>
+          {/* Add material / edit mode — unified input */}
+          {(mode === "add-material" || mode === "edit") && (
+            <div className="mb-2">
               <AIInput
                 onParseComplete={handleAIAddItems}
-                placeholder={`"Also grabbing 2 tubes caulk and 10 zip ties..."`}
-              />
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-white px-2 text-gray-400">or search catalog</span>
-                </div>
-              </div>
-              <ProductPicker
-                onSelect={handleAddProduct}
-                placeholder="Search catalog to add items..."
-                excludeIds={existingProductIds}
-              />
-            </div>
-          )}
-
-          {/* Edit mode — product picker */}
-          {mode === "edit" && (
-            <div className="mb-2">
-              <ProductPicker
-                onSelect={handleAddProduct}
-                placeholder="Search catalog to add items..."
+                onProductSelect={handleAddProduct}
+                placeholder="Search catalog"
                 excludeIds={existingProductIds}
               />
             </div>
@@ -570,23 +543,15 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
           {/* Inline add items — shown via + button */}
           {showAddItems && mode === "view" && (
-            <div className="mt-2 space-y-2 pt-2 border-t border-border-custom">
-              <ProductPicker
-                onSelect={(product) => {
+            <div className="mt-2 pt-2 border-t border-border-custom">
+              <AIInput
+                onParseComplete={handleAIAddItems}
+                onProductSelect={(product) => {
                   handleAddProduct(product)
                   toast.success(`Added ${product.name}`)
                 }}
-                placeholder="Search catalog to add items..."
+                placeholder="Search catalog"
                 excludeIds={existingProductIds}
-              />
-              <div className="flex items-center gap-2 px-1">
-                <div className="flex-1 h-px bg-border-custom/60" />
-                <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or voice / text</span>
-                <div className="flex-1 h-px bg-border-custom/60" />
-              </div>
-              <AIInput
-                onParseComplete={handleAIAddItems}
-                placeholder={`"Also grabbing 2 tubes caulk and 10 zip ties..."`}
               />
             </div>
           )}

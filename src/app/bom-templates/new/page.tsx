@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { ProductPicker } from "@/components/bom/product-picker"
+import { AIInput } from "@/components/ai/ai-input"
 import { useCreateBomTemplate } from "@/hooks/use-bom-templates"
 import { toast } from "sonner"
 import { Plus, Trash2 } from "lucide-react"
@@ -167,9 +167,10 @@ export default function NewBomTemplatePage() {
               <h3 className="font-semibold text-navy">Items ({lineItems.length})</h3>
             </div>
 
-            <ProductPicker
-              onSelect={handleProductSelect}
-              placeholder="Search catalog to add items..."
+            <AIInput
+              onParseComplete={() => {}}
+              onProductSelect={handleProductSelect}
+              placeholder="Search catalog"
               excludeIds={excludeIds}
             />
 

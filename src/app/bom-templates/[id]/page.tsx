@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { ProductPicker } from "@/components/bom/product-picker"
+import { AIInput } from "@/components/ai/ai-input"
 import {
   useBomTemplate,
   useUpdateBomTemplate,
@@ -261,9 +261,10 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
           {/* Edit mode — product picker */}
           {mode === "edit" && (
             <div className="mb-3">
-              <ProductPicker
-                onSelect={handleAddProduct}
-                placeholder="Search catalog to add items..."
+              <AIInput
+                onParseComplete={() => {}}
+                onProductSelect={handleAddProduct}
+                placeholder="Search catalog"
                 excludeIds={existingProductIds}
               />
             </div>

@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { ProductPicker } from "@/components/bom/product-picker"
+import { AIInput } from "@/components/ai/ai-input"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
 import { BomAIFlow } from "@/components/bom/bom-ai-flow"
 import { useCreateBom } from "@/hooks/use-boms"
@@ -179,6 +179,31 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
     ])
   }
 
+  function handleAIParse(result: { items: Array<{ matchedProduct?: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; dimLength?: number | null; dimLengthUnit?: string | null; dimWidth?: number | null; dimWidthUnit?: string | null } | null; parsedItem: { name: string; quantity: number; unitOfMeasure: string; category?: string | null }; isNonCatalog: boolean }> }) {
+    for (const match of result.items) {
+      if (match.matchedProduct && !match.isNonCatalog) {
+        handleProductSelect(match.matchedProduct)
+      } else {
+        setLineItems((prev) => [
+          ...prev,
+          {
+            tempId: crypto.randomUUID(),
+            productId: null,
+            productName: match.parsedItem.name,
+            unitOfMeasure: match.parsedItem.unitOfMeasure,
+            tier: "TIER_2" as const,
+            qtyNeeded: match.parsedItem.quantity,
+            isNonCatalog: true,
+            nonCatalogName: match.parsedItem.name,
+            nonCatalogCategory: match.parsedItem.category || null,
+            nonCatalogUom: match.parsedItem.unitOfMeasure,
+          },
+        ])
+      }
+    }
+    toast.success(`Added ${result.items.length} item${result.items.length !== 1 ? "s" : ""}`)
+  }
+
   function handleAddNonCatalog() {
     const errors: Record<string, string> = {}
     if (!ncName.trim()) errors.name = "Item name is required"
@@ -272,9 +297,10 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
           <h3 className="text-sm font-semibold text-navy">Items ({lineItems.length})</h3>
         </div>
 
-        <ProductPicker
-          onSelect={handleProductSelect}
-          placeholder="Search catalog to add items..."
+        <AIInput
+          onParseComplete={handleAIParse}
+          onProductSelect={handleProductSelect}
+          placeholder="Search catalog"
           excludeIds={excludeIds}
         />
 

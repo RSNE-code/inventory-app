@@ -1,32 +1,51 @@
 "use client"
 
-import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
+import { useState, useRef, useImperativeHandle, forwardRef, useEffect, useCallback } from "react"
 import { Mic, Send, Loader2, Search } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
+import { getDisplayQty } from "@/lib/units"
 import type { ParseResult, ReceivingParseResult } from "@/lib/ai/types"
 
 export interface AIInputHandle {
   triggerCamera: () => void
 }
 
+export interface ProductResult {
+  id: string
+  name: string
+  sku: string | null
+  unitOfMeasure: string
+  shopUnit?: string | null
+  currentQty: number
+  dimLength?: number | null
+  dimLengthUnit?: string | null
+  dimWidth?: number | null
+  dimWidthUnit?: string | null
+  category?: { name: string }
+}
+
 interface AIInputProps {
   onParseComplete: (result: ParseResult | ReceivingParseResult) => void
+  onProductSelect?: (product: ProductResult) => void
   placeholder?: string
   className?: string
   disabled?: boolean
   context?: "general" | "receiving"
   searchIcon?: boolean
+  excludeIds?: string[]
 }
 
 export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput({
   onParseComplete,
+  onProductSelect,
   placeholder = "Type or speak what you need...",
   className,
   disabled = false,
   context = "general",
   searchIcon = false,
+  excludeIds = [],
 }, ref) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -35,6 +54,14 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   const [lastError, setLastError] = useState<string | null>(null)
   const [isFocused, setIsFocused] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Live catalog search state
+  const [searchResults, setSearchResults] = useState<ProductResult[]>([])
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [highlightIdx, setHighlightIdx] = useState(-1)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   useImperativeHandle(ref, () => ({
     triggerCamera: () => fileInputRef.current?.click(),
@@ -50,10 +77,95 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       handleTextSubmit(finalTranscript)
     })
 
+  // Live catalog search — debounced
+  useEffect(() => {
+    if (!onProductSelect || text.length < 2) {
+      setSearchResults([])
+      setSearchOpen(false)
+      setHighlightIdx(-1)
+      return
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    debounceRef.current = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const res = await fetch(`/api/inventory?search=${encodeURIComponent(text)}&limit=8`)
+        if (res.ok) {
+          const json = await res.json()
+          const filtered = (json.data || []).filter(
+            (p: ProductResult) => !excludeIds.includes(p.id)
+          )
+          setSearchResults(filtered)
+          setSearchOpen(filtered.length > 0)
+          setHighlightIdx(-1)
+        } else {
+          setSearchResults([])
+          setSearchOpen(false)
+        }
+      } catch {
+        setSearchResults([])
+        setSearchOpen(false)
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 250)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [text, onProductSelect, excludeIds])
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  function handleSelectProduct(product: ProductResult) {
+    onProductSelect?.(product)
+    setText("")
+    setSearchResults([])
+    setSearchOpen(false)
+    setHighlightIdx(-1)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (searchOpen && searchResults.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault()
+        setHighlightIdx((prev) => Math.min(prev + 1, searchResults.length - 1))
+        return
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault()
+        setHighlightIdx((prev) => Math.max(prev - 1, -1))
+        return
+      }
+      if (e.key === "Enter" && highlightIdx >= 0) {
+        e.preventDefault()
+        handleSelectProduct(searchResults[highlightIdx])
+        return
+      }
+    }
+    if (e.key === "Enter") {
+      e.preventDefault()
+      setSearchOpen(false)
+      handleTextSubmit()
+    }
+  }
+
   async function handleTextSubmit(input?: string) {
     const value = input || text
     if (!value.trim() || isProcessing) return
 
+    setSearchOpen(false)
     setLastError(null)
     setIsProcessing(true)
     setProcessingType("text")
@@ -93,7 +205,6 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       img.onload = () => {
         URL.revokeObjectURL(url)
         const canvas = document.createElement("canvas")
-        // Scale down — 1200px is plenty for text documents like packing slips
         const maxDim = 1200
         let { width, height } = img
         if (width > maxDim || height > maxDim) {
@@ -105,7 +216,6 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
         canvas.height = height
         const ctx = canvas.getContext("2d")!
         ctx.drawImage(img, 0, 0, width, height)
-        // Try quality levels until under size limit
         let quality = 0.7
         const tryCompress = () => {
           canvas.toBlob(
@@ -125,7 +235,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       }
       img.onerror = () => {
         URL.revokeObjectURL(url)
-        resolve(file) // fallback to original
+        resolve(file)
       }
       img.src = url
     })
@@ -140,7 +250,6 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     setProcessingType("image")
     setImageCount(files.length)
     try {
-      // Compress images in parallel to avoid 413 errors and speed up upload
       const compressed = await Promise.all(
         Array.from(files).map((file) => compressImage(file))
       )
@@ -179,8 +288,10 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     }
   }
 
+  const showSearchIcon = searchIcon || !!onProductSelect
+
   return (
-    <div className={cn("space-y-2", className)}>
+    <div ref={containerRef} className={cn("space-y-2", className)}>
       {/* Mic + Input row */}
       <div className="flex items-center gap-2.5">
         {/* Mic button — orange CTA */}
@@ -206,7 +317,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
           </button>
         )}
 
-        {/* Input area — sound bars when listening, processing message, or text input with send button */}
+        {/* Input area */}
         <div className="flex-1 relative">
           {isListening ? (
             <div className="w-full h-11 rounded-xl border-2 border-brand-orange/30 bg-brand-orange/5 flex items-center justify-center gap-[3px] px-4">
@@ -229,31 +340,29 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
             </div>
           ) : (
             <div className="relative">
-              {searchIcon && (
+              {showSearchIcon && (
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted/40 pointer-events-none" />
               )}
               <input
                 type="text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    handleTextSubmit()
-                  }
+                onKeyDown={handleKeyDown}
+                onFocus={() => {
+                  setIsFocused(true)
+                  if (searchResults.length > 0) setSearchOpen(true)
                 }}
-                onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 placeholder={placeholder}
                 disabled={disabled}
                 className={cn(
                   "w-full h-11 pr-10 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors",
-                  searchIcon ? "pl-9" : "pl-3"
+                  showSearchIcon ? "pl-9" : "pl-3"
                 )}
               />
               <button
                 type="button"
-                onClick={() => handleTextSubmit()}
+                onClick={() => { setSearchOpen(false); handleTextSubmit() }}
                 disabled={disabled || !text.trim()}
                 className={cn(
                   "absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-lg transition-all",
@@ -264,6 +373,41 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
               >
                 <Send className="h-4 w-4" />
               </button>
+            </div>
+          )}
+
+          {/* Live catalog search dropdown */}
+          {searchOpen && !isListening && !isProcessing && (
+            <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg max-h-60 overflow-y-auto">
+              {searchLoading ? (
+                <div className="p-3 text-center text-text-muted text-sm">Searching...</div>
+              ) : (
+                searchResults.map((p, idx) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleSelectProduct(p)}
+                    className={cn(
+                      "w-full text-left px-3 py-2.5 border-b border-border-custom/50 last:border-0 transition-colors",
+                      idx === highlightIdx ? "bg-blue-50" : "hover:bg-surface-secondary"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-navy truncate">{p.name}</p>
+                        <p className="text-[11px] text-text-muted">
+                          {p.sku || "No SKU"} &middot; {p.unitOfMeasure}
+                          {p.category ? ` \u00b7 ${p.category.name}` : ""}
+                        </p>
+                      </div>
+                      <span className="text-[11px] text-text-muted whitespace-nowrap shrink-0">
+                        {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)} ${d.unit}` })()}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>
