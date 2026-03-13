@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, Mic, PenLine, ClipboardList, Trash2, Plus, Search } from "lucide-react"
+import { Camera, Mic, PenLine, ClipboardList, Trash2, Plus, Search, X, Package } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -37,6 +37,11 @@ export function BomAIFlow() {
   const [pendingMatches, setPendingMatches] = useState<CatalogMatch[]>([])
   const [confirmedItems, setConfirmedItems] = useState<ConfirmedBomItem[]>([])
   const [qtyOverrides, setQtyOverrides] = useState<Record<string, number>>({})
+  const [addRowOpen, setAddRowOpen] = useState(false)
+  const [nonCatalogOpen, setNonCatalogOpen] = useState(false)
+  const [nonCatalogName, setNonCatalogName] = useState("")
+  const [nonCatalogQty, setNonCatalogQty] = useState(1)
+  const [nonCatalogUom, setNonCatalogUom] = useState("each")
 
   const handleParseComplete = useCallback(
     (result: ParseResult | ReceivingParseResult) => {
@@ -182,6 +187,42 @@ export function BomAIFlow() {
         },
       },
     ])
+  }
+
+  function handleAddNonCatalog() {
+    if (!nonCatalogName.trim()) return
+    setConfirmedItems((prev) => [
+      ...prev,
+      {
+        productId: null,
+        productName: nonCatalogName.trim(),
+        sku: null,
+        unitOfMeasure: nonCatalogUom,
+        tier: "TIER_2" as const,
+        qtyNeeded: nonCatalogQty,
+        isNonCatalog: true,
+        nonCatalogName: nonCatalogName.trim(),
+        nonCatalogCategory: null,
+        nonCatalogUom: nonCatalogUom,
+        nonCatalogEstCost: null,
+        currentQty: 0,
+        reorderPoint: 0,
+        dimLength: null,
+        dimLengthUnit: null,
+        dimWidth: null,
+        dimWidthUnit: null,
+        catalogMatch: {
+          parsedItem: { rawText: nonCatalogName.trim(), name: nonCatalogName.trim(), quantity: nonCatalogQty, unitOfMeasure: nonCatalogUom, confidence: 1 },
+          matchedProduct: null,
+          matchConfidence: 0,
+          isNonCatalog: true,
+        },
+      },
+    ])
+    setNonCatalogName("")
+    setNonCatalogQty(1)
+    setNonCatalogUom("each")
+    setNonCatalogOpen(false)
   }
 
   function handleRemoveConfirmed(index: number) {
@@ -428,27 +469,111 @@ export function BomAIFlow() {
         </Card>
       )}
 
-      {/* Add more items — catalog search + voice/text */}
-      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
-        <div className="flex items-center gap-1.5">
-          <Plus className="h-4 w-4 text-brand-blue" />
-          <h3 className="text-xs font-semibold text-navy">Add More Items</h3>
-        </div>
-        <ProductPicker
-          onSelect={handleAddProduct}
-          placeholder="Search catalog..."
-          excludeIds={confirmedItems.filter((i) => i.productId).map((i) => i.productId!)}
-        />
-        <div className="flex items-center gap-2 px-1">
-          <div className="flex-1 h-px bg-border-custom/60" />
-          <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or voice / text</span>
-          <div className="flex-1 h-px bg-border-custom/60" />
-        </div>
-        <AIInput
-          onParseComplete={handleParseComplete}
-          placeholder={`"5 boxes hinges, 2 tubes caulk..."`}
-        />
-      </Card>
+      {/* Add more items — collapsed by default, expands on tap */}
+      {!addRowOpen ? (
+        <button
+          type="button"
+          onClick={() => setAddRowOpen(true)}
+          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-brand-blue/30 text-brand-blue hover:bg-blue-50/50 hover:border-brand-blue/50 transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="text-xs font-semibold">Add item</span>
+        </button>
+      ) : (
+        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-navy">Add Item</h3>
+            <button
+              type="button"
+              onClick={() => { setAddRowOpen(false); setNonCatalogOpen(false) }}
+              className="text-gray-400 hover:text-gray-600 p-0.5"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Catalog search */}
+          <ProductPicker
+            onSelect={(product) => { handleAddProduct(product); setAddRowOpen(false) }}
+            placeholder="Search catalog..."
+            excludeIds={confirmedItems.filter((i) => i.productId).map((i) => i.productId!)}
+          />
+
+          {/* Voice / text input */}
+          <div className="flex items-center gap-2 px-1">
+            <div className="flex-1 h-px bg-border-custom/60" />
+            <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or voice / text</span>
+            <div className="flex-1 h-px bg-border-custom/60" />
+          </div>
+          <AIInput
+            onParseComplete={(result) => { handleParseComplete(result); setAddRowOpen(false) }}
+            placeholder={`"5 boxes hinges, 2 tubes caulk..."`}
+          />
+
+          {/* Non-catalog item */}
+          <div className="flex items-center gap-2 px-1">
+            <div className="flex-1 h-px bg-border-custom/60" />
+            <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or</span>
+            <div className="flex-1 h-px bg-border-custom/60" />
+          </div>
+
+          {!nonCatalogOpen ? (
+            <button
+              type="button"
+              onClick={() => setNonCatalogOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-medium text-brand-orange hover:text-brand-orange-hover transition-colors px-0.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Non-catalog item
+            </button>
+          ) : (
+            <div className="space-y-2 rounded-lg border border-orange-200 bg-orange-50/50 p-2.5">
+              <input
+                type="text"
+                value={nonCatalogName}
+                onChange={(e) => setNonCatalogName(e.target.value)}
+                placeholder="Item name or description"
+                className="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                autoFocus
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  step="any"
+                  value={nonCatalogQty}
+                  onChange={(e) => setNonCatalogQty(Number(e.target.value) || 1)}
+                  className="w-16 rounded-md border border-gray-200 px-1.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                />
+                <select
+                  value={nonCatalogUom}
+                  onChange={(e) => setNonCatalogUom(e.target.value)}
+                  className="flex-1 rounded-md border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                >
+                  <option value="each">each</option>
+                  <option value="linear ft">linear ft</option>
+                  <option value="sq ft">sq ft</option>
+                  <option value="sheet">sheet</option>
+                  <option value="box">box</option>
+                  <option value="tube">tube</option>
+                  <option value="case">case</option>
+                  <option value="roll">roll</option>
+                  <option value="bundle">bundle</option>
+                  <option value="panel">panel</option>
+                </select>
+                <Button
+                  type="button"
+                  onClick={handleAddNonCatalog}
+                  disabled={!nonCatalogName.trim()}
+                  className="h-8 px-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-semibold rounded-lg"
+                >
+                  Add
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Notes */}
       {confirmedItems.length > 0 && (
