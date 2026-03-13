@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
+import { AIInput, type AIInputHandle, type ProductResult } from "@/components/ai/ai-input"
 import { BomConfirmationList } from "@/components/bom/bom-confirmation-card"
 import { JobPicker } from "@/components/bom/job-picker"
 import { useCreateBom } from "@/hooks/use-boms"
@@ -137,6 +137,45 @@ export function BomAIFlow() {
     setConfirmedItems((prev) => [...prev, ...newConfirmed])
     setPendingMatches([])
     setQtyOverrides({})
+  }
+
+  function handleAddProduct(product: ProductResult) {
+    const existingIdx = confirmedItems.findIndex((c) => c.productId === product.id)
+    if (existingIdx >= 0) {
+      setConfirmedItems((prev) =>
+        prev.map((c, i) => i === existingIdx ? { ...c, qtyNeeded: c.qtyNeeded + 1 } : c)
+      )
+    } else {
+      setConfirmedItems((prev) => [
+        ...prev,
+        {
+          productId: product.id,
+          productName: product.name,
+          sku: product.sku,
+          unitOfMeasure: product.unitOfMeasure,
+          tier: "TIER_1" as const,
+          qtyNeeded: 1,
+          isNonCatalog: false,
+          nonCatalogName: null,
+          nonCatalogCategory: null,
+          nonCatalogUom: null,
+          nonCatalogEstCost: null,
+          currentQty: product.currentQty,
+          reorderPoint: 0,
+          dimLength: product.dimLength ?? null,
+          dimLengthUnit: product.dimLengthUnit ?? null,
+          dimWidth: product.dimWidth ?? null,
+          dimWidthUnit: product.dimWidthUnit ?? null,
+          catalogMatch: {
+            parsedItem: { rawText: product.name, name: product.name, quantity: 1, unitOfMeasure: product.unitOfMeasure, confidence: 1 },
+            matchedProduct: { id: product.id, name: product.name, sku: product.sku, unitOfMeasure: product.unitOfMeasure, currentQty: product.currentQty, tier: "TIER_1", categoryName: "", lastCost: 0, avgCost: 0, reorderPoint: 0, dimLength: product.dimLength ?? null, dimLengthUnit: product.dimLengthUnit ?? null, dimWidth: product.dimWidth ?? null, dimWidthUnit: product.dimWidthUnit ?? null },
+            matchConfidence: 1,
+            isNonCatalog: false,
+          },
+        },
+      ])
+    }
+    setAddRowOpen(false)
   }
 
   function handleAddNonCatalog() {
@@ -444,8 +483,9 @@ export function BomAIFlow() {
 
           <AIInput
             onParseComplete={(result) => { handleParseComplete(result); setAddRowOpen(false) }}
+            onProductSelect={handleAddProduct}
             placeholder="Search catalog"
-            searchIcon
+            excludeIds={confirmedItems.filter((i) => i.productId).map((i) => i.productId!)}
           />
 
           {!nonCatalogOpen ? (

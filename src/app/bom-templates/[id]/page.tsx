@@ -88,6 +88,34 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
     }
   }
 
+  async function handleAIParse(result: { items: Array<{ matchedProduct?: { id: string; name: string; sku: string | null; unitOfMeasure: string } | null; parsedItem: { name: string; quantity: number; unitOfMeasure: string; category?: string | null }; isNonCatalog: boolean }> }) {
+    const addItems = result.items.map((match) => {
+      if (match.matchedProduct && !match.isNonCatalog) {
+        return {
+          productId: match.matchedProduct.id,
+          tier: "TIER_1" as const,
+          defaultQty: match.parsedItem.quantity,
+          unitOfMeasure: match.matchedProduct.unitOfMeasure,
+        }
+      }
+      return {
+        productId: null as string | null,
+        tier: "TIER_2" as const,
+        defaultQty: match.parsedItem.quantity,
+        unitOfMeasure: match.parsedItem.unitOfMeasure,
+        isNonCatalog: true,
+        nonCatalogName: match.parsedItem.name,
+        nonCatalogCategory: match.parsedItem.category || null,
+      }
+    })
+    try {
+      await updateTemplate.mutateAsync({ id, addLineItems: addItems })
+      toast.success(`Added ${result.items.length} item${result.items.length !== 1 ? "s" : ""}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add items")
+    }
+  }
+
   async function handleAddNonCatalog() {
     if (!ncName || !ncUom || !ncQty) {
       toast.error("Fill in name, unit, and quantity")
@@ -262,7 +290,7 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
           {mode === "edit" && (
             <div className="mb-3">
               <AIInput
-                onParseComplete={() => {}}
+                onParseComplete={handleAIParse}
                 onProductSelect={handleAddProduct}
                 placeholder="Search catalog"
                 excludeIds={existingProductIds}

@@ -65,6 +65,42 @@ export default function NewBomTemplatePage() {
     ])
   }
 
+  function handleAIParse(result: { items: Array<{ matchedProduct?: { id: string; name: string; sku: string | null; unitOfMeasure: string } | null; parsedItem: { name: string; quantity: number; unitOfMeasure: string; category?: string | null }; isNonCatalog: boolean }> }) {
+    for (const match of result.items) {
+      if (match.matchedProduct && !match.isNonCatalog) {
+        setLineItems((prev) => [
+          ...prev,
+          {
+            tempId: crypto.randomUUID(),
+            productId: match.matchedProduct!.id,
+            productName: match.matchedProduct!.name,
+            sku: match.matchedProduct!.sku,
+            unitOfMeasure: match.matchedProduct!.unitOfMeasure,
+            defaultQty: match.parsedItem.quantity,
+            isNonCatalog: false,
+            tier: "TIER_1",
+          },
+        ])
+      } else {
+        setLineItems((prev) => [
+          ...prev,
+          {
+            tempId: crypto.randomUUID(),
+            productId: null,
+            productName: match.parsedItem.name,
+            unitOfMeasure: match.parsedItem.unitOfMeasure,
+            defaultQty: match.parsedItem.quantity,
+            isNonCatalog: true,
+            nonCatalogName: match.parsedItem.name,
+            nonCatalogCategory: match.parsedItem.category || null,
+            tier: "TIER_2",
+          },
+        ])
+      }
+    }
+    toast.success(`Added ${result.items.length} item${result.items.length !== 1 ? "s" : ""}`)
+  }
+
   function handleAddNonCatalog() {
     if (!ncName || !ncUom || !ncQty) {
       toast.error("Fill in name, unit, and quantity")
@@ -168,7 +204,7 @@ export default function NewBomTemplatePage() {
             </div>
 
             <AIInput
-              onParseComplete={() => {}}
+              onParseComplete={handleAIParse}
               onProductSelect={handleProductSelect}
               placeholder="Search catalog"
               excludeIds={excludeIds}

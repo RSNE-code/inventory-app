@@ -40,17 +40,17 @@ async function goToHistory(page: Page) {
 
 /** Fill and submit the main AI text input */
 async function submitText(page: Page, text: string) {
-  // Try specific placeholder first
+  // Try specific placeholder first (AIInput uses <input type="text">)
   const specificInput = page.getByPlaceholder("'20 panels from Metl-Span on PO 345...'")
   if (await specificInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
     await specificInput.fill(text)
     await specificInput.press("Enter")
   } else {
-    // Fallback — find the textarea
-    const textarea = page.locator("textarea").first()
-    await expect(textarea).toBeVisible({ timeout: 5_000 })
-    await textarea.fill(text)
-    await textarea.press("Enter")
+    // Fallback — find any text input in the AI input area
+    const textInput = page.locator("input[type='text']").first()
+    await expect(textInput).toBeVisible({ timeout: 5_000 })
+    await textInput.fill(text)
+    await textInput.press("Enter")
   }
 }
 
@@ -103,8 +103,8 @@ async function waitForParse(page: Page) {
       return !body.includes("Failed after") && !body.includes("rate limit")
     }, { timeout: 10_000 }).catch(() => {})
 
-    // Re-submit by pressing Enter on the textarea (text should still be there)
-    const textarea = page.locator("textarea").first()
+    // Re-submit by pressing Enter on the text input (text should still be there)
+    const textarea = page.locator("input[type='text']").first()
     if (await textarea.isVisible({ timeout: 3_000 }).catch(() => false)) {
       const currentText = await textarea.inputValue()
       if (currentText.trim()) {
@@ -542,10 +542,10 @@ test.describe("2. Photo Input", () => {
     await uploadPhoto(page, TEST_IMAGE)
 
     // Wait for image processing to complete OR error/timeout
-    // Check for: textarea enabled, error message, or page moved past INPUT
+    // Check for: text input enabled, error message, or page moved past INPUT
     await page.waitForFunction(() => {
       const body = document.body.innerText
-      const ta = document.querySelector("textarea")
+      const ta = document.querySelector("input[type='text']")
       const taEnabled = ta && !ta.disabled
       return (
         taEnabled ||
@@ -568,7 +568,7 @@ test.describe("2. Photo Input", () => {
         await dismissBtn.click()
         await page.waitForTimeout(500)
       }
-      const textarea = page.locator("textarea").first()
+      const textarea = page.locator("input[type='text']").first()
       await expect(textarea).toBeEnabled({ timeout: 10_000 })
       await textarea.fill("5 nylon batten bundles from Dupont")
       await textarea.press("Enter")
@@ -877,7 +877,7 @@ test.describe("7. Edge Cases", () => {
 
   test("7.1 Empty text → should not crash or navigate", async ({ page }) => {
     await goToReceiving(page)
-    const textarea = page.locator("textarea").first()
+    const textarea = page.locator("input[type='text']").first()
     await expect(textarea).toBeVisible({ timeout: 5_000 })
     await textarea.fill("")
     await textarea.press("Enter")
