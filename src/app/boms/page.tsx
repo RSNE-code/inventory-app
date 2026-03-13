@@ -65,12 +65,12 @@ export default function BomsPage() {
       </div>
 
       {activeTab === "create" ? (
-        <div className="p-4">
+        <div className="px-4 pt-3 pb-4">
           <BomAIFlow />
         </div>
       ) : (
         <>
-          <div className="p-4 space-y-3">
+          <div className="px-4 pt-3 space-y-2">
             <SearchInput
               value={search}
               onChange={(v) => { setSearch(v); setPage(1) }}
@@ -95,7 +95,7 @@ export default function BomsPage() {
             </div>
           </div>
 
-          <div className="px-4 space-y-3 pb-24">
+          <div className="px-4 space-y-2 pb-24">
             {isLoading ? (
               <ListSkeleton count={5} />
             ) : boms.length === 0 ? (

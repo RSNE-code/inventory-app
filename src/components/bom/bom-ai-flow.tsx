@@ -193,27 +193,27 @@ export function BomAIFlow() {
   // ─── INPUT phase — entry-path cards (mirrors receiving module) ───
   if (phase === "INPUT") {
     return (
-      <div className="space-y-5 animate-fade-in-up">
+      <div className="space-y-3 animate-fade-in-up">
         <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
         {/* Entry path cards */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           {/* Photo / Camera */}
           <button
             type="button"
             onClick={() => aiInputRef.current?.triggerCamera()}
             className={cn(
-              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "group relative flex flex-col items-center gap-2 p-4 rounded-2xl border",
               "border-brand-orange/25 bg-gradient-to-b from-orange-50/80 to-white",
               "shadow-[0_2px_12px_rgba(232,121,43,0.08)]",
               "hover:border-brand-orange/40 hover:shadow-[0_6px_24px_rgba(232,121,43,0.15)]",
               "active:scale-[0.97] transition-all duration-200"
             )}
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange/10 group-hover:bg-brand-orange/15 transition-colors">
-              <Camera className="h-7 w-7 text-brand-orange" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-orange/10 group-hover:bg-brand-orange/15 transition-colors">
+              <Camera className="h-5.5 w-5.5 text-brand-orange" />
             </div>
-            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+            <p className="text-sm font-extrabold text-navy tracking-tight">
               Photo BOM
             </p>
           </button>
@@ -223,26 +223,26 @@ export function BomAIFlow() {
             type="button"
             onClick={() => router.push("/boms/new?tab=manual")}
             className={cn(
-              "group relative flex flex-col items-center gap-3 p-5 rounded-2xl border",
+              "group relative flex flex-col items-center gap-2 p-4 rounded-2xl border",
               "border-brand-blue/25 bg-gradient-to-b from-blue-50/80 to-white",
               "shadow-[0_2px_12px_rgba(46,125,186,0.08)]",
               "hover:border-brand-blue/40 hover:shadow-[0_6px_24px_rgba(46,125,186,0.15)]",
               "active:scale-[0.97] transition-all duration-200"
             )}
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-blue/10 group-hover:bg-brand-blue/15 transition-colors">
-              <PenLine className="h-7 w-7 text-brand-blue" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-blue/10 group-hover:bg-brand-blue/15 transition-colors">
+              <PenLine className="h-5.5 w-5.5 text-brand-blue" />
             </div>
-            <p className="text-[15px] font-extrabold text-navy tracking-tight">
+            <p className="text-sm font-extrabold text-navy tracking-tight">
               Manual Entry
             </p>
           </button>
         </div>
 
         {/* Divider */}
-        <div className="flex items-center gap-3 px-2">
+        <div className="flex items-center gap-3 px-1">
           <div className="flex-1 h-px bg-border-custom/60" />
-          <span className="text-[12px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
+          <span className="text-[11px] font-bold text-text-muted/50 uppercase tracking-[0.12em]">
             or type / speak below
           </span>
           <div className="flex-1 h-px bg-border-custom/60" />
@@ -259,12 +259,12 @@ export function BomAIFlow() {
 
   // ─── BUILD phase — job picker, items review, submit ───
   return (
-    <div className="space-y-3 animate-fade-in-up">
+    <div className="space-y-2 animate-fade-in-up">
       <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
       {/* Job picker */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">Job *</h3>
+      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
+        <h3 className="text-sm font-semibold text-navy">Job *</h3>
         <JobPicker
           onSelect={(job) => {
             setJobName(job.name)
@@ -276,14 +276,11 @@ export function BomAIFlow() {
       </Card>
 
       {/* AI Input — always visible to add more items */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <div className="flex items-center gap-2">
-          <Mic className="h-5 w-5 text-[#E8792B]" />
-          <h3 className="font-semibold text-navy">Add Materials</h3>
+      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
+        <div className="flex items-center gap-1.5">
+          <Mic className="h-4 w-4 text-[#E8792B]" />
+          <h3 className="text-sm font-semibold text-navy">Add Materials</h3>
         </div>
-        <p className="text-sm text-gray-500">
-          Speak, type, or snap a photo of your material list
-        </p>
         <AIInput
           onParseComplete={handleParseComplete}
           placeholder={`"20 sheets 4in IMP white, 5 boxes hinges, 2 tubes caulk..."`}
@@ -292,7 +289,7 @@ export function BomAIFlow() {
 
       {/* Pending items to review */}
       {pendingMatches.length > 0 && (
-        <Card className="p-4 rounded-xl border-border-custom">
+        <Card className="px-3 py-2.5 rounded-xl border-border-custom">
           <BomConfirmationList
             matches={pendingMatches}
             onAccept={handleAcceptItem}
@@ -305,8 +302,8 @@ export function BomAIFlow() {
 
       {/* Confirmed items */}
       {confirmedItems.length > 0 && (
-        <Card className="p-4 rounded-xl border-border-custom space-y-2">
-          <h3 className="font-semibold text-sm text-green-700">
+        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-1">
+          <h3 className="text-xs font-semibold text-green-700">
             {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
           </h3>
 
@@ -315,16 +312,16 @@ export function BomAIFlow() {
             return (
               <div
                 key={`${item.productId ?? "nc"}-${index}`}
-                className="py-3 border-b border-gray-50 last:border-0"
+                className="py-1.5 border-b border-gray-50 last:border-0"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-gray-900">{item.productName}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-xs font-medium text-gray-900">{item.productName}</p>
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-xs px-1.5 py-0",
+                          "text-[10px] px-1 py-0",
                           item.tier === "TIER_1"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : "bg-purple-50 text-purple-700 border-purple-200"
@@ -333,7 +330,7 @@ export function BomAIFlow() {
                         {item.tier === "TIER_1" ? "T1" : "T2"}
                       </Badge>
                       {item.isNonCatalog && (
-                        <Badge variant="outline" className="text-xs text-orange-600 border-orange-300 px-1.5 py-0">
+                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 px-1 py-0">
                           Non-catalog
                         </Badge>
                       )}
@@ -341,11 +338,11 @@ export function BomAIFlow() {
 
                     {/* Stock status */}
                     {stockLevel !== "unknown" && (
-                      <div className="flex items-center gap-1.5 mt-1">
+                      <div className="flex items-center gap-1 mt-0.5">
                         <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", stockDotColor[stockLevel])} />
                         <span
                           className={cn(
-                            "text-xs",
+                            "text-[10px]",
                             stockLevel === "sufficient" && "text-green-600",
                             stockLevel === "low" && "text-yellow-600",
                             stockLevel === "out" && "text-red-500"
@@ -364,9 +361,9 @@ export function BomAIFlow() {
                       step="any"
                       value={item.qtyNeeded}
                       onChange={(e) => handleQtyChange(index, Number(e.target.value) || 0)}
-                      className="w-20 rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-16 rounded-md border border-gray-200 px-1.5 py-1 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <span className="text-xs text-gray-500 w-10">{item.unitOfMeasure}</span>
+                    <span className="text-[10px] text-gray-500 w-8">{item.unitOfMeasure}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -386,13 +383,13 @@ export function BomAIFlow() {
 
       {/* Notes */}
       {confirmedItems.length > 0 && (
-        <Card className="p-4 rounded-xl border-border-custom space-y-2">
-          <Label>Notes</Label>
+        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-1.5">
+          <Label className="text-sm">Notes</Label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional notes about this BOM..."
-            className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            className="w-full rounded-lg border border-border-custom p-2.5 text-sm min-h-[50px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </Card>
       )}
@@ -402,7 +399,7 @@ export function BomAIFlow() {
         <Button
           onClick={handleSubmit}
           disabled={createBom.isPending || !jobName.trim()}
-          className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
+          className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-sm rounded-xl"
         >
           <ClipboardList className="h-5 w-5 mr-2" />
           {createBom.isPending

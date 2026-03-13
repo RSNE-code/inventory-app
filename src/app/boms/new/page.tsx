@@ -64,7 +64,7 @@ function NewBomPageContent() {
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="px-4 pt-3 pb-4">
         {activeTab === "ai" ? <BomAIFlow /> : <ManualBomForm templateId={templateId} />}
       </div>
     </div>
@@ -243,10 +243,10 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
   const excludeIds = lineItems.filter((i) => i.productId).map((i) => i.productId!)
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-2">
       {/* Job Info */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">Job *</h3>
+      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
+        <h3 className="text-sm font-semibold text-navy">Job *</h3>
         <JobPicker
           onSelect={(job) => {
             setJobName(job.name)
@@ -258,9 +258,9 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
       </Card>
 
       {/* Line Items */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-3">
+      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-navy">Items ({lineItems.length})</h3>
+          <h3 className="text-sm font-semibold text-navy">Items ({lineItems.length})</h3>
         </div>
 
         <ProductPicker
@@ -322,14 +322,14 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
 
         {/* Non-catalog item form */}
         {showNonCatalog ? (
-          <div className="space-y-2 p-3 bg-surface-secondary rounded-lg">
-            <p className="text-sm font-medium text-navy">Non-Catalog Item</p>
+          <div className="space-y-1.5 p-2.5 bg-surface-secondary rounded-lg">
+            <p className="text-xs font-semibold text-navy">Non-Catalog Item</p>
             <div>
               <Input
                 value={ncName}
                 onChange={(e) => { setNcName(e.target.value); setNcErrors((prev) => { const { name, ...rest } = prev; return rest }) }}
                 placeholder="Item name *"
-                className={cn("h-10", ncErrors.name && "border-status-red")}
+                className={cn("h-8 text-sm", ncErrors.name && "border-status-red")}
               />
               {ncErrors.name && <p className="text-xs text-status-red mt-0.5">{ncErrors.name}</p>}
             </div>
@@ -337,7 +337,7 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
               value={ncCategory}
               onChange={(e) => setNcCategory(e.target.value)}
               placeholder="Category (optional)"
-              className="h-10"
+              className="h-8 text-sm"
             />
             <div className="flex gap-2">
               <div className="flex-1">
@@ -345,7 +345,7 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
                   value={ncUom}
                   onChange={(e) => { setNcUom(e.target.value); setNcErrors((prev) => { const { uom, ...rest } = prev; return rest }) }}
                   placeholder="Unit *"
-                  className={cn("h-10", ncErrors.uom && "border-status-red")}
+                  className={cn("h-8 text-sm", ncErrors.uom && "border-status-red")}
                 />
                 {ncErrors.uom && <p className="text-xs text-status-red mt-0.5">{ncErrors.uom}</p>}
               </div>
@@ -355,7 +355,7 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
                   value={ncQty}
                   onChange={(e) => { setNcQty(e.target.value); setNcErrors((prev) => { const { qty, ...rest } = prev; return rest }) }}
                   placeholder="Qty *"
-                  className={cn("h-10", ncErrors.qty && "border-status-red")}
+                  className={cn("h-8 text-sm", ncErrors.qty && "border-status-red")}
                   min={0}
                   step="any"
                 />
@@ -367,7 +367,7 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
               value={ncCost}
               onChange={(e) => setNcCost(e.target.value)}
               placeholder="Est. cost per unit (optional)"
-              className="h-10"
+              className="h-8 text-sm"
               min={0}
               step="0.01"
             />
@@ -419,14 +419,14 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
       </Card>
 
       {/* Notes */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <Label htmlFor="notes">Notes</Label>
+      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-1.5">
+        <Label htmlFor="notes" className="text-sm">Notes</Label>
         <textarea
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Optional notes about this BOM..."
-          className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          className="w-full rounded-lg border border-border-custom p-2.5 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </Card>
 
@@ -434,7 +434,7 @@ function ManualBomForm({ templateId }: { templateId?: string | null }) {
       <Button
         type="submit"
         disabled={createBom.isPending || !jobName.trim() || lineItems.length === 0}
-        className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
+        className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-sm rounded-xl"
       >
         {createBom.isPending ? "Creating..." : "Create BOM"}
       </Button>
