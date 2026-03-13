@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, Mic, PenLine, ClipboardList, Trash2, Plus, Search, X, Package } from "lucide-react"
+import { Camera, PenLine, ClipboardList, Trash2, Plus, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -10,10 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { AIInput, type AIInputHandle } from "@/components/ai/ai-input"
 import { BomConfirmationList } from "@/components/bom/bom-confirmation-card"
 import { JobPicker } from "@/components/bom/job-picker"
-import { ProductPicker } from "@/components/bom/product-picker"
 import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
-import { cn, formatQuantity } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
 import type {
   CatalogMatch,
@@ -138,55 +137,6 @@ export function BomAIFlow() {
     setConfirmedItems((prev) => [...prev, ...newConfirmed])
     setPendingMatches([])
     setQtyOverrides({})
-  }
-
-  function handleAddProduct(product: {
-    id: string
-    name: string
-    sku: string | null
-    unitOfMeasure: string
-    currentQty: number
-    dimLength?: number | null
-    dimLengthUnit?: string | null
-    dimWidth?: number | null
-    dimWidthUnit?: string | null
-  }) {
-    // Check if already on the BOM — if so, increment qty
-    const existingIdx = confirmedItems.findIndex((c) => c.productId === product.id)
-    if (existingIdx >= 0) {
-      setConfirmedItems((prev) =>
-        prev.map((c, i) => i === existingIdx ? { ...c, qtyNeeded: c.qtyNeeded + 1 } : c)
-      )
-      return
-    }
-    setConfirmedItems((prev) => [
-      ...prev,
-      {
-        productId: product.id,
-        productName: product.name,
-        sku: product.sku,
-        unitOfMeasure: product.unitOfMeasure,
-        tier: "TIER_1" as const,
-        qtyNeeded: 1,
-        isNonCatalog: false,
-        nonCatalogName: null,
-        nonCatalogCategory: null,
-        nonCatalogUom: null,
-        nonCatalogEstCost: null,
-        currentQty: product.currentQty,
-        reorderPoint: 0,
-        dimLength: product.dimLength ?? null,
-        dimLengthUnit: product.dimLengthUnit ?? null,
-        dimWidth: product.dimWidth ?? null,
-        dimWidthUnit: product.dimWidthUnit ?? null,
-        catalogMatch: {
-          parsedItem: { rawText: product.name, name: product.name, quantity: 1, unitOfMeasure: product.unitOfMeasure, confidence: 1 },
-          matchedProduct: { id: product.id, name: product.name, sku: product.sku, unitOfMeasure: product.unitOfMeasure, currentQty: product.currentQty, tier: "TIER_1", categoryName: "", lastCost: 0, avgCost: 0, reorderPoint: 0, dimLength: product.dimLength ?? null, dimLengthUnit: product.dimLengthUnit ?? null, dimWidth: product.dimWidth ?? null, dimWidthUnit: product.dimWidthUnit ?? null },
-          matchConfidence: 1,
-          isNonCatalog: false,
-        },
-      },
-    ])
   }
 
   function handleAddNonCatalog() {
@@ -492,30 +442,11 @@ export function BomAIFlow() {
             </button>
           </div>
 
-          {/* Catalog search */}
-          <ProductPicker
-            onSelect={(product) => { handleAddProduct(product); setAddRowOpen(false) }}
-            placeholder="Search catalog..."
-            excludeIds={confirmedItems.filter((i) => i.productId).map((i) => i.productId!)}
-          />
-
-          {/* Voice / text input */}
-          <div className="flex items-center gap-2 px-1">
-            <div className="flex-1 h-px bg-border-custom/60" />
-            <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or voice / text</span>
-            <div className="flex-1 h-px bg-border-custom/60" />
-          </div>
           <AIInput
             onParseComplete={(result) => { handleParseComplete(result); setAddRowOpen(false) }}
-            placeholder={`"5 boxes hinges, 2 tubes caulk..."`}
+            placeholder="Search catalog"
+            searchIcon
           />
-
-          {/* Non-catalog item */}
-          <div className="flex items-center gap-2 px-1">
-            <div className="flex-1 h-px bg-border-custom/60" />
-            <span className="text-[10px] font-bold text-text-muted/50 uppercase tracking-wider">or</span>
-            <div className="flex-1 h-px bg-border-custom/60" />
-          </div>
 
           {!nonCatalogOpen ? (
             <button

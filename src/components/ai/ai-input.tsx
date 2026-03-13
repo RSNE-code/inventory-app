@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
-import { Mic, Send, Loader2 } from "lucide-react"
+import { Mic, Send, Loader2, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
@@ -17,6 +17,7 @@ interface AIInputProps {
   className?: string
   disabled?: boolean
   context?: "general" | "receiving"
+  searchIcon?: boolean
 }
 
 export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput({
@@ -25,6 +26,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   className,
   disabled = false,
   context = "general",
+  searchIcon = false,
 }, ref) {
   const [text, setText] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
@@ -227,6 +229,9 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
             </div>
           ) : (
             <div className="relative">
+              {searchIcon && (
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted/40 pointer-events-none" />
+              )}
               <input
                 type="text"
                 value={text}
@@ -241,7 +246,10 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                 onBlur={() => setIsFocused(false)}
                 placeholder={placeholder}
                 disabled={disabled}
-                className="w-full h-11 pl-3 pr-10 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors"
+                className={cn(
+                  "w-full h-11 pr-10 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors",
+                  searchIcon ? "pl-9" : "pl-3"
+                )}
               />
               <button
                 type="button"
