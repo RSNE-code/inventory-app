@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useRef, useImperativeHandle, forwardRef } from "react"
-import { Mic, MicOff, Camera, Send, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
+import { Mic, Camera, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
@@ -38,6 +37,9 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   useImperativeHandle(ref, () => ({
     triggerCamera: () => fileInputRef.current?.click(),
   }))
+
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => { setIsMounted(true) }, [])
 
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } =
     useVoiceInput((finalTranscript) => {
@@ -121,43 +123,47 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleTextSubmit()
-    }
-  }
-
   return (
-    <div className={cn(
-      "bg-white rounded-2xl border border-border-custom shadow-brand transition-all duration-300",
-      isFocused && "ai-input-glow border-brand-blue/30",
-      isListening && "border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.15),0_2px_12px_rgba(239,68,68,0.08)]",
-      className
-    )}>
-      {/* Text input area */}
-      <div className="relative">
-        <textarea
-          value={isListening ? transcript : text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          placeholder={placeholder}
-          disabled={disabled || isProcessing || isListening}
-          rows={2}
-          className={cn(
-            "w-full resize-none rounded-t-2xl px-4 py-3.5 text-base font-medium",
-            "border-0 focus:ring-0 focus:outline-none",
-            "placeholder:text-text-muted/60 placeholder:font-normal disabled:bg-surface-secondary/50",
-            isListening && "text-brand-blue"
-          )}
-        />
-        {isProcessing && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 rounded-t-2xl backdrop-blur-sm">
-            <div className="flex items-center gap-2.5 text-brand-blue">
+    <div className={cn("space-y-2", className)}>
+      {/* Mic + Input row — matches PanelVoiceBar pattern */}
+      <div className="flex items-center gap-2.5">
+        {/* Mic button — orange CTA, matching panel receive style */}
+        {isMounted && isSupported && (
+          <button
+            type="button"
+            onClick={isListening ? stopListening : startListening}
+            disabled={disabled || isProcessing}
+            className={cn(
+              "flex items-center justify-center h-12 w-12 rounded-xl shrink-0 transition-all",
+              isListening
+                ? "bg-brand-orange text-white shadow-[0_0_20px_rgba(232,121,43,0.45)] animate-mic-listening"
+                : isProcessing
+                  ? "bg-surface-secondary text-text-muted"
+                  : "bg-brand-orange text-white shadow-[0_2px_10px_rgba(232,121,43,0.35)] hover:shadow-[0_4px_16px_rgba(232,121,43,0.45)] active:scale-95"
+            )}
+          >
+            {isProcessing ? (
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm font-semibold">
+            ) : (
+              <Mic className="h-5 w-5" />
+            )}
+          </button>
+        )}
+
+        {/* Input area — sound bars when listening, processing message, or text input */}
+        <div className="flex-1 relative">
+          {isListening ? (
+            <div className="w-full h-11 rounded-xl border-2 border-brand-orange/30 bg-brand-orange/5 flex items-center justify-center gap-[3px] px-4">
+              <span className="text-sm font-semibold text-brand-orange/70 mr-2">Listening</span>
+              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-1" />
+              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-2" />
+              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-3" />
+              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-4" />
+              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-5" />
+            </div>
+          ) : isProcessing ? (
+            <div className="w-full h-11 rounded-xl border-2 border-border-custom bg-surface-secondary/50 flex items-center justify-center">
+              <span className="text-sm font-medium text-text-muted">
                 {processingType === "image"
                   ? imageCount > 1
                     ? `Reading ${imageCount} pages...`
@@ -165,16 +171,52 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                   : "Processing..."}
               </span>
             </div>
-            {processingType === "image" && (
-              <p className="text-[12px] text-text-muted mt-1">This may take a few seconds</p>
-            )}
-          </div>
-        )}
+          ) : (
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  handleTextSubmit()
+                }
+              }}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              placeholder={placeholder}
+              disabled={disabled}
+              className="w-full h-11 px-3 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors"
+            />
+          )}
+        </div>
+
+        {/* Camera button */}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isProcessing}
+          className={cn(
+            "flex items-center justify-center h-12 w-12 rounded-xl shrink-0 transition-all",
+            "bg-surface-secondary text-text-muted hover:text-brand-blue hover:bg-brand-blue/8 active:scale-95",
+            "disabled:opacity-40"
+          )}
+        >
+          <Camera className="h-5 w-5" />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={handleImageCapture}
+        />
       </div>
 
       {/* Error display */}
       {lastError && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border-t border-red-100">
+        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 rounded-xl">
           <span className="text-xs font-medium text-red-700 flex-1">{lastError}</span>
           <button
             onClick={() => setLastError(null)}
@@ -184,69 +226,6 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
           </button>
         </div>
       )}
-
-      {/* Action buttons */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-t border-border-custom/40">
-        <div className="flex items-center gap-1.5">
-          {/* Voice button */}
-          {isSupported && (
-            <Button
-              type="button"
-              size="icon"
-              variant={isListening ? "default" : "ghost"}
-              className={cn(
-                "h-10 w-10 rounded-full transition-all",
-                isListening
-                  ? "bg-status-red hover:bg-red-600 text-white animate-mic-pulse"
-                  : "text-text-muted hover:text-brand-blue hover:bg-brand-blue/6"
-              )}
-              onClick={isListening ? stopListening : startListening}
-              disabled={disabled || isProcessing}
-            >
-              {isListening ? (
-                <MicOff className="h-5 w-5" />
-              ) : (
-                <Mic className="h-5 w-5" />
-              )}
-            </Button>
-          )}
-
-          {/* Camera button */}
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="h-10 w-10 rounded-full text-text-muted hover:text-brand-blue hover:bg-brand-blue/6 transition-all"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || isProcessing}
-          >
-            <Camera className="h-5 w-5" />
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleImageCapture}
-          />
-        </div>
-
-        {/* Send button */}
-        <Button
-          type="button"
-          size="icon"
-          className={cn(
-            "h-10 w-10 rounded-full bg-brand-orange hover:bg-brand-orange-hover transition-all duration-200",
-            "shadow-[0_2px_8px_rgba(232,121,43,0.3)] hover:shadow-[0_4px_12px_rgba(232,121,43,0.4)]",
-            "disabled:shadow-none disabled:opacity-40"
-          )}
-          onClick={() => handleTextSubmit()}
-          disabled={disabled || isProcessing || (!text.trim() && !isListening)}
-        >
-          <Send className="h-5 w-5" />
-        </Button>
-      </div>
     </div>
   )
 })
