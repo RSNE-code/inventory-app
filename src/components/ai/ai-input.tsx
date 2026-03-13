@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect } from "react"
-import { Mic, Camera, Loader2 } from "lucide-react"
+import { Mic, Send, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
@@ -125,9 +125,9 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
 
   return (
     <div className={cn("space-y-2", className)}>
-      {/* Mic + Input row — matches PanelVoiceBar pattern */}
+      {/* Mic + Input row */}
       <div className="flex items-center gap-2.5">
-        {/* Mic button — orange CTA, matching panel receive style */}
+        {/* Mic button — orange CTA */}
         {isMounted && isSupported && (
           <button
             type="button"
@@ -150,7 +150,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
           </button>
         )}
 
-        {/* Input area — sound bars when listening, processing message, or text input */}
+        {/* Input area — sound bars when listening, processing message, or text input with send button */}
         <div className="flex-1 relative">
           {isListening ? (
             <div className="w-full h-11 rounded-xl border-2 border-brand-orange/30 bg-brand-orange/5 flex items-center justify-center gap-[3px] px-4">
@@ -172,47 +172,50 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
               </span>
             </div>
           ) : (
-            <input
-              type="text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault()
-                  handleTextSubmit()
-                }
-              }}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder={placeholder}
-              disabled={disabled}
-              className="w-full h-11 px-3 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleTextSubmit()
+                  }
+                }}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                placeholder={placeholder}
+                disabled={disabled}
+                className="w-full h-11 pl-3 pr-10 rounded-xl border-2 border-border-custom bg-white text-sm font-medium text-navy placeholder:text-text-muted/40 focus:outline-none focus:border-brand-blue/40 transition-colors"
+              />
+              <button
+                type="button"
+                onClick={() => handleTextSubmit()}
+                disabled={disabled || !text.trim()}
+                className={cn(
+                  "absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-lg transition-all",
+                  text.trim()
+                    ? "bg-brand-orange text-white hover:bg-brand-orange-hover active:scale-95"
+                    : "text-text-muted/30"
+                )}
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
-
-        {/* Camera button */}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || isProcessing}
-          className={cn(
-            "flex items-center justify-center h-12 w-12 rounded-xl shrink-0 transition-all",
-            "bg-surface-secondary text-text-muted hover:text-brand-blue hover:bg-brand-blue/8 active:scale-95",
-            "disabled:opacity-40"
-          )}
-        >
-          <Camera className="h-5 w-5" />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleImageCapture}
-        />
       </div>
+
+      {/* Hidden file input for camera (triggered via ref) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleImageCapture}
+      />
 
       {/* Error display */}
       {lastError && (
