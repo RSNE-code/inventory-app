@@ -154,6 +154,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
           nonCatalogName: m.parsedItem.name,
           nonCatalogCategory: m.parsedItem.category ?? null,
           nonCatalogUom: m.parsedItem.unitOfMeasure,
+          nonCatalogSpecs: m.panelSpecs ?? undefined,
         })),
       ]
 

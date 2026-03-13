@@ -168,6 +168,7 @@ export function BomAIFlow() {
           nonCatalogCategory: item.nonCatalogCategory,
           nonCatalogUom: item.nonCatalogUom,
           nonCatalogEstCost: item.nonCatalogEstCost,
+          nonCatalogSpecs: item.catalogMatch.panelSpecs ?? undefined,
         })),
       })
       toast.success("BOM created")

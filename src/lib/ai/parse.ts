@@ -1,6 +1,7 @@
 import { generateText } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
 import { prisma } from "@/lib/db"
+import { isPanelProduct, isPanelLineItem } from "@/lib/panels"
 import type { ParsedLineItem, CatalogMatch } from "./types"
 
 const MODEL = anthropic("claude-sonnet-4-6")
@@ -288,6 +289,65 @@ Rules:
   }
 }
 
+// ─── Panel voice input (lightweight panel-specific parser) ───
+
+export interface PanelVoiceResult {
+  panels: Array<{ height: number; quantity: number }>
+}
+
+export async function parsePanelVoiceInput(
+  text: string,
+  context: { brand: string; thickness: number; bundleSize: number }
+): Promise<PanelVoiceResult> {
+  const { text: response } = await generateText({
+    model: MODEL,
+    system: `You extract panel sizes and quantities from warehouse speech. Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`,
+    prompt: `A warehouse worker is receiving ${context.brand} ${context.thickness}" insulated metal panels. They said:
+"${text}"
+
+Extract each panel size (height in feet) and quantity (number of individual panels).
+
+Context:
+- These panels come in bundles of ${context.bundleSize} panels each
+- If the worker says "bundles", multiply by ${context.bundleSize} to get panel count
+- Heights are in feet (whole numbers, typically 8-40)
+- Quantities are individual panel counts (whole numbers)
+
+Examples:
+Input: "11 ten-foot panels, 22 eight-foot"
+Output: {"panels": [{"height": 8, "quantity": 22}, {"height": 10, "quantity": 11}]}
+
+Input: "got one bundle of ten-foot and two bundles of eight-foot"
+Output: {"panels": [{"height": 8, "quantity": ${context.bundleSize * 2}}, {"height": 10, "quantity": ${context.bundleSize}}]}
+
+Input: "10 footers 11, 8 footers 22, 12 footers 8"
+Output: {"panels": [{"height": 8, "quantity": 22}, {"height": 10, "quantity": 11}, {"height": 12, "quantity": 8}]}
+
+Input: "twenty-two 8 foot, eleven 10 foot"
+Output: {"panels": [{"height": 8, "quantity": 22}, {"height": 10, "quantity": 11}]}
+
+Input: "there's 11 of the ten foot ones and like 22 of the eight foot"
+Output: {"panels": [{"height": 8, "quantity": 22}, {"height": 10, "quantity": 11}]}
+
+Input: "3 bundles 10 foot, 2 bundles 8 foot, 1 bundle 12 foot"
+Output: {"panels": [{"height": 8, "quantity": ${context.bundleSize * 2}}, {"height": 10, "quantity": ${context.bundleSize * 3}}, {"height": 12, "quantity": ${context.bundleSize}}]}
+
+Now extract from the worker's speech above. Sort by height ascending.
+Return JSON: {"panels": [{"height": <number>, "quantity": <number>}]}`,
+  })
+
+  const parsed = extractJSON(response) as { panels?: Array<{ height: number; quantity: number }> }
+  if (!Array.isArray(parsed.panels)) throw new Error("AI response missing panels array")
+
+  // Validate and clean
+  const panels = parsed.panels
+    .filter((p) => p.height >= 8 && p.height <= 40 && p.quantity > 0)
+    .map((p) => ({ height: Math.round(p.height), quantity: Math.round(p.quantity) }))
+    .sort((a, b) => a.height - b.height)
+
+  return { panels }
+}
+
 // ─── Image input (packing slips, invoices, BOMs) ───
 
 export interface ImageParseResult {
@@ -427,6 +487,85 @@ interface AIMatchedItem {
   alternativeProductIds?: string[]
 }
 
+/**
+ * Detect if an item is a panel based on AI name/text or matched product name.
+ * Panels from AI input (voice/text/photo) should NEVER match to branded catalog products.
+ * Instead they become generic non-catalog panel items with specs — brand is chosen at checkout.
+ */
+function isItemPanel(item: AIMatchedItem, matchedProduct?: ProductData): boolean {
+  // Check if the matched product is a branded panel
+  if (matchedProduct && isPanelProduct(matchedProduct.name)) return true
+  // Check if the parsed item text describes a panel
+  const text = `${item.rawText ?? ""} ${item.name ?? ""}`
+  return isPanelLineItem({ productName: text, description: null })
+}
+
+/**
+ * Extract panel specs (thickness, cut length, width) from the AI-parsed item text.
+ * Returns null if we can't determine at least a thickness.
+ */
+function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
+  thickness: number
+  cutLengthFt: number
+  cutLengthDisplay: string
+  widthIn: number
+  profile: string
+  color: string
+} | null {
+  const text = `${item.rawText ?? ""} ${item.name ?? ""}`
+
+  // Extract thickness — look for patterns like 4", 4in, 4 inch
+  let thickness: number | null = null
+  const thicknessMatch = text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:thick|insul|imp|panel|metal|wall|ceil)/i)
+    || text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:IMP|imp)/i)
+    || text.match(/(\d+)\s*(?:inch|in)\s*(?:thick|insul|imp|panel)/i)
+  if (thicknessMatch) {
+    const val = parseFloat(thicknessMatch[1])
+    if (val >= 2 && val <= 8) thickness = val
+  }
+  // Fall back to matched product dimensions
+  if (!thickness && matchedProduct?.name) {
+    const prodMatch = matchedProduct.name.match(/-(\d+)$/)
+    if (prodMatch) thickness = parseFloat(prodMatch[1])
+  }
+  if (!thickness) thickness = 4 // default
+
+  // Extract cut length — look for patterns like 7'6", 10', 9ft, etc.
+  let cutLengthFt = 0
+  let cutLengthDisplay = ""
+  const lengthMatch = text.match(/(\d+)\s*[''′]\s*(\d+)?(?:\s*["″])?/)
+    || text.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
+    || text.match(/(\d+(?:\.\d+)?)\s*[''′]/)
+  if (lengthMatch) {
+    const feet = parseInt(lengthMatch[1])
+    const inches = lengthMatch[2] ? parseInt(lengthMatch[2]) : 0
+    cutLengthFt = feet + inches / 12
+    cutLengthDisplay = inches > 0 ? `${feet}'${inches}"` : `${feet}'`
+  }
+  // Fall back to matched product height
+  if (!cutLengthFt && matchedProduct?.dimLength) {
+    cutLengthFt = matchedProduct.dimLength
+    cutLengthDisplay = `${matchedProduct.dimLength}'`
+  }
+  if (!cutLengthFt) {
+    cutLengthFt = 0
+    cutLengthDisplay = "TBD"
+  }
+
+  // Width — default 44"
+  let widthIn = 44
+  if (matchedProduct?.dimWidth) widthIn = matchedProduct.dimWidth
+
+  return {
+    thickness,
+    cutLengthFt,
+    cutLengthDisplay,
+    widthIn,
+    profile: "Mesa",
+    color: "White",
+  }
+}
+
 function toCatalogMatch(
   item: AIMatchedItem,
   productMap: Map<string, ProductData>
@@ -448,6 +587,31 @@ function toCatalogMatch(
   const matchedProduct = item.matchedProductId
     ? productMap.get(item.matchedProductId)
     : undefined
+
+  // Intercept panel items — never match to branded catalog panels.
+  // Convert to generic non-catalog panel with specs for checkout-time brand selection.
+  if (isItemPanel(item, matchedProduct)) {
+    const specs = extractPanelSpecs(item, matchedProduct)
+    const panelName = specs
+      ? `${specs.thickness}" IMP${specs.cutLengthDisplay !== "TBD" ? ` — ${specs.cutLengthDisplay}` : ""}`
+      : parsedItem.name
+
+    return {
+      parsedItem: {
+        ...parsedItem,
+        name: panelName,
+        unitOfMeasure: "panel",
+        category: "Insulated Metal Panel",
+      },
+      matchedProduct: null,
+      matchConfidence: 0,
+      isNonCatalog: true,
+      panelSpecs: specs ? {
+        type: "panel" as const,
+        ...specs,
+      } : undefined,
+    }
+  }
 
   const alternatives = (item.alternativeProductIds || [])
     .map((id) => productMap.get(id))

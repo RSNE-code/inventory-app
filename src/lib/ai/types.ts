@@ -46,6 +46,16 @@ export interface CatalogMatch {
     name: string
     matchConfidence: number
   }[]
+  /** Panel specs extracted from AI parse — brand-agnostic, decided at checkout */
+  panelSpecs?: {
+    type: "panel"
+    thickness: number
+    cutLengthFt: number
+    cutLengthDisplay: string
+    widthIn: number
+    profile: string
+    color: string
+  }
 }
 
 export interface ParseResult {
