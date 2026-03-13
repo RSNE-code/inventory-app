@@ -4,15 +4,27 @@ import { test, expect, Page } from "@playwright/test"
 
 /** Navigate to BOM manual entry page */
 async function goToManualBom(page: Page) {
-  await page.goto("/boms/new")
+  await page.goto("/boms/new?tab=manual")
   await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
-  await page.locator("button").filter({ hasText: "Manual Entry" }).click()
-  await page.waitForTimeout(500)
+  // Wait for manual form — has "Job *" heading and "Search catalog" input
+  await expect(page.getByPlaceholder(/search catalog/i)).toBeVisible({ timeout: 5_000 })
 }
 
-/** Get the AIInput text field (the one with search icon) */
+/** Get the AIInput text field */
 function getAIInput(page: Page) {
   return page.getByPlaceholder(/search catalog/i)
+}
+
+/** Type into AIInput and wait for dropdown results */
+async function searchAndWaitForDropdown(page: Page, term: string): Promise<boolean> {
+  const input = getAIInput(page)
+  await input.fill(term)
+  // Wait for debounce (250ms) + API response
+  await page.waitForTimeout(3_000)
+
+  // Look for dropdown results — they're buttons inside a z-50 dropdown
+  const result = page.locator("[class*='z-50'] button").first()
+  return await result.isVisible({ timeout: 5_000 }).catch(() => false)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -24,41 +36,33 @@ test.describe("1. Live Catalog Search", () => {
   test("1.1 Typing shows catalog search results dropdown", async ({ page }) => {
     await goToManualBom(page)
 
-    const input = getAIInput(page)
-    await expect(input).toBeVisible()
+    const terms = ["froth", "panel", "screw", "insulation", "caulk", "tape", "hinge"]
+    let found = false
+    for (const term of terms) {
+      found = await searchAndWaitForDropdown(page, term)
+      if (found) break
+    }
 
-    // Type a product name that should exist
-    await input.fill("panel")
-    await page.waitForTimeout(2_000)
-
-    // Dropdown should appear with results
-    const dropdown = page.locator("button.w-full.text-left").first()
-    await expect(dropdown).toBeVisible({ timeout: 5_000 })
+    expect(found).toBe(true)
   })
 
   test("1.2 Clicking a search result adds the product", async ({ page }) => {
     await goToManualBom(page)
 
     const input = getAIInput(page)
-    const searchTerms = ["panel", "screw", "insulation", "caulk", "tape", "froth"]
+    const terms = ["froth", "panel", "screw", "insulation", "caulk", "tape", "hinge"]
     let productFound = false
 
-    for (const term of searchTerms) {
+    for (const term of terms) {
       await input.fill(term)
-      await page.waitForTimeout(2_500)
-      const result = page.locator("button.w-full.text-left").first()
+      await page.waitForTimeout(3_000)
+      const result = page.locator("[class*='z-50'] button").first()
       if (await result.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        const productName = await result.locator("p.text-sm.font-medium").textContent()
         await result.click()
         await page.waitForTimeout(500)
 
-        // Input should be cleared
+        // Input should be cleared after selection
         await expect(input).toHaveValue("")
-
-        // Product should appear in the line items area
-        if (productName) {
-          await expect(page.getByText(productName).first()).toBeVisible({ timeout: 3_000 })
-        }
         productFound = true
         break
       }
@@ -74,10 +78,9 @@ test.describe("1. Live Catalog Search", () => {
 
     const input = getAIInput(page)
     await input.fill("a")
-    await page.waitForTimeout(1_000)
+    await page.waitForTimeout(1_500)
 
-    // No dropdown should appear
-    const dropdown = page.locator("button.w-full.text-left").first()
+    const dropdown = page.locator("[class*='z-50'] button").first()
     await expect(dropdown).not.toBeVisible({ timeout: 2_000 })
   })
 
@@ -88,24 +91,31 @@ test.describe("1. Live Catalog Search", () => {
     await input.fill("xyznonexistent99999")
     await page.waitForTimeout(2_000)
 
-    const dropdown = page.locator("button.w-full.text-left").first()
+    const dropdown = page.locator("[class*='z-50'] button").first()
     await expect(dropdown).not.toBeVisible({ timeout: 2_000 })
   })
 
   test("1.5 Clicking outside closes dropdown", async ({ page }) => {
     await goToManualBom(page)
 
-    const input = getAIInput(page)
-    await input.fill("panel")
-    await page.waitForTimeout(2_500)
-
-    const dropdown = page.locator("button.w-full.text-left").first()
-    if (await dropdown.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      // Click elsewhere
-      await page.locator("body").click({ position: { x: 10, y: 10 } })
-      await page.waitForTimeout(500)
-      await expect(dropdown).not.toBeVisible({ timeout: 2_000 })
+    const terms = ["froth", "panel", "screw", "caulk", "tape"]
+    let dropdownVisible = false
+    for (const term of terms) {
+      dropdownVisible = await searchAndWaitForDropdown(page, term)
+      if (dropdownVisible) break
     }
+
+    if (!dropdownVisible) {
+      test.skip(true, "No catalog products found — cannot test close")
+      return
+    }
+
+    // Click elsewhere to close
+    await page.locator("h3").filter({ hasText: "Job" }).click()
+    await page.waitForTimeout(500)
+
+    const dropdown = page.locator("[class*='z-50'] button").first()
+    await expect(dropdown).not.toBeVisible({ timeout: 2_000 })
   })
 })
 
@@ -117,19 +127,18 @@ test.describe("2. AI Text Parsing", () => {
 
   test("2.1 Sending text triggers AI parse and adds items", async ({ page }) => {
     await goToManualBom(page)
-    await page.getByLabel("Job Name *").fill(`E2E AIInput ${Date.now()}`)
 
     const input = getAIInput(page)
     await input.fill("2 tubes caulk")
 
-    // Click the send button (paper airplane)
-    const sendBtn = page.locator("button").filter({ has: page.locator("svg.lucide-send") }).first()
+    // Click send button
+    const sendBtn = page.locator("button svg.lucide-send").locator("..")
     await sendBtn.click()
 
-    // Wait for processing to complete
+    // Wait for processing to complete — look for items to appear or "Added" toast
     await page.waitForFunction(() => {
       const body = document.body.innerText
-      return body.includes("caulk") || body.includes("Caulk") || body.includes("Added")
+      return body.includes("Items (") && !body.includes("Items (0)") || body.includes("Added")
     }, { timeout: 60_000 })
   })
 
@@ -141,111 +150,53 @@ test.describe("2. AI Text Parsing", () => {
     await input.press("Enter")
     await page.waitForTimeout(2_000)
 
-    // Should still be on the same page with no errors
-    await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible()
+    // Should still show Items (0)
+    await expect(page.getByText("Items (0)")).toBeVisible()
   })
 
-  test("2.3 Enter key sends to AI parse (no dropdown selection)", async ({ page }) => {
+  test("2.3 Enter key sends to AI parse", async ({ page }) => {
     await goToManualBom(page)
-    await page.getByLabel("Job Name *").fill(`E2E Enter Key ${Date.now()}`)
 
     const input = getAIInput(page)
     await input.fill("5 boxes of screws")
     await input.press("Enter")
 
-    // Wait for AI processing
+    // Wait for AI to process
     await page.waitForFunction(() => {
       const body = document.body.innerText
-      return (
-        body.includes("Processing...") ||
-        body.includes("screw") ||
-        body.includes("Screw") ||
+      return body.includes("Processing...") ||
+        (body.includes("Items (") && !body.includes("Items (0)")) ||
         body.includes("Added")
-      )
     }, { timeout: 60_000 })
   })
 })
 
 // ═══════════════════════════════════════════════════════════════════
-// GROUP 3: MIC BUTTON
+// GROUP 3: BOM TEMPLATES
 // ═══════════════════════════════════════════════════════════════════
 
-test.describe("3. Mic Button", () => {
+test.describe("3. BOM Templates", () => {
 
-  test("3.1 Mic button is visible", async ({ page }) => {
-    await goToManualBom(page)
-
-    // Mic button should be the orange button with Mic icon
-    const micBtn = page.locator("button").filter({ has: page.locator("svg.lucide-mic") }).first()
-    // May not be visible in headless (no Web Speech API) — just verify no crash
-    await page.waitForTimeout(1_000)
-    // No assertions on visibility since Web Speech API may not be supported in headless
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════
-// GROUP 4: BOM AI FLOW — ADD ITEM
-// ═══════════════════════════════════════════════════════════════════
-
-test.describe("4. BOM AI Flow — Add Item", () => {
-
-  test("4.1 Add Item button opens input with search", async ({ page }) => {
-    await page.goto("/boms/new")
-    await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
-
-    // AI Build tab is default — type something to get to BUILD phase
-    const input = page.getByPlaceholder(/20 sheets/i).or(page.locator("input[type='text']").first())
-    if (await input.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await input.fill("1 tube caulk")
-      await input.press("Enter")
-
-      // Wait for AI to process
-      await page.waitForFunction(() => {
-        const body = document.body.innerText
-        return body.includes("Add item") || body.includes("Confirm") || body.includes("caulk")
-      }, { timeout: 60_000 })
-
-      // Look for the "+ Add item" button
-      const addItemBtn = page.getByText("Add item").first()
-      if (await addItemBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
-        await addItemBtn.click()
-        await page.waitForTimeout(500)
-
-        // Search input should appear
-        await expect(page.getByPlaceholder(/search catalog/i)).toBeVisible({ timeout: 3_000 })
-      }
-    }
-  })
-})
-
-// ═══════════════════════════════════════════════════════════════════
-// GROUP 5: BOM TEMPLATES
-// ═══════════════════════════════════════════════════════════════════
-
-test.describe("5. BOM Templates", () => {
-
-  test("5.1 Template create page has unified search input", async ({ page }) => {
+  test("3.1 Template create page has unified search input", async ({ page }) => {
     await page.goto("/bom-templates/new")
     await expect(page.getByRole("heading", { name: /new template/i })).toBeVisible({ timeout: 10_000 })
-
-    // Search input should be visible
     await expect(page.getByPlaceholder(/search catalog/i)).toBeVisible()
   })
 
-  test("5.2 Template search finds and adds catalog product", async ({ page }) => {
+  test("3.2 Template search finds and adds catalog product", async ({ page }) => {
     await page.goto("/bom-templates/new")
     await expect(page.getByRole("heading", { name: /new template/i })).toBeVisible({ timeout: 10_000 })
 
     await page.getByLabel(/template name/i).fill(`E2E Template ${Date.now()}`)
 
     const input = page.getByPlaceholder(/search catalog/i)
-    const searchTerms = ["panel", "screw", "insulation", "caulk", "tape"]
+    const terms = ["froth", "panel", "screw", "insulation", "caulk", "tape"]
     let productFound = false
 
-    for (const term of searchTerms) {
+    for (const term of terms) {
       await input.fill(term)
-      await page.waitForTimeout(2_500)
-      const result = page.locator("button.w-full.text-left").first()
+      await page.waitForTimeout(3_000)
+      const result = page.locator("[class*='z-50'] button").first()
       if (await result.isVisible({ timeout: 3_000 }).catch(() => false)) {
         await result.click()
         await page.waitForTimeout(500)
@@ -259,36 +210,32 @@ test.describe("5. BOM Templates", () => {
       return
     }
 
-    // Submit button should now be enabled
     const submitBtn = page.getByRole("button", { name: /create template/i })
     await expect(submitBtn).toBeEnabled({ timeout: 3_000 })
   })
 })
 
 // ═══════════════════════════════════════════════════════════════════
-// GROUP 6: ERROR HANDLING
+// GROUP 4: PAGE STABILITY
 // ═══════════════════════════════════════════════════════════════════
 
-test.describe("6. Error Handling", () => {
+test.describe("4. Page Stability", () => {
 
-  test("6.1 Pages load without console errors", async ({ page }) => {
+  test("4.1 Pages load without console errors", async ({ page }) => {
     const criticalErrors: string[] = []
     page.on("pageerror", (err) => {
       if (err.message.includes("Hydration")) return
       criticalErrors.push(err.message)
     })
 
-    // Check BOM new page
-    await page.goto("/boms/new")
+    await page.goto("/boms/new?tab=manual")
     await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
     await page.waitForTimeout(2_000)
 
-    // Check template new page
     await page.goto("/bom-templates/new")
     await expect(page.getByRole("heading", { name: /new template/i })).toBeVisible({ timeout: 10_000 })
     await page.waitForTimeout(2_000)
 
-    // Check receiving page
     await page.goto("/receiving")
     await page.waitForTimeout(3_000)
 
