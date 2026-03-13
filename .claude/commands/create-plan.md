@@ -22,6 +22,26 @@ request: $ARGUMENTS (describe what you want to plan — new command, new workflo
 
 ---
 
+## Skill Invocation Phase (BLOCKING — do this BEFORE research)
+
+Before researching or writing anything, determine which skill gates apply to this plan and invoke them. This is mandatory — do not skip.
+
+1. **Identify gated areas.** Read the request and determine which areas it touches:
+   - UI/frontend changes? → Invoke `frontend-design` skill
+   - API/backend changes? → Invoke `engineering-skills` (backend)
+   - Architecture/new modules? → Invoke `engineering-skills` (architecture or fullstack)
+   - Database/schema changes? → Invoke `engineering-advanced-skills` (database design)
+   - Security-sensitive changes? → Invoke `engineering-advanced-skills` (security auditing)
+   - Product/UX decisions? → Invoke `product-skills` (product manager or UX researcher)
+
+2. **Invoke each relevant skill NOW.** Do not proceed to the Research Phase until you have invoked all applicable skills and received their output.
+
+3. **Document skill outputs.** You will include a "Skill Inputs" section in the plan (see Plan Format below) summarizing what each skill contributed to the design.
+
+If zero skills apply (e.g., pure documentation or file reorganization), note "No skill gates apply" and proceed.
+
+---
+
 ## Research Phase
 
 Before writing the plan, investigate:
@@ -65,6 +85,22 @@ Write the plan using this exact structure:
 ### Why This Matters
 
 <Connect this change to the project's goals or mission. How does this add value?>
+
+---
+
+## Skill Inputs
+
+### Skills Invoked
+
+<List each skill invoked and one-line summary of what it contributed>
+
+| Skill | Key Contribution |
+|-------|-----------------|
+| `skill-name` | What this skill's output informed in the plan |
+
+### How Skills Shaped the Plan
+
+<2-3 sentences on how skill outputs influenced design decisions, patterns chosen, or risks identified>
 
 ---
 

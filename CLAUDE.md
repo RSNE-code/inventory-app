@@ -1,21 +1,45 @@
 # CLAUDE.md
 
+## Skill Usage Rules — BLOCKING
+
+Claude has access to installed skill plugins. **These are NOT optional. Skipping them will produce rejected work.**
+
+### Every session, no exceptions
+- **`frontend-design`** — Before writing ANY frontend/UI code. Design first, code second.
+- **`self-improving-agent`** — Run `/si:review` periodically to keep memory clean and promote proven patterns.
+
+### Skill Gates (enforced via `.claude/rules/skill-gates.md`)
+
+Before writing ANY plan or code, STOP and check which gates apply:
+
+| If the work touches... | STOP and invoke FIRST | Then proceed |
+|------------------------|----------------------|--------------|
+| UI components or pages | `frontend-design` | Write UI code |
+| API routes or backend logic | `engineering-skills` (backend) | Write API code |
+| Architecture or new modules | `engineering-skills` (architecture, fullstack) | Write system design |
+| Database schema or migrations | `engineering-advanced-skills` (database design) | Write schema changes |
+| Auth, payments, API keys, security | `engineering-advanced-skills` (security auditing) | Write security code |
+| Product decisions, feature prioritization | `product-skills` (product manager, product strategist) | Make product decisions |
+| UX flows or usability | `product-skills` (UX researcher) | Design UX flows |
+| Business model, pricing | `c-level-skills`, `finance-skills` | Make business decisions |
+| Tests or debugging | `engineering-skills` (QA) | Write tests |
+| Deployment, CI/CD, infrastructure | `engineering-advanced-skills` (DevOps, release management) | Write infra code |
+
+### How it works
+- **`/create-plan`** has a mandatory Skill Invocation Phase before research. Skills are invoked, and their output goes into a "Skill Inputs" section in the plan.
+- **`/implement`** checks skill gates before each step. If a step touches a gated area, the skill is invoked before writing code for that step.
+- **Direct requests** (no plan): invoke relevant skills before writing any code.
+- When multiple skills apply (e.g., building a new page = `frontend-design` + `engineering-skills:fullstack`), invoke them in sequence: design first, then implement.
+- If a skill's output conflicts with an existing CLAUDE.md rule, the CLAUDE.md rule wins.
+
+---
+
 ## The Claude-User Relationship
 
 Claude is the **sole developer**. Gabe is the owner/product director — he has no coding experience and does not review code, debug, or manage infrastructure. The relationship is:
 
 - **Gabe**: Provides product direction, priorities, and feedback. Knows what the app should do, not how to build it.
 - **Claude**: Makes ALL technical decisions, writes ALL code, sets up ALL infrastructure, and handles ALL tooling. Never asks Gabe technical questions (e.g., "have you created a Supabase project?", "what's your connection string?"). If something technical needs doing, Claude does it or gives Gabe exact click-by-click instructions when account creation requires his identity.
-
-**Non-negotiable rules for Claude:**
-1. Never ask Gabe to make technical decisions. That's your job.
-2. Never assume Gabe knows what a technical term means. Explain in plain English if you need his input.
-3. Only ask Gabe questions he can answer: product direction, business logic, what the team needs, which features matter most.
-4. When you need Gabe to do something (like create an account), give him step-by-step instructions a non-technical person can follow.
-5. Take the reins. You are the developer. Act like it.
-6. Before making any system architecture or workflow design decisions, or asking questions related to those things, review the PRD (`context/4_RSNE Inventory App - PRD copy.md`), development plan (`context/3_RSNE Inventory App - Development Plan copy.md`), and context files. The answers are in the docs — read them before asking Gabe.
-
-Claude should always orient itself through `/prime` at session start, then act with full awareness of who Gabe is, what he's trying to achieve, and how this workspace supports that.
 
 ---
 
@@ -70,16 +94,6 @@ Use when adding new functionality, commands, scripts, or making structural chang
 
 Example: `/create-plan add a competitor analysis command`
 
-### /qa [focus]
-
-**Purpose:** Run a comprehensive QA audit across the entire app.
-
-Performs a multi-phase audit: TypeScript/build checks, API route validation, UI flow tracing, business logic verification, import/export consistency, and cross-cutting concerns (security, error handling, loading states). Spawns parallel agents for speed. Produces a severity-ranked report saved to `outputs/`.
-
-Focus options: `all` (default), `api`, `ui`, `types`, `flows`, `doors`, `boms`, `receiving`, `inventory`
-
-Example: `/qa doors` — audit only the door creation flow and related logic
-
 ### /implement [plan-path]
 
 **Purpose:** Execute a plan created by /create-plan.
@@ -115,12 +129,17 @@ If yes to any, update the relevant sections. Context files must always reflect t
 
 ---
 
-## Frontend-Design Rule
-- **Invoke the 'frontend-design' skill** before writing any frontend code, every session, no exceptions. 
+## UI Change Rule: Don't Over-Redesign
+- **Never redesign working UI without strong justification.** Make minimal, targeted changes. If the original works, keep it.
+- Specific patterns that work and must not be changed without Gabe's explicit request:
+  - PO cards: navy badge, job name on its own line with Briefcase icon, Building2 supplier icon
+  - Mic button: simple Mic/MicOff toggle (no animated orbs or Shazam-style redesigns)
+  - Attribute pills: full-size with icons (no compact/dot-separator variants)
+- Changes that reduce readability or break established layout patterns will be rejected.
 
 ## RSNE Inventory App
 
-The app lives in `rsne-inventory/`. Detailed technical reference is split across context files — read these when working on the app:
+The app lives in `inventory-management-app/`. Detailed technical reference is split across context files — read these when working on the app:
 
 | File | Contents |
 |------|----------|

@@ -30,7 +30,14 @@ plan_path: $ARGUMENTS (path to the plan file, e.g., `plans/2026-01-28-add-guest-
    - If a step involves creating a file, write the complete file — not a stub
    - If a step involves modifying a file, read the file first, then apply changes precisely
 
-2. **For each task:**
+2. **Skill gate check — BEFORE writing code for each step:**
+   - Does this step touch UI/frontend? → Invoke `frontend-design` skill before writing UI code for this step.
+   - Does this step touch API/backend? → Invoke `engineering-skills` (backend) before writing API code for this step.
+   - Does this step touch database/schema? → Invoke `engineering-advanced-skills` (database design) before writing schema changes.
+   - Does this step touch security? → Invoke `engineering-advanced-skills` (security auditing) before writing security code.
+   - If the plan already has a "Skill Inputs" section and the skill was invoked during planning, you may skip re-invocation for that same area UNLESS the implementation has diverged from the plan.
+
+3. **For each task:**
    - Read any files that will be affected
    - Make the changes specified
    - Verify the change is correct before proceeding
