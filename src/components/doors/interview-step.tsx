@@ -102,7 +102,6 @@ export function DimensionInput({
           }}
           placeholder={placeholder || 'e.g. 36"'}
           className="flex-1 h-14 text-center text-2xl font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none transition-colors"
-          autoFocus
         />
         {unit && (
           <span className="text-lg text-gray-400 font-medium w-8">{unit}</span>

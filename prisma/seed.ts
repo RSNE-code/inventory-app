@@ -70,96 +70,104 @@ async function main() {
   const catMap = new Map(categories.map((c) => [c.name, c.id]))
   console.log(`Created ${categories.length} categories`)
 
-  // ─── SUPPLIERS (official RSNE supplier list) ───
-  const supplierNames = [
-    "Jamison Door Company (Parts)",
-    "Turner Steel Co. Inc",
-    "Industrial Products",
-    "Kason Central",
-    "Security Lock",
-    "Dent Design Hardware Ltd.",
-    "Loxley Electrical Services, LLC",
-    "Advanced Concrete Cutting, LLC",
-    "Hadco Metal Trading Co., LLC",
-    "Tri-State Fasteners",
-    "Insulation Technology Inc.",
-    "Jamison Door Company (Doors)",
-    "Fastener Systems Inc.",
-    "Adfast USA Inc.",
-    "Senneca Holdings",
-    "Hilti Inc",
-    "Uline",
-    "CSI of Virginia, Inc.",
-    "Lineage Metals",
-    "Anthony, Inc.",
-    "Frank Lowe",
-    "Pierce Aluminum Company Inc.",
-    "All Weather Insulated Panels",
-    "Nucor - Metlspan",
-    "Kamco Supply Corp of Boston",
-    "Beacon Roofing Supply",
-    "Rytec Corporation",
-    "bluelinx",
-    "Granite City Electric Supply",
-    "Tricomp Inc.",
-    "Refrigeration Hardware Supply Corp",
-    "All Metals Industries, Inc.",
-    "Norfab Inc.",
-    "Automak Assembly Inc.",
-    "Poly Cel Incorporated",
-    "National Lumber",
-    "NEFCO",
-    "Axle Logistics, LLC",
-    "ERC Wiping Products",
-    "Chase Industries Inc",
-    "Millennia Metals",
-    "McMaster-Carr",
-    "tbp Converting",
-    "Supply House",
-    "North Bridge Building Products",
-    "Tempco Manufacturing",
-    "Thermoseal - Advanced Equipment Sales",
-    "Northeast Installation Group, LLC",
-    "Energy Door Company",
-    "Component Hardware",
-    "Dupont",
-    "F.W. Webb Company",
-    "Rexel",
-    "4Front Engineering Solutions (Dynaco)",
-    "Patriot Supply",
-    "Barbour Plastics",
-    "H&H Custom Metal Fabricating Inc",
-    "Gernatt Spray Foam LLC",
-    "CCI Surety, Inc.",
-    "American Material Handling Corp",
-    "Tb Philly",
-    "BEA INC",
-    "NFI - Nameplates for Industry",
-    "Independent Mechanical Contractors Inc",
-    "Hormann",
-    "Nautical Heating & Air Conditioning LLC",
-    "SPS CleanTech, LLC",
-    "McElroy Metals",
-    "Home Depot",
+  // ─── SUPPLIERS (official RSNE supplier list with website domains) ───
+  const suppliers: { name: string; website: string | null }[] = [
+    { name: "Jamison Door Company (Parts)", website: "jamisondoor.com" },
+    { name: "Turner Steel Co. Inc", website: "turnersteelcoinc.com" },
+    { name: "Industrial Products", website: null },
+    { name: "Kason Central", website: "kasonind.com" },
+    { name: "Security Lock", website: "seclock.com" },
+    { name: "Dent Design Hardware Ltd.", website: "dent-mfg.com" },
+    { name: "Loxley Electrical Services, LLC", website: "loxleyelectric.com" },
+    { name: "Advanced Concrete Cutting, LLC", website: "cuttingconcrete.com" },
+    { name: "Hadco Metal Trading Co., LLC", website: "hadco-metal.com" },
+    { name: "Tri-State Fasteners", website: "tristatefast.com" },
+    { name: "Insulation Technology Inc.", website: "insultech-eps.com" },
+    { name: "Jamison Door Company (Doors)", website: "jamisondoor.com" },
+    { name: "Fastener Systems Inc.", website: "fastenersystems.com" },
+    { name: "Adfast USA Inc.", website: "adfastcorp.com" },
+    { name: "Senneca Holdings", website: "senneca.com" },
+    { name: "Hilti Inc", website: "hilti.com" },
+    { name: "Uline", website: "uline.com" },
+    { name: "CSI of Virginia, Inc.", website: "csiofvirginia.com" },
+    { name: "Lineage Metals", website: "lineagemetals.com" },
+    { name: "Anthony, Inc.", website: "anthonyintl.com" },
+    { name: "Frank Lowe", website: "franklowe.com" },
+    { name: "Pierce Aluminum Company Inc.", website: "piercealuminum.com" },
+    { name: "All Weather Insulated Panels", website: "awipanels.com" },
+    { name: "Nucor - Metlspan", website: "metlspan.com" },
+    { name: "Kamco Supply Corp of Boston", website: "kamcoboston.com" },
+    { name: "Beacon Roofing Supply", website: "becn.com" },
+    { name: "Rytec Corporation", website: "rytecdoors.com" },
+    { name: "bluelinx", website: "bluelinxco.com" },
+    { name: "Granite City Electric Supply", website: "granitecityelectric.com" },
+    { name: "Tricomp Inc.", website: "tricomp.com" },
+    { name: "Refrigeration Hardware Supply Corp", website: "rhsparts.com" },
+    { name: "All Metals Industries, Inc.", website: "allmetals.us" },
+    { name: "Norfab Inc.", website: "norfabinc.com" },
+    { name: "Automak Assembly Inc.", website: "automakassembly.com" },
+    { name: "Poly Cel Incorporated", website: "poly-cel.com" },
+    { name: "National Lumber", website: "national-lumber.com" },
+    { name: "NEFCO", website: "gonefco.com" },
+    { name: "Axle Logistics, LLC", website: "axlelogistics.com" },
+    { name: "ERC Wiping Products", website: "ercwipe.com" },
+    { name: "Chase Industries Inc", website: "chasedoors.com" },
+    { name: "Millennia Metals", website: "millenniametals.com" },
+    { name: "McMaster-Carr", website: "mcmaster.com" },
+    { name: "tbp Converting", website: "tbpconverting.com" },
+    { name: "Supply House", website: "supplyhouse.com" },
+    { name: "North Bridge Building Products", website: "northbridgebp.com" },
+    { name: "Tempco Manufacturing", website: "tempcomfg.com" },
+    { name: "Thermoseal - Advanced Equipment Sales", website: "thermoseal.com" },
+    { name: "Northeast Installation Group, LLC", website: "northeastinstallationgroup.com" },
+    { name: "Energy Door Company", website: "energydoorco.com" },
+    { name: "Component Hardware", website: "componenthardware.com" },
+    { name: "Dupont", website: "dupont.com" },
+    { name: "F.W. Webb Company", website: "fwwebb.com" },
+    { name: "Rexel", website: "rexelusa.com" },
+    { name: "4Front Engineering Solutions (Dynaco)", website: "dynacodoor.us" },
+    { name: "Patriot Supply", website: "patriot-supply.com" },
+    { name: "Barbour Plastics", website: "barbourplastics.com" },
+    { name: "H&H Custom Metal Fabricating Inc", website: "hhcustommetalfab.com" },
+    { name: "Gernatt Spray Foam LLC", website: "gernattsprayfoam.com" },
+    { name: "CCI Surety, Inc.", website: "ccisurety.com" },
+    { name: "American Material Handling Corp", website: "amhboston.com" },
+    { name: "Tb Philly", website: "tbphilly.com" },
+    { name: "BEA INC", website: "beasensors.com" },
+    { name: "NFI - Nameplates for Industry", website: "nameplatesforindustry.com" },
+    { name: "Independent Mechanical Contractors Inc", website: "independentmechanical.com" },
+    { name: "Hormann", website: "hormann.us" },
+    { name: "Nautical Heating & Air Conditioning LLC", website: "nauticalhvac.com" },
+    { name: "SPS CleanTech, LLC", website: "spscleantech.com" },
+    { name: "McElroy Metals", website: "mcelroymetal.com" },
+    { name: "Home Depot", website: "homedepot.com" },
   ]
 
-  // Check existing suppliers to avoid duplicates
+  // Upsert suppliers (update website for existing, create new ones)
   const existingSuppliers = await prisma.supplier.findMany({
-    select: { name: true },
+    select: { id: true, name: true },
   })
-  const existingNames = new Set(existingSuppliers.map((s) => s.name.toLowerCase()))
+  const existingMap = new Map(existingSuppliers.map((s) => [s.name.toLowerCase(), s.id]))
 
-  const newSuppliers = supplierNames.filter(
-    (name) => !existingNames.has(name.toLowerCase())
-  )
-
-  if (newSuppliers.length > 0) {
-    await prisma.supplier.createMany({
-      data: newSuppliers.map((name) => ({ name, isActive: true })),
-    })
+  let suppliersCreated = 0
+  let suppliersUpdated = 0
+  for (const s of suppliers) {
+    const existingId = existingMap.get(s.name.toLowerCase())
+    if (existingId) {
+      await prisma.supplier.update({
+        where: { id: existingId },
+        data: { website: s.website },
+      })
+      suppliersUpdated++
+    } else {
+      await prisma.supplier.create({
+        data: { name: s.name, website: s.website, isActive: true },
+      })
+      suppliersCreated++
+    }
   }
 
-  console.log(`Suppliers: ${existingSuppliers.length} existing, ${newSuppliers.length} added (${supplierNames.length} total)`)
+  console.log(`Suppliers: ${suppliersUpdated} updated, ${suppliersCreated} created (${suppliers.length} total)`)
 
   // ─── ADMIN USER ───
   const admin = await prisma.user.upsert({

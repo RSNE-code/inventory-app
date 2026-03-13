@@ -54,7 +54,13 @@ export function ProductPicker({ onSelect, placeholder = "Search products...", ex
           )
           setResults(filtered)
           setIsOpen(filtered.length > 0)
+        } else {
+          setResults([])
+          setIsOpen(false)
         }
+      } catch {
+        setResults([])
+        setIsOpen(false)
       } finally {
         setLoading(false)
       }

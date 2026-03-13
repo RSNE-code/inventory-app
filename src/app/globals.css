@@ -167,6 +167,51 @@
   }
 }
 
+/* Voice Orb — radiating sound waves */
+@keyframes voice-wave {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.animate-voice-wave-1 {
+  animation: voice-wave 1.8s ease-out infinite;
+}
+.animate-voice-wave-2 {
+  animation: voice-wave 1.8s ease-out infinite 0.4s;
+}
+.animate-voice-wave-3 {
+  animation: voice-wave 1.8s ease-out infinite 0.8s;
+}
+
+/* Voice Orb — mic bounce while listening */
+@keyframes voice-mic-bounce {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.12); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.06); }
+}
+.animate-voice-mic-bounce {
+  animation: voice-mic-bounce 1.2s ease-in-out infinite;
+}
+
+/* Voice Orb — equalizer bars for analyzing */
+@keyframes eq-bar-1 {
+  0%, 100% { height: 8px; y: 6px; }
+  50% { height: 13px; y: 3.5px; }
+}
+@keyframes eq-bar-2 {
+  0%, 100% { height: 12px; y: 4px; }
+  40% { height: 6px; y: 7px; }
+  80% { height: 14px; y: 3px; }
+}
+@keyframes eq-bar-3 {
+  0%, 100% { height: 7px; y: 6.5px; }
+  60% { height: 12px; y: 4px; }
+}
+.animate-eq-bar-1 { animation: eq-bar-1 0.8s ease-in-out infinite; }
+.animate-eq-bar-2 { animation: eq-bar-2 0.8s ease-in-out infinite 0.1s; }
+.animate-eq-bar-3 { animation: eq-bar-3 0.8s ease-in-out infinite 0.2s; }
+
 @keyframes subtle-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
@@ -195,6 +240,44 @@
 .animate-mic-pulse {
   animation: mic-pulse 1.5s ease-in-out infinite;
 }
+
+/* Mic listening — gentle in-place pulse */
+@keyframes mic-listening {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(232, 121, 43, 0.45); }
+  50% { transform: scale(1.06); box-shadow: 0 0 28px rgba(232, 121, 43, 0.6); }
+}
+.animate-mic-listening {
+  animation: mic-listening 1.4s ease-in-out infinite;
+}
+
+/* Sound bar animations for listening input */
+@keyframes soundbar-1 {
+  0%, 100% { height: 10px; }
+  50% { height: 22px; }
+}
+@keyframes soundbar-2 {
+  0%, 100% { height: 16px; }
+  40% { height: 8px; }
+  80% { height: 24px; }
+}
+@keyframes soundbar-3 {
+  0%, 100% { height: 20px; }
+  50% { height: 10px; }
+}
+@keyframes soundbar-4 {
+  0%, 100% { height: 12px; }
+  60% { height: 22px; }
+}
+@keyframes soundbar-5 {
+  0%, 100% { height: 18px; }
+  30% { height: 8px; }
+  70% { height: 24px; }
+}
+.animate-soundbar-1 { animation: soundbar-1 0.8s ease-in-out infinite; }
+.animate-soundbar-2 { animation: soundbar-2 0.7s ease-in-out infinite 0.1s; }
+.animate-soundbar-3 { animation: soundbar-3 0.9s ease-in-out infinite 0.05s; }
+.animate-soundbar-4 { animation: soundbar-4 0.75s ease-in-out infinite 0.15s; }
+.animate-soundbar-5 { animation: soundbar-5 0.85s ease-in-out infinite 0.08s; }
 
 .animate-subtle-float {
   animation: subtle-float 3s ease-in-out infinite;

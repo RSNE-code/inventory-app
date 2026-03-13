@@ -1,6 +1,7 @@
 "use client"
 
-import { PackageCheck } from "lucide-react"
+import { useEffect, useMemo } from "react"
+import { PackageCheck, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { ConfirmedReceivingItem } from "@/lib/ai/types"
@@ -22,8 +23,59 @@ export function ReceiptSummary({
   onConfirm,
   isSubmitting,
 }: ReceiptSummaryProps) {
-  const catalogItems = items.filter((i) => !i.isNonCatalog)
+  const panelItems = items.filter((i) => i.isPanelBreakout)
+  const nonPanelCatalogItems = items.filter((i) => !i.isPanelBreakout && !i.isNonCatalog)
   const nonCatalogItems = items.filter((i) => i.isNonCatalog)
+
+  // Group panel items by brand+thickness+color+profile
+  const panelGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        brand: string
+        thickness: number
+        color: string
+        width: number
+        profile: string
+        items: ConfirmedReceivingItem[]
+      }
+    >()
+
+    for (const item of panelItems) {
+      const key = `${item.panelBrand}-${item.panelThickness}-${item.panelColor}-${item.panelProfile ?? ""}`
+      if (!groups.has(key)) {
+        groups.set(key, {
+          brand: item.panelBrand ?? "",
+          thickness: item.panelThickness ?? 0,
+          color: item.panelColor ?? "",
+          width: item.panelWidth ?? 0,
+          profile: item.panelProfile ?? "",
+          items: [],
+        })
+      }
+      groups.get(key)!.items.push(item)
+    }
+
+    return Array.from(groups.values())
+  }, [panelItems])
+
+  // Auto-append panel color to notes
+  useEffect(() => {
+    if (panelGroups.length === 0) return
+
+    const colorLines = panelGroups.map(
+      (g) => `Panel: ${g.color}${g.profile ? ` / ${g.profile}` : ""} (${g.brand} ${g.thickness}")`
+    )
+    const colorText = colorLines.join("; ")
+
+    // Only append if not already present
+    if (!notes.includes("Panel:") && !notes.includes("Panel color:")) {
+      const updated = notes.trim()
+        ? `${notes.trim()}\n\n${colorText}`
+        : colorText
+      onNotesChange(updated)
+    }
+  }, [panelGroups.length]) // Only run when groups change, not on every render
 
   return (
     <div className="space-y-4">
@@ -36,9 +88,74 @@ export function ReceiptSummary({
           <span className="text-sm font-medium text-gray-900">{supplier.name}</span>
         </div>
 
-        {/* Items */}
+        {/* Panel breakout groups */}
+        {panelGroups.map((group, gi) => {
+          const totalPanels = group.items.reduce((s, i) => s + i.quantity, 0)
+          const totalSqFt = group.items.reduce((s, i) => {
+            const h = i.panelHeight ?? 0
+            const w = i.panelWidth ?? 0
+            return s + i.quantity * h * (w / 12)
+          }, 0)
+
+          return (
+            <div key={gi} className="mt-3">
+              {/* Group header */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-blue/10">
+                  <Layers className="h-3.5 w-3.5 text-brand-blue" />
+                </div>
+                <span className="text-sm font-bold text-navy">
+                  {group.brand} {group.thickness}&quot; Panels
+                </span>
+                {group.color && (
+                  <span className="text-xs font-bold text-text-muted px-2 py-0.5 rounded-full bg-surface-secondary">
+                    {group.color}
+                  </span>
+                )}
+              </div>
+
+              {/* Size rows */}
+              <div className="space-y-1 pl-8">
+                {group.items
+                  .sort((a, b) => (a.panelHeight ?? 0) - (b.panelHeight ?? 0))
+                  .map((item, i) => {
+                    const sqFt = (item.panelHeight ?? 0) * ((item.panelWidth ?? 0) / 12) * item.quantity
+                    return (
+                      <div
+                        key={`panel-${gi}-${i}`}
+                        className="flex items-center justify-between py-1.5 border-b border-gray-50"
+                      >
+                        <span className="text-sm text-gray-700">
+                          {item.panelHeight}&apos; tall
+                        </span>
+                        <span className="text-sm font-bold text-navy tabular-nums">
+                          {item.quantity} panel{item.quantity !== 1 ? "s" : ""}
+                          <span className="text-text-muted font-medium ml-1.5">
+                            ({Math.round(sqFt).toLocaleString()} ft&sup2;)
+                          </span>
+                        </span>
+                      </div>
+                    )
+                  })}
+              </div>
+
+              {/* Group total */}
+              <div className="flex items-center justify-between pl-8 pt-1.5 mt-1">
+                <span className="text-xs font-bold text-text-muted uppercase tracking-wide">
+                  Subtotal
+                </span>
+                <span className="text-sm font-bold text-navy tabular-nums">
+                  {totalPanels} panels &middot;{" "}
+                  {Math.round(totalSqFt).toLocaleString()} ft&sup2;
+                </span>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Non-panel catalog items */}
         <div className="mt-3 space-y-2">
-          {catalogItems.map((item, i) => (
+          {nonPanelCatalogItems.map((item, i) => (
             <div
               key={`${item.productId}-${i}`}
               className="flex items-center justify-between py-2 border-b border-gray-50"

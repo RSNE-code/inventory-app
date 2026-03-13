@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Header } from "@/components/layout/header"
 import { ReceivingFlow } from "@/components/receiving/receiving-flow"
 import { ReceiptHistory } from "@/components/receiving/receipt-history"
-import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { cn } from "@/lib/utils"
 
 type Tab = "receive" | "history"
@@ -15,7 +14,6 @@ export default function ReceivingPage() {
   return (
     <div>
       <Header title="Receive Material" showMenu />
-      <Breadcrumb items={[{ label: "Receiving" }]} />
 
       {/* Tab bar */}
       <div className="flex border-b border-gray-200 px-4">

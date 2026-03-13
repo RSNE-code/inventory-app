@@ -29,19 +29,17 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
   return (
     <Card className="rounded-xl border-border-custom shadow-brand-md overflow-hidden">
       {/* Header */}
-      <div className="bg-navy px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-            <Package className="h-4 w-4 text-white/80" />
-          </div>
-          <div>
-            <span className="text-sm font-bold text-white tracking-wide">
-              Purchase Orders
-            </span>
-            <p className="text-[12px] text-white/50 font-medium">
-              Select a PO to receive against
-            </p>
-          </div>
+      <div className="bg-navy px-4 py-3 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+          <Package className="h-4 w-4 text-white/80" />
+        </div>
+        <div>
+          <span className="text-base font-bold text-white tracking-wide">
+            Purchase Orders
+          </span>
+          <p className="text-xs text-white/50 font-medium">
+            Select a PO to receive against
+          </p>
         </div>
       </div>
 
@@ -54,7 +52,6 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             placeholder="Search by PO #, supplier, or job..."
-            autoFocus
             className="w-full rounded-xl border border-border-custom pl-9 pr-8 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue/40 placeholder:text-text-muted/50 transition-all"
           />
           {searchText && (
@@ -178,7 +175,7 @@ function ExpandablePORow({
             </span>
           </div>
 
-          {/* Supplier name — prominent */}
+          {/* Supplier name */}
           <div className="flex items-center gap-1.5 mt-0.5">
             <Building2 className="h-3 w-3 text-text-muted/50 shrink-0" />
             <p className="text-[13px] text-text-secondary font-semibold truncate">
@@ -208,24 +205,24 @@ function ExpandablePORow({
         </div>
 
         {/* Right side: expand indicator + meta */}
-        <div className="shrink-0 flex flex-col items-center gap-1">
+        <div className="shrink-0 flex flex-col items-center gap-1.5">
           <div
             className={cn(
-              "h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300",
+              "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300",
               expanded
                 ? "bg-brand-blue/10 text-brand-blue"
-                : "bg-surface-secondary text-text-muted/50"
+                : "bg-surface-secondary text-text-muted"
             )}
           >
             <ChevronRight
               className={cn(
-                "h-3.5 w-3.5 transition-transform duration-300",
+                "h-4 w-4 transition-transform duration-300",
                 expanded && "rotate-90"
               )}
             />
           </div>
           {!expanded && (
-            <span className="text-[12px] font-bold text-text-muted/40 tabular-nums">
+            <span className="text-[11px] font-bold text-text-muted/40 tabular-nums">
               {openItems}/{totalItems}
             </span>
           )}

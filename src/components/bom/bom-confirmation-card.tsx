@@ -6,30 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { CatalogMatch, ConfirmedBomItem } from "@/lib/ai/types"
-
-type StockLevel = "sufficient" | "low" | "out" | "unknown"
-
-function getStockLevel(match: CatalogMatch, qtyNeeded: number): StockLevel {
-  if (match.isNonCatalog || !match.matchedProduct) return "unknown"
-  const qty = match.matchedProduct.currentQty
-  if (qty <= 0) return "out"
-  if (qty < qtyNeeded) return "low"
-  return "sufficient"
-}
-
-const stockDotColor: Record<StockLevel, string> = {
-  sufficient: "bg-green-500",
-  low: "bg-yellow-500",
-  out: "bg-red-500",
-  unknown: "bg-gray-300",
-}
-
-const stockLabel: Record<StockLevel, string> = {
-  sufficient: "In stock",
-  low: "Low stock",
-  out: "Out of stock",
-  unknown: "",
-}
+import { getMatchStockLevel, stockDotColor, stockLabel, type StockLevel } from "@/lib/bom-utils"
 
 interface BomConfirmationCardProps {
   match: CatalogMatch
@@ -52,7 +29,7 @@ export function BomConfirmationCard({
     onQtyChange?.(match.parsedItem.rawText, val)
   }
 
-  const stockLevel = getStockLevel(match, quantity)
+  const stockLevel = getMatchStockLevel(match, quantity)
   const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog
 
   function buildConfirmedItem(overrideProductId?: string): ConfirmedBomItem {
@@ -181,7 +158,7 @@ export function BomConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-green-600 hover:bg-green-50"
+            className="h-11 w-11 text-green-600 hover:bg-green-50"
             onClick={() => handleAccept()}
           >
             <Check className="h-5 w-5" />
@@ -189,7 +166,7 @@ export function BomConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-red-500 hover:bg-red-50"
+            className="h-11 w-11 text-red-500 hover:bg-red-50"
             onClick={() => onReject(match)}
           >
             <X className="h-5 w-5" />

@@ -361,31 +361,30 @@ function POSearchView({
                   )}
                   style={{ animationDelay: `${i * 30}ms` }}
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-navy tabular-nums">
-                        PO #{po.poNumber}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white">
+                      <span className="text-[11px] font-extrabold tabular-nums">
+                        {po.poNumber}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Building2 className="h-3 w-3 text-text-muted/50 shrink-0" />
-                      <p className="text-[13px] text-text-secondary font-semibold truncate">
-                        {po.supplierName}
-                      </p>
-                    </div>
-                    {po.jobName && (
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <Briefcase className="h-3 w-3 text-brand-blue shrink-0" />
-                        <span className="text-[12px] font-semibold text-brand-blue truncate">
-                          {po.jobName}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-bold text-navy tabular-nums">
+                          PO #{po.poNumber}
                         </span>
                       </div>
-                    )}
-                    {po.lineItems.length > 0 && (
-                      <p className="text-[12px] text-text-muted/60 mt-0.5 font-medium">
-                        {po.lineItems.length} item{po.lineItems.length !== 1 ? "s" : ""}
+                      <p className="text-[12px] text-text-secondary font-medium truncate">
+                        {po.supplierName}
                       </p>
-                    )}
+                      {po.jobName && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Briefcase className="h-2.5 w-2.5 text-brand-blue shrink-0" />
+                          <span className="text-[11px] font-semibold text-brand-blue truncate">
+                            {po.jobName}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-text-muted/30 group-hover:text-brand-blue group-hover:translate-x-0.5 shrink-0 ml-2 transition-all" />
                 </button>

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
           : {}),
       },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, contactInfo: true },
+      select: { id: true, name: true, website: true, logoUrl: true, contactInfo: true },
     })
 
     return NextResponse.json({ data: suppliers })

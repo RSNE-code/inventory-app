@@ -15,7 +15,7 @@ export async function matchPO(params: MatchParams): Promise<MatchedPO | null> {
   // Load all POs with supplier, line items, and receipt history
   const openPOs = await prisma.purchaseOrder.findMany({
     include: {
-      supplier: { select: { id: true, name: true } },
+      supplier: { select: { id: true, name: true, logoUrl: true } },
       lineItems: {
         include: { product: { select: { name: true } } },
       },
@@ -173,7 +173,7 @@ export async function searchPOs(params: {
   const pos = await prisma.purchaseOrder.findMany({
     where,
     include: {
-      supplier: { select: { id: true, name: true } },
+      supplier: { select: { id: true, name: true, logoUrl: true } },
       lineItems: {
         include: { product: { select: { name: true } } },
       },
@@ -213,6 +213,15 @@ function tokenize(text: string): string[] {
   return text.split(/[\s\-_&]+/).filter((t) => t.length > 1)
 }
 
+/**
+ * Detect non-material PO line items that shouldn't appear on the receive screen.
+ * Matches freight, shipping, taxes, delivery fees, surcharges, etc.
+ */
+function isNonMaterialLineItem(description: string): boolean {
+  const d = description.toLowerCase()
+  return /\b(freight|shipping|ship charge|delivery fee|delivery charge|tax|sales tax|use tax|surcharge|fuel surcharge|handling|handling fee|discount|restocking|credit memo)\b/.test(d)
+}
+
 function toMatchedPO(
   po: {
     id: string
@@ -222,7 +231,7 @@ function toMatchedPO(
     jobName: string | null
     clientName: string | null
     createdAt: Date
-    supplier: { id: string; name: string }
+    supplier: { id: string; name: string; logoUrl: string | null }
     lineItems?: Array<{
       id: string
       description: string
@@ -264,23 +273,25 @@ function toMatchedPO(
     id: po.id,
     poNumber: po.poNumber,
     supplierName: po.supplier.name,
+    supplierLogoUrl: po.supplier.logoUrl,
     supplierId: po.supplier.id,
-    supplierLogoUrl: (po.supplier as Record<string, unknown>).logoUrl as string | null ?? null,
     amount: po.amount ? Number(po.amount) : null,
     jobName: po.jobName,
     clientName: po.clientName,
     createdAt: po.createdAt.toISOString(),
     confidence,
-    lineItems: (po.lineItems ?? []).map((li) => ({
-      id: li.id,
-      description: li.description,
-      sku: li.sku,
-      productId: li.productId,
-      productName: li.product?.name ?? null,
-      qtyOrdered: Number(li.qtyOrdered),
-      qtyReceived: Number(li.qtyReceived),
-      unitCost: Number(li.unitCost),
-    })),
+    lineItems: (po.lineItems ?? [])
+      .filter((li) => !isNonMaterialLineItem(li.description))
+      .map((li) => ({
+        id: li.id,
+        description: li.description,
+        sku: li.sku,
+        productId: li.productId,
+        productName: li.product?.name ?? null,
+        qtyOrdered: Number(li.qtyOrdered),
+        qtyReceived: Number(li.qtyReceived),
+        unitCost: Number(li.unitCost),
+      })),
     receipts: receipts.length > 0 ? receipts : undefined,
   }
 }

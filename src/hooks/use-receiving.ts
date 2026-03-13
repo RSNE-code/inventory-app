@@ -143,9 +143,15 @@ export function useCreateReceipt() {
       purchaseOrderId?: string | null
       notes?: string | null
       items: Array<{
-        productId: string
+        productId?: string
         quantity: number
         unitCost: number
+        autoCreatePanel?: {
+          brand: string
+          height: number
+          width: number
+          thickness: number
+        }
       }>
       poLineItemUpdates?: Array<{
         poLineItemId: string

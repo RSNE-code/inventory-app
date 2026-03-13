@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App\")",
+      "Bash(find \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App\" -type f -name \"*.md\" | head -20)",
+      "Bash(ls \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App/context/\")"
+    ]
+  }
+}

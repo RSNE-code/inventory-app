@@ -268,7 +268,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 onChange={(e) => setFrameLHS(e.target.value)}
                 placeholder='e.g. 4"'
                 className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none"
-                autoFocus
               />
             </div>
             <div>
@@ -591,7 +590,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 onChange={(e) => setCustomHinge(e.target.value)}
                 placeholder="e.g. Kason K1277"
                 className="h-12 text-center"
-                autoFocus
               />
             </div>
             <div>

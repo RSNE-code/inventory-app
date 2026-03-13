@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Legacy nested app directory (no longer used — app now lives at root)
+/rsne-inventory/
+
+# Local git backup (temporary)
+.git-backup-local/
+
+# Test artifacts
+/test-results/

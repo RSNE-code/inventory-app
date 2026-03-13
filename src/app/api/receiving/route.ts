@@ -12,9 +12,18 @@ const createReceiptSchema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.string().uuid(),
+        productId: z.string().uuid().optional().nullable(),
         quantity: z.number().positive(),
         unitCost: z.number().min(0),
+        // Auto-create panel product fields (when productId is null)
+        autoCreatePanel: z
+          .object({
+            brand: z.string(),
+            height: z.number().positive(),
+            width: z.number().positive(),
+            thickness: z.number().positive(),
+          })
+          .optional(),
       })
     )
     .min(0),
@@ -83,7 +92,58 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Resolve product IDs — auto-create panel products where needed
+      const panelCategory = await tx.category.findFirst({
+        where: { name: "Insulated Metal Panel" },
+        select: { id: true },
+      })
+
+      const resolvedItems: Array<{ productId: string; quantity: number; unitCost: number }> = []
+
       for (const item of data.items) {
+        if (item.productId) {
+          resolvedItems.push({
+            productId: item.productId,
+            quantity: item.quantity,
+            unitCost: item.unitCost,
+          })
+        } else if (item.autoCreatePanel && panelCategory) {
+          // Auto-create missing panel product (find-or-create pattern)
+          const { brand, height, width, thickness } = item.autoCreatePanel
+          const productName = `Insulated Metal Panel (${brand})-${height}'-${width}-${thickness}`
+
+          let product = await tx.product.findFirst({
+            where: { name: productName },
+          })
+
+          if (!product) {
+            product = await tx.product.create({
+              data: {
+                name: productName,
+                categoryId: panelCategory.id,
+                unitOfMeasure: "sq ft",
+                shopUnit: "panel",
+                tier: "TIER_1",
+                dimLength: new Prisma.Decimal(height),
+                dimLengthUnit: "ft",
+                dimWidth: new Prisma.Decimal(width),
+                dimWidthUnit: "in",
+                dimThickness: new Prisma.Decimal(thickness),
+                dimThicknessUnit: "in",
+              },
+            })
+          }
+
+          resolvedItems.push({
+            productId: product.id,
+            quantity: item.quantity,
+            unitCost: item.unitCost,
+          })
+        }
+        // Items with no productId and no autoCreatePanel are skipped (shouldn't happen)
+      }
+
+      for (const item of resolvedItems) {
         await adjustStock({
           productId: item.productId,
           quantity: item.quantity,

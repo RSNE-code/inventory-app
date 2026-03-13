@@ -109,6 +109,8 @@ export interface BomWithDetails {
 export interface SupplierBasic {
   id: string
   name: string
+  website: string | null
+  logoUrl: string | null
   contactInfo: string | null
 }
 

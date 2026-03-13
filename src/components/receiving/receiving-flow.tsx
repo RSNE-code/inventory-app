@@ -231,8 +231,11 @@ export function ReceivingFlow() {
   }
 
   async function handleSubmitReceipt() {
-    const catalogItems = confirmedItems.filter((i) => !i.isNonCatalog && i.productId)
-    const nonCatalogItems = confirmedItems.filter((i) => i.isNonCatalog)
+    // Include panel breakout items (even without productId — API will auto-create)
+    const catalogItems = confirmedItems.filter(
+      (i) => (!i.isNonCatalog && i.productId) || i.isPanelBreakout
+    )
+    const nonCatalogItems = confirmedItems.filter((i) => i.isNonCatalog && !i.isPanelBreakout)
 
     let receiptNotes = notes.trim()
     if (nonCatalogItems.length > 0) {
@@ -245,21 +248,50 @@ export function ReceivingFlow() {
     }
 
     try {
-      const poLineItemUpdates = confirmedItems
-        .filter((i) => i.poLineItemId)
-        .map((i) => ({
-          poLineItemId: i.poLineItemId!,
-          qtyReceived: i.quantity,
-        }))
+      // Aggregate PO line item updates
+      // For panel breakout items: multiple catalog items → one PO line item, qty in sq ft
+      // For normal items: qty passes through directly
+      const poLineItemMap = new Map<string, number>()
+      for (const item of confirmedItems) {
+        if (!item.poLineItemId) continue
+        const existing = poLineItemMap.get(item.poLineItemId) ?? 0
+
+        if (item.isPanelBreakout && item.panelHeight && item.panelWidth) {
+          // Panel breakout: convert panels to sq ft for PO tracking
+          const sqFt = item.quantity * item.panelHeight * (item.panelWidth / 12)
+          poLineItemMap.set(item.poLineItemId, existing + sqFt)
+        } else {
+          // Normal item: qty passes through
+          poLineItemMap.set(item.poLineItemId, existing + item.quantity)
+        }
+      }
+
+      const poLineItemUpdates = Array.from(poLineItemMap.entries()).map(
+        ([poLineItemId, qtyReceived]) => ({
+          poLineItemId,
+          qtyReceived,
+        })
+      )
 
       await createReceipt.mutateAsync({
         supplierId,
         purchaseOrderId: purchaseOrderId || null,
         notes: receiptNotes || null,
         items: catalogItems.map((i) => ({
-          productId: i.productId!,
+          productId: i.productId || undefined,
           quantity: i.quantity,
           unitCost: i.unitCost,
+          // Pass panel metadata for auto-creation when no productId
+          ...(i.isPanelBreakout && !i.productId && i.panelBrand && i.panelHeight && i.panelWidth && i.panelThickness
+            ? {
+                autoCreatePanel: {
+                  brand: i.panelBrand,
+                  height: i.panelHeight,
+                  width: i.panelWidth,
+                  thickness: i.panelThickness,
+                },
+              }
+            : {}),
         })),
         poLineItemUpdates: poLineItemUpdates.length > 0 ? poLineItemUpdates : undefined,
       })

@@ -141,7 +141,6 @@ export default function CycleCountsPage() {
                     onChange={(e) => setActualQty(e.target.value)}
                     placeholder={`Actual count (${activeCount.unitOfMeasure})`}
                     className="h-14 text-lg text-center font-semibold"
-                    autoFocus
                   />
                 </div>
                 <div>
