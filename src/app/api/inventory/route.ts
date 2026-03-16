@@ -49,7 +49,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (category) {
-      where.categoryId = category
+      // Support both category ID (UUID) and category name
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(category)
+      if (isUuid) {
+        where.categoryId = category
+      } else {
+        where.category = { name: { equals: category, mode: "insensitive" } }
+      }
     }
 
     if (tier === "TIER_1" || tier === "TIER_2") {
