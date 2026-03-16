@@ -14,7 +14,7 @@ import {
 } from "@/lib/panels"
 import { usePanelCheckout } from "@/hooks/use-boms"
 import { toast } from "sonner"
-import { Plus, Trash2, PackageCheck, ChevronDown } from "lucide-react"
+import { Plus, Trash2, PackageCheck, ChevronDown, Scissors, AlertTriangle } from "lucide-react"
 
 interface PanelSpecs {
   type: "panel"
@@ -136,15 +136,6 @@ export function PanelCheckoutSheet({
     return sum + panelSqFt(r.height, panelSpecs.widthIn) * r.quantity
   }, 0)
 
-  // Sq ft equivalence calculations
-  const sqFtPerBomPanel = panelSqFt(panelSpecs.cutLengthFt, panelSpecs.widthIn)
-  const remainingSqFt = sqFtPerBomPanel * remaining
-  const equivalentBomPanels = sqFtPerBomPanel > 0
-    ? Math.min(remaining, Math.floor(totalSqFtValue / sqFtPerBomPanel))
-    : totalPanels
-  const isFulfilled = remainingSqFt > 0 && totalSqFtValue >= remainingSqFt * 0.99
-  const hasLargerPanels = rows.some(r => r.height && r.height > panelSpecs.cutLengthFt)
-
   // Minimum stock height that can cover the cut length
   const minHeight = Math.ceil(panelSpecs.cutLengthFt)
 
@@ -216,7 +207,7 @@ export function PanelCheckoutSheet({
                   type="button"
                   onClick={() => setSelectedBrand(brand)}
                   className={cn(
-                    "h-10 px-4 rounded-lg text-sm font-semibold transition-all",
+                    "h-12 px-5 rounded-lg text-[15px] font-semibold transition-all",
                     selectedBrand === brand
                       ? "bg-brand-blue text-white shadow-sm"
                       : "bg-white border border-border-custom text-navy hover:border-brand-blue/40"
@@ -242,7 +233,7 @@ export function PanelCheckoutSheet({
                     key={h}
                     type="button"
                     onClick={() => addRow(h)}
-                    className="h-9 px-3 rounded-lg text-sm font-medium bg-white border border-border-custom text-navy hover:border-brand-blue/40 hover:bg-blue-50 transition-all"
+                    className="h-12 min-w-12 px-4 rounded-lg text-[15px] font-medium bg-white border border-border-custom text-navy hover:border-brand-blue/40 hover:bg-blue-50 transition-all"
                   >
                     {h}'
                   </button>
@@ -251,9 +242,9 @@ export function PanelCheckoutSheet({
                   <button
                     type="button"
                     onClick={() => setShowAllHeights(!showAllHeights)}
-                    className="h-9 px-3 rounded-lg text-sm font-medium text-brand-blue hover:bg-blue-50 transition-all flex items-center gap-1"
+                    className="h-12 px-4 rounded-lg text-[15px] font-medium text-brand-blue hover:bg-blue-50 transition-all flex items-center gap-1"
                   >
-                    More <ChevronDown className={cn("h-3 w-3 transition-transform", showAllHeights && "rotate-180")} />
+                    More <ChevronDown className={cn("h-4 w-4 transition-transform", showAllHeights && "rotate-180")} />
                   </button>
                 )}
               </div>
@@ -264,7 +255,7 @@ export function PanelCheckoutSheet({
                       key={h}
                       type="button"
                       onClick={() => addRow(h)}
-                      className="h-9 px-3 rounded-lg text-sm font-medium bg-white border border-border-custom text-navy hover:border-brand-blue/40 hover:bg-blue-50 transition-all"
+                      className="h-12 min-w-12 px-4 rounded-lg text-[15px] font-medium bg-white border border-border-custom text-navy hover:border-brand-blue/40 hover:bg-blue-50 transition-all"
                     >
                       {h}'
                     </button>
@@ -284,9 +275,14 @@ export function PanelCheckoutSheet({
                   </div>
 
                   {rows.map(row => {
-                    const sqFtRow = row.height ? panelSqFt(row.height, panelSpecs.widthIn) * row.quantity : 0
+                    const sqFtPerPanel = row.height ? panelSqFt(row.height, panelSpecs.widthIn) : 0
+                    const sqFtNeeded = sqFtPerPanel * row.quantity
                     const stockKey = selectedBrand && row.height ? `${selectedBrand}-${row.height}` : null
                     const stockSqFt = stockKey ? stockCache[stockKey] : undefined
+                    // Convert stock sq ft to panel count for display
+                    const stockPanels = stockSqFt !== undefined && stockSqFt !== null && sqFtPerPanel > 0
+                      ? Math.floor(stockSqFt / sqFtPerPanel)
+                      : null
 
                     return (
                       <div key={row.id} className="flex items-center gap-2 p-2 bg-surface-secondary rounded-lg">
@@ -298,18 +294,18 @@ export function PanelCheckoutSheet({
                           type="number"
                           value={row.quantity || ""}
                           onChange={e => updateRowQty(row.id, parseInt(e.target.value) || 0)}
-                          className="w-20 h-9 text-center text-sm"
+                          className="w-20 h-12 text-center text-sm"
                           min={0}
                           step={1}
                         />
 
                         <div className="flex-1 text-xs">
-                          {stockSqFt !== undefined && stockSqFt !== null ? (
+                          {stockPanels !== null ? (
                             <span className={cn(
                               "font-medium",
-                              stockSqFt >= sqFtRow ? "text-green-600" : "text-red-500"
+                              stockPanels >= row.quantity ? "text-green-600" : "text-red-500"
                             )}>
-                              {formatQuantity(stockSqFt)} sq ft avail
+                              {stockPanels} panels avail
                             </span>
                           ) : stockSqFt === null ? (
                             <span className="text-amber-500 font-medium">New product</span>
@@ -323,9 +319,9 @@ export function PanelCheckoutSheet({
                           variant="ghost"
                           size="icon"
                           onClick={() => removeRow(row.id)}
-                          className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
+                          className="h-12 w-12 text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     )
@@ -334,58 +330,75 @@ export function PanelCheckoutSheet({
               )}
 
               {/* Running total */}
-              {rows.length > 0 && (
-                <div className="mt-3 p-3 rounded-lg bg-navy/5 border border-navy/10">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-navy">Total</span>
-                    <div className="text-right">
-                      <span className={cn(
-                        "text-lg font-bold tabular-nums",
-                        isFulfilled ? "text-green-600" :
-                        totalSqFtValue > remainingSqFt * 1.01 ? "text-red-500" : "text-navy"
-                      )}>
-                        {totalPanels} stock panel{totalPanels !== 1 ? "s" : ""}
-                      </span>
-                      {hasLargerPanels && equivalentBomPanels > 0 && (
-                        <span className="text-sm text-text-muted ml-1">
-                          → {equivalentBomPanels} BOM panel{equivalentBomPanels !== 1 ? "s" : ""}
-                          {isFulfilled && " \u2713"}
+              {rows.length > 0 && (() => {
+                // Calculate waste per row
+                const totalWasteSqFt = rows.reduce((sum, r) => {
+                  if (!r.height) return sum
+                  const wasteFt = r.height - panelSpecs.cutLengthFt
+                  return sum + (wasteFt * (panelSpecs.widthIn / 12) * r.quantity)
+                }, 0)
+                const hasWaste = totalWasteSqFt > 0
+                // Warn if any row has excessive waste (stock > cut + 4')
+                const excessiveWaste = rows.some(r => r.height && r.height > panelSpecs.cutLengthFt + 4)
+
+                return (
+                  <div className="mt-3 p-3 rounded-lg bg-navy/5 border border-navy/10 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-navy">Panels</span>
+                      <div className="text-right">
+                        <span className={cn(
+                          "text-lg font-bold tabular-nums",
+                          totalPanels === remaining ? "text-green-600" :
+                          totalPanels > remaining ? "text-red-500" : "text-navy"
+                        )}>
+                          {totalPanels}
                         </span>
-                      )}
+                        <span className="text-sm text-text-muted ml-1">
+                          of {remaining} needed
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Per-panel breakdown */}
+                    {rows.filter(r => r.height && r.quantity > 0).map(r => {
+                      const wasteFt = r.height! - panelSpecs.cutLengthFt
+                      const isSameHeight = wasteFt === 0
+                      return (
+                        <div key={r.id} className="flex items-center gap-2 text-xs text-text-muted">
+                          {isSameHeight ? (
+                            <span>{r.quantity}× {r.height}' stock → {panelSpecs.cutLengthFt}' panels (exact fit)</span>
+                          ) : (
+                            <span className="flex items-center gap-1">
+                              <Scissors className="h-3 w-3" />
+                              {r.quantity}× {r.height}' stock → {panelSpecs.cutLengthFt}' cut ({wasteFt}' drop each)
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+
+                    {/* Waste summary */}
+                    {hasWaste && (
+                      <div className={cn(
+                        "flex items-center gap-2 text-xs pt-1 border-t border-navy/10",
+                        excessiveWaste ? "text-amber-600" : "text-text-muted"
+                      )}>
+                        {excessiveWaste && <AlertTriangle className="h-3.5 w-3.5 shrink-0" />}
+                        <span>
+                          Total waste: {formatQuantity(totalWasteSqFt)} sq ft
+                          {excessiveWaste && " — consider using shorter stock panels to reduce waste"}
+                        </span>
+                      </div>
+                    )}
+
+                    {totalPanels > remaining && (
+                      <p className="text-xs text-red-500">
+                        Exceeds remaining by {totalPanels - remaining} panels
+                      </p>
+                    )}
                   </div>
-
-                  {/* Cut-down context */}
-                  {hasLargerPanels && (
-                    <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
-                      <svg className="h-3 w-3 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <circle cx="8" cy="8" r="5.5" />
-                        <circle cx="8" cy="8" r="2" />
-                        <line x1="8" y1="0.5" x2="8" y2="3" />
-                        <line x1="8" y1="13" x2="8" y2="15.5" />
-                        <line x1="0.5" y1="8" x2="3" y2="8" />
-                        <line x1="13" y1="8" x2="15.5" y2="8" />
-                      </svg>
-                      Cut from larger stock to {panelSpecs.cutLengthDisplay} pieces
-                    </p>
-                  )}
-
-                  {/* Coverage info */}
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-text-muted">Coverage</span>
-                    <span className="text-sm font-medium text-navy tabular-nums">
-                      {formatQuantity(totalSqFtValue)} sq ft
-                    </span>
-                  </div>
-
-                  {/* Exceeds warning */}
-                  {totalSqFtValue > remainingSqFt * 1.01 && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Exceeds need by ~{Math.ceil((totalSqFtValue - remainingSqFt) / sqFtPerBomPanel)} panel{Math.ceil((totalSqFtValue - remainingSqFt) / sqFtPerBomPanel) !== 1 ? "s" : ""} worth
-                    </p>
-                  )}
-                </div>
-              )}
+                )
+              })()}
             </div>
           )}
 
@@ -409,7 +422,7 @@ export function PanelCheckoutSheet({
               panelCheckout.isPending ||
               !selectedBrand ||
               totalPanels === 0 ||
-              totalSqFtValue > remainingSqFt * 1.01
+              totalPanels > remaining
             }
             className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
           >

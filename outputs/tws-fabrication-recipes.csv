@@ -1,0 +1,18 @@
+Product Name (from catalog),Type,Width 1 (in.),Width 2 (in.),Width 3 (in.),Width 4 (in.),Total Width (in.),Length (ft),Source Material,Sq Ft of Source Per Piece,Notes / How to Calculate
+"TWS Inside Corner 2"" x 2""",Standard TWS,2,2,,,4,8,Galvanized Steel Coil - Textured White (26ga),2.67,Flat pattern = (2+2) = 4in wide x 8ft = 2.67 sq ft
+"TWS Inside Corner 3"" x 3""",Standard TWS,3,3,,,6,8,Galvanized Steel Coil - Textured White (26ga),4.00,
+"TWS Inside Corner 3.5"" x 3.5"" w/ 1.5"" Standoff",Standard TWS,3.5,3.5,1.5,,8.5,8,Galvanized Steel Coil - Textured White (26ga),5.67,
+"TWS Outside Corner 2"" x 3""",Standard TWS,2,3,,,5,8,Galvanized Steel Coil - Textured White (26ga),3.33,
+"TWS Outside Corner 2"" x 6""",Standard TWS,2,6,,,8,8,Galvanized Steel Coil - Textured White (26ga),5.33,
+"TWS Outside Corner 2"" x 7""",Standard TWS,2,7,,,9,8,Galvanized Steel Coil - Textured White (26ga),6.00,
+"TWS Outside Corner 3"" x 6""",Standard TWS,3,6,,,9,8,Galvanized Steel Coil - Textured White (26ga),6.00,
+"TWS Outside Corner 3"" x 7""",Standard TWS,3,7,,,10,8,Galvanized Steel Coil - Textured White (26ga),6.67,
+"TWS Cap 2"" x 4.25"" x 2""",Standard TWS,2,4.25,2,,8.25,8,Galvanized Steel Coil - Textured White (26ga),5.50,
+TWS Cooler Screed,Standard TWS,2,4.25,1.5,,7.75,8,Galvanized Steel Coil - Textured White (26ga),5.17,
+TWS Freezer Screed,Standard TWS,2,1.5,,,3.5,8,Galvanized Steel Coil - Textured White (26ga),2.33,"These come in pairs, so 8' of freezer screed requires 2 8' pieces"
+"TWS Base Cover Trim 1.5"" x 2"" x 2""",Standard TWS,1.5,2,2,0.625,6.125,8,Galvanized Steel Coil - Textured White (26ga),4.08,
+"TWS Flat Batten 6"" w/ Hem",Standard TWS,6,,,,6,8,Galvanized Steel Coil - Textured White (26ga),4.00,
+(add custom TWS sizes below),Custom TWS,,,,,,8,"Textured White, Textured Gray, or Flat white",,"SM should be able to select custom widths, up to 5 values, and choose finish but default to textured white"
+,,,,,,,,,,
+,,,,,,,,,,
+(add flatstock items below),Flatstock,,,,,,,(which coil or sheet?),,"The steel coil (in all colors/textures) should be available, as well as our aluminum and stainless sheets in various gauges"

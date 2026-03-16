@@ -70,7 +70,8 @@ const updateBomSchema = z.object({
     .array(
       z.object({
         id: z.string().uuid(),
-        qtyNeeded: z.number().positive(),
+        qtyNeeded: z.number().positive().optional(),
+        fabricationSource: z.enum(["RSNE_MADE", "SUPPLIER"]).optional().nullable(),
       })
     )
     .optional(),
@@ -141,15 +142,23 @@ export async function PUT(
       })
     }
 
-    // Update line item quantities (parallel, validated against bomId + isActive)
+    // Update line items (qty and/or fabrication source)
     if (data.updateLineItems && data.updateLineItems.length > 0) {
       await Promise.all(
-        data.updateLineItems.map((item) =>
-          prisma.bomLineItem.update({
+        data.updateLineItems.map((item) => {
+          const updateFields: Record<string, unknown> = {}
+          if (item.qtyNeeded !== undefined) {
+            updateFields.qtyNeeded = new Prisma.Decimal(item.qtyNeeded)
+          }
+          if (item.fabricationSource !== undefined) {
+            updateFields.fabricationSource = item.fabricationSource
+          }
+          if (Object.keys(updateFields).length === 0) return Promise.resolve()
+          return prisma.bomLineItem.update({
             where: { id: item.id, bomId: id, isActive: true },
-            data: { qtyNeeded: new Prisma.Decimal(item.qtyNeeded) },
+            data: updateFields,
           })
-        )
+        })
       )
     }
 

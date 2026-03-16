@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Check } from "lucide-react"
+import { Trash2, Check, Wrench, Truck } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 
 interface BomLineItemRowProps {
@@ -32,6 +32,8 @@ interface BomLineItemRowProps {
   onRemove?: () => void
   onCheckoutQtyChange?: (qty: number) => void
   onReturnQtyChange?: (qty: number) => void
+  fabricationSource?: string | null
+  onFabricationSourceChange?: (source: "RSNE_MADE" | "SUPPLIER") => void
 }
 
 // Convert a dimension value to feet
@@ -64,6 +66,8 @@ export function BomLineItemRow({
   onRemove,
   onCheckoutQtyChange,
   onReturnQtyChange,
+  fabricationSource,
+  onFabricationSourceChange,
 }: BomLineItemRowProps) {
   const hasLength = dimLength && dimLength > 0
   const hasWidth = dimWidth && dimWidth > 0
@@ -116,8 +120,8 @@ export function BomLineItemRow({
     if (outstanding <= 0) return null
 
     return (
-      <div className="py-2 border-b border-border-custom last:border-0">
-        <div className="flex items-center justify-between gap-2">
+      <div className="py-4 border-b border-border-custom last:border-0">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="text-sm font-medium text-navy truncate">{name}</p>
@@ -127,26 +131,21 @@ export function BomLineItemRow({
             </div>
             <p className="text-xs text-text-muted">{formatQuantity(outstanding)} {activeInputUnit} out</p>
           </div>
-          <div className="flex items-center gap-0 shrink-0">
-            <button
-              type="button"
-              onClick={() => onReturnQtyChange?.(Math.max(0, (returnQty ?? outstanding) - 1))}
-              className="h-9 w-9 flex items-center justify-center rounded-l-lg border border-border-custom bg-surface-secondary text-navy font-bold text-lg hover:bg-gray-100 active:bg-gray-200"
-            >
-              −
-            </button>
-            <div className="h-9 w-14 flex items-center justify-center border-y border-border-custom text-sm font-semibold text-navy tabular-nums">
-              {returnQty ?? outstanding}
-            </div>
-            <button
-              type="button"
-              onClick={() => onReturnQtyChange?.(Math.min(outstanding, (returnQty ?? outstanding) + 1))}
-              disabled={(returnQty ?? outstanding) >= outstanding}
-              className="h-9 w-9 flex items-center justify-center rounded-r-lg border border-border-custom bg-surface-secondary text-navy font-bold text-lg hover:bg-gray-100 active:bg-gray-200 disabled:opacity-30"
-            >
-              +
-            </button>
-            <span className="text-xs text-text-muted w-8 ml-1.5">{activeInputUnit}</span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Input
+              type="number"
+              value={returnQty || ""}
+              onChange={(e) => {
+                const val = e.target.value === "" ? 0 : parseFloat(e.target.value)
+                onReturnQtyChange?.(Math.min(Math.max(isNaN(val) ? 0 : val, 0), outstanding))
+              }}
+              placeholder="0"
+              className="h-12 w-20 text-center text-sm"
+              min={0}
+              max={outstanding}
+              step="any"
+            />
+            <span className="text-xs text-text-muted w-8">{activeInputUnit}</span>
           </div>
         </div>
       </div>
@@ -156,7 +155,7 @@ export function BomLineItemRow({
   // Checkout mode render — enter qty to pull
   if (checkoutMode) {
     return (
-      <div className="py-2 border-b border-border-custom last:border-0">
+      <div className="py-4 border-b border-border-custom last:border-0">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
@@ -181,7 +180,7 @@ export function BomLineItemRow({
                 value={checkoutQty || ""}
                 onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
                 placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
-                className="h-9 w-20 text-center text-sm"
+                className="h-12 w-20 text-center text-sm"
                 min={0}
                 step="any"
               />
@@ -195,7 +194,7 @@ export function BomLineItemRow({
 
   // Normal view render
   return (
-    <div className="py-2 border-b border-border-custom last:border-0">
+    <div className="py-4 border-b border-border-custom last:border-0">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
@@ -207,6 +206,40 @@ export function BomLineItemRow({
           </div>
           {isNonCatalog && nonCatalogCategory && (
             <p className="text-xs text-text-muted">{nonCatalogCategory}</p>
+          )}
+          {/* Fabrication source badge */}
+          {fabricationSource && (
+            editable && onFabricationSourceChange ? (
+              <button
+                type="button"
+                onClick={() => onFabricationSourceChange(
+                  fabricationSource === "RSNE_MADE" ? "SUPPLIER" : "RSNE_MADE"
+                )}
+                className={`inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors ${
+                  fabricationSource === "RSNE_MADE"
+                    ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
+                    : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+                }`}
+              >
+                {fabricationSource === "RSNE_MADE" ? (
+                  <><Wrench className="h-3 w-3" /> In-house</>
+                ) : (
+                  <><Truck className="h-3 w-3" /> Supplier</>
+                )}
+              </button>
+            ) : (
+              <span className={`inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                fabricationSource === "RSNE_MADE"
+                  ? "bg-green-50 text-green-700"
+                  : "bg-blue-50 text-blue-700"
+              }`}>
+                {fabricationSource === "RSNE_MADE" ? (
+                  <><Wrench className="h-3 w-3" /> In-house</>
+                ) : (
+                  <><Truck className="h-3 w-3" /> Supplier</>
+                )}
+              </span>
+            )
           )}
           {qtyCheckedOut > 0 && (
             <p className="text-xs text-text-muted">
@@ -223,7 +256,7 @@ export function BomLineItemRow({
                 type="number"
                 value={qtyNeeded || ""}
                 onChange={(e) => onQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                className="h-8 w-16 text-center text-sm"
+                className="h-12 w-16 text-center text-sm"
                 min={0}
                 step="any"
               />
@@ -260,9 +293,9 @@ export function BomLineItemRow({
               size="icon"
               aria-label="Remove item"
               onClick={onRemove}
-              className="h-8 w-8 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
+              className="h-12 w-12 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ) : (

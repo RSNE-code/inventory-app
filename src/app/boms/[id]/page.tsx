@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
+import { ProductPicker } from "@/components/bom/product-picker"
 import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
-import { AIInput, type ProductResult } from "@/components/ai/ai-input"
+import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
-import { Pencil, Plus, Undo2, AlertTriangle, Info, Layers, ClipboardCheck, Check } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { Pencil, Plus, Undo2, Mic, Info, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
@@ -57,9 +57,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [pendingRemovals, setPendingRemovals] = useState<string[]>([])
   const [checkoutQtys, setCheckoutQtys] = useState<Record<string, number>>({})
   const [returnQtys, setReturnQtys] = useState<Record<string, number>>({})
-  const [confirmAction, setConfirmAction] = useState<"approve" | "cancel" | "complete" | null>(null)
+  const [undoAction, setUndoAction] = useState<{ type: string; previousStatus: string } | null>(null)
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
-  const [showAddItems, setShowAddItems] = useState(false)
 
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom && ["DRAFT", "APPROVED"].includes(bom.status)
@@ -74,7 +73,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     setPendingRemovals([])
     setCheckoutQtys({})
     setReturnQtys({})
-    setConfirmAction(null)
   }
 
   async function handleStatusChange(status: string) {
@@ -238,17 +236,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
-  function handleReturnAllPrefill() {
-    const prefilled: Record<string, number> = {}
-    allItems.forEach((item) => {
-      const outstanding = Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0)
-      if (outstanding > 0) {
-        prefilled[item.id as string] = outstanding
-      }
-    })
-    setReturnQtys(prefilled)
-  }
-
   async function handleReturnAll() {
     const items = Object.entries(returnQtys)
       .filter(([, qty]) => qty > 0)
@@ -309,13 +296,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     return checkedOut - returned > 0
   })
 
-  // Return gating: only show return when ALL items have been fully checked out
-  const allItemsFullyCheckedOut = allItems.every((item) => {
-    const needed = Number(item.qtyNeeded)
-    const checkedOut = Number(item.qtyCheckedOut || 0)
-    return needed > 0 && checkedOut >= needed
-  })
-
   // Build checkout items for CheckoutAllButton — exclude panel items (they use panel checkout)
   const checkoutItems = allItems
     .filter((item) => {
@@ -365,9 +345,9 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      <div className="px-4 pt-1 pb-4 space-y-2">
+      <div className="p-4 space-y-3 pb-48">
         {/* Job Info */}
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom">
+        <Card className="px-4 py-3 rounded-xl border-border-custom">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-navy leading-tight">{bom.jobName}</p>
@@ -383,68 +363,69 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <BomStatusBadge status={bom.status} />
           </div>
           {bom.notes && (
-            <p className="text-xs text-text-secondary bg-surface-secondary px-2 py-1.5 rounded-lg mt-1.5">{bom.notes}</p>
+            <p className="text-xs text-text-secondary bg-surface-secondary px-2.5 py-2 rounded-lg mt-2">{bom.notes}</p>
           )}
         </Card>
 
         {/* Line Items */}
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom">
-          <div className="flex items-center justify-between mb-0.5">
-            <h3 className="text-sm font-semibold text-navy">
+        <Card className="px-4 py-3 rounded-xl border-border-custom">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-semibold text-navy">
               {mode === "return" ? "Return Material" : `Items (${visibleItems.length})`}
             </h3>
-            {mode === "return" && (
+            {canEdit && mode === "view" && (
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
-                onClick={handleReturnAllPrefill}
-                className="text-status-green text-xs font-semibold"
+                onClick={() => setMode("edit")}
+                className="h-12 px-4 text-brand-blue font-semibold"
               >
-                Return All
+                <Pencil className="h-4 w-4 mr-1.5" />
+                Edit
               </Button>
             )}
-            <div className="flex items-center gap-1">
-              {canCheckout && mode === "view" && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowAddItems(!showAddItems)}
-                  className="h-8 w-8 text-brand-blue"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              )}
-              {canEdit && mode === "view" && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMode("edit")}
-                  className="text-brand-blue"
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1" />
-                  Edit
-                </Button>
-              )}
-            </div>
           </div>
 
           {/* Return mode instructions */}
           {mode === "return" && (
-            <p className="text-xs text-text-muted mb-2 bg-surface-secondary p-2 rounded-lg">
+            <p className="text-xs text-text-muted mb-3 bg-surface-secondary p-2.5 rounded-lg">
               Enter the quantity being returned for each item. Only items with outstanding material are shown.
             </p>
           )}
 
-          {/* Add material / edit mode — unified input */}
-          {(mode === "add-material" || mode === "edit") && (
-            <div className="mb-2">
+          {/* Add material mode — product picker + AI input */}
+          {mode === "add-material" && (
+            <div className="mb-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <Mic className="h-4 w-4 text-brand-orange" />
+                <p className="text-sm text-gray-500">Speak or type to add more items</p>
+              </div>
               <AIInput
                 onParseComplete={handleAIAddItems}
-                onProductSelect={handleAddProduct}
-                placeholder="Search catalog"
+                placeholder={`"Also grabbing 2 tubes caulk and 10 zip ties..."`}
+              />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white px-2 text-gray-400">or search catalog</span>
+                </div>
+              </div>
+              <ProductPicker
+                onSelect={handleAddProduct}
+                placeholder="Search catalog to add items..."
+                excludeIds={existingProductIds}
+              />
+            </div>
+          )}
+
+          {/* Edit mode — product picker */}
+          {mode === "edit" && (
+            <div className="mb-3">
+              <ProductPicker
+                onSelect={handleAddProduct}
+                placeholder="Search catalog to add items..."
                 excludeIds={existingProductIds}
               />
             </div>
@@ -502,23 +483,36 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 onReturnQtyChange={(qty) =>
                   setReturnQtys((prev) => ({ ...prev, [lineId]: qty }))
                 }
+                fabricationSource={item.fabricationSource as string | null}
+                onFabricationSourceChange={mode === "edit" ? async (source) => {
+                  try {
+                    await updateBom.mutateAsync({
+                      id,
+                      updateLineItems: [{ id: lineId, qtyNeeded: displayQty }],
+                    })
+                    // For now, we update the fabrication source via a separate call
+                    // The updateBom hook doesn't support fabricationSource yet,
+                    // so we use a direct fetch
+                    await fetch(`/api/boms/${id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        updateLineItems: [{ id: lineId, fabricationSource: source }],
+                      }),
+                    })
+                    toast.success(source === "RSNE_MADE" ? "Set to in-house" : "Set to supplier")
+                  } catch {
+                    toast.error("Failed to update sourcing")
+                  }
+                } : undefined}
               />
-              {/* Panel checkout button / fulfilled badge */}
+              {/* Panel checkout button */}
               {isPanelItem && canCheckout && mode === "view" && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && (
                 (() => {
                   const panelQtyNeeded = Number(item.qtyNeeded)
                   const panelQtyCheckedOut = Number(item.qtyCheckedOut || 0)
                   const panelRemaining = panelQtyNeeded - panelQtyCheckedOut
-
-                  if (panelRemaining <= 0) {
-                    return (
-                      <div className="w-full flex items-center justify-center gap-1.5 py-2 px-3 -mt-1 mb-2 rounded-lg bg-status-green/10">
-                        <Check className="h-4 w-4 text-status-green" />
-                        <span className="text-status-green text-sm font-semibold">Panels Fulfilled</span>
-                      </div>
-                    )
-                  }
-
+                  if (panelRemaining <= 0) return null
                   return (
                     <button
                       type="button"
@@ -540,21 +534,6 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               No outstanding material to return.
             </p>
           )}
-
-          {/* Inline add items — shown via + button */}
-          {showAddItems && mode === "view" && (
-            <div className="mt-2 pt-2 border-t border-border-custom">
-              <AIInput
-                onParseComplete={handleAIAddItems}
-                onProductSelect={(product) => {
-                  handleAddProduct(product)
-                  toast.success(`Added ${product.name}`)
-                }}
-                placeholder="Search catalog"
-                excludeIds={existingProductIds}
-              />
-            </div>
-          )}
         </Card>
 
         {/* Edit Save/Cancel */}
@@ -563,11 +542,11 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <Button
               onClick={handleSaveEdits}
               disabled={updateBom.isPending || !hasPendingChanges}
-              className="flex-1 h-10 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-sm"
+              className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
             >
               {updateBom.isPending ? "Saving..." : "Save Changes"}
             </Button>
-            <Button onClick={resetMode} variant="outline" className="h-10 text-sm">
+            <Button onClick={resetMode} variant="outline" className="h-12">
               Cancel
             </Button>
           </div>
@@ -579,11 +558,11 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <Button
               onClick={handleCheckout}
               disabled={checkoutBom.isPending || !hasCheckoutQtys}
-              className="flex-1 h-10 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-sm"
+              className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
             >
               {checkoutBom.isPending ? "Pulling..." : "Confirm Checkout"}
             </Button>
-            <Button onClick={resetMode} variant="outline" className="h-10 text-sm">
+            <Button onClick={resetMode} variant="outline" className="h-12">
               Cancel
             </Button>
           </div>
@@ -595,41 +574,40 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <Button
               onClick={handleReturnAll}
               disabled={checkoutBom.isPending || !hasReturnQtys}
-              className="flex-1 h-10 bg-status-green hover:bg-status-green/90 text-white font-semibold text-sm"
+              className="flex-1 h-12 bg-status-green hover:bg-status-green/90 text-white font-semibold"
             >
               {checkoutBom.isPending ? "Returning..." : "Confirm Returns"}
             </Button>
-            <Button onClick={resetMode} variant="outline" className="h-10 text-sm">
+            <Button onClick={resetMode} variant="outline" className="h-12">
               Cancel
             </Button>
           </div>
         )}
 
-        {/* Action buttons — view mode */}
+        {/* Action buttons — view mode (sticky bottom bar) */}
         {mode === "view" && (
-          <div className="space-y-1.5">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 pb-safe space-y-2">
             {/* Draft actions */}
             {bom.status === "DRAFT" && (
               <>
                 {canApprove ? (
                   <Button
-                    onClick={() => setConfirmAction("approve")}
+                    onClick={() => handleStatusChange("APPROVED")}
                     disabled={updateBom.isPending}
-                    className="w-full h-10 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-sm"
+                    className="w-full h-14 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold text-base"
                   >
                     {updateBom.isPending ? "Approving..." : "Approve BOM"}
                   </Button>
                 ) : (
-                  <div className="flex items-start gap-2 p-2.5 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
-                    <Info className="h-3.5 w-3.5 text-brand-blue shrink-0 mt-0.5" />
-                    <p className="text-xs text-brand-blue">This BOM needs approval from an Admin or Office Manager.</p>
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
+                    <Info className="h-4 w-4 text-brand-blue shrink-0 mt-0.5" />
+                    <p className="text-sm text-brand-blue">This BOM needs approval from an Admin or Office Manager.</p>
                   </div>
                 )}
                 <Button
-                  onClick={() => setConfirmAction("cancel")}
+                  onClick={() => handleStatusChange("CANCELLED")}
                   disabled={updateBom.isPending}
-                  variant="outline"
-                  className="w-full h-10 text-sm text-status-red border-status-red/30 hover:bg-status-red/5"
+                  className="w-full h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
                 >
                   {updateBom.isPending ? "Cancelling..." : "Cancel BOM"}
                 </Button>
@@ -649,9 +627,9 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 <Button
                   onClick={() => setMode("add-material")}
                   variant="outline"
-                  className="w-full h-10 text-sm border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold"
+                  className="w-full h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px]"
                 >
-                  <Plus className="h-4 w-4 mr-1.5" />
+                  <Plus className="h-5 w-5 mr-1.5" />
                   Adjust & Check Out
                 </Button>
               </>
@@ -659,9 +637,9 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Approved — role-based message for non-checkout users */}
             {bom.status === "APPROVED" && !canCheckout && (
-              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
-                <Info className="h-3.5 w-3.5 text-brand-blue shrink-0 mt-0.5" />
-                <p className="text-xs text-brand-blue">This BOM is approved and ready for checkout by a Shop Foreman or Admin.</p>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
+                <Info className="h-4 w-4 text-brand-blue shrink-0 mt-0.5" />
+                <p className="text-sm text-brand-blue">This BOM is approved and ready for checkout by a Shop Foreman or Admin.</p>
               </div>
             )}
 
@@ -673,41 +651,30 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   onCheckoutAll={handleCheckoutAll}
                   isPending={checkoutBom.isPending}
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <Button
                     onClick={() => setMode("add-material")}
-                    className="flex-1 h-10 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-sm"
+                    className="flex-1 h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-[15px]"
                   >
-                    <Plus className="h-4 w-4 mr-1.5" />
+                    <Plus className="h-5 w-5 mr-1.5" />
                     Add Material
                   </Button>
-                  {hasOutstandingMaterial && allItemsFullyCheckedOut && (
+                  {hasOutstandingMaterial && (
                     <Button
-                      onClick={() => {
-                        setMode("return")
-                        // Auto-prefill all return quantities to outstanding amounts
-                        const prefilled: Record<string, number> = {}
-                        allItems.forEach((item) => {
-                          const outstanding = Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0)
-                          if (outstanding > 0) {
-                            prefilled[item.id as string] = outstanding
-                          }
-                        })
-                        setReturnQtys(prefilled)
-                      }}
+                      onClick={() => setMode("return")}
                       variant="outline"
-                      className="flex-1 h-10 text-sm border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold"
+                      className="flex-1 h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px]"
                     >
-                      <Undo2 className="h-4 w-4 mr-1.5" />
-                      Return Material
+                      <Undo2 className="h-5 w-5 mr-1.5" />
+                      Return
                     </Button>
                   )}
                 </div>
                 <Button
-                  onClick={() => setConfirmAction("complete")}
+                  onClick={() => handleStatusChange("COMPLETED")}
                   disabled={updateBom.isPending}
                   variant="outline"
-                  className="w-full h-10 text-sm text-status-green border-status-green/30 hover:bg-status-green/5 font-semibold"
+                  className="w-full h-12 text-status-green border-2 border-status-green/30 hover:bg-status-green/5 font-semibold"
                 >
                   {updateBom.isPending ? "Completing..." : "Mark Completed"}
                 </Button>
@@ -717,100 +684,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         )}
       </div>
 
-      {/* Approval Confirmation Dialog */}
-      <Dialog open={confirmAction === "approve"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <div className="flex justify-center mb-2">
-              <div className="h-12 w-12 rounded-full bg-brand-blue/10 flex items-center justify-center">
-                <ClipboardCheck className="h-6 w-6 text-brand-blue" />
-              </div>
-            </div>
-            <DialogTitle className="text-center">Approve BOM</DialogTitle>
-            <DialogDescription className="text-center">
-              I have reviewed the {allItems.length} item{allItems.length !== 1 ? "s" : ""} on this BOM for <span className="font-semibold text-navy">{bom.jobName}</span> and confirm they are accurate and ready for checkout.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:flex-col gap-2">
-            <Button
-              onClick={() => { setConfirmAction(null); handleStatusChange("APPROVED") }}
-              disabled={updateBom.isPending}
-              className="w-full h-11 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-sm"
-            >
-              {updateBom.isPending ? "Approving..." : "Yes, Approve BOM"}
-            </Button>
-            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-11 text-sm">
-              Go Back
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Cancellation Confirmation Dialog */}
-      <Dialog open={confirmAction === "cancel"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <div className="flex justify-center mb-2">
-              <div className="h-12 w-12 rounded-full bg-status-red/10 flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-status-red" />
-              </div>
-            </div>
-            <DialogTitle className="text-center">Cancel BOM</DialogTitle>
-            <DialogDescription className="text-center">
-              {hasOutstandingMaterial
-                ? `This BOM has checked-out materials. Cancelling will leave ${allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length} item${allItems.filter((item) => Number(item.qtyCheckedOut || 0) - Number(item.qtyReturned || 0) > 0).length !== 1 ? "s" : ""} unresolved.`
-                : "Are you sure you want to cancel this BOM? This action cannot be undone."
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:flex-col gap-2">
-            <Button
-              onClick={() => { setConfirmAction(null); handleStatusChange("CANCELLED") }}
-              disabled={updateBom.isPending}
-              className="w-full h-11 bg-status-red hover:bg-status-red/90 text-white font-semibold text-sm"
-            >
-              {updateBom.isPending ? "Cancelling..." : "Yes, Cancel BOM"}
-            </Button>
-            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-11 text-sm">
-              Go Back
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Completion Confirmation Dialog */}
-      <Dialog open={confirmAction === "complete"} onOpenChange={(open) => { if (!open) setConfirmAction(null) }}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <div className="flex justify-center mb-2">
-              <div className="h-12 w-12 rounded-full bg-status-green/10 flex items-center justify-center">
-                <ClipboardCheck className="h-6 w-6 text-status-green" />
-              </div>
-            </div>
-            <DialogTitle className="text-center">Complete BOM</DialogTitle>
-            <DialogDescription className="text-center">
-              {(() => {
-                const incompleteItems = allItems.filter((item) => Number(item.qtyCheckedOut || 0) < Number(item.qtyNeeded))
-                return incompleteItems.length > 0
-                  ? `${incompleteItems.length} item${incompleteItems.length !== 1 ? "s" : ""} haven't been fully checked out. Mark this BOM as completed anyway?`
-                  : "All items have been checked out. Mark this BOM as completed?"
-              })()}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:flex-col gap-2">
-            <Button
-              onClick={() => { setConfirmAction(null); handleStatusChange("COMPLETED") }}
-              disabled={updateBom.isPending}
-              className="w-full h-11 bg-status-green hover:bg-status-green/90 text-white font-semibold text-sm"
-            >
-              {updateBom.isPending ? "Completing..." : "Yes, Mark Completed"}
-            </Button>
-            <Button onClick={() => setConfirmAction(null)} variant="outline" className="w-full h-11 text-sm">
-              Go Back
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs removed — status changes are direct actions with toast confirmation */}
 
       {/* Panel Checkout Sheet */}
       {panelCheckoutItem && (() => {

@@ -58,34 +58,30 @@ export async function POST(
 
       const thickness = data.thickness ?? (specs.thickness as number)
       const width = data.width ?? (specs.widthIn as number)
+      const bomCutLengthFt = specs.cutLengthFt as number
       if (!thickness || !width) {
         throw new Error("Panel thickness and width are required")
       }
 
+      // Per-panel validation: each BOM panel requires one stock panel of equal or greater height
       const totalBreakoutPanels = data.breakout.reduce((sum, r) => sum + r.quantity, 0)
       const alreadyCheckedOut = Number(lineItem.qtyCheckedOut)
       const needed = Number(lineItem.qtyNeeded)
+      const remaining = needed - alreadyCheckedOut
 
-      // Calculate sq ft for validation (sq ft equivalence instead of panel count)
-      const cutLengthFt = specs.cutLengthFt as number
-      const sqFtPerBomPanel = panelSqFt(cutLengthFt, width)
-      const totalNeededSqFt = sqFtPerBomPanel * needed
-
-      const newCheckoutSqFt = data.breakout.reduce((sum, r) =>
-        sum + panelSqFt(r.height, width) * r.quantity, 0)
-
-      // Get existing sq ft from prior checkout transactions
-      const existingSqFtAgg = await tx.transaction.aggregate({
-        _sum: { quantity: true },
-        where: { bomLineItemId: lineItem.id, type: "CHECKOUT" },
-      })
-      const existingSqFtTotal = Number(existingSqFtAgg._sum.quantity || 0)
-
-      // Validate: total sq ft must not exceed needed (1% tolerance for floating point)
-      if (existingSqFtTotal + newCheckoutSqFt > totalNeededSqFt * 1.01) {
+      if (totalBreakoutPanels > remaining + 0.0001) {
         throw new Error(
-          `Checkout would exceed needed coverage (${(existingSqFtTotal + newCheckoutSqFt).toFixed(1)} sq ft > ${totalNeededSqFt.toFixed(1)} sq ft needed)`
+          `Breakout total (${totalBreakoutPanels}) exceeds remaining panels (${remaining})`
         )
+      }
+
+      // Validate all stock heights are >= BOM cut length
+      for (const row of data.breakout) {
+        if (row.height < bomCutLengthFt) {
+          throw new Error(
+            `Cannot cut ${bomCutLengthFt}' panels from ${row.height}' stock. Stock panels must be ≥ ${bomCutLengthFt}'.`
+          )
+        }
       }
 
       // Find or create the panel category for auto-creating products
@@ -100,6 +96,7 @@ export async function POST(
 
       const transactions = []
       const insufficientStock: string[] = []
+      let totalWasteSqFt = 0
 
       for (const row of data.breakout) {
         const productName = buildPanelProductName(data.brand, row.height, width, thickness)
@@ -127,48 +124,66 @@ export async function POST(
           })
         }
 
-        // Calculate sq ft for this checkout row
-        const sqFtPerPanel = panelSqFt(row.height, width)
-        const totalSqFt = sqFtPerPanel * row.quantity
+        // Per-panel math: each stock panel is consumed whole, regardless of cut length
+        // 10 BOM panels at 8' from 10' stock = 10 stock panels consumed (not sq ft equivalence)
+        const sqFtPerStockPanel = panelSqFt(row.height, width)
+        const totalStockSqFt = sqFtPerStockPanel * row.quantity
 
-        // Check stock
-        if (Number(product.currentQty) < totalSqFt) {
-          insufficientStock.push(`${productName} (need ${totalSqFt.toFixed(1)} sq ft, have ${Number(product.currentQty).toFixed(1)})`)
+        // Calculate waste: the drop from cutting stock panels to BOM cut length
+        const wasteFtPerPanel = row.height - bomCutLengthFt
+        const wasteSqFtPerPanel = wasteFtPerPanel * (width / 12)
+        const wasteForRow = wasteSqFtPerPanel * row.quantity
+        totalWasteSqFt += wasteForRow
+
+        // Check stock — need full stock panel sq ft, not just BOM cut length sq ft
+        if (Number(product.currentQty) < totalStockSqFt) {
+          insufficientStock.push(
+            `${productName} (need ${row.quantity} panels = ${totalStockSqFt.toFixed(1)} sq ft, have ${Number(product.currentQty).toFixed(1)})`
+          )
         }
 
-        // Create CHECKOUT transaction (in sq ft, matching product's UOM)
+        // Deduct full stock panel sq ft (not just the BOM cut length portion)
         const unitCost = Number(product.avgCost) || Number(product.lastCost) || undefined
         const transaction = await adjustStock({
           productId: product.id,
-          quantity: totalSqFt,
+          quantity: totalStockSqFt,
           type: "CHECKOUT",
           unitCost,
           userId: user.id,
           jobName: bom.jobName,
           bomId: bom.id,
           bomLineItemId: lineItem.id,
+          notes: wasteFtPerPanel > 0
+            ? `${row.quantity}× ${row.height}' stock → ${bomCutLengthFt}' cut (${wasteFtPerPanel}' drop per panel)`
+            : undefined,
           tx,
         })
 
         transactions.push(transaction)
+
+        // Log waste as a separate ADJUST_DOWN transaction for reporting
+        if (wasteForRow > 0) {
+          await adjustStock({
+            productId: product.id,
+            quantity: wasteForRow,
+            type: "ADJUST_DOWN",
+            unitCost,
+            userId: user.id,
+            jobName: bom.jobName,
+            bomId: bom.id,
+            bomLineItemId: lineItem.id,
+            notes: `Panel drop: cut ${row.height}' to ${bomCutLengthFt}', ${wasteFtPerPanel}' waste × ${row.quantity} panels = ${wasteForRow.toFixed(1)} sq ft`,
+            tx,
+          })
+        }
       }
 
-      // Aggregate total sq ft checked out (includes transactions just created above)
-      const sqFtAgg = await tx.transaction.aggregate({
-        _sum: { quantity: true },
-        where: { bomLineItemId: lineItem.id, type: "CHECKOUT" },
-      })
-      const totalSqFtCheckedOut = Number(sqFtAgg._sum.quantity || 0)
-
-      // Convert to equivalent BOM panel count (Math.floor — 9.8 panels ≠ 10 fulfilled)
-      const equivalentPanels = sqFtPerBomPanel > 0
-        ? Math.min(needed, Math.floor(totalSqFtCheckedOut / sqFtPerBomPanel))
-        : alreadyCheckedOut + totalBreakoutPanels
-
-      // Update qtyCheckedOut to reflect sq ft equivalence
+      // Update bomLineItem.qtyCheckedOut (in panels, 1:1 with stock panels)
       await tx.bomLineItem.update({
         where: { id: lineItem.id },
-        data: { qtyCheckedOut: new Prisma.Decimal(equivalentPanels) },
+        data: {
+          qtyCheckedOut: new Prisma.Decimal(alreadyCheckedOut + totalBreakoutPanels),
+        },
       })
 
       // Auto-transition APPROVED → IN_PROGRESS
@@ -179,7 +194,7 @@ export async function POST(
         })
       }
 
-      return { transactions, insufficientStock }
+      return { transactions, insufficientStock, totalWasteSqFt }
     })
 
     // Return updated BOM
@@ -214,6 +229,7 @@ export async function POST(
       data: {
         transactions: result.transactions,
         bom: updatedBom,
+        totalWasteSqFt: result.totalWasteSqFt,
         ...(result.insufficientStock.length > 0 && {
           warnings: { insufficientStock: result.insufficientStock },
         }),

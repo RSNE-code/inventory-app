@@ -105,6 +105,11 @@ enum JobStatus {
   CANCELLED
 }
 
+enum FabricationSource {
+  RSNE_MADE // Fabricated in-house from raw material (e.g., trim cut from coil)
+  SUPPLIER  // Ordered pre-fabricated from supplier
+}
+
 // ─── MODELS ─────────────────────────────────────────────
 
 model User {
@@ -163,6 +168,8 @@ model Product {
   poLineItems                POLineItem[]
   projectedMaterials         ProjectedMaterial[]
   bomTemplateLineItems       BomTemplateLineItem[]
+  fabricationRecipes         FabricationRecipe[] @relation("FinishedProduct")
+  usedAsSourceIn             FabricationRecipe[] @relation("SourceProduct")
 }
 
 model Category {
@@ -295,6 +302,12 @@ model BomLineItem {
   isAdditional  Boolean  @default(false)
   isActive      Boolean  @default(true)
   pickupDate    DateTime?
+
+  // Fabrication sourcing — null means N/A (not a fabricable item)
+  fabricationSource FabricationSource?
+  fabricationSpecs  Json?  // Custom TWS: { widths: [2, 3], finish: "Textured White" }
+                           // Flatstock: { cutWidthIn: 24, cutLengthIn: 48, material: "..." }
+
   createdAt     DateTime @default(now())
 
   transactions Transaction[]
@@ -502,4 +515,31 @@ model Job {
   projectManager String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+// ─── FABRICATION RECIPES ────────────────────────────────
+// Defines how finished products (e.g., TWS trim) are made from raw materials (e.g., steel coil)
+
+model FabricationRecipe {
+  id                String  @id @default(uuid())
+  finishedProduct   Product @relation("FinishedProduct", fields: [finishedProductId], references: [id])
+  finishedProductId String
+  sourceProduct     Product @relation("SourceProduct", fields: [sourceProductId], references: [id])
+  sourceProductId   String
+
+  // How much source material per unit of finished product
+  // e.g., 1 piece of TWS IC 2"x2" 8' = 2.67 sq ft of coil
+  sourceQtyPerUnit Decimal? @db.Decimal(12, 4)
+  sourceUom        String   // "sq ft", "linear ft", etc.
+
+  // For custom-sizable items (Custom TWS, Flatstock)
+  isCustomSizable Boolean @default(false)
+  fabricationType String? // "STANDARD_TWS" | "CUSTOM_TWS" | "FLATSTOCK"
+
+  notes     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([finishedProductId, sourceProductId])
 }

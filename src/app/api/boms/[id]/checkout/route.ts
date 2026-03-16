@@ -55,7 +55,9 @@ export async function POST(
         include: {
           lineItems: {
             where: { isActive: true },
-            include: { product: true },
+            include: {
+              product: true,
+            },
           },
         },
       })
@@ -144,6 +146,37 @@ export async function POST(
             bomLineItemId: lineItem.id,
             tx,
           })
+
+          // Auto-deduct source material for RSNE_MADE fabrication items
+          if (lineItem.fabricationSource === "RSNE_MADE" && lineItem.productId) {
+            const recipe = await tx.fabricationRecipe.findFirst({
+              where: {
+                finishedProductId: lineItem.productId,
+                isActive: true,
+              },
+              include: {
+                sourceProduct: true,
+              },
+            })
+
+            if (recipe && recipe.sourceQtyPerUnit) {
+              const coilQty = Number(recipe.sourceQtyPerUnit) * purchaseQty
+              const sourceUnitCost = Number(recipe.sourceProduct.avgCost) || Number(recipe.sourceProduct.lastCost) || undefined
+
+              await adjustStock({
+                productId: recipe.sourceProductId,
+                quantity: coilQty,
+                type: "CONSUME",
+                unitCost: sourceUnitCost,
+                userId: user.id,
+                jobName: bom.jobName,
+                bomId: bom.id,
+                bomLineItemId: lineItem.id,
+                notes: `Fabrication: ${purchaseQty}× ${lineItem.product.name} consumed ${coilQty.toFixed(2)} ${recipe.sourceUom} of ${recipe.sourceProduct.name}`,
+                tx,
+              })
+            }
+          }
 
           await tx.bomLineItem.update({
             where: { id: lineItem.id },

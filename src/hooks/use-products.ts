@@ -42,6 +42,17 @@ export function useProduct(id: string) {
   })
 }
 
+export function useFavoriteProducts() {
+  return useQuery({
+    queryKey: ["products", "favorites"],
+    queryFn: async () => {
+      const res = await fetch("/api/products/favorites")
+      if (!res.ok) throw new Error("Failed to fetch favorites")
+      return res.json()
+    },
+  })
+}
+
 export function useAdjustStock() {
   const queryClient = useQueryClient()
 

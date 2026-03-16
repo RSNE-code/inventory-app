@@ -97,6 +97,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = createBomSchema.parse(body)
 
+    // Collect product IDs to check for fabrication recipes
+    const catalogProductIds = data.lineItems
+      .filter((item) => !item.isNonCatalog && item.productId)
+      .map((item) => item.productId!)
+
+    // Look up which products have fabrication recipes
+    const recipeLookup = new Map<string, boolean>()
+    if (catalogProductIds.length > 0) {
+      const recipes = await prisma.fabricationRecipe.findMany({
+        where: {
+          finishedProductId: { in: catalogProductIds },
+          isActive: true,
+        },
+        select: { finishedProductId: true },
+      })
+      for (const r of recipes) {
+        recipeLookup.set(r.finishedProductId, true)
+      }
+    }
+
     const bom = await prisma.bom.create({
       data: {
         jobName: data.jobName,
@@ -117,6 +137,10 @@ export async function POST(request: NextRequest) {
               ? new Prisma.Decimal(item.nonCatalogEstCost)
               : null,
             nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
+            // Auto-set fabrication source for products with recipes
+            fabricationSource: !item.isNonCatalog && item.productId && recipeLookup.has(item.productId)
+              ? "RSNE_MADE"
+              : null,
           })),
         },
       },

@@ -166,6 +166,20 @@ export function usePanelCheckout() {
   })
 }
 
+export function useClonableBoms() {
+  return useQuery({
+    queryKey: ["boms", "clonable"],
+    queryFn: async () => {
+      const res = await fetch("/api/boms/clonable")
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || `API error: ${res.status}`)
+      }
+      return res.json()
+    },
+  })
+}
+
 export function useCheckoutBom() {
   const queryClient = useQueryClient()
 
