@@ -7,7 +7,7 @@ import { useBoms } from "@/hooks/use-boms"
 import { Header } from "@/components/layout/header"
 import { SearchInput } from "@/components/shared/search-input"
 import { BomCard } from "@/components/bom/bom-card"
-import { BomAIFlow } from "@/components/bom/bom-ai-flow"
+import { BomQuickPick } from "@/components/bom/bom-quick-pick"
 import { EmptyState } from "@/components/shared/empty-state"
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { Button } from "@/components/ui/button"
@@ -66,7 +66,7 @@ export default function BomsPage() {
 
       {activeTab === "create" ? (
         <div className="px-4 pt-3 pb-4">
-          <BomAIFlow />
+          <BomQuickPick />
         </div>
       ) : (
         <>
