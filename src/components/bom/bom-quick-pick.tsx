@@ -9,7 +9,8 @@ import { AIInput } from "@/components/ai/ai-input"
 import { JobPicker } from "@/components/bom/job-picker"
 import { ProductPicker } from "@/components/bom/product-picker"
 import { PanelLineItemForm, type PanelLineItem } from "@/components/bom/panel-line-item-form"
-import { useCreateBom, useClonableBoms } from "@/hooks/use-boms"
+import { useCreateBom } from "@/hooks/use-boms"
+import { Input } from "@/components/ui/input"
 import { useFavoriteProducts } from "@/hooks/use-products"
 import { toast } from "sonner"
 import { cn, formatQuantity } from "@/lib/utils"
@@ -23,7 +24,7 @@ import {
   Copy,
   Search,
   Layers,
-  ChevronRight,
+  ChevronDown,
 } from "lucide-react"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
 
@@ -95,10 +96,8 @@ export function BomQuickPick() {
   const router = useRouter()
   const createBom = useCreateBom()
   const { data: favData } = useFavoriteProducts()
-  const { data: cloneData } = useClonableBoms()
 
   const favorites: FavoriteProduct[] = favData?.data || []
-  const clonableBoms: ClonableBom[] = cloneData?.data || []
 
   // ─── State ──────────────────────────────────
   const [jobName, setJobName] = useState("")
@@ -109,6 +108,44 @@ export function BomQuickPick() {
   const [categoryProducts, setCategoryProducts] = useState<FavoriteProduct[]>([])
   const [categoryLoading, setCategoryLoading] = useState(false)
   const [notes, setNotes] = useState("")
+
+  // Clone from previous BOM
+  const [cloneExpanded, setCloneExpanded] = useState(false)
+  const [cloneSearch, setCloneSearch] = useState("")
+  const [cloneResults, setCloneResults] = useState<ClonableBom[]>([])
+  const [cloneLoading, setCloneLoading] = useState(false)
+  const cloneDebounceRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+  function handleCloneSearch(value: string) {
+    setCloneSearch(value)
+    if (cloneDebounceRef.current) clearTimeout(cloneDebounceRef.current)
+
+    cloneDebounceRef.current = setTimeout(async () => {
+      setCloneLoading(true)
+      try {
+        const params = new URLSearchParams({ limit: "20" })
+        if (value.length >= 1) params.set("search", value)
+        const res = await fetch(`/api/boms/clonable?${params}`)
+        if (res.ok) {
+          const json = await res.json()
+          setCloneResults(json.data || [])
+        }
+      } catch {
+        setCloneResults([])
+      } finally {
+        setCloneLoading(false)
+      }
+    }, 300)
+  }
+
+  function handleCloneExpand() {
+    const next = !cloneExpanded
+    setCloneExpanded(next)
+    if (next && cloneResults.length === 0) {
+      // Load initial results
+      handleCloneSearch("")
+    }
+  }
 
   // ─── Cart operations ────────────────────────
 
@@ -393,29 +430,64 @@ export function BomQuickPick() {
         />
       </Card>
 
-      {/* Clone from previous */}
-      {clonableBoms.length > 0 && cart.length === 0 && (
-        <Card className="p-4 rounded-xl border-border-custom space-y-2">
-          <div className="flex items-center gap-2">
-            <Copy className="h-4 w-4 text-brand-blue" />
-            <h3 className="font-semibold text-navy text-sm">Start from previous BOM</h3>
-          </div>
-          {clonableBoms.slice(0, 3).map((bom) => (
-            <button
-              key={bom.id}
-              type="button"
-              onClick={() => handleClone(bom.id)}
-              className="w-full flex items-center justify-between gap-2 p-3 rounded-lg bg-surface-secondary hover:bg-brand-blue/5 transition-colors"
-            >
-              <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-navy truncate">{bom.jobName}</p>
-                <p className="text-xs text-text-muted">
-                  {bom.itemCount} items &middot; {new Date(bom.createdAt).toLocaleDateString()}
-                </p>
+      {/* Clone from previous BOM — collapsible */}
+      {cart.length === 0 && (
+        <Card className="rounded-xl border-border-custom overflow-hidden">
+          <button
+            type="button"
+            onClick={handleCloneExpand}
+            className="w-full flex items-center justify-between gap-2 p-4 hover:bg-surface-secondary/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Copy className="h-4 w-4 text-brand-blue" />
+              <h3 className="font-semibold text-navy text-sm">Start from previous BOM</h3>
+            </div>
+            <ChevronDown className={cn("h-4 w-4 text-text-muted transition-transform", cloneExpanded && "rotate-180")} />
+          </button>
+
+          {cloneExpanded && (
+            <div className="px-4 pb-4 space-y-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                <Input
+                  value={cloneSearch}
+                  onChange={(e) => handleCloneSearch(e.target.value)}
+                  placeholder="Search your BOMs..."
+                  className="pl-9 h-12"
+                  autoFocus
+                />
               </div>
-              <ChevronRight className="h-4 w-4 text-text-muted shrink-0" />
-            </button>
-          ))}
+
+              <div className="max-h-64 overflow-y-auto space-y-1">
+                {cloneLoading ? (
+                  <p className="text-sm text-text-muted text-center py-4">Searching...</p>
+                ) : cloneResults.length === 0 ? (
+                  <p className="text-sm text-text-muted text-center py-4">
+                    {cloneSearch ? "No matching BOMs found" : "No previous BOMs"}
+                  </p>
+                ) : (
+                  cloneResults.map((bom) => (
+                    <button
+                      key={bom.id}
+                      type="button"
+                      onClick={() => {
+                        handleClone(bom.id)
+                        setCloneExpanded(false)
+                      }}
+                      className="w-full flex items-center justify-between gap-2 p-3 rounded-lg hover:bg-surface-secondary transition-colors"
+                    >
+                      <div className="text-left min-w-0">
+                        <p className="text-sm font-semibold text-navy truncate">{bom.jobName}</p>
+                        <p className="text-xs text-text-muted">
+                          {bom.itemCount} items &middot; {new Date(bom.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

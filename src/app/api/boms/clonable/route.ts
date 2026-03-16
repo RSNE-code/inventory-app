@@ -1,23 +1,34 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
+import { Prisma } from "@prisma/client"
 
 /**
- * GET /api/boms/clonable
- * Returns recent BOMs that can be cloned for a new BOM.
- * Returns the 5 most recent non-cancelled BOMs by the current user.
+ * GET /api/boms/clonable?search=...
+ * Returns BOMs created by the current user that can be cloned.
+ * Supports search by job name/number. Returns up to 20 results.
  */
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth()
     const { searchParams } = new URL(request.url)
-    const limit = Math.min(parseInt(searchParams.get("limit") || "5"), 10)
+    const search = searchParams.get("search") || ""
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50)
+
+    const where: Prisma.BomWhereInput = {
+      createdById: user.id,
+      status: { not: "CANCELLED" },
+    }
+
+    if (search.length >= 1) {
+      where.OR = [
+        { jobName: { contains: search, mode: "insensitive" } },
+        { jobNumber: { contains: search, mode: "insensitive" } },
+      ]
+    }
 
     const boms = await prisma.bom.findMany({
-      where: {
-        createdById: user.id,
-        status: { not: "CANCELLED" },
-      },
+      where,
       orderBy: { createdAt: "desc" },
       take: limit,
       select: {
