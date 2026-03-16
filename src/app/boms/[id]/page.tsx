@@ -586,7 +586,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
         {/* Action buttons — view mode (sticky bottom bar) */}
         {mode === "view" && (
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 pb-safe space-y-2">
+          <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 space-y-2">
             {/* Draft actions */}
             {bom.status === "DRAFT" && (
               <>

@@ -429,31 +429,59 @@ export function BomQuickPick() {
           <div className="grid grid-cols-3 gap-2">
             {favorites.map((fav) => {
               const inCartQty = getCartQty(fav.id)
+              const cartItem = cart.find((i) => i.productId === fav.id)
               return (
-                <button
+                <div
                   key={fav.id}
-                  type="button"
-                  onClick={() => addToCart(fav)}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all min-h-16",
-                    "hover:border-brand-blue/40 hover:bg-blue-50 active:scale-[0.97]",
+                    "relative flex flex-col items-center justify-center gap-1 rounded-xl border transition-all min-h-16",
                     inCartQty > 0
                       ? "border-brand-blue/30 bg-brand-blue/5"
                       : "border-border-custom bg-white"
                   )}
                 >
-                  {inCartQty > 0 && (
-                    <span className="absolute top-1 right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-blue text-white text-[10px] font-bold px-1">
-                      {inCartQty}
-                    </span>
+                  {inCartQty > 0 ? (
+                    /* In cart — show stepper */
+                    <div className="flex flex-col items-center gap-1 p-2 w-full">
+                      <p className="text-[11px] font-semibold text-navy text-center leading-tight line-clamp-1">
+                        {fav.name.length > 20 ? fav.name.slice(0, 18) + "..." : fav.name}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => cartItem && updateQty(cartItem.tempId, -1)}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-border-custom text-navy hover:bg-surface-secondary active:scale-95"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="w-8 text-center text-sm font-bold text-brand-blue tabular-nums">
+                          {inCartQty}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => addToCart(fav)}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-border-custom text-navy hover:bg-surface-secondary active:scale-95"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Not in cart — tap to add */
+                    <button
+                      type="button"
+                      onClick={() => addToCart(fav)}
+                      className="flex flex-col items-center justify-center gap-1 p-3 w-full h-full hover:bg-blue-50 active:scale-[0.97] transition-all rounded-xl"
+                    >
+                      <p className="text-xs font-semibold text-navy text-center leading-tight line-clamp-2">
+                        {fav.name.length > 30 ? fav.name.slice(0, 28) + "..." : fav.name}
+                      </p>
+                      <span className="text-[10px] text-text-muted">
+                        +1 {fav.unitOfMeasure}
+                      </span>
+                    </button>
                   )}
-                  <p className="text-xs font-semibold text-navy text-center leading-tight line-clamp-2">
-                    {fav.name.length > 30 ? fav.name.slice(0, 28) + "..." : fav.name}
-                  </p>
-                  <span className="text-[10px] text-text-muted">
-                    +1 {fav.unitOfMeasure}
-                  </span>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -635,8 +663,8 @@ export function BomQuickPick() {
         </Card>
       )}
 
-      {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 pb-safe space-y-2">
+      {/* Sticky bottom bar — sits above the h-16 bottom nav */}
+      <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 space-y-2">
         {/* AI input bar */}
         <AIInput
           onParseComplete={handleAIParse}
