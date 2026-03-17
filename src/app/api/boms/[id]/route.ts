@@ -42,7 +42,7 @@ export async function GET(
 }
 
 const updateBomSchema = z.object({
-  status: z.enum(["DRAFT", "APPROVED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+  status: z.enum(["DRAFT", "PENDING_REVIEW", "APPROVED", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
   jobName: z.string().min(1).optional(),
   jobNumber: z.string().optional().nullable(),
   jobStartDate: z.string().optional().nullable(),
@@ -98,6 +98,7 @@ export async function PUT(
     if (data.status) {
       const validTransitions: Record<string, string[]> = {
         DRAFT: ["APPROVED", "CANCELLED"],
+        PENDING_REVIEW: ["APPROVED", "CANCELLED"],
         APPROVED: ["IN_PROGRESS", "CANCELLED"],
         IN_PROGRESS: ["COMPLETED", "CANCELLED"],
         COMPLETED: [],

@@ -319,11 +319,12 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
       }
     })
 
-  const BOM_LIFECYCLE = ["Draft", "Approved", "In Progress", "Completed"]
+  const BOM_LIFECYCLE = ["Draft", "Review", "Approved", "In Progress", "Completed"]
   const bomStepIndex = bom.status === "CANCELLED" ? -1
-    : bom.status === "COMPLETED" ? 3
-    : bom.status === "IN_PROGRESS" ? 2
-    : bom.status === "APPROVED" ? 1
+    : bom.status === "COMPLETED" ? 4
+    : bom.status === "IN_PROGRESS" ? 3
+    : bom.status === "APPROVED" ? 2
+    : bom.status === "PENDING_REVIEW" ? 1
     : 0
 
   return (

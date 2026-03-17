@@ -46,6 +46,7 @@ enum TransactionType {
 
 enum BomStatus {
   DRAFT
+  PENDING_REVIEW // Photo-created BOM awaiting owner review
   APPROVED
   IN_PROGRESS
   COMPLETED
@@ -129,6 +130,7 @@ model User {
   doorApprovals   Assembly[]           @relation("DoorApprover")
   assemblyChanges AssemblyChangeLog[]
   projectedJobs   ProjectedJob[]
+  matchHistory    MatchHistory[]
 }
 
 model Product {
@@ -170,6 +172,7 @@ model Product {
   bomTemplateLineItems       BomTemplateLineItem[]
   fabricationRecipes         FabricationRecipe[] @relation("FinishedProduct")
   usedAsSourceIn             FabricationRecipe[] @relation("SourceProduct")
+  matchHistory               MatchHistory[]
 }
 
 model Category {
@@ -305,8 +308,11 @@ model BomLineItem {
 
   // Fabrication sourcing — null means N/A (not a fabricable item)
   fabricationSource FabricationSource?
-  fabricationSpecs  Json?  // Custom TWS: { widths: [2, 3], finish: "Textured White" }
-                           // Flatstock: { cutWidthIn: 24, cutLengthIn: 48, material: "..." }
+  fabricationSpecs  Json?
+
+  // AI matching metadata
+  matchConfidence  Float?    // 0-1 AI confidence score for this match
+  rawText          String?   // Original text from photo/voice parse
 
   createdAt     DateTime @default(now())
 
@@ -542,4 +548,26 @@ model FabricationRecipe {
   updatedAt DateTime @updatedAt
 
   @@unique([finishedProductId, sourceProductId])
+}
+
+// ─── MATCH HISTORY (Learning Loop) ──────────────────────
+// Stores confirmed AI matches so the system learns user shorthand over time
+
+model MatchHistory {
+  id             String   @id @default(uuid())
+  rawText        String   // Original text from photo/voice ("OC 2x3")
+  normalizedText String   // Lowercase, trimmed, collapsed spaces
+  product        Product  @relation(fields: [productId], references: [id])
+  productId      String
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
+  confirmed      Boolean  @default(false)
+  usageCount     Int      @default(1)
+  lastUsedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([normalizedText, userId])
+  @@index([userId, normalizedText])
+  @@index([productId])
 }

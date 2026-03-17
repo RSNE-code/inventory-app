@@ -25,6 +25,8 @@ const bomLineItemSchema = z.object({
     }),
     z.record(z.string(), z.unknown()),
   ]).optional().nullable(),
+  matchConfidence: z.number().min(0).max(1).optional().nullable(),
+  rawText: z.string().optional().nullable(),
 }).refine(
   (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
   { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
@@ -35,6 +37,7 @@ const createBomSchema = z.object({
   jobNumber: z.string().optional().nullable(),
   jobStartDate: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  source: z.enum(["photo", "manual"]).optional().default("manual"),
   lineItems: z.array(bomLineItemSchema).min(1),
 })
 
@@ -117,12 +120,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Photo-created BOMs go to PENDING_REVIEW, manual to DRAFT
+    const initialStatus = data.source === "photo" ? "PENDING_REVIEW" : "DRAFT"
+
     const bom = await prisma.bom.create({
       data: {
         jobName: data.jobName,
         jobNumber: data.jobNumber || null,
         jobStartDate: data.jobStartDate ? new Date(data.jobStartDate) : null,
         notes: data.notes || null,
+        status: initialStatus,
         createdById: user.id,
         lineItems: {
           create: data.lineItems.map((item) => ({
@@ -137,6 +144,8 @@ export async function POST(request: NextRequest) {
               ? new Prisma.Decimal(item.nonCatalogEstCost)
               : null,
             nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
+            matchConfidence: item.matchConfidence ?? null,
+            rawText: item.rawText || null,
             // Auto-set fabrication source for products with recipes
             fabricationSource: !item.isNonCatalog && item.productId && recipeLookup.has(item.productId)
               ? "RSNE_MADE"

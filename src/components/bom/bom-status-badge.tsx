@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 
 const statusConfig: Record<string, { label: string; dot: string; className: string }> = {
   DRAFT: { label: "Draft", dot: "bg-gray-400", className: "bg-gray-100 text-gray-600 border-0" },
+  PENDING_REVIEW: { label: "Pending Review", dot: "bg-brand-orange animate-pulse", className: "bg-brand-orange/8 text-brand-orange border-0" },
   APPROVED: { label: "Approved", dot: "bg-brand-blue", className: "bg-brand-blue/8 text-brand-blue border-0" },
   IN_PROGRESS: { label: "In Progress", dot: "bg-status-yellow animate-pulse", className: "bg-status-yellow/8 text-amber-700 border-0" },
   COMPLETED: { label: "Completed", dot: "bg-status-green", className: "bg-status-green/8 text-status-green border-0" },

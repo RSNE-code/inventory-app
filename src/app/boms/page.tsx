@@ -7,7 +7,7 @@ import { useBoms } from "@/hooks/use-boms"
 import { Header } from "@/components/layout/header"
 import { SearchInput } from "@/components/shared/search-input"
 import { BomCard } from "@/components/bom/bom-card"
-import { BomQuickPick } from "@/components/bom/bom-quick-pick"
+import { BomPhotoCapture } from "@/components/bom/bom-photo-capture"
 import { EmptyState } from "@/components/shared/empty-state"
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 const statuses = [
   { label: "All", value: "" },
   { label: "Draft", value: "DRAFT" },
+  { label: "Review", value: "PENDING_REVIEW" },
   { label: "Approved", value: "APPROVED" },
   { label: "In Progress", value: "IN_PROGRESS" },
   { label: "Completed", value: "COMPLETED" },
@@ -66,7 +67,7 @@ export default function BomsPage() {
 
       {activeTab === "create" ? (
         <div className="px-4 pt-3 pb-4">
-          <BomQuickPick />
+          <BomPhotoCapture />
         </div>
       ) : (
         <>
