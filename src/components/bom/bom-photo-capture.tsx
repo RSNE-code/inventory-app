@@ -352,7 +352,6 @@ export function BomPhotoCapture() {
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           multiple
           onChange={handlePhotoCapture}
           className="hidden"
@@ -416,7 +415,6 @@ export function BomPhotoCapture() {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         multiple
         onChange={handlePhotoCapture}
         className="hidden"
