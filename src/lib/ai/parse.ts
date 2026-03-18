@@ -206,7 +206,7 @@ export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
 
 Please parse each item they mentioned and match it to the best product in our catalog. Use your judgment — product names won't be exact matches. Think about what the person likely means given the industry context.
 
-CATALOG (ID|name|SKU — one per line):
+CATALOG (each line is: numeric_id|product_name|sku):
 ${catalog.text}
 
 Return JSON:
@@ -220,7 +220,7 @@ Return JSON:
       "category": "best category guess or null",
       "estimatedCost": null,
       "confidence": 0.95,
-      "matchedProductId": "product ID from catalog or null if no good match",
+      "matchedProductId": "numeric_id from catalog (the number before the first |), or null",
       "matchConfidence": 0.9,
       "alternativeProductIds": ["2nd best ID", "3rd best ID"]
     }
@@ -279,7 +279,7 @@ ${poContext}
 
 2. PARSE & MATCH ITEMS — Parse each item mentioned and match to our catalog.
 
-CATALOG (ID|name|SKU — one per line):
+CATALOG (each line is: numeric_id|product_name|sku):
 ${catalog.text}
 
 Return JSON:
@@ -297,7 +297,7 @@ Return JSON:
       "category": "best category guess or null",
       "estimatedCost": null,
       "confidence": 0.95,
-      "matchedProductId": "product ID from catalog or null if no good match",
+      "matchedProductId": "numeric_id from catalog (the number before the first |), or null",
       "matchConfidence": 0.9,
       "alternativeProductIds": ["2nd best ID", "3rd best ID"]
     }
@@ -460,8 +460,10 @@ ${poContext}
 
 3. EXTRACT & MATCH ITEMS — Parse every line item and match each to the best product in our catalog. Product names on packing slips often differ from catalog names — use your judgment.
 
-CATALOG (ID|name|SKU):
+CATALOG (each line is: numeric_id|product_name|sku):
 ${catalog.text}
+
+IMPORTANT: For matchedProductId, return the NUMERIC ID (the number before the first | on each catalog line). NOT the SKU, NOT the product name.
 
 Return JSON:
 {
@@ -480,7 +482,7 @@ Return JSON:
       "category": "category guess or null",
       "estimatedCost": 25.50,
       "confidence": 0.95,
-      "matchedProductId": "product ID from catalog or null",
+      "matchedProductId": "numeric_id from catalog (the number before the first |), or null",
       "matchConfidence": 0.85,
       "alternativeProductIds": ["2nd best", "3rd best"]
     }
@@ -731,9 +733,9 @@ const bomItemSchema = z.object({
   category: z.string().nullable().describe("Category guess or null"),
   estimatedCost: z.number().nullable().describe("Per-unit cost if visible, or null"),
   confidence: z.number().describe("How confident you are in reading this line (0.0-1.0)"),
-  matchedProductId: z.string().nullable().describe("Product ID from catalog, or null if no good match"),
+  matchedProductId: z.string().nullable().describe("The numeric_id from the catalog (the number before the first |), or null"),
   matchConfidence: z.number().describe("How confident the catalog match is (0.0-1.0)"),
-  alternativeProductIds: z.array(z.string()).describe("2nd and 3rd best product IDs"),
+  alternativeProductIds: z.array(z.string()).describe("2nd and 3rd best numeric_ids from catalog"),
 })
 
 export type BomStreamItem = z.infer<typeof bomItemSchema>
@@ -776,16 +778,17 @@ export async function parseBomImageStream(
             type: "text",
             text: `Analyze ${images.length > 1 ? "these images (multiple pages)" : "this image"} of a material list, packing slip, or BOM. Extract every line item and match each to the best product in our catalog.${multiPageNote}
 
-CATALOG (ID|name|SKU):
+CATALOG (each line is: numeric_id|product_name|sku):
 ${catalog.text}
 
-For each item, output a JSON object with the fields defined in the schema. Rules:
+For each item, output a JSON object with the fields defined in the schema.
+
+IMPORTANT: For matchedProductId, return the NUMERIC ID (the number before the first | on each catalog line). For example, if the catalog line is "42|FROTH-PAK 200|FP200", return "42" as the matchedProductId — NOT the SKU, NOT the product name.
+
+Rules:
 - ALWAYS try to match every item to a catalog product. The user can easily correct a wrong match, but missing matches create extra work.
 - Set matchConfidence honestly (0.0-1.0), but STILL return the best matchedProductId even at lower confidence.
 - Only set matchedProductId to null if the item is truly unlike anything in the catalog.
-- "FROTH-PAK 200" → match to "FROTH-PAK 200" (matchConfidence: 0.95)
-- "PVC corner 8'" → match to nearest PVC corner product (matchConfidence: 0.7-0.9)
-- "tech screws" → match to nearest screw/fastener product (matchConfidence: 0.6-0.8)
 - Ambiguous items: pick best match, include alternatives in alternativeProductIds
 - Parse EVERY item, even vague ones
 - Output items in document order`,
