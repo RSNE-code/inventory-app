@@ -1,5 +1,6 @@
-import { generateText } from "ai"
+import { generateText, streamObject } from "ai"
 import { anthropic } from "@ai-sdk/anthropic"
+import { z } from "zod"
 import { prisma } from "@/lib/db"
 import { isPanelProduct, isPanelLineItem } from "@/lib/panels"
 import type { ParsedLineItem, CatalogMatch } from "./types"
@@ -662,3 +663,106 @@ function toCatalogMatch(
     isNonCatalog: true,
   }
 }
+
+// ─── BOM-specific streaming image parser ───
+// Lighter than parseImageInput — no supplier/PO context, uses streamObject for progressive items
+
+const bomItemSchema = z.object({
+  rawText: z.string().describe("Original text from the document for this line"),
+  name: z.string().describe("Best description of the item"),
+  quantity: z.number().describe("Quantity"),
+  unitOfMeasure: z.string().describe("Unit: each, linear ft, sq ft, sheet, tube, box, case, roll, etc"),
+  category: z.string().nullable().describe("Category guess or null"),
+  estimatedCost: z.number().nullable().describe("Per-unit cost if visible, or null"),
+  confidence: z.number().describe("How confident you are in reading this line (0.0-1.0)"),
+  matchedProductId: z.string().nullable().describe("Product ID from catalog, or null if no good match"),
+  matchConfidence: z.number().describe("How confident the catalog match is (0.0-1.0)"),
+  alternativeProductIds: z.array(z.string()).describe("2nd and 3rd best product IDs"),
+})
+
+export type BomStreamItem = z.infer<typeof bomItemSchema>
+
+/**
+ * Stream-parse an image for BOM creation.
+ * Only loads catalog context (no suppliers/POs) — much faster.
+ * Returns an async iterable of items via streamObject array mode.
+ */
+export async function parseBomImageStream(
+  imageBase64: string | string[],
+  mimeType: string | string[]
+) {
+  const catalogContext = await loadCatalogContext()
+
+  const images = Array.isArray(imageBase64) ? imageBase64 : [imageBase64]
+  const mimeTypes = Array.isArray(mimeType) ? mimeType : [mimeType]
+
+  const imageParts = images.map((img, i) => ({
+    type: "image" as const,
+    image: img,
+    mediaType: mimeTypes[i] || mimeTypes[0],
+  }))
+
+  const multiPageNote = images.length > 1
+    ? `\n\nIMPORTANT: You are looking at ${images.length} pages of the SAME document. Combine all line items from ALL pages into a single list.`
+    : ""
+
+  const result = streamObject({
+    model: MODEL_VISION,
+    output: "array",
+    schema: bomItemSchema,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: [
+          ...imageParts,
+          {
+            type: "text",
+            text: `Analyze ${images.length > 1 ? "these images (multiple pages)" : "this image"} of a material list, packing slip, or BOM. Extract every line item and match each to the best product in our catalog.${multiPageNote}
+
+CATALOG (ID|name|SKU):
+${catalogContext}
+
+For each item, output a JSON object with the fields defined in the schema. Rules:
+- Only match if genuinely confident. Set matchConfidence honestly (0.0-1.0). A wrong match is worse than no match.
+- "FROTH-PAK 200" → match to "FROTH-PAK 200" with high confidence
+- Ambiguous items: pick best match but lower matchConfidence (0.5-0.7), include alternatives
+- No good match: set matchedProductId to null
+- Parse EVERY item, even vague ones
+- Output items in document order`,
+          },
+        ],
+      },
+    ],
+  })
+
+  return result
+}
+
+/**
+ * Convert a raw AI-streamed BOM item into a CatalogMatch.
+ * Must be called with a pre-loaded productMap.
+ */
+export function toBomCatalogMatch(
+  item: BomStreamItem,
+  productMap: Map<string, ProductData>
+): CatalogMatch {
+  return toCatalogMatch(
+    {
+      rawText: item.rawText,
+      name: item.name,
+      quantity: item.quantity,
+      unitOfMeasure: item.unitOfMeasure,
+      category: item.category ?? undefined,
+      estimatedCost: item.estimatedCost ?? undefined,
+      confidence: item.confidence,
+      matchedProductId: item.matchedProductId,
+      matchConfidence: item.matchConfidence,
+      alternativeProductIds: item.alternativeProductIds,
+    },
+    productMap
+  )
+}
+
+// Re-export loadProductMap for use by the streaming API route
+export { loadProductMap }

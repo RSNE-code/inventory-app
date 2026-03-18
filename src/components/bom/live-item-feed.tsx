@@ -33,7 +33,8 @@ export function LiveItemFeed({
   onDelete,
   onResolveFlagged,
 }: LiveItemFeedProps) {
-  // Stagger item visibility for receipt-printer effect
+  // Items now arrive one at a time from the stream — show them immediately
+  // with a short stagger delay for the receipt-printer feel
   const [visibleCount, setVisibleCount] = useState(0)
 
   useEffect(() => {
@@ -42,20 +43,14 @@ export function LiveItemFeed({
       return
     }
 
+    // When new items arrive from stream, reveal them with a brief delay
     if (items.length > visibleCount) {
       const timer = setTimeout(() => {
         setVisibleCount((prev) => Math.min(prev + 1, items.length))
-      }, 250)
+      }, 120) // Fast reveal — items already arrive with natural stream delay
       return () => clearTimeout(timer)
     }
   }, [items.length, visibleCount, phase])
-
-  // Reset when new items come in from scratch
-  useEffect(() => {
-    if (phase === "pass1") {
-      setVisibleCount(0)
-    }
-  }, [phase])
 
   if (phase === "loading") {
     return (
