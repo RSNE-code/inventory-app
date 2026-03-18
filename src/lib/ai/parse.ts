@@ -559,6 +559,10 @@ interface AIMatchedItem {
   matchedProductId?: string | null
   matchConfidence?: number
   alternativeProductIds?: string[]
+  // Structured dimensions — set by BOM image parser, used by extractPanelSpecs
+  lengthFt?: number | null
+  lengthIn?: number | null
+  thicknessIn?: number | null
 }
 
 /**
@@ -586,47 +590,58 @@ function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
   profile: string
   color: string
 } | null {
-  const rawText = item.rawText ?? ""
-  const nameText = item.name ?? ""
-  const text = `${rawText} ${nameText}`
-
-  // Extract thickness — look for patterns like 4", 4in, 4 inch
+  // ── Thickness ──
+  // Prefer structured AI field, fall back to regex
   let thickness: number | null = null
-  const thicknessMatch = text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:thick|insul|imp|panel|metal|wall|ceil)/i)
-    || text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:IMP|imp)/i)
-    || text.match(/(\d+)\s*(?:inch|in)\s*(?:thick|insul|imp|panel)/i)
-  if (thicknessMatch) {
-    const val = parseFloat(thicknessMatch[1])
-    if (val >= 2 && val <= 8) thickness = val
+  if (item.thicknessIn != null && item.thicknessIn >= 2 && item.thicknessIn <= 8) {
+    thickness = item.thicknessIn
   }
-  // Fall back to matched product dimensions
+  if (!thickness) {
+    const text = `${item.rawText ?? ""} ${item.name ?? ""}`
+    const thicknessMatch = text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:thick|insul|imp|panel|metal|wall|ceil)/i)
+      || text.match(/(\d+(?:\.\d+)?)\s*["″]\s*(?:IMP|imp)/i)
+      || text.match(/(\d+)\s*(?:inch|in)\s*(?:thick|insul|imp|panel)/i)
+    if (thicknessMatch) {
+      const val = parseFloat(thicknessMatch[1])
+      if (val >= 2 && val <= 8) thickness = val
+    }
+  }
   if (!thickness && matchedProduct?.name) {
     const prodMatch = matchedProduct.name.match(/-(\d+)$/)
     if (prodMatch) thickness = parseFloat(prodMatch[1])
   }
   if (!thickness) thickness = 4 // default
 
-  // Extract cut length — look for patterns like 7'6", 7'-6", 10', 9ft, 7 ft 6 in, etc.
-  // IMPORTANT: match on rawText first to avoid false matches across rawText/name boundary
-  // (e.g. rawText "...8'" + name "4\" IMP" would falsely read as 8'4")
+  // ── Cut length ──
+  // Prefer structured AI fields, fall back to regex on rawText
   let cutLengthFt = 0
   let cutLengthDisplay = ""
-  const lengthMatch = rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
-    || rawText.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
-    || rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)(?=\s|$)/)
-    || rawText.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
-    || rawText.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
-    || text.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
-    || text.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
-    || text.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
-    || text.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
-  if (lengthMatch) {
-    const feet = parseInt(lengthMatch[1])
-    const inches = lengthMatch[2] ? parseInt(lengthMatch[2]) : 0
+  if (item.lengthFt != null && item.lengthFt > 0) {
+    const feet = item.lengthFt
+    const inches = item.lengthIn ?? 0
     cutLengthFt = feet + inches / 12
     cutLengthDisplay = inches > 0 ? `${feet}'${inches}"` : `${feet}'`
   }
-  // Fall back to matched product height
+  // Regex fallback (for non-BOM parsers that don't set structured fields)
+  if (!cutLengthFt) {
+    const rawText = item.rawText ?? ""
+    const text = `${rawText} ${item.name ?? ""}`
+    const lengthMatch = rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
+      || rawText.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
+      || rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)(?=\s|$)/)
+      || rawText.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
+      || rawText.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
+      || text.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
+      || text.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
+      || text.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
+      || text.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
+    if (lengthMatch) {
+      const feet = parseInt(lengthMatch[1])
+      const inches = lengthMatch[2] ? parseInt(lengthMatch[2]) : 0
+      cutLengthFt = feet + inches / 12
+      cutLengthDisplay = inches > 0 ? `${feet}'${inches}"` : `${feet}'`
+    }
+  }
   if (!cutLengthFt && matchedProduct?.dimLength) {
     cutLengthFt = matchedProduct.dimLength
     cutLengthDisplay = `${matchedProduct.dimLength}'`
@@ -756,6 +771,9 @@ const bomItemSchema = z.object({
   matchedProductId: z.string().nullable().describe("The [id] number from the catalog (e.g. '1095'), as a string, or null"),
   matchConfidence: z.number().describe("How confident the catalog match is (0.0-1.0)"),
   alternativeProductIds: z.array(z.string()).describe("2nd and 3rd best [id] numbers from catalog"),
+  lengthFt: z.number().nullable().describe("Length in whole feet (e.g. 7 for 7'-6\"), or null if no length visible"),
+  lengthIn: z.number().nullable().describe("Additional inches beyond feet (e.g. 6 for 7'-6\"), 0 if exact feet, null if no length visible"),
+  thicknessIn: z.number().nullable().describe("Panel/material thickness in inches (e.g. 4 for 4\" thick), or null if not a panel or not visible"),
 })
 
 export type BomStreamItem = z.infer<typeof bomItemSchema>
@@ -826,11 +844,16 @@ CONFIDENCE GUIDE:
 - 0.30-0.50: Weak/generic match
 - A handwritten item missing size details is NOT a low-confidence match — warehouse workers rarely write full specs.
 
-DIMENSION PRECISION (critical):
-- Read dimensions EXACTLY as written on the document. Panel lengths often include both feet AND inches (e.g., "7 ft 6 in", "8'4\"", "9'-6\"").
-- NEVER drop the inches portion. If a panel says "7 ft 6 in" or "7'6\"", the rawText and name MUST include the full "7 ft 6 in" or "7'6\"" — not just "7 ft".
-- NEVER add inches that aren't there. If it says "8 ft" or "8'", report exactly that — do not invent "8 ft 4 in".
-- Double-check every dimension against the original image before outputting. Dimensions drive material cutting — errors cause waste.
+DIMENSION EXTRACTION (critical — these drive material cutting):
+- For panels, walls, ceiling panels, or any item with a length: set lengthFt and lengthIn.
+  - "7'-6\"" or "7 ft 6 in" → lengthFt: 7, lengthIn: 6
+  - "8'" or "8 ft" → lengthFt: 8, lengthIn: 0
+  - "20'" → lengthFt: 20, lengthIn: 0
+  - No length visible → lengthFt: null, lengthIn: null
+- For panels with a thickness (e.g., 4" thick, 4" IMP): set thicknessIn.
+  - "4\" walls" or "4\" IMP" → thicknessIn: 4
+  - Not a panel or no thickness visible → thicknessIn: null
+- Do NOT confuse thickness with length. "4\" walls x 7'-6\"" means thicknessIn: 4, lengthFt: 7, lengthIn: 6.
 
 Rules:
 - ALWAYS try to match every item to a catalog product. The user can easily correct a wrong match, but missing matches create extra work.
@@ -868,6 +891,9 @@ export function toBomCatalogMatch(
       matchedProductId: item.matchedProductId,
       matchConfidence: item.matchConfidence,
       alternativeProductIds: item.alternativeProductIds,
+      lengthFt: item.lengthFt,
+      lengthIn: item.lengthIn,
+      thicknessIn: item.thicknessIn,
     },
     productMap
   )
