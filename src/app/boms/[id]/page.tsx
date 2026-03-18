@@ -588,8 +588,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         {/* Action buttons — view mode (sticky bottom bar) */}
         {mode === "view" && (
           <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 space-y-2">
-            {/* Draft actions */}
-            {bom.status === "DRAFT" && (
+            {/* Draft / Pending Review actions */}
+            {(bom.status === "DRAFT" || bom.status === "PENDING_REVIEW") && (
               <>
                 {canApprove ? (
                   <Button
