@@ -36,6 +36,12 @@ interface FeedItem {
   isNonCatalog: boolean
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
+  // Unit conversion fields
+  needsConversion?: boolean
+  parsedUom?: string
+  parsedQty?: number
+  conversionFactor?: number
+  catalogUom?: string
 }
 
 type Phase = "capture" | "processing" | "review"
@@ -199,6 +205,11 @@ export function BomPhotoCapture() {
             }
 
             const match: CatalogMatch = parsed.item
+            const aiUom = match.parsedItem.unitOfMeasure
+            const catalogUom = match.matchedProduct?.unitOfMeasure
+            const BULK_UNITS = ["case", "box", "pallet", "carton", "bag", "roll", "lb", "lbs", "pound", "pounds"]
+            const isBulkUnit = BULK_UNITS.includes(aiUom?.toLowerCase().trim() || "")
+            const uomMismatch = isBulkUnit && catalogUom && aiUom?.toLowerCase().trim() !== catalogUom.toLowerCase().trim()
             const feedItem: FeedItem = {
               id: `item-${parsed.index}-${Date.now()}`,
               rawText: match.parsedItem.rawText,
@@ -216,6 +227,11 @@ export function BomPhotoCapture() {
                 productName: a.name,
                 confidence: a.matchConfidence,
               })),
+              // Unit conversion tracking
+              needsConversion: !!uomMismatch,
+              parsedUom: isBulkUnit ? aiUom : undefined,
+              parsedQty: isBulkUnit ? match.parsedItem.quantity : undefined,
+              catalogUom: uomMismatch ? catalogUom : undefined,
             }
 
             allFeedItems.push(feedItem)
@@ -276,6 +292,43 @@ export function BomPhotoCapture() {
       }
 
       setFeedPhase("done")
+
+      // Auto-resolve known unit conversions
+      setItems((currentItems) => {
+        const itemsNeedingConversion = currentItems.filter((i) => i.needsConversion && i.parsedUom && i.catalogUom)
+        if (itemsNeedingConversion.length > 0) {
+          // Fire lookups in parallel, update items as results come back
+          for (const item of itemsNeedingConversion) {
+            const params = new URLSearchParams({
+              fromUnit: item.parsedUom!,
+              toUnit: item.catalogUom!,
+              ...(item.productId ? { productId: item.productId } : {}),
+            })
+            fetch(`/api/unit-conversions?${params}`)
+              .then((r) => r.json())
+              .then((res) => {
+                if (res.data?.factor) {
+                  const factor = res.data.factor
+                  setItems((prev) =>
+                    prev.map((i) => {
+                      if (i.id !== item.id) return i
+                      return {
+                        ...i,
+                        quantity: Math.round((i.parsedQty ?? i.quantity) * factor),
+                        unitOfMeasure: i.catalogUom ?? i.unitOfMeasure,
+                        conversionFactor: factor,
+                        needsConversion: false,
+                      }
+                    })
+                  )
+                }
+              })
+              .catch(() => {}) // Leave as needing manual conversion
+          }
+        }
+        return currentItems
+      })
+
       setPhase("review")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to process image")
@@ -313,6 +366,9 @@ export function BomPhotoCapture() {
   }
 
   function keepAsCustom(id: string) {
+    // Panels can never become custom items — button is hidden, but guard defensively
+    const item = items.find((i) => i.id === id)
+    if (item?.isPanel) return
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
@@ -321,6 +377,59 @@ export function BomPhotoCapture() {
       )
     )
     setResolvingItemId(null)
+  }
+
+  function editItemDimensions(id: string, thickness: number, lengthFt: number, lengthIn: number) {
+    const cutLengthFt = lengthFt + lengthIn / 12
+    const cutLengthDisplay = lengthIn > 0 ? `${lengthFt}'${lengthIn}"` : `${lengthFt}'`
+    const productName = `${thickness}" IMP — ${cutLengthDisplay}`
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? {
+              ...i,
+              productName,
+              panelSpecs: {
+                ...i.panelSpecs,
+                type: "panel",
+                thickness,
+                cutLengthFt,
+                cutLengthDisplay,
+              },
+            }
+          : i
+      )
+    )
+  }
+
+  async function handleConversionConfirm(id: string, factor: number) {
+    setItems((prev) =>
+      prev.map((i) => {
+        if (i.id !== id) return i
+        const newQty = Math.round((i.parsedQty ?? i.quantity) * factor)
+        return {
+          ...i,
+          quantity: newQty,
+          unitOfMeasure: i.catalogUom ?? i.unitOfMeasure,
+          conversionFactor: factor,
+          needsConversion: false,
+        }
+      })
+    )
+    // Save conversion for future use
+    const item = items.find((i) => i.id === id)
+    if (item?.parsedUom && item?.catalogUom) {
+      fetch("/api/unit-conversions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: item.productId || null,
+          fromUnit: item.parsedUom,
+          toUnit: item.catalogUom,
+          factor,
+        }),
+      }).catch(() => {}) // Fire and forget
+    }
   }
 
   // ─── Submit BOM ─────────────────────────────
@@ -346,6 +455,7 @@ export function BomPhotoCapture() {
         nonCatalogSpecs: item.panelSpecs || null,
         matchConfidence: item.confidence,
         rawText: item.rawText,
+        parsedUom: item.parsedUom || null,
       }))
 
       const result = await createBom.mutateAsync({
@@ -497,6 +607,7 @@ export function BomPhotoCapture() {
             alternatives={resolvingItem.alternatives || []}
             onSelect={(productId, productName) => resolveItem(resolvingItem.id, productId, productName)}
             onKeepAsCustom={() => keepAsCustom(resolvingItem.id)}
+            isPanel={resolvingItem.isPanel}
           />
         </div>
       )}
@@ -508,6 +619,8 @@ export function BomPhotoCapture() {
         onUpdateQty={updateItemQty}
         onDelete={deleteItem}
         onResolveFlagged={setResolvingItemId}
+        onEditDimensions={editItemDimensions}
+        onConversionConfirm={handleConversionConfirm}
       />
 
       {/* Sticky bottom bar */}

@@ -173,6 +173,7 @@ model Product {
   fabricationRecipes         FabricationRecipe[] @relation("FinishedProduct")
   usedAsSourceIn             FabricationRecipe[] @relation("SourceProduct")
   matchHistory               MatchHistory[]
+  unitConversions            UnitConversion[]
 }
 
 model Category {
@@ -313,6 +314,7 @@ model BomLineItem {
   // AI matching metadata
   matchConfidence  Float?    // 0-1 AI confidence score for this match
   rawText          String?   // Original text from photo/voice parse
+  parsedUom        String?   @db.VarChar(50) // Original AI-parsed unit before conversion (e.g., "case")
 
   createdAt     DateTime @default(now())
 
@@ -570,4 +572,23 @@ model MatchHistory {
   @@unique([normalizedText, userId])
   @@index([userId, normalizedText])
   @@index([productId])
+}
+
+// ─── UNIT CONVERSIONS (Learning System) ────────────────
+// Stores product-specific and global unit conversion factors
+// e.g., "FROTH-PAK: 1 case = 12 each" or globally "1 case = 12 each"
+
+model UnitConversion {
+  id        String   @id @default(uuid()) @db.Uuid
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+  fromUnit  String   @db.VarChar(30) // "case", "box", "pallet", "lb"
+  toUnit    String   @db.VarChar(30) // "each", "linear ft", etc.
+  factor    Decimal  @db.Decimal(12, 4) // 1 fromUnit = factor × toUnit
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, fromUnit, toUnit])
+  @@index([fromUnit, toUnit])
 }

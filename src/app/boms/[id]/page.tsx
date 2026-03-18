@@ -14,6 +14,7 @@ import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
 import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
+import { PanelDimensionEditor } from "@/components/bom/panel-dimension-editor"
 import { Pencil, Plus, Undo2, Mic, Info, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -507,6 +508,33 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   }
                 } : undefined}
               />
+              {/* Panel dimension editor (edit mode) */}
+              {isPanelItem && mode === "edit" && specs && (
+                <div className="px-4 py-2 bg-blue-50/50">
+                  <PanelDimensionEditor
+                    thickness={(specs.thickness as number) ?? 4}
+                    lengthFt={Math.floor((specs.cutLengthFt as number) ?? 0)}
+                    lengthIn={Math.round(((specs.cutLengthFt as number) ?? 0) % 1 * 12)}
+                    onUpdate={async (thickness, lengthFt, lengthIn) => {
+                      const cutLengthFt = lengthFt + lengthIn / 12
+                      const cutLengthDisplay = lengthIn > 0 ? `${lengthFt}'${lengthIn}"` : `${lengthFt}'`
+                      const newSpecs = { ...specs, thickness, cutLengthFt, cutLengthDisplay }
+                      const newName = `${thickness}" IMP — ${cutLengthDisplay}`
+                      try {
+                        await fetch(`/api/boms/${id}`, {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            updateLineItems: [{ id: lineId, nonCatalogSpecs: newSpecs, nonCatalogName: newName }],
+                          }),
+                        })
+                      } catch {
+                        toast.error("Failed to update dimensions")
+                      }
+                    }}
+                  />
+                </div>
+              )}
               {/* Panel checkout button */}
               {isPanelItem && canCheckout && mode === "view" && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && (
                 (() => {

@@ -14,6 +14,7 @@ interface FlaggedItemResolverProps {
   alternatives: Alternative[]
   onSelect: (productId: string, productName: string) => void
   onKeepAsCustom: () => void
+  isPanel?: boolean
 }
 
 export function FlaggedItemResolver({
@@ -22,6 +23,7 @@ export function FlaggedItemResolver({
   alternatives,
   onSelect,
   onKeepAsCustom,
+  isPanel,
 }: FlaggedItemResolverProps) {
   return (
     <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
@@ -71,13 +73,19 @@ export function FlaggedItemResolver({
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={onKeepAsCustom}
-        className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2"
-      >
-        None of these — add as custom item
-      </button>
+      {isPanel ? (
+        <p className="text-center text-xs text-text-muted py-2">
+          Panel item — dimensions can be edited below
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={onKeepAsCustom}
+          className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2"
+        >
+          None of these — add as custom item
+        </button>
+      )}
     </div>
   )
 }

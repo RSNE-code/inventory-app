@@ -4,8 +4,10 @@ import { useEffect, useState } from "react"
 import { cn, formatQuantity } from "@/lib/utils"
 import { Check, AlertCircle, Minus, Plus, X } from "lucide-react"
 import { SwipeableRow } from "./swipeable-row"
+import { PanelDimensionEditor } from "./panel-dimension-editor"
+import { UnitConversionPrompt } from "./unit-conversion-prompt"
 
-interface FeedItem {
+export interface FeedItem {
   id: string
   rawText: string
   productName: string
@@ -15,7 +17,15 @@ interface FeedItem {
   confidence: number
   isPanel: boolean
   confirmed: boolean // Pass 2 confirmed
+  isNonCatalog: boolean
+  panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
+  // Unit conversion fields
+  needsConversion?: boolean
+  parsedUom?: string
+  parsedQty?: number
+  conversionFactor?: number
+  catalogUom?: string
 }
 
 interface LiveItemFeedProps {
@@ -24,6 +34,8 @@ interface LiveItemFeedProps {
   onUpdateQty: (id: string, qty: number) => void
   onDelete: (id: string) => void
   onResolveFlagged: (id: string) => void
+  onEditDimensions?: (id: string, thickness: number, lengthFt: number, lengthIn: number) => void
+  onConversionConfirm?: (id: string, factor: number) => void
 }
 
 export function LiveItemFeed({
@@ -32,6 +44,8 @@ export function LiveItemFeed({
   onUpdateQty,
   onDelete,
   onResolveFlagged,
+  onEditDimensions,
+  onConversionConfirm,
 }: LiveItemFeedProps) {
   // Items now arrive one at a time from the stream — show them immediately
   // with a short stagger delay for the receipt-printer feel
@@ -154,6 +168,29 @@ export function LiveItemFeed({
                   </p>
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
+                  )}
+                  {/* Panel dimension editor */}
+                  {item.isPanel && item.panelSpecs && onEditDimensions && (
+                    <div className="mt-1.5">
+                      <PanelDimensionEditor
+                        thickness={(item.panelSpecs as { thickness?: number }).thickness ?? 4}
+                        lengthFt={Math.floor((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0)}
+                        lengthIn={Math.round(((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0) % 1 * 12)}
+                        onUpdate={(t, ft, inches) => onEditDimensions(item.id, t, ft, inches)}
+                      />
+                    </div>
+                  )}
+                  {/* Unit conversion prompt */}
+                  {item.needsConversion && item.parsedUom && item.catalogUom && onConversionConfirm && (
+                    <div className="mt-1.5">
+                      <UnitConversionPrompt
+                        parsedQty={item.parsedQty ?? item.quantity}
+                        parsedUnit={item.parsedUom}
+                        catalogUnit={item.catalogUom}
+                        knownFactor={item.conversionFactor}
+                        onConfirm={(factor) => onConversionConfirm(item.id, factor)}
+                      />
+                    </div>
                   )}
                   {isFlagged && (
                     <button

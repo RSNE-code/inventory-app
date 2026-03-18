@@ -27,6 +27,7 @@ const bomLineItemSchema = z.object({
   ]).optional().nullable(),
   matchConfidence: z.number().min(0).max(1).optional().nullable(),
   rawText: z.string().optional().nullable(),
+  parsedUom: z.string().max(50).optional().nullable(),
 }).refine(
   (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
   { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
@@ -146,6 +147,7 @@ export async function POST(request: NextRequest) {
             nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
             matchConfidence: item.matchConfidence ?? null,
             rawText: item.rawText || null,
+            parsedUom: item.parsedUom || null,
             // Auto-set fabrication source for products with recipes
             fabricationSource: !item.isNonCatalog && item.productId && recipeLookup.has(item.productId)
               ? "RSNE_MADE"

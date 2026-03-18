@@ -72,6 +72,8 @@ const updateBomSchema = z.object({
         id: z.string().uuid(),
         qtyNeeded: z.number().positive().optional(),
         fabricationSource: z.enum(["RSNE_MADE", "SUPPLIER"]).optional().nullable(),
+        nonCatalogSpecs: z.any().optional(),
+        nonCatalogName: z.string().max(255).optional(),
       })
     )
     .optional(),
@@ -153,6 +155,12 @@ export async function PUT(
           }
           if (item.fabricationSource !== undefined) {
             updateFields.fabricationSource = item.fabricationSource
+          }
+          if (item.nonCatalogSpecs !== undefined) {
+            updateFields.nonCatalogSpecs = item.nonCatalogSpecs as Prisma.InputJsonValue
+          }
+          if (item.nonCatalogName !== undefined) {
+            updateFields.nonCatalogName = item.nonCatalogName
           }
           if (Object.keys(updateFields).length === 0) return Promise.resolve()
           return prisma.bomLineItem.update({
