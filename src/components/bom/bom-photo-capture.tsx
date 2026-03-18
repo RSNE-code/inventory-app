@@ -40,13 +40,49 @@ interface FeedItem {
 
 type Phase = "capture" | "processing" | "review"
 
-// ─── Image compression (from existing AIInput) ────
+// ─── HEIC detection + conversion ─────────────────
+
+function isHeic(file: File): boolean {
+  const type = file.type.toLowerCase()
+  if (type === "image/heic" || type === "image/heif") return true
+  // iOS sometimes sends HEIC with no MIME — check extension
+  const ext = file.name.toLowerCase().split(".").pop()
+  return ext === "heic" || ext === "heif"
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  // Dynamic import — heic2any uses `window` at module level, can't be imported at top
+  const { default: heic2any } = await import("heic2any")
+  const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 })
+  // heic2any can return a single blob or an array (for multi-frame HEIC)
+  const result = Array.isArray(blob) ? blob[0] : blob
+  const name = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg")
+  return new File([result], name, { type: "image/jpeg" })
+}
+
+// ─── Image compression ──────────────────────────
 
 async function compressImage(file: File): Promise<File> {
-  return new Promise((resolve) => {
+  // Convert HEIC → JPEG before canvas processing
+  const input = isHeic(file) ? await convertHeicToJpeg(file) : file
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      URL.revokeObjectURL(url)
+      reject(new Error(`Could not load image: ${file.name}. Try taking a new photo.`))
+    }, 15000)
+
     const img = new Image()
-    const url = URL.createObjectURL(file)
+    const url = URL.createObjectURL(input)
+
+    img.onerror = () => {
+      clearTimeout(timeout)
+      URL.revokeObjectURL(url)
+      reject(new Error(`Unsupported image format: ${file.name}. Try taking a photo with the camera.`))
+    }
+
     img.onload = () => {
+      clearTimeout(timeout)
       URL.revokeObjectURL(url)
       const canvas = document.createElement("canvas")
       let w = img.width
@@ -121,98 +157,126 @@ export function BomPhotoCapture() {
         compressed.push(await compressImage(files[i]))
       }
 
-      // Pass 1: Fast parse
+      // Start streaming parse
       const formData = new FormData()
       compressed.forEach((f) => formData.append("images", f))
 
-      const pass1Res = await fetch("/api/ai/parse-image-fast", {
+      const res = await fetch("/api/ai/parse-image-fast", {
         method: "POST",
         body: formData,
       })
 
-      if (!pass1Res.ok) {
-        const err = await pass1Res.json().catch(() => ({}))
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
         throw new Error(err.error || "Failed to read image")
       }
 
-      const pass1Data = await pass1Res.json()
-      const pass1Items: CatalogMatch[] = pass1Data.data?.items || []
-
-      // Convert to feed items
-      const feedItems: FeedItem[] = pass1Items.map((match, i) => ({
-        id: `item-${i}-${Date.now()}`,
-        rawText: match.parsedItem.rawText,
-        productName: match.matchedProduct?.name || match.parsedItem.name,
-        productId: match.matchedProduct?.id || null,
-        quantity: match.parsedItem.quantity,
-        unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
-        confidence: match.matchConfidence,
-        isPanel: !!match.panelSpecs,
-        confirmed: false,
-        isNonCatalog: match.isNonCatalog,
-        panelSpecs: match.panelSpecs || undefined,
-        alternatives: match.alternativeMatches?.map((a) => ({
-          productId: a.id,
-          productName: a.name,
-          confidence: a.matchConfidence,
-        })),
-      }))
-
-      setItems(feedItems)
+      // Read NDJSON stream — items arrive one at a time
       setFeedPhase("pass1")
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error("No response stream")
 
-      // Pass 2: Background refinement (after a brief delay to let Pass 1 render)
-      setTimeout(async () => {
-        setFeedPhase("pass2")
+      const decoder = new TextDecoder()
+      let buffer = ""
+      const allFeedItems: FeedItem[] = []
 
-        try {
-          const pass2Res = await fetch("/api/ai/refine-matches", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              items: feedItems.map((item) => ({
-                rawText: item.rawText,
-                matchedProductId: item.productId,
-                confidence: item.confidence,
-                quantity: item.quantity,
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split("\n")
+        buffer = lines.pop() || "" // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.trim()) continue
+          try {
+            const parsed = JSON.parse(line)
+
+            // Check for error from server
+            if (parsed.error) {
+              throw new Error(parsed.error)
+            }
+
+            const match: CatalogMatch = parsed.item
+            const feedItem: FeedItem = {
+              id: `item-${parsed.index}-${Date.now()}`,
+              rawText: match.parsedItem.rawText,
+              productName: match.matchedProduct?.name || match.parsedItem.name,
+              productId: match.matchedProduct?.id || null,
+              quantity: match.parsedItem.quantity,
+              unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
+              confidence: match.matchConfidence,
+              isPanel: !!match.panelSpecs,
+              confirmed: match.matchConfidence >= 0.85,
+              isNonCatalog: match.isNonCatalog,
+              panelSpecs: match.panelSpecs || undefined,
+              alternatives: match.alternativeMatches?.map((a) => ({
+                productId: a.id,
+                productName: a.name,
+                confidence: a.matchConfidence,
               })),
-            }),
-          })
+            }
 
-          if (pass2Res.ok) {
-            const pass2Data = await pass2Res.json()
-            const refinedItems = pass2Data.data?.items || []
-
-            // Update items with refined matches
-            setItems((prev) =>
-              prev.map((item) => {
-                const refined = refinedItems.find(
-                  (r: { rawText: string; refined: boolean; confidence: number; matchedProductId: string | null }) =>
-                    r.rawText.toLowerCase().trim() === item.rawText.toLowerCase().trim()
-                )
-                if (refined?.refined && refined.confidence > item.confidence) {
-                  return {
-                    ...item,
-                    confidence: refined.confidence,
-                    productId: refined.matchedProductId || item.productId,
-                    confirmed: true,
-                  }
-                }
-                return { ...item, confirmed: item.confidence >= 0.85 }
-              })
-            )
+            allFeedItems.push(feedItem)
+            // Push new item into state immediately — triggers render
+            setItems([...allFeedItems])
+          } catch (parseErr) {
+            if (parseErr instanceof Error && parseErr.message !== "Unexpected end of JSON input") {
+              console.warn("[bom-photo] Failed to parse stream line:", line, parseErr)
+            }
           }
-        } catch {
-          // Pass 2 failure is non-critical — Pass 1 results still usable
-          console.warn("Pass 2 refinement failed — using Pass 1 results")
+        }
+      }
+
+      // Stream complete — run Pass 2 refinement in background
+      setFeedPhase("pass2")
+
+      try {
+        const pass2Res = await fetch("/api/ai/refine-matches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: allFeedItems.map((item) => ({
+              rawText: item.rawText,
+              matchedProductId: item.productId,
+              confidence: item.confidence,
+              quantity: item.quantity,
+            })),
+          }),
+        })
+
+        if (pass2Res.ok) {
+          const pass2Data = await pass2Res.json()
+          const refinedItems = pass2Data.data?.items || []
+
           setItems((prev) =>
-            prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.85 }))
+            prev.map((item) => {
+              const refined = refinedItems.find(
+                (r: { rawText: string; refined: boolean; confidence: number; matchedProductId: string | null }) =>
+                  r.rawText.toLowerCase().trim() === item.rawText.toLowerCase().trim()
+              )
+              if (refined?.refined && refined.confidence > item.confidence) {
+                return {
+                  ...item,
+                  confidence: refined.confidence,
+                  productId: refined.matchedProductId || item.productId,
+                  confirmed: true,
+                }
+              }
+              return { ...item, confirmed: item.confidence >= 0.85 }
+            })
           )
         }
+      } catch {
+        console.warn("Pass 2 refinement failed — using streamed results")
+        setItems((prev) =>
+          prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.85 }))
+        )
+      }
 
-        setFeedPhase("done")
-        setPhase("review")
-      }, 500)
+      setFeedPhase("done")
+      setPhase("review")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to process image")
       setPhase("capture")

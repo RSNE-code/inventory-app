@@ -194,15 +194,41 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     }
   }
 
+  // Detect HEIC/HEIF images (iPhone default format)
+  function isHeic(file: File): boolean {
+    const type = file.type.toLowerCase()
+    if (type === "image/heic" || type === "image/heif") return true
+    const ext = file.name.toLowerCase().split(".").pop()
+    return ext === "heic" || ext === "heif"
+  }
+
+  // Convert HEIC → JPEG via heic2any (dynamic import to avoid SSR issues)
+  async function convertHeicToJpeg(file: File): Promise<File> {
+    const { default: heic2any } = await import("heic2any")
+    const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 })
+    const result = Array.isArray(blob) ? blob[0] : blob
+    const name = file.name.replace(/\.heic$/i, ".jpg").replace(/\.heif$/i, ".jpg")
+    return new File([result], name, { type: "image/jpeg" })
+  }
+
   // Compress an image file to fit under maxSizeKB using canvas
   async function compressImage(file: File, maxSizeKB = 800): Promise<File> {
-    // Skip if already small enough
-    if (file.size <= maxSizeKB * 1024) return file
+    // Convert HEIC → JPEG before canvas processing
+    const input = isHeic(file) ? await convertHeicToJpeg(file) : file
 
-    return new Promise((resolve) => {
+    // Skip if already small enough
+    if (input.size <= maxSizeKB * 1024) return input
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(url)
+        reject(new Error(`Could not load image: ${file.name}. Try taking a new photo.`))
+      }, 15000)
+
       const img = new Image()
-      const url = URL.createObjectURL(file)
+      const url = URL.createObjectURL(input)
       img.onload = () => {
+        clearTimeout(timeout)
         URL.revokeObjectURL(url)
         const canvas = document.createElement("canvas")
         const maxDim = 1200
@@ -234,8 +260,9 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
         tryCompress()
       }
       img.onerror = () => {
+        clearTimeout(timeout)
         URL.revokeObjectURL(url)
-        resolve(file)
+        reject(new Error(`Unsupported image format: ${file.name}. Try taking a photo with the camera.`))
       }
       img.src = url
     })
