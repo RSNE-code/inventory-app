@@ -93,14 +93,19 @@ export async function POST(request: NextRequest) {
           for await (const rawItem of streamResult.elementStream) {
             const item = rawItem as BomStreamItem
             // Resolve short numeric IDs → real UUIDs before product lookup
+            // Diagnostic: log what the AI returned vs what we resolve
+            const resolvedId = resolveProductId(item.matchedProductId, indexToId)
+            console.log(`[parse-image-fast] Item: "${item.rawText}" | AI returned ID: ${item.matchedProductId} | Resolved: ${resolvedId} | Confidence: ${item.matchConfidence}`)
+
             const resolvedItem: BomStreamItem = {
               ...item,
-              matchedProductId: resolveProductId(item.matchedProductId, indexToId),
+              matchedProductId: resolvedId,
               alternativeProductIds: item.alternativeProductIds
                 .map((id) => resolveProductId(id, indexToId))
                 .filter((id): id is string => id !== null),
             }
             const catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
+            console.log(`[parse-image-fast] → Match result: ${catalogMatch.matchedProduct?.name ?? "NO MATCH"} | isNonCatalog: ${catalogMatch.isNonCatalog} | finalConfidence: ${catalogMatch.matchConfidence}`)
 
             // Apply match history boosting
             const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ")
