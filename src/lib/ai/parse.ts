@@ -586,7 +586,9 @@ function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
   profile: string
   color: string
 } | null {
-  const text = `${item.rawText ?? ""} ${item.name ?? ""}`
+  const rawText = item.rawText ?? ""
+  const nameText = item.name ?? ""
+  const text = `${rawText} ${nameText}`
 
   // Extract thickness — look for patterns like 4", 4in, 4 inch
   let thickness: number | null = null
@@ -604,13 +606,20 @@ function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
   }
   if (!thickness) thickness = 4 // default
 
-  // Extract cut length — look for patterns like 7'6", 10', 9ft, etc.
+  // Extract cut length — look for patterns like 7'6", 7'-6", 10', 9ft, 7 ft 6 in, etc.
+  // IMPORTANT: match on rawText first to avoid false matches across rawText/name boundary
+  // (e.g. rawText "...8'" + name "4\" IMP" would falsely read as 8'4")
   let cutLengthFt = 0
   let cutLengthDisplay = ""
-  const lengthMatch = text.match(/(\d+)\s*[''′]\s*(\d+)?(?:\s*["″])?/)
-    || text.match(/(\d+)\s*(?:ft|foot|feet)\s+(\d+)\s*(?:in|inch|inches)\b/)
+  const lengthMatch = rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
+    || rawText.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
+    || rawText.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)(?=\s|$)/)
+    || rawText.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
+    || rawText.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
+    || text.match(/(\d+)\s*[''′']\s*[-–]?\s*(\d+)\s*["″"]/)
+    || text.match(/(\d+)\s*(?:ft|foot|feet)[\s.]*(\d+)\s*(?:in|inch|inches)\b/)
     || text.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
-    || text.match(/(\d+(?:\.\d+)?)\s*[''′]/)
+    || text.match(/(\d+(?:\.\d+)?)\s*[''′'](?:\s|$)/)
   if (lengthMatch) {
     const feet = parseInt(lengthMatch[1])
     const inches = lengthMatch[2] ? parseInt(lengthMatch[2]) : 0
