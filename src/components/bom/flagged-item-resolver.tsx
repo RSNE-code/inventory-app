@@ -1,8 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Star } from "lucide-react"
 
 interface Alternative {
   productId: string
@@ -12,6 +10,7 @@ interface Alternative {
 
 interface FlaggedItemResolverProps {
   rawText: string
+  primaryMatch?: Alternative | null
   alternatives: Alternative[]
   onSelect: (productId: string, productName: string) => void
   onKeepAsCustom: () => void
@@ -19,6 +18,7 @@ interface FlaggedItemResolverProps {
 
 export function FlaggedItemResolver({
   rawText,
+  primaryMatch,
   alternatives,
   onSelect,
   onKeepAsCustom,
@@ -28,7 +28,7 @@ export function FlaggedItemResolver({
       <div className="flex items-start gap-2">
         <AlertCircle className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-navy">Match needed</p>
+          <p className="text-sm font-semibold text-navy">Confirm match</p>
           <p className="text-xs text-text-muted mt-0.5">
             You wrote: <span className="font-semibold">"{rawText}"</span>
           </p>
@@ -36,7 +36,27 @@ export function FlaggedItemResolver({
       </div>
 
       <div className="space-y-2">
-        {alternatives.map((alt) => (
+        {/* Primary match — shown first, visually distinguished */}
+        {primaryMatch && (
+          <button
+            type="button"
+            onClick={() => onSelect(primaryMatch.productId, primaryMatch.productName)}
+            className="w-full text-left p-3 rounded-lg bg-blue-50 border-2 border-brand-blue/30 hover:border-brand-blue/60 active:scale-[0.99] transition-all"
+          >
+            <div className="flex items-center gap-1.5">
+              <Star className="h-3.5 w-3.5 text-brand-blue shrink-0" />
+              <p className="text-sm font-bold text-navy">{primaryMatch.productName}</p>
+            </div>
+            <p className="text-xs text-brand-blue font-medium mt-0.5">
+              Best match — {Math.round(primaryMatch.confidence * 100)}%
+            </p>
+          </button>
+        )}
+
+        {/* Alternative matches */}
+        {alternatives
+          .filter((alt) => alt.productId !== primaryMatch?.productId)
+          .map((alt) => (
           <button
             key={alt.productId}
             type="button"

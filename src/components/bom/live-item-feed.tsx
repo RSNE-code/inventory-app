@@ -70,7 +70,7 @@ export function LiveItemFeed({
         ? "Verifying matches..."
         : `${items.length} item${items.length !== 1 ? "s" : ""} matched`
 
-  const flaggedCount = items.filter((i) => i.confidence < 0.85 && !i.confirmed).length
+  const flaggedCount = items.filter((i) => i.confidence < 0.70 && !i.confirmed).length
 
   return (
     <div>
@@ -105,8 +105,8 @@ export function LiveItemFeed({
       {/* Item rows */}
       <div>
         {items.slice(0, visibleCount).map((item, index) => {
-          const isFlagged = item.confidence < 0.85 && !item.confirmed
-          const isConfirmed = item.confirmed || item.confidence >= 0.85
+          const isFlagged = item.confidence < 0.70 && !item.confirmed
+          const isConfirmed = item.confirmed || item.confidence >= 0.70
 
           return (
             <SwipeableRow key={item.id} onDelete={() => onDelete(item.id)}>

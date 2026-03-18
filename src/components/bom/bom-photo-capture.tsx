@@ -264,14 +264,14 @@ export function BomPhotoCapture() {
                   confirmed: true,
                 }
               }
-              return { ...item, confirmed: item.confidence >= 0.85 }
+              return { ...item, confirmed: item.confidence >= 0.70 }
             })
           )
         }
       } catch {
         console.warn("Pass 2 refinement failed — using streamed results")
         setItems((prev) =>
-          prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.85 }))
+          prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.70 }))
         )
       }
 
@@ -357,7 +357,7 @@ export function BomPhotoCapture() {
 
       // Feed confirmed matches into learning loop
       const confirmedMatches = items
-        .filter((i) => i.productId && i.confidence >= 0.85 && !i.isNonCatalog)
+        .filter((i) => i.productId && i.confidence >= 0.70 && !i.isNonCatalog)
         .map((i) => ({ rawText: i.rawText, productId: i.productId! }))
 
       if (confirmedMatches.length > 0) {
@@ -489,6 +489,11 @@ export function BomPhotoCapture() {
         <div className="px-4 py-2">
           <FlaggedItemResolver
             rawText={resolvingItem.rawText}
+            primaryMatch={resolvingItem.productId ? {
+              productId: resolvingItem.productId,
+              productName: resolvingItem.productName,
+              confidence: resolvingItem.confidence,
+            } : null}
             alternatives={resolvingItem.alternatives || []}
             onSelect={(productId, productName) => resolveItem(resolvingItem.id, productId, productName)}
             onKeepAsCustom={() => keepAsCustom(resolvingItem.id)}
