@@ -122,12 +122,17 @@ export function LiveItemFeed({
           const isFlagged = item.confidence < 0.70 && !item.confirmed
           const isConfirmed = item.confirmed || item.confidence >= 0.70
 
+          const showConversion = item.needsConversion && item.parsedUom && item.catalogUom && onConversionConfirm
+
           return (
             <SwipeableRow key={item.id} onDelete={() => onDelete(item.id)}>
+              <div>
               <div
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 border-b transition-all duration-300",
-                  isFlagged ? "border-orange-200 bg-orange-50/50" : "border-border-custom/40",
+                  "flex items-center gap-3 px-4 py-3 transition-all duration-300",
+                  isFlagged ? "bg-orange-50/50" : "",
+                  !showConversion ? "border-b" : "",
+                  isFlagged ? "border-orange-200" : "border-border-custom/40",
                   // Entry animation
                   "animate-[slideInUp_200ms_ease-out]"
                 )}
@@ -180,18 +185,6 @@ export function LiveItemFeed({
                       />
                     </div>
                   )}
-                  {/* Unit conversion prompt */}
-                  {item.needsConversion && item.parsedUom && item.catalogUom && onConversionConfirm && (
-                    <div className="mt-1.5">
-                      <UnitConversionPrompt
-                        parsedQty={item.parsedQty ?? item.quantity}
-                        parsedUnit={item.parsedUom}
-                        catalogUnit={item.catalogUom}
-                        knownFactor={item.conversionFactor}
-                        onConfirm={(factor) => onConversionConfirm(item.id, factor)}
-                      />
-                    </div>
-                  )}
                   {isFlagged && (
                     <button
                       type="button"
@@ -237,6 +230,19 @@ export function LiveItemFeed({
                 >
                   <X className="h-4 w-4" />
                 </button>
+              </div>
+              {/* Unit conversion prompt — full width below item */}
+              {showConversion && (
+                <div className="px-4 pb-3 border-b border-border-custom/40">
+                  <UnitConversionPrompt
+                    parsedQty={item.parsedQty ?? item.quantity}
+                    parsedUnit={item.parsedUom!}
+                    catalogUnit={item.catalogUom!}
+                    knownFactor={item.conversionFactor}
+                    onConfirm={(factor) => onConversionConfirm!(item.id, factor)}
+                  />
+                </div>
+              )}
               </div>
             </SwipeableRow>
           )

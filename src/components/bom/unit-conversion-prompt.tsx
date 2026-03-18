@@ -44,7 +44,7 @@ export function UnitConversionPrompt({
     <div className="flex items-center gap-2 px-2 py-2 rounded-lg bg-amber-50 border border-amber-200">
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-amber-800">
-          How many {catalogUnit} in {parsedQty === 1 ? `a` : parsedQty} {parsedUnit}?
+          How many {catalogUnit} in 1 {parsedUnit.replace(/s$/, "")}?
         </p>
       </div>
 
