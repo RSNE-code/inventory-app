@@ -608,6 +608,7 @@ function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
   let cutLengthFt = 0
   let cutLengthDisplay = ""
   const lengthMatch = text.match(/(\d+)\s*[''′]\s*(\d+)?(?:\s*["″])?/)
+    || text.match(/(\d+)\s*(?:ft|foot|feet)\s+(\d+)\s*(?:in|inch|inches)\b/)
     || text.match(/(\d+(?:\.\d+)?)\s*(?:ft|foot|feet)\b/)
     || text.match(/(\d+(?:\.\d+)?)\s*[''′]/)
   if (lengthMatch) {
@@ -815,6 +816,12 @@ CONFIDENCE GUIDE:
 - 0.50-0.75: Related product, plausible match (e.g., "tech screws" → "#12 TEK 5")
 - 0.30-0.50: Weak/generic match
 - A handwritten item missing size details is NOT a low-confidence match — warehouse workers rarely write full specs.
+
+DIMENSION PRECISION (critical):
+- Read dimensions EXACTLY as written on the document. Panel lengths often include both feet AND inches (e.g., "7 ft 6 in", "8'4\"", "9'-6\"").
+- NEVER drop the inches portion. If a panel says "7 ft 6 in" or "7'6\"", the rawText and name MUST include the full "7 ft 6 in" or "7'6\"" — not just "7 ft".
+- NEVER add inches that aren't there. If it says "8 ft" or "8'", report exactly that — do not invent "8 ft 4 in".
+- Double-check every dimension against the original image before outputting. Dimensions drive material cutting — errors cause waste.
 
 Rules:
 - ALWAYS try to match every item to a catalog product. The user can easily correct a wrong match, but missing matches create extra work.
