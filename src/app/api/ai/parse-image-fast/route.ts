@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
     // Create a ReadableStream that emits NDJSON — one CatalogMatch per line
     const encoder = new TextEncoder()
     let itemIndex = 0
+    const diagnostics: string[] = []
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -93,19 +94,20 @@ export async function POST(request: NextRequest) {
           for await (const rawItem of streamResult.elementStream) {
             const item = rawItem as BomStreamItem
             // Resolve short numeric IDs → real UUIDs before product lookup
-            // Diagnostic: log what the AI returned vs what we resolve
             const resolvedId = resolveProductId(item.matchedProductId, indexToId)
-            console.log(`[parse-image-fast] Item: "${item.rawText}" | AI returned ID: ${item.matchedProductId} | Resolved: ${resolvedId} | Confidence: ${item.matchConfidence}`)
+            const resolvedAlts = item.alternativeProductIds
+                .map((id) => resolveProductId(id, indexToId))
+                .filter((id): id is string => id !== null)
 
             const resolvedItem: BomStreamItem = {
               ...item,
               matchedProductId: resolvedId,
-              alternativeProductIds: item.alternativeProductIds
-                .map((id) => resolveProductId(id, indexToId))
-                .filter((id): id is string => id !== null),
+              alternativeProductIds: resolvedAlts,
             }
             const catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
-            console.log(`[parse-image-fast] → Match result: ${catalogMatch.matchedProduct?.name ?? "NO MATCH"} | isNonCatalog: ${catalogMatch.isNonCatalog} | finalConfidence: ${catalogMatch.matchConfidence}`)
+
+            // Collect diagnostic per item
+            diagnostics.push(`${item.rawText}|aiId=${item.matchedProductId}|conf=${item.matchConfidence}|matched=${catalogMatch.matchedProduct?.name ?? "NONE"}|panel=${!!catalogMatch.panelSpecs}`)
 
             // Apply match history boosting
             const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ")
@@ -126,6 +128,8 @@ export async function POST(request: NextRequest) {
             const line = JSON.stringify({ index: itemIndex++, item: boostedMatch }) + "\n"
             controller.enqueue(encoder.encode(line))
           }
+          // Log ALL items as single batch so Vercel doesn't truncate
+          console.log(`[parse-image-fast] RESULTS (${diagnostics.length} items):\n` + diagnostics.join("\n"))
           controller.close()
         } catch (err) {
           console.error("[parse-image-fast] Stream error:", err)
