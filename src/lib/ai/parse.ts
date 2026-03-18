@@ -10,7 +10,12 @@ const MODEL_VISION = anthropic("claude-sonnet-4-6")
 
 // ─── Load context data for AI matching ───
 
-async function loadCatalogContext(): Promise<string> {
+export interface IndexedCatalog {
+  text: string                    // Compact catalog string for the prompt (short numeric IDs)
+  indexToId: Map<number, string>  // Map short index back to real UUID
+}
+
+async function loadIndexedCatalog(): Promise<IndexedCatalog> {
   const products = await prisma.product.findMany({
     where: { isActive: true },
     select: {
@@ -21,19 +26,56 @@ async function loadCatalogContext(): Promise<string> {
     orderBy: { name: "asc" },
   })
 
-  // Ultra-compact: ID|name|SKU — minimize tokens for rate limit headroom
-  return products
-    .map((p) => `${p.id}|${p.name}${p.sku ? `|${p.sku}` : ""}`)
+  const indexToId = new Map<number, string>()
+
+  // Short numeric IDs (1, 2, 3...) instead of UUIDs — much easier for the model to copy
+  const text = products
+    .map((p, i) => {
+      const idx = i + 1
+      indexToId.set(idx, p.id)
+      return `${idx}|${p.name}${p.sku ? `|${p.sku}` : ""}`
+    })
     .join("\n")
+
+  return { text, indexToId }
 }
 
-async function loadSupplierContext(): Promise<string> {
+interface IndexedSuppliers {
+  text: string
+  indexToId: Map<number, string>
+}
+
+async function loadIndexedSuppliers(): Promise<IndexedSuppliers> {
   const suppliers = await prisma.supplier.findMany({
     where: { isActive: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   })
-  return suppliers.map((s) => `ID:${s.id} | ${s.name}`).join("\n")
+
+  const indexToId = new Map<number, string>()
+  const text = suppliers
+    .map((s, i) => {
+      const idx = i + 1
+      indexToId.set(idx, s.id)
+      return `${idx}|${s.name}`
+    })
+    .join("\n")
+
+  return { text, indexToId }
+}
+
+/**
+ * Resolve a matchedProductId that might be a short numeric index OR a UUID.
+ * Returns the real UUID, or the original value if it's already a UUID/unknown.
+ */
+export function resolveProductId(
+  id: string | null | undefined,
+  indexToId: Map<number, string>
+): string | null {
+  if (!id) return null
+  const num = parseInt(id, 10)
+  if (!isNaN(num) && indexToId.has(num)) return indexToId.get(num)!
+  return id
 }
 
 async function loadPOContext(): Promise<string> {
@@ -151,8 +193,8 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explana
 // ─── Text input (used for BOM builder, quick adds) ───
 
 export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
-  const [catalogContext, productMap] = await Promise.all([
-    loadCatalogContext(),
+  const [catalog, productMap] = await Promise.all([
+    loadIndexedCatalog(),
     loadProductMap(),
   ])
 
@@ -164,8 +206,8 @@ export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
 
 Please parse each item they mentioned and match it to the best product in our catalog. Use your judgment — product names won't be exact matches. Think about what the person likely means given the industry context.
 
-CATALOG (one product per line):
-${catalogContext}
+CATALOG (ID|name|SKU — one per line):
+${catalog.text}
 
 Return JSON:
 {
@@ -196,15 +238,24 @@ Rules:
   const parsed = extractJSON(response) as { items?: AIMatchedItem[] }
   if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
 
-  return parsed.items.map((item) => toCatalogMatch(item, productMap))
+  // Resolve short numeric IDs → real UUIDs before product lookup
+  const resolved = parsed.items.map((item) => ({
+    ...item,
+    matchedProductId: resolveProductId(item.matchedProductId ?? null, catalog.indexToId),
+    alternativeProductIds: (item.alternativeProductIds || [])
+      .map((id) => resolveProductId(id, catalog.indexToId))
+      .filter((id): id is string => id !== null),
+  }))
+
+  return resolved.map((item) => toCatalogMatch(item, productMap))
 }
 
 // ─── Text input with receiving context (extracts supplier/PO info) ───
 
 export async function parseReceivingTextInput(text: string): Promise<ImageParseResult> {
-  const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
-    loadCatalogContext(),
-    loadSupplierContext(),
+  const [catalog, suppliers, poContext, productMap] = await Promise.all([
+    loadIndexedCatalog(),
+    loadIndexedSuppliers(),
     loadPOContext(),
     loadProductMap(),
   ])
@@ -219,16 +270,16 @@ Please do TWO things:
 
 1. IDENTIFY SUPPLIER & PO — Look for any mention of a supplier name or PO number. Match against our known suppliers and open POs.
 
-SUPPLIERS:
-${supplierContext}
+SUPPLIERS (ID|name):
+${suppliers.text}
 
 PURCHASE ORDERS (recent, most relevant):
 ${poContext}
 
 2. PARSE & MATCH ITEMS — Parse each item mentioned and match to our catalog.
 
-CATALOG (one product per line):
-${catalogContext}
+CATALOG (ID|name|SKU — one per line):
+${catalog.text}
 
 Return JSON:
 {
@@ -271,10 +322,19 @@ Rules:
   }
   if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
 
+  // Resolve short numeric IDs → real UUIDs
+  const resolvedItems = parsed.items.map((item) => ({
+    ...item,
+    matchedProductId: resolveProductId(item.matchedProductId ?? null, catalog.indexToId),
+    alternativeProductIds: (item.alternativeProductIds || [])
+      .map((id) => resolveProductId(id, catalog.indexToId))
+      .filter((id): id is string => id !== null),
+  }))
+
   return {
-    items: parsed.items.map((item) => toCatalogMatch(item, productMap)),
+    items: resolvedItems.map((item) => toCatalogMatch(item, productMap)),
     supplier: parsed.supplier || undefined,
-    supplierId: parsed.supplierId || undefined,
+    supplierId: resolveProductId(parsed.supplierId ?? null, suppliers.indexToId) || undefined,
     poNumber: parsed.poNumber || undefined,
     poId: parsed.matchedPoId || undefined,
   }
@@ -354,9 +414,9 @@ export async function parseImageInput(
   imageBase64: string | string[],
   mimeType: string | string[]
 ): Promise<ImageParseResult> {
-  const [catalogContext, supplierContext, poContext, productMap] = await Promise.all([
-    loadCatalogContext(),
-    loadSupplierContext(),
+  const [catalog, suppliers, poContext, productMap] = await Promise.all([
+    loadIndexedCatalog(),
+    loadIndexedSuppliers(),
     loadPOContext(),
     loadProductMap(),
   ])
@@ -389,8 +449,8 @@ export async function parseImageInput(
 
 1. IDENTIFY THE SUPPLIER — Who sent this? Match the sender company to one of our known suppliers.
 
-SUPPLIERS:
-${supplierContext}
+SUPPLIERS (ID|name):
+${suppliers.text}
 
 2. FIND THE PURCHASE ORDER — Look for a "Customer PO" number (usually 1-4 digits). Then match it EXACTLY against our POs below. IMPORTANT: PO numbers must match exactly — PO#344 is NOT PO#34. If the exact number isn't found, try matching by supplier + items + quantities. Prefer OPEN or PARTIALLY_RECEIVED POs, but match CLOSED ones too.
 
@@ -399,8 +459,8 @@ ${poContext}
 
 3. EXTRACT & MATCH ITEMS — Parse every line item and match each to the best product in our catalog. Product names on packing slips often differ from catalog names — use your judgment.
 
-CATALOG:
-${catalogContext}
+CATALOG (ID|name|SKU):
+${catalog.text}
 
 Return JSON:
 {
@@ -450,10 +510,19 @@ Think step by step:
 
   if (!Array.isArray(parsed.items)) throw new Error("AI response missing items array")
 
+  // Resolve short numeric IDs → real UUIDs
+  const resolvedItems = parsed.items.map((item) => ({
+    ...item,
+    matchedProductId: resolveProductId(item.matchedProductId ?? null, catalog.indexToId),
+    alternativeProductIds: (item.alternativeProductIds || [])
+      .map((id) => resolveProductId(id, catalog.indexToId))
+      .filter((id): id is string => id !== null),
+  }))
+
   return {
-    items: parsed.items.map((item) => toCatalogMatch(item, productMap)),
+    items: resolvedItems.map((item) => toCatalogMatch(item, productMap)),
     supplier: parsed.supplier,
-    supplierId: parsed.supplierId || undefined,
+    supplierId: resolveProductId(parsed.supplierId ?? null, suppliers.indexToId) || undefined,
     poNumber: parsed.poNumber,
     poId: parsed.matchedPoId || undefined,
     deliveryDate: parsed.deliveryDate,
@@ -691,7 +760,7 @@ export async function parseBomImageStream(
   imageBase64: string | string[],
   mimeType: string | string[]
 ) {
-  const catalogContext = await loadCatalogContext()
+  const catalog = await loadIndexedCatalog()
 
   const images = Array.isArray(imageBase64) ? imageBase64 : [imageBase64]
   const mimeTypes = Array.isArray(mimeType) ? mimeType : [mimeType]
@@ -721,7 +790,7 @@ export async function parseBomImageStream(
             text: `Analyze ${images.length > 1 ? "these images (multiple pages)" : "this image"} of a material list, packing slip, or BOM. Extract every line item and match each to the best product in our catalog.${multiPageNote}
 
 CATALOG (ID|name|SKU):
-${catalogContext}
+${catalog.text}
 
 For each item, output a JSON object with the fields defined in the schema. Rules:
 - Only match if genuinely confident. Set matchConfidence honestly (0.0-1.0). A wrong match is worse than no match.
@@ -736,7 +805,7 @@ For each item, output a JSON object with the fields defined in the schema. Rules
     ],
   })
 
-  return result
+  return { stream: result, indexToId: catalog.indexToId }
 }
 
 /**

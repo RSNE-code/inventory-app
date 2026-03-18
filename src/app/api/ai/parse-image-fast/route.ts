@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { parseBomImageStream, toBomCatalogMatch, loadProductMap } from "@/lib/ai/parse"
+import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Start streaming parse
-    const streamResult = await parseBomImageStream(
+    const { stream: streamResult, indexToId } = await parseBomImageStream(
       base64Images.length === 1 ? base64Images[0] : base64Images,
       mimeTypes.length === 1 ? mimeTypes[0] : mimeTypes
     )
@@ -92,8 +92,15 @@ export async function POST(request: NextRequest) {
         try {
           for await (const rawItem of streamResult.elementStream) {
             const item = rawItem as BomStreamItem
-            // Convert to CatalogMatch
-            const catalogMatch = toBomCatalogMatch(item, productMap)
+            // Resolve short numeric IDs → real UUIDs before product lookup
+            const resolvedItem: BomStreamItem = {
+              ...item,
+              matchedProductId: resolveProductId(item.matchedProductId, indexToId),
+              alternativeProductIds: item.alternativeProductIds
+                .map((id) => resolveProductId(id, indexToId))
+                .filter((id): id is string => id !== null),
+            }
+            const catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
 
             // Apply match history boosting
             const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ")
