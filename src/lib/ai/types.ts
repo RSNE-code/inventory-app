@@ -46,6 +46,8 @@ export interface CatalogMatch {
     name: string
     matchConfidence: number
   }[]
+  /** Assembly template ID if matched to a fabrication item (door, slider, floor, etc.) */
+  assemblyTemplateId?: string
   /** Panel specs extracted from AI parse — brand-agnostic, decided at checkout */
   panelSpecs?: {
     type: "panel"

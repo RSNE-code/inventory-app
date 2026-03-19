@@ -16,26 +16,37 @@ export interface IndexedCatalog {
 }
 
 async function loadIndexedCatalog(): Promise<IndexedCatalog> {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    select: {
-      id: true,
-      name: true,
-      sku: true,
-    },
-    orderBy: { name: "asc" },
-  })
+  const [products, assemblyTemplates] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, sku: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.assemblyTemplate.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, type: true },
+      orderBy: { name: "asc" },
+    }),
+  ])
 
   const indexToId = new Map<number, string>()
 
   // Short numeric IDs (1, 2, 3...) instead of UUIDs — much easier for the model to copy
-  const text = products
-    .map((p, i) => {
-      const idx = i + 1
-      indexToId.set(idx, p.id)
-      return `[${idx}] ${p.name}${p.sku ? ` (${p.sku})` : ""}`
-    })
-    .join("\n")
+  // Products first, then assembly templates with [FABRICATION] prefix
+  const productLines = products.map((p, i) => {
+    const idx = i + 1
+    indexToId.set(idx, p.id)
+    return `[${idx}] ${p.name}${p.sku ? ` (${p.sku})` : ""}`
+  })
+
+  const templateLines = assemblyTemplates.map((t, i) => {
+    const idx = products.length + i + 1
+    // Prefix with "AT:" so we can identify assembly template matches in the route handler
+    indexToId.set(idx, `AT:${t.id}`)
+    return `[${idx}] [FABRICATION] ${t.name}`
+  })
+
+  const text = [...productLines, "", "--- FABRICATION ITEMS (doors, sliders, floors, panels we build in-house) ---", ...templateLines].join("\n")
 
   return { text, indexToId }
 }
@@ -695,6 +706,25 @@ function toCatalogMatch(
     specs: item.specs,
     estimatedCost: item.estimatedCost,
     confidence: item.confidence ?? 0.5,
+  }
+
+  // Check if this is an assembly template match (prefixed with "AT:")
+  const isAssemblyTemplate = item.matchedProductId?.startsWith("AT:")
+  const assemblyTemplateId = isAssemblyTemplate ? item.matchedProductId!.slice(3) : null
+
+  if (isAssemblyTemplate) {
+    // Assembly template match — return as non-catalog fabrication item
+    return {
+      parsedItem: {
+        ...parsedItem,
+        name: item.name || parsedItem.name,
+        category: "Fabrication",
+      },
+      matchedProduct: null,
+      matchConfidence: item.matchConfidence ?? 0.8,
+      isNonCatalog: true,
+      assemblyTemplateId: assemblyTemplateId ?? undefined,
+    }
   }
 
   const matchedProduct = item.matchedProductId
