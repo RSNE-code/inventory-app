@@ -6,6 +6,7 @@ import { Check, AlertCircle, Minus, Plus, X } from "lucide-react"
 import { SwipeableRow } from "./swipeable-row"
 import { PanelDimensionEditor } from "./panel-dimension-editor"
 import { UnitConversionPrompt } from "./unit-conversion-prompt"
+import { FlaggedItemResolver } from "./flagged-item-resolver"
 
 export interface FeedItem {
   id: string
@@ -36,6 +37,10 @@ interface LiveItemFeedProps {
   onResolveFlagged: (id: string) => void
   onEditDimensions?: (id: string, thickness: number, lengthFt: number, lengthIn: number) => void
   onConversionConfirm?: (id: string, factor: number) => void
+  // Inline resolver
+  resolvingItemId?: string | null
+  onResolveSelect?: (id: string, productId: string, productName: string) => void
+  onResolveKeepAsCustom?: (id: string) => void
 }
 
 export function LiveItemFeed({
@@ -46,6 +51,9 @@ export function LiveItemFeed({
   onResolveFlagged,
   onEditDimensions,
   onConversionConfirm,
+  resolvingItemId,
+  onResolveSelect,
+  onResolveKeepAsCustom,
 }: LiveItemFeedProps) {
   // Items now arrive one at a time from the stream — show them immediately
   // with a short stagger delay for the receipt-printer feel
@@ -244,6 +252,23 @@ export function LiveItemFeed({
                     catalogUnit={item.catalogUom!}
                     knownFactor={item.conversionFactor}
                     onConfirm={(factor) => onConversionConfirm!(item.id, factor)}
+                  />
+                </div>
+              )}
+              {/* Inline resolver — expands below tapped item */}
+              {resolvingItemId === item.id && onResolveSelect && onResolveKeepAsCustom && (
+                <div className="px-4 py-2 border-b border-border-custom/40 bg-white">
+                  <FlaggedItemResolver
+                    rawText={item.rawText}
+                    primaryMatch={item.productId ? {
+                      productId: item.productId,
+                      productName: item.productName,
+                      confidence: item.confidence,
+                    } : null}
+                    alternatives={item.alternatives || []}
+                    onSelect={(productId, productName) => onResolveSelect(item.id, productId, productName)}
+                    onKeepAsCustom={() => onResolveKeepAsCustom(item.id)}
+                    isPanel={item.isPanel}
                   />
                 </div>
               )}

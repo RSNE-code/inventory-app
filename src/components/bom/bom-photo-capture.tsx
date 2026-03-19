@@ -344,11 +344,8 @@ export function BomPhotoCapture() {
   // ─── Item operations ────────────────────────
 
   function updateItemQty(id: string, qty: number) {
-    if (qty <= 0) {
-      setItems((prev) => prev.filter((i) => i.id !== id))
-    } else {
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)))
-    }
+    const clamped = Math.max(0, qty)
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: clamped } : i)))
   }
 
   function deleteItem(id: string) {
@@ -595,25 +592,7 @@ export function BomPhotoCapture() {
         className="hidden"
       />
 
-      {/* Flagged item resolver (modal-like overlay) */}
-      {resolvingItem && (
-        <div className="px-4 py-2">
-          <FlaggedItemResolver
-            rawText={resolvingItem.rawText}
-            primaryMatch={resolvingItem.productId ? {
-              productId: resolvingItem.productId,
-              productName: resolvingItem.productName,
-              confidence: resolvingItem.confidence,
-            } : null}
-            alternatives={resolvingItem.alternatives || []}
-            onSelect={(productId, productName) => resolveItem(resolvingItem.id, productId, productName)}
-            onKeepAsCustom={() => keepAsCustom(resolvingItem.id)}
-            isPanel={resolvingItem.isPanel}
-          />
-        </div>
-      )}
-
-      {/* Live item feed */}
+      {/* Live item feed — resolver expands inline below tapped item */}
       <LiveItemFeed
         items={items}
         phase={feedPhase}
@@ -622,6 +601,9 @@ export function BomPhotoCapture() {
         onResolveFlagged={setResolvingItemId}
         onEditDimensions={editItemDimensions}
         onConversionConfirm={handleConversionConfirm}
+        resolvingItemId={resolvingItemId}
+        onResolveSelect={(id, productId, productName) => resolveItem(id, productId, productName)}
+        onResolveKeepAsCustom={(id) => keepAsCustom(id)}
       />
 
       {/* Add item — search catalog or type custom */}
