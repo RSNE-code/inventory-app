@@ -109,3 +109,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
+/**
+ * DELETE /api/match-history
+ * Clear all match history for the current user.
+ */
+export async function DELETE() {
+  try {
+    const user = await requireAuth()
+    const deleted = await prisma.matchHistory.deleteMany({
+      where: { userId: user.id },
+    })
+    return NextResponse.json({ data: { deleted: deleted.count } })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error"
+    if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
