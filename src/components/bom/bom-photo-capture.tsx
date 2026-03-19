@@ -220,7 +220,7 @@ export function BomPhotoCapture() {
               unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
               confidence: match.matchConfidence,
               isPanel: !!match.panelSpecs,
-              confirmed: match.matchConfidence >= 0.85,
+              confirmed: match.matchConfidence >= 0.95,
               isNonCatalog: match.isNonCatalog,
               panelSpecs: match.panelSpecs || undefined,
               alternatives: match.alternativeMatches?.map((a) => ({
@@ -278,17 +278,17 @@ export function BomPhotoCapture() {
                   ...item,
                   confidence: refined.confidence,
                   productId: refined.matchedProductId || item.productId,
-                  confirmed: true,
+                  confirmed: refined.confidence >= 0.95,
                 }
               }
-              return { ...item, confirmed: item.confidence >= 0.70 }
+              return { ...item, confirmed: item.confidence >= 0.95 }
             })
           )
         }
       } catch {
         console.warn("Pass 2 refinement failed — using streamed results")
         setItems((prev) =>
-          prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.70 }))
+          prev.map((item) => ({ ...item, confirmed: item.confidence >= 0.95 }))
         )
       }
 
@@ -361,6 +361,7 @@ export function BomPhotoCapture() {
       )
     )
     setResolvingItemId(null)
+    toast.success(`Matched to ${productName}`)
   }
 
   function keepAsCustom(id: string) {
@@ -375,6 +376,7 @@ export function BomPhotoCapture() {
       )
     )
     setResolvingItemId(null)
+    toast.success(`Added "${item?.productName}" as custom item`)
   }
 
   function editItemDimensions(id: string, thickness: number, lengthFt: number, lengthIn: number) {

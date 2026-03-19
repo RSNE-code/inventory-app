@@ -231,13 +231,19 @@ Return JSON:
 
 IMPORTANT: For matchedProductId, return the number inside the brackets [id] from the catalog.
 
-CONFIDENCE GUIDE: Exact name = 0.90-0.95. Name matches but sizes/specs differ = 0.75-0.90. Related product = 0.50-0.75. Warehouse workers rarely write full specs — missing details are NOT a mismatch.
+CONFIDENCE CALIBRATION (be strict — wrong matches destroy user trust):
+- 0.95-1.0: Product name AND dimensions match exactly
+- 0.85-0.95: Product name matches clearly, dimensions absent or compatible
+- 0.70-0.85: Likely the same product but some ambiguity
+- 0.50-0.70: Plausible but uncertain
+- Below 0.50 or DIMENSIONS CONFLICT: set matchedProductId to null
+
+CRITICAL: If dimensions in the text conflict with the catalog product's dimensions, do NOT match. Return matchedProductId: null. A wrong match is MUCH worse than no match.
 
 Rules:
-- ALWAYS try to match every item. Missing matches create extra work — the user can easily fix a wrong match.
-- Only set matchedProductId to null if the item is truly unlike anything in the catalog.
+- Only match if you are CONFIDENT it is the correct product. A wrong match causes silent inventory errors.
 - Ambiguous: pick best match, include alternatives in alternativeProductIds
-- Parse EVERY item mentioned, even vague ones`,
+- Parse EVERY item mentioned, even vague ones — but set matchedProductId to null if no good match`,
   })
 
   const parsed = extractJSON(response) as { items?: AIMatchedItem[] }
@@ -832,25 +838,35 @@ MATCHING EXAMPLES:
    (Exact product match — high confidence)
 
 2. Handwritten says "T-Bar" →
-   matchedProductId: "1095", matchConfidence: 0.85, alternativeProductIds: ["1096"]
-   (Catalog has "T-Bar 4\\" x 16'" at [1095] and "T-Bar 5\\" x 16'" at [1096]. The handwritten text matches the product name — the size specs are extra detail, NOT a mismatch.)
+   matchedProductId: "1095", matchConfidence: 0.80, alternativeProductIds: ["1096"]
+   (Multiple sizes exist — match is plausible but ambiguous)
 
 3. Handwritten says "custom welded bracket" →
    matchedProductId: null, matchConfidence: 0, alternativeProductIds: []
-   (Truly unique item with no catalog equivalent)
+   (Not in catalog — return null)
 
-CONFIDENCE GUIDE:
-- 0.90-0.95: Exact or near-exact name match (e.g., "Froth Pak" → "FROTH-PAK 200")
-- 0.75-0.90: Name matches but sizes/specs differ or are absent (e.g., "T-Bar" → "T-Bar 4\\" x 16'", "PVC corner" → "PVC Corner 8' White")
-- 0.50-0.75: Related product, plausible match (e.g., "tech screws" → "#12 TEK 5")
-- 0.30-0.50: Weak/generic match
-- A handwritten item missing size details is NOT a low-confidence match — warehouse workers rarely write full specs.
+4. Handwritten says "TWS Cover Plate 10x10 hem 3 sides" →
+   matchedProductId: null, matchConfidence: 0, alternativeProductIds: []
+   (No 10"x10" TWS product exists in catalog. Do NOT match to a different-sized TWS item like "TWS Flat Batten 6\"". Dimensions 10x10 ≠ 6. This is a custom fabrication item.)
 
-DIMENSION EXTRACTION (critical — these drive material cutting):
+5. Handwritten says "OC 2x3" →
+   matchedProductId: "445", matchConfidence: 0.95, alternativeProductIds: []
+   (OC = Outside Corner, 2x3 = 2"x3" — matches "TWS Outside Corner 2\" x 3\"" exactly)
+
+CONFIDENCE CALIBRATION (be strict — a wrong match at high confidence destroys user trust):
+- 0.95-1.0: Product name AND dimensions match exactly (e.g., "OC 2x3" → "TWS Outside Corner 2\" x 3\"")
+- 0.85-0.95: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
+- 0.70-0.85: Likely the same product but some ambiguity (e.g., "T-Bar" with multiple sizes, "PVC corner" without specifying length)
+- 0.50-0.70: Plausible but uncertain — user should review
+- Below 0.50 or DIMENSIONS CONFLICT: set matchedProductId to null. A wrong match is MUCH worse than no match.
+
+CRITICAL DIMENSION RULE:
+If the BOM item specifies dimensions (e.g., 10"x10", 8"x12", 3x6) and the best catalog match has DIFFERENT dimensions (e.g., 6", 2"x3"), do NOT match. Return matchedProductId: null. Dimension mismatches mean DIFFERENT PRODUCTS.
+
+DIMENSION EXTRACTION (for panels and items with length):
 - For panels, walls, ceiling panels, or any item with a length: set lengthFt and lengthIn.
   - "7'-6\"" or "7 ft 6 in" → lengthFt: 7, lengthIn: 6
   - "8'" or "8 ft" → lengthFt: 8, lengthIn: 0
-  - "20'" → lengthFt: 20, lengthIn: 0
   - No length visible → lengthFt: null, lengthIn: null
 - For panels with a thickness (e.g., 4" thick, 4" IMP): set thicknessIn.
   - "4\" walls" or "4\" IMP" → thicknessIn: 4
@@ -858,11 +874,11 @@ DIMENSION EXTRACTION (critical — these drive material cutting):
 - Do NOT confuse thickness with length. "4\" walls x 7'-6\"" means thicknessIn: 4, lengthFt: 7, lengthIn: 6.
 
 Rules:
-- ALWAYS try to match every item to a catalog product. The user can easily correct a wrong match, but missing matches create extra work.
-- Set matchConfidence using the guide above.
-- Only set matchedProductId to null if the item is truly unlike anything in the catalog (like example 3).
+- Only match if you are CONFIDENT it is the correct product. A wrong match causes silent inventory errors. A missing match is easy for the user to fix.
+- If dimensions in the BOM text conflict with the catalog product's dimensions, set matchedProductId to null.
+- Set matchConfidence strictly using the calibration guide above.
 - Ambiguous items: pick best match, include alternatives in alternativeProductIds
-- Parse EVERY item, even vague ones
+- Parse EVERY line item, even vague ones — but set matchedProductId to null if no good match exists
 - Output items in document order`,
           },
         ],

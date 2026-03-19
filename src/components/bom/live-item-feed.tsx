@@ -92,6 +92,7 @@ export function LiveItemFeed({
         ? "Verifying matches..."
         : `${items.length} item${items.length !== 1 ? "s" : ""} matched`
 
+  const needsReviewCount = items.filter((i) => !i.confirmed).length
   const flaggedCount = items.filter((i) => i.confidence < 0.70 && !i.confirmed).length
 
   return (
@@ -110,9 +111,9 @@ export function LiveItemFeed({
           )}
           <p className="text-[15px] font-semibold text-navy">{headerText}</p>
         </div>
-        {phase === "done" && flaggedCount > 0 && (
-          <span className="text-xs font-semibold text-orange-500">
-            {flaggedCount} need{flaggedCount === 1 ? "s" : ""} review
+        {phase === "done" && needsReviewCount > 0 && (
+          <span className="text-xs font-semibold text-blue-600">
+            {needsReviewCount} to review
           </span>
         )}
       </div>
@@ -128,7 +129,8 @@ export function LiveItemFeed({
       <div>
         {items.slice(0, visibleCount).map((item, index) => {
           const isFlagged = item.confidence < 0.70 && !item.confirmed
-          const isConfirmed = item.confirmed || item.confidence >= 0.70
+          const isLikelyMatch = !item.confirmed && item.confidence >= 0.70 && item.confidence < 0.95
+          const isConfirmed = item.confirmed
 
           const showConversion = item.needsConversion && item.parsedUom && item.catalogUom && onConversionConfirm
 
@@ -146,18 +148,20 @@ export function LiveItemFeed({
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Status indicator */}
+                {/* Status indicator: green = confirmed, blue = likely match, orange = needs review */}
                 <div className="shrink-0">
                   {isConfirmed ? (
-                    <div className={cn(
-                      "h-6 w-6 rounded-full flex items-center justify-center transition-all duration-500",
-                      item.confirmed ? "bg-green-100" : "bg-green-50"
-                    )}>
-                      <Check className={cn(
-                        "h-3.5 w-3.5 transition-colors duration-500",
-                        item.confirmed ? "text-green-600" : "text-green-400"
-                      )} />
+                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5 text-green-600" />
                     </div>
+                  ) : isLikelyMatch ? (
+                    <button
+                      type="button"
+                      onClick={() => onResolveFlagged(item.id)}
+                      className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"
+                    >
+                      <Check className="h-3.5 w-3.5 text-blue-500" />
+                    </button>
                   ) : isFlagged ? (
                     <button
                       type="button"
@@ -185,6 +189,9 @@ export function LiveItemFeed({
                   </button>
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
+                  )}
+                  {item.isNonCatalog && !item.isPanel && (
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Custom</span>
                   )}
                   {/* Panel dimension editor */}
                   {item.isPanel && item.panelSpecs && onEditDimensions && (

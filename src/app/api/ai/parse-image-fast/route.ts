@@ -1,6 +1,52 @@
 import { NextRequest } from "next/server"
 import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
+
+/**
+ * Extract dimension numbers from text (e.g., "10x10" → [10, 10], "2\" x 3\"" → [2, 3])
+ * Returns sorted array of unique dimension numbers found.
+ */
+function extractDimensions(text: string): number[] {
+  const dims: number[] = []
+  // Match patterns like 10x10, 2"x3", 2 x 3, 3.5"x3.5"
+  const patterns = [
+    /(\d+(?:\.\d+)?)\s*["″]?\s*[xX×]\s*(\d+(?:\.\d+)?)/g,
+    /(\d+(?:\.\d+)?)\s*["″]\s*[xX×]\s*(\d+(?:\.\d+)?)/g,
+  ]
+  for (const pat of patterns) {
+    let m
+    while ((m = pat.exec(text)) !== null) {
+      dims.push(parseFloat(m[1]), parseFloat(m[2]))
+    }
+  }
+  // Also match standalone dimension like 6" (single dimension in product names)
+  const single = text.match(/(\d+(?:\.\d+)?)\s*["″]/g)
+  if (single) {
+    for (const s of single) {
+      const n = parseFloat(s)
+      if (n > 0 && n <= 48) dims.push(n) // reasonable dimension range
+    }
+  }
+  return [...new Set(dims)].sort((a, b) => a - b)
+}
+
+/**
+ * Check if parsed item dimensions conflict with matched product dimensions.
+ * Returns true if there's a clear conflict (should reject the match).
+ */
+function hasDimensionConflict(parsedText: string, productName: string): boolean {
+  const parsedDims = extractDimensions(parsedText)
+  const productDims = extractDimensions(productName)
+  if (parsedDims.length === 0 || productDims.length === 0) return false // Can't verify
+  // If parsed text has dimensions that are completely different from product
+  // Check if any parsed dimension matches any product dimension
+  const hasOverlap = parsedDims.some((pd) =>
+    productDims.some((prd) => Math.abs(pd - prd) < 0.5)
+  )
+  // If parsed text has 2+ dimensions and NONE overlap with product → conflict
+  if (parsedDims.length >= 2 && !hasOverlap) return true
+  return false
+}
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 
@@ -104,7 +150,21 @@ export async function POST(request: NextRequest) {
               matchedProductId: resolvedId,
               alternativeProductIds: resolvedAlts,
             }
-            const catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
+            let catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
+
+            // Post-AI dimension verification — reject matches where dimensions conflict
+            if (catalogMatch.matchedProduct && !catalogMatch.panelSpecs) {
+              const parsedText = `${item.rawText} ${item.name}`
+              const productName = catalogMatch.matchedProduct.name
+              if (hasDimensionConflict(parsedText, productName)) {
+                catalogMatch = {
+                  ...catalogMatch,
+                  matchedProduct: null,
+                  matchConfidence: 0,
+                  isNonCatalog: true,
+                }
+              }
+            }
 
             // Collect diagnostic per item
             diagnostics.push(`${item.rawText}|aiId=${item.matchedProductId}|conf=${item.matchConfidence}|matched=${catalogMatch.matchedProduct?.name ?? "NONE"}|panel=${!!catalogMatch.panelSpecs}`)
@@ -116,13 +176,11 @@ export async function POST(request: NextRequest) {
             let boostedMatch = catalogMatch
             if (histMatch) {
               if (histMatch.productId && catalogMatch.matchedProduct?.id === histMatch.productId) {
-                // Catalog match confirmed by history — boost confidence
+                // Catalog match confirmed by history — boost to 0.90 (below auto-confirm)
+                // History informs but doesn't override — user still reviews
                 boostedMatch = {
                   ...catalogMatch,
-                  matchConfidence: Math.max(
-                    catalogMatch.matchConfidence,
-                    0.95 + Math.min(histMatch.usageCount * 0.005, 0.049)
-                  ),
+                  matchConfidence: Math.max(catalogMatch.matchConfidence, 0.90),
                 }
               } else if (histMatch.customName && !histMatch.productId) {
                 // Custom item from history — override to non-catalog with remembered name
@@ -133,7 +191,7 @@ export async function POST(request: NextRequest) {
                     name: histMatch.customName,
                   },
                   matchedProduct: null,
-                  matchConfidence: 0.95 + Math.min(histMatch.usageCount * 0.005, 0.049),
+                  matchConfidence: 0.90,
                   isNonCatalog: true,
                 }
               }
