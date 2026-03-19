@@ -212,7 +212,7 @@ export function LiveItemFeed({
                 <div className="flex items-center gap-0 shrink-0">
                   <button
                     type="button"
-                    onClick={() => onUpdateQty(item.id, Math.max(0, item.quantity - 1))}
+                    onClick={() => onUpdateQty(item.id, Math.max(0, Math.round((item.quantity - 0.5) * 10) / 10))}
                     className="h-10 w-10 flex items-center justify-center rounded-l-lg border border-border-custom bg-surface-secondary text-navy active:bg-border-custom"
                   >
                     <Minus className="h-4 w-4" />
@@ -220,14 +220,14 @@ export function LiveItemFeed({
                   <input
                     type="number"
                     value={item.quantity}
-                    onChange={(e) => onUpdateQty(item.id, Number(e.target.value) || 0)}
-                    className="w-12 h-10 text-center text-sm font-bold border-y border-border-custom bg-white"
+                    onChange={(e) => onUpdateQty(item.id, Math.max(0, Number(e.target.value) || 0))}
+                    className="w-14 h-10 text-center text-sm font-bold border-y border-border-custom bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     min={0}
-                    step="any"
+                    step="0.5"
                   />
                   <button
                     type="button"
-                    onClick={() => onUpdateQty(item.id, item.quantity + 1)}
+                    onClick={() => onUpdateQty(item.id, Math.round((item.quantity + 0.5) * 10) / 10)}
                     className="h-10 w-10 flex items-center justify-center rounded-r-lg border border-border-custom bg-surface-secondary text-navy active:bg-border-custom"
                   >
                     <Plus className="h-4 w-4" />
