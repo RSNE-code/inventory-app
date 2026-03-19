@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       .map((p) => `${p.id}|${p.name}|${p.unitOfMeasure}${p.sku ? `|${p.sku}` : ""}`)
       .join("\n")
 
-    // Load user's top confirmed match history as few-shot examples
+    // Load user's top confirmed match history as few-shot examples (catalog + custom)
     const matchHistory = await prisma.matchHistory.findMany({
       where: { userId: user.id, confirmed: true },
       orderBy: { usageCount: "desc" },
@@ -63,11 +63,20 @@ export async function POST(request: NextRequest) {
       include: { product: { select: { name: true } } },
     })
 
-    const historyContext = matchHistory.length > 0
-      ? matchHistory.map((m) =>
-          `"${m.rawText}" → ${m.product.name} (confirmed ${m.usageCount}x)`
-        ).join("\n")
-      : "No match history yet."
+    const catalogHistory = matchHistory.filter((m) => m.productId && m.product)
+    const customHistory = matchHistory.filter((m) => !m.productId && m.customName)
+
+    let historyContext = "No match history yet."
+    if (catalogHistory.length > 0 || customHistory.length > 0) {
+      const lines: string[] = []
+      for (const m of catalogHistory) {
+        lines.push(`"${m.rawText}" → ${m.product!.name} (confirmed ${m.usageCount}x)`)
+      }
+      for (const m of customHistory) {
+        lines.push(`"${m.rawText}" → [CUSTOM: ${m.customName}] (confirmed ${m.usageCount}x)`)
+      }
+      historyContext = lines.join("\n")
+    }
 
     // Build refinement prompt
     const itemsToRefine = needsRefinement.map((i) => ({

@@ -465,16 +465,21 @@ export function BomPhotoCapture() {
         source: "photo",
       } as Parameters<typeof createBom.mutateAsync>[0])
 
-      // Feed confirmed matches into learning loop
-      const confirmedMatches = validItems
-        .filter((i) => i.productId && i.confidence >= 0.70 && !i.isNonCatalog)
-        .map((i) => ({ rawText: i.rawText, productId: i.productId! }))
+      // Feed confirmed matches into learning loop (catalog + custom items)
+      const allConfirmedMatches = validItems
+        .filter((i) => i.confidence >= 0.70 && (i.productId || i.isNonCatalog))
+        .map((i) => {
+          if (i.isNonCatalog) {
+            return { rawText: i.rawText, customName: i.productName }
+          }
+          return { rawText: i.rawText, productId: i.productId! }
+        })
 
-      if (confirmedMatches.length > 0) {
+      if (allConfirmedMatches.length > 0) {
         fetch("/api/match-history", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ matches: confirmedMatches }),
+          body: JSON.stringify({ matches: allConfirmedMatches }),
         }).catch(() => {}) // Fire and forget
       }
 

@@ -39,7 +39,7 @@ async function main() {
 
   // Find the source material (coil)
   const sourceProduct = await prisma.product.findFirst({
-    where: { name: { contains: "Galvanized Steel Coil", mode: "insensitive" } },
+    where: { name: { contains: "Textured White", mode: "insensitive" } },
   })
 
   if (!sourceProduct) {

@@ -185,6 +185,8 @@ You think like an experienced warehouse manager who knows the product catalog, r
 Industry context:
 - RSNE stocks: insulated metal panels (IMP), door hardware, metal trim/flashing, sealants/adhesives, gaskets, heater wire, FRP panels, plywood, fasteners, insulation
 - Common abbreviations: IMP = Insulated Metal Panel, W/W = White/White, FRP = Fiberglass Reinforced Panel, SS = Stainless Steel, Galv = Galvalume/Galvanized
+- TWS = Trim/Wall/Steel metal trim pieces cut from steel coil. Types: OC = Outside Corner, IC = Inside Corner, Cap, Screed, Base Cover Trim, Flat Batten
+- TWS dimensions: width x depth (e.g., "OC 2x3" = TWS Outside Corner 2" x 3", "IC 3x3" = TWS Inside Corner 3" x 3")
 - Foam kits like "FROTH-PAK" are common sealant/insulation items
 - Panel dimensions: thickness x width x length (e.g., "4in IMP W/W 3x20")
 

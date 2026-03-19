@@ -559,8 +559,10 @@ model MatchHistory {
   id             String   @id @default(uuid())
   rawText        String   // Original text from photo/voice ("OC 2x3")
   normalizedText String   // Lowercase, trimmed, collapsed spaces
-  product        Product  @relation(fields: [productId], references: [id])
-  productId      String
+  product        Product? @relation(fields: [productId], references: [id])
+  productId      String?  // Set for catalog matches; null for custom items
+  customName     String?  // Set for custom/non-catalog items; null for catalog matches
+  // Invariant: exactly one of productId or customName must be set
   user           User     @relation(fields: [userId], references: [id])
   userId         String
   confirmed      Boolean  @default(false)

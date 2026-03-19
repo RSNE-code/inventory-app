@@ -69,12 +69,12 @@ export async function POST(request: NextRequest) {
         where: { userId: user.id, confirmed: true },
         orderBy: { usageCount: "desc" },
         take: 200,
-        select: { normalizedText: true, productId: true, usageCount: true },
+        select: { normalizedText: true, productId: true, customName: true, usageCount: true },
       }),
     ])
 
     const historyMap = new Map(
-      matchHistory.map((m) => [m.normalizedText, { productId: m.productId, usageCount: m.usageCount }])
+      matchHistory.map((m) => [m.normalizedText, { productId: m.productId, customName: m.customName, usageCount: m.usageCount }])
     )
 
     // Start streaming parse
@@ -109,18 +109,33 @@ export async function POST(request: NextRequest) {
             // Collect diagnostic per item
             diagnostics.push(`${item.rawText}|aiId=${item.matchedProductId}|conf=${item.matchConfidence}|matched=${catalogMatch.matchedProduct?.name ?? "NONE"}|panel=${!!catalogMatch.panelSpecs}`)
 
-            // Apply match history boosting
+            // Apply match history boosting (catalog + custom items)
             const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ")
             const histMatch = historyMap.get(normalized)
 
             let boostedMatch = catalogMatch
-            if (histMatch && catalogMatch.matchedProduct?.id === histMatch.productId) {
-              boostedMatch = {
-                ...catalogMatch,
-                matchConfidence: Math.max(
-                  catalogMatch.matchConfidence,
-                  0.95 + Math.min(histMatch.usageCount * 0.005, 0.049)
-                ),
+            if (histMatch) {
+              if (histMatch.productId && catalogMatch.matchedProduct?.id === histMatch.productId) {
+                // Catalog match confirmed by history — boost confidence
+                boostedMatch = {
+                  ...catalogMatch,
+                  matchConfidence: Math.max(
+                    catalogMatch.matchConfidence,
+                    0.95 + Math.min(histMatch.usageCount * 0.005, 0.049)
+                  ),
+                }
+              } else if (histMatch.customName && !histMatch.productId) {
+                // Custom item from history — override to non-catalog with remembered name
+                boostedMatch = {
+                  ...catalogMatch,
+                  parsedItem: {
+                    ...catalogMatch.parsedItem,
+                    name: histMatch.customName,
+                  },
+                  matchedProduct: null,
+                  matchConfidence: 0.95 + Math.min(histMatch.usageCount * 0.005, 0.049),
+                  isNonCatalog: true,
+                }
               }
             }
 

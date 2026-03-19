@@ -10,8 +10,12 @@ function normalizeText(text: string): string {
 const confirmSchema = z.object({
   matches: z.array(z.object({
     rawText: z.string().min(1),
-    productId: z.string().uuid(),
-  })).min(1),
+    productId: z.string().uuid().optional(),
+    customName: z.string().min(1).optional(),
+  }).refine(
+    (m) => m.productId || m.customName,
+    { message: "Either productId or customName is required" }
+  )).min(1),
 })
 
 /**
@@ -75,7 +79,8 @@ export async function POST(request: NextRequest) {
           },
         },
         update: {
-          productId: match.productId,
+          productId: match.productId || null,
+          customName: match.customName || null,
           confirmed: true,
           usageCount: { increment: 1 },
           lastUsedAt: new Date(),
@@ -83,7 +88,8 @@ export async function POST(request: NextRequest) {
         create: {
           rawText: match.rawText,
           normalizedText: normalized,
-          productId: match.productId,
+          productId: match.productId || null,
+          customName: match.customName || null,
           userId: user.id,
           confirmed: true,
           usageCount: 1,
