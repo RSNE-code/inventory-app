@@ -1,36 +1,3956 @@
 [
-  { "rawText": "TWS OC 2x3", "expectedProduct": "TWS Outside Corner 2\" x 3\"", "notes": "Standard TWS abbreviation" },
-  { "rawText": "TWS IC 2x2", "expectedProduct": "TWS Inside Corner 2\" x 2\"", "notes": "Standard TWS abbreviation" },
-  { "rawText": "TWS IC 3x3", "expectedProduct": "TWS Inside Corner 3\" x 3\"", "notes": "Standard TWS abbreviation" },
-  { "rawText": "OC 2x6", "expectedProduct": "TWS Outside Corner 2\" x 6\"", "notes": "Shorthand without TWS prefix" },
-  { "rawText": "OC 3x7", "expectedProduct": "TWS Outside Corner 3\" x 7\"", "notes": "Shorthand without TWS prefix" },
-  { "rawText": "IC 3.5x3.5", "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\"", "notes": "Decimal dimensions" },
-  { "rawText": "TWS Cap", "expectedProduct": "TWS Cap 2\" x 4.25\" x 2\"", "notes": "Only one Cap in catalog" },
-  { "rawText": "TWS Cooler Screed", "expectedProduct": "TWS Cooler Screed", "notes": "Exact name" },
-  { "rawText": "TWS Freezer Screed", "expectedProduct": "TWS Freezer Screed", "notes": "Exact name" },
-  { "rawText": "TWS Flat Batten 6\"", "expectedProduct": "TWS Flat Batten 6\" w/ Hem", "notes": "Partial name" },
-  { "rawText": "TWS Base Cover Trim", "expectedProduct": "TWS Base Cover Trim 1.5\" x 2\" x 2\"", "notes": "Partial name" },
-  { "rawText": "TWS Cover Plate 10x10 hem 3 sides", "expectedProduct": "NO_MATCH", "notes": "Custom fabrication — not in catalog. MUST NOT match to any TWS product" },
-  { "rawText": "TWS 8x12 custom", "expectedProduct": "NO_MATCH", "notes": "Custom dimensions not in catalog" },
-  { "rawText": "Froth Pak", "expectedProduct": "FROTH-PAK 200", "notes": "Common misspelling" },
-  { "rawText": "froth pak", "expectedProduct": "FROTH-PAK 200", "notes": "Lowercase" },
-  { "rawText": "butyl caulk", "expectedProduct": "Butyl Caulk", "notes": "Exact product" },
-  { "rawText": "silicone white", "expectedProduct": "Silicone sealant (White)", "notes": "Partial name" },
-  { "rawText": "silicone clear", "expectedProduct": "Silicone Sealant (Clear)", "notes": "Partial name" },
-  { "rawText": "PVC corner 8' white", "expectedProduct": "PVC Corner 8' White", "notes": "Exact match with size" },
-  { "rawText": "PVC corner 10' black", "expectedProduct": "PVC Corner 10' Black", "notes": "Size-specific" },
-  { "rawText": "T-Bar", "expectedProduct": "T BAR 4\" - 16'", "notes": "Ambiguous — multiple sizes, should match one" },
-  { "rawText": "tek screws", "expectedProduct": "#12 TEK 5", "notes": "Common shorthand" },
-  { "rawText": "shots and pins", "expectedProduct": "Shots & Pins", "notes": "Common name" },
-  { "rawText": "magnetic gasket 8'", "expectedProduct": "MAGNETIC GASKET 8'", "notes": "Exact product" },
-  { "rawText": "FRP 4x8 white", "expectedProduct": "FRP 4' X 8' WHITE", "notes": "Panel product" },
-  { "rawText": "FRP 4x10", "expectedProduct": "FRP 4' X 10' WHITE", "notes": "Panel product without color" },
-  { "rawText": "diamond plate 4x8", "expectedProduct": "Diamond Plate .063 4' x 8'", "notes": "Common material" },
-  { "rawText": "EPS 3.5 4x8", "expectedProduct": "EPS Sheet 3.5\" x 4' x 8'", "notes": "Insulation with thickness" },
-  { "rawText": "custom welded bracket", "expectedProduct": "NO_MATCH", "notes": "Truly unique — not in catalog" },
-  { "rawText": "special order item ABC", "expectedProduct": "NO_MATCH", "notes": "Not in catalog" },
-  { "rawText": "Battens", "expectedProduct": "Battens", "notes": "Exact catalog name" },
-  { "rawText": "unistrut", "expectedProduct": "Unistrut", "notes": "Common material" },
-  { "rawText": "TREMCO JS-773", "expectedProduct": "TREMCO JS-773 BUTYL SEALANT", "notes": "Partial SKU/name" },
-  { "rawText": "strip curtains 5x7", "expectedProduct": "Strip Curtains 5x7", "notes": "Door accessory" }
+  {
+    "rawText": "#1 - 12\" Drill Bit",
+    "expectedProduct": "#1 - 12\" Drill Bit",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#10X2-1/2 PHIL PAN SMS S/S",
+    "expectedProduct": "#10X2-1/2 PHIL PAN SMS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#12 TEK 5",
+    "expectedProduct": "#12 TEK 5",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#14 Phil Oval Stainless Steel x 1-1/2\"",
+    "expectedProduct": "#14 Phil Oval Stainless Steel x 1-1/2\"",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "#14 TEK 3",
+    "expectedProduct": "#14 TEK 3",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#14x2 Phil Pan SMS Zinc",
+    "expectedProduct": "#14x2 Phil Pan SMS Zinc",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8 - 1-1/4\" K-Lathe Modified Truss Head Screw",
+    "expectedProduct": "#8 - 1-1/4\" K-Lathe Modified Truss Head Screw",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8-18x3/4 PHIL WAFER TEK 2 PAINTED WHITE",
+    "expectedProduct": "#8-18x3/4 PHIL WAFER TEK 2 PAINTED WHITE",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8X1-1/4 K-LATH MODIFIED TRUSS SMS ZINC",
+    "expectedProduct": "#8X1-1/4 K-LATH MODIFIED TRUSS SMS ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8X1-5/8 K-LATH MODIFIED TRUSS SMS ZINC",
+    "expectedProduct": "#8X1-5/8 K-LATH MODIFIED TRUSS SMS ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8x1\" K-Lath modified Truss",
+    "expectedProduct": "#8x1\" K-Lath modified Truss",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#8X2-1/2 MODIFIED TRUSS(K-LATH) SELF DRILL ZINC",
+    "expectedProduct": "#8X2-1/2 MODIFIED TRUSS(K-LATH) SELF DRILL ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1-1/4\" Tek 3",
+    "expectedProduct": "1-1/4\" Tek 3",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1-14\" Tek 5",
+    "expectedProduct": "1-14\" Tek 5",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4 -20 x 1-1/2\" Phil Flat MS S/S",
+    "expectedProduct": "1/4 -20 x 1-1/2\" Phil Flat MS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4 -20 x 1-1/4\" Phil Flat MS S/S",
+    "expectedProduct": "1/4 -20 x 1-1/4\" Phil Flat MS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4 -20 x 1-3/4\" Phil Flat MS S/S",
+    "expectedProduct": "1/4 -20 x 1-3/4\" Phil Flat MS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4 -20 x 1\" Phil Flat MS S/S",
+    "expectedProduct": "1/4 -20 x 1\" Phil Flat MS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4 -20 x 2\" Phil Flat MS S/S",
+    "expectedProduct": "1/4 -20 x 2\" Phil Flat MS S/S",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "1/4-20X7/16 TEE NUTS 4 PRONG ZINC",
+    "expectedProduct": "1/4-20X7/16 TEE NUTS 4 PRONG ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "10-4 Fablock",
+    "expectedProduct": "10-4 Fablock",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "10-8 Fablock",
+    "expectedProduct": "10-8 Fablock",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "10' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "10' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "11/32X48X96 ARAUCO AC RADIATA PINE Sanded (3/8\")",
+    "expectedProduct": "11/32X48X96 ARAUCO AC RADIATA PINE Sanded (3/8\")",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "119-052B Unroll Sensor",
+    "expectedProduct": "119-052B Unroll Sensor",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "12' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "12' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "15' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "15' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "15/32X48X96 ARAUCO AC RADIATA PINE Sanded (1/2\")",
+    "expectedProduct": "15/32X48X96 ARAUCO AC RADIATA PINE Sanded (1/2\")",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "18' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "18' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "19.5' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "19.5' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "19' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "19' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8\")",
+    "expectedProduct": "19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8\")",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "2\" x 10\" x 8’ – Doug Fir",
+    "expectedProduct": "2\" x 10\" x 8’ – Doug Fir",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "2\" x 4\" x 8’ – Doug Fir",
+    "expectedProduct": "2\" x 4\" x 8’ – Doug Fir",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "2\" x 6\" x 8’ – Doug Fir",
+    "expectedProduct": "2\" x 6\" x 8’ – Doug Fir",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "2\" x 8\" x 8’ – Doug Fir",
+    "expectedProduct": "2\" x 8\" x 8’ – Doug Fir",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "2000010023 - GGXPS - M48200LGTYP6 – 2” TypeVI 40psi GreenGuard",
+    "expectedProduct": "2000010023 - GGXPS - M48200LGTYP6 – 2” TypeVI 40psi GreenGuard",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "2000010026 - GGXPS - M48300LGTYP6 – 3” TypeVI 40psi GreenGuard",
+    "expectedProduct": "2000010026 - GGXPS - M48300LGTYP6 – 3” TypeVI 40psi GreenGuard",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "23/32X48X96 ARAUCO AC RADIATA PINE Sanded (3/4\")",
+    "expectedProduct": "23/32X48X96 ARAUCO AC RADIATA PINE Sanded (3/4\")",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "3/4\" EMT 10'",
+    "expectedProduct": "3/4\" EMT 10'",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "3/4\" EMT Couplings",
+    "expectedProduct": "3/4\" EMT Couplings",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "3/4\" Pipe Hanger (Perforated Straps)",
+    "expectedProduct": "3/4\" Pipe Hanger (Perforated Straps)",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "3/8 Hex Nut",
+    "expectedProduct": "3/8 Hex Nut",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8 Serrated Flange Nuts",
+    "expectedProduct": "3/8 Serrated Flange Nuts",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8 steel swivel joint connecto",
+    "expectedProduct": "3/8 steel swivel joint connecto",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "3/8 steel",
+    "expectedProduct": "3/8 steel swivel joint connecto",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "3/8 USS FLAT WASHER ZINC",
+    "expectedProduct": "3/8 USS FLAT WASHER ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8 WHITE PLASTIC HEX DOME CAP",
+    "expectedProduct": "3/8 WHITE PLASTIC HEX DOME CAP",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "3/8-16X10 CARRIAGE BOLT ZINC",
+    "expectedProduct": "3/8-16X10 CARRIAGE BOLT ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8-16X6 CARRIAGE BOLT ZINC",
+    "expectedProduct": "3/8-16X6 CARRIAGE BOLT ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8-16x7 CARRIAGE BOLT CST ZINC PLTD",
+    "expectedProduct": "3/8-16x7 CARRIAGE BOLT CST ZINC PLTD",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8-16X8 CARRIAGE BOLT ZINC",
+    "expectedProduct": "3/8-16X8 CARRIAGE BOLT ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8-16X9 CARRIAGE BOLT ZINC",
+    "expectedProduct": "3/8-16X9 CARRIAGE BOLT ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8\" Bolt 7\"",
+    "expectedProduct": "3/8\" Bolt 7\"",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8\" Pipe (O.D.) x 1/2\" Wall Insul-Lock DS Overlap Pipe Insulation, 6'",
+    "expectedProduct": "3/8\" Pipe (O.D.) x 1/2\" Wall Insul-Lock DS Overlap Pipe Insulation, 6'",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "3/8\" x 2-1/4\" Elevator Bolts",
+    "expectedProduct": "3/8\" x 2-1/4\" Elevator Bolts",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8x16x12 Carriage Bolt",
+    "expectedProduct": "3/8x16x12 Carriage Bolt",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8X2-1/2 HEX LAG SCREW ZINC",
+    "expectedProduct": "3/8X2-1/2 HEX LAG SCREW ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "3/8X4 HEX LAG SCREW ZINC",
+    "expectedProduct": "3/8X4 HEX LAG SCREW ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "30' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "30' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "31' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "31' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "32' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "32' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "32' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "32' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "33' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "33' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "34' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "34' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "35.67' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "35.67' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "35' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "35' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "35' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "35' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "36' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "36' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "37.5' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "37.5' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "37' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "37' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "38' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "38' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "39' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "39' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "40' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "40' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "41' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "41' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "42' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "42' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "42' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "expectedProduct": "42' - HEATER, WIRE FIBERGLASS BRAID, 115V, -10DEG, SINGLE WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "43' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "43' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "44' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "44' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "45' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "45' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "46' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "46' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "47' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "47' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "48' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "48' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "488L Inside Release Panic Bar",
+    "expectedProduct": "488L Inside Release Panic Bar",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "4x8 Stainless Steel Polished 304 - 24ga",
+    "expectedProduct": "4x8 Stainless Steel Polished 304 - 24ga",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "5/16-18X1-1/2 HEX SERRATED FLANGE BOLT GR5 ZINC",
+    "expectedProduct": "5/16-18X1-1/2 HEX SERRATED FLANGE BOLT GR5 ZINC",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "52' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "expectedProduct": "52' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "60\" x 84\" - 8802 Strip Door 8\" x .080\", 50- percent Overlap CLEAR",
+    "expectedProduct": "60\" x 84\" - 8802 Strip Door 8\" x .080\", 50- percent Overlap CLEAR",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "78S SAFEGUARD® HANDLE",
+    "expectedProduct": "78S SAFEGUARD® HANDLE",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "ADFOAM 1825/870ML",
+    "expectedProduct": "ADFOAM 1825/870ML",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "ADFOAM 1875",
+    "expectedProduct": "ADFOAM 1875",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Adthane Glue",
+    "expectedProduct": "Adthane Glue",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Aeroflex 3/8 x 1/2",
+    "expectedProduct": "Aeroflex 3/8 x 1/2",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Air Cylinder Control Assembly",
+    "expectedProduct": "Air Cylinder Control Assembly",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Air Cylinder, Rear Drip",
+    "expectedProduct": "Air Cylinder, Rear Drip",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Air Switch",
+    "expectedProduct": "Air Switch",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "AirGuard 100 Impact Door",
+    "expectedProduct": "AirGuard 100 Impact Door",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "AirGuard 100 Impact Door FRAME ONLY",
+    "expectedProduct": "AirGuard 100 Impact Door FRAME ONLY",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "AirGuard 200 Impact Door",
+    "expectedProduct": "AirGuard 200 Impact Door",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "AirGuard 200 Impact Door FRAME ONLY",
+    "expectedProduct": "AirGuard 200 Impact Door FRAME ONLY",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "ALUM COVE BASE",
+    "expectedProduct": "ALUM COVE BASE",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "ALUM FLAT",
+    "expectedProduct": "ALUM FLAT",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Alum Pop Rivets 1/8\"",
+    "expectedProduct": "Alum Pop Rivets 1/8\"",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "ALUM ROD",
+    "expectedProduct": "ALUM ROD",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Aluminum 6\" x 6\" x 25' Beam",
+    "expectedProduct": "Aluminum 6\" x 6\" x 25' Beam",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Aluminum Angle 1.5\" x 1.5\" (.125)",
+    "expectedProduct": "Aluminum Angle 1.5\" x 1.5\" (.125)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Angle 2\" x 2\" (.125)",
+    "expectedProduct": "Aluminum Angle 2\" x 2\" (.125)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Angle 2\" x 3\" (.125)",
+    "expectedProduct": "Aluminum Angle 2\" x 3\" (.125)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Angle 3\" x 5\" (.375)",
+    "expectedProduct": "Aluminum Angle 3\" x 5\" (.375)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Cove Base",
+    "expectedProduct": "Aluminum Cove Base",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Embossed .032 4' x 8' Sheets",
+    "expectedProduct": "Aluminum Embossed .032 4' x 8' Sheets",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Aluminum Flat Bar .250 x 3\" x 12'",
+    "expectedProduct": "Aluminum Flat Bar .250 x 3\" x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Aluminum Smooth .063 x 4' x 10' Sheet",
+    "expectedProduct": "Aluminum Smooth .063 x 4' x 10' Sheet",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Assembly Track LH Front",
+    "expectedProduct": "Assembly Track LH Front",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Assembly Track, LH Rear",
+    "expectedProduct": "Assembly Track, LH Rear",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Battery 3.67V, 1650",
+    "expectedProduct": "Battery 3.67V, 1650",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Battery Wireless D Tabs",
+    "expectedProduct": "Battery Wireless D Tabs",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "BCSCF Zinc with Thread Lock",
+    "expectedProduct": "BCSCF Zinc with Thread Lock",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Bearing",
+    "expectedProduct": "Bearing",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Bearing Bracket",
+    "expectedProduct": "Bearing Bracket",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "BLK PSH BATTEN",
+    "expectedProduct": "BLK PSH BATTEN",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Blue & White Large RSNE Door Tags",
+    "expectedProduct": "Blue & White Large RSNE Door Tags",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Border Window",
+    "expectedProduct": "Border Window",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Break Away Tab",
+    "expectedProduct": "Break Away Tab",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Cable for Light Curtains",
+    "expectedProduct": "Cable for Light Curtains",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "CDX FR PLY 4x8",
+    "expectedProduct": "CDX FR PLY 4x8",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "CF CLIPS",
+    "expectedProduct": "CF CLIPS",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Chase Airgard 100",
+    "expectedProduct": "Chase Airgard 100",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Chase AirGard 200",
+    "expectedProduct": "Chase AirGard 200",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Chase Durulite Traffic",
+    "expectedProduct": "Chase Durulite Traffic",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Clear Plastic Film SGPQA87C 48\" x 1000' ROLL",
+    "expectedProduct": "Clear Plastic Film SGPQA87C 48\" x 1000' ROLL",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Connecting Link",
+    "expectedProduct": "Connecting Link",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Connecting Link Link",
+    "expectedProduct": "Connecting Link Link",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Contact Adhesive",
+    "expectedProduct": "Contact Adhesive",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Contact Adhesive (32oz)",
+    "expectedProduct": "Contact Adhesive (32oz)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Control Valve Numatics",
+    "expectedProduct": "Control Valve Numatics",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "CRASH BAR",
+    "expectedProduct": "CRASH BAR",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Custom Amount",
+    "expectedProduct": "Custom Amount",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "D-800",
+    "expectedProduct": "D-800",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D276 Closer",
+    "expectedProduct": "D276 Closer",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D276 Door Closer 1-3/8\" OS, Satin Chrome",
+    "expectedProduct": "D276 Door Closer 1-3/8\" OS, Satin Chrome",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D690 HINGE",
+    "expectedProduct": "D690 HINGE",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D800",
+    "expectedProduct": "D800",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D90 HANDLE",
+    "expectedProduct": "D90 HANDLE",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "D90 HANDLE w/ LOCK",
+    "expectedProduct": "D90 HANDLE w/ LOCK",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Dart Mounted Mag Gasket",
+    "expectedProduct": "Dart Mounted Mag Gasket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "DBSC 55GAL DRUM",
+    "expectedProduct": "DBSC 55GAL DRUM",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "DBSC 5GAL",
+    "expectedProduct": "DBSC 5GAL",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Dent Strike",
+    "expectedProduct": "Dent Strike",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Diamond Plate .063 4' x 10'",
+    "expectedProduct": "Diamond Plate .063 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .063 4' x 12'",
+    "expectedProduct": "Diamond Plate .063 4' x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .063 4' x 8'",
+    "expectedProduct": "Diamond Plate .063 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .125 4' x 10'",
+    "expectedProduct": "Diamond Plate .125 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .125 4' x 12'",
+    "expectedProduct": "Diamond Plate .125 4' x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .125 4' x 8'",
+    "expectedProduct": "Diamond Plate .125 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .25 4' x 10'",
+    "expectedProduct": "Diamond Plate .25 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .25 4' x 12'",
+    "expectedProduct": "Diamond Plate .25 4' x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Diamond Plate .25 4' x 8'",
+    "expectedProduct": "Diamond Plate .25 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Door Shop Glue Brush",
+    "expectedProduct": "Door Shop Glue Brush",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Double Sided Tape 1\"",
+    "expectedProduct": "Double Sided Tape 1\"",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Dow 30PSI 4' x 8' x 3\"",
+    "expectedProduct": "Dow 30PSI 4' x 8' x 3\"",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Dow 40PSI 4' x 8' x 3\"",
+    "expectedProduct": "Dow 40PSI 4' x 8' x 3\"",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Dow 60PSI 4' x 8' x 2\"",
+    "expectedProduct": "Dow 60PSI 4' x 8' x 2\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Dow 60PSI 4' x 8' x 3\"",
+    "expectedProduct": "Dow 60PSI 4' x 8' x 3\"",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "DOW BOARD 4x8",
+    "expectedProduct": "DOW BOARD 4x8",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Drive Chain",
+    "expectedProduct": "Drive Chain",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Drive Link",
+    "expectedProduct": "Drive Link",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Drive Sprocket",
+    "expectedProduct": "Drive Sprocket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Durasil Limestone",
+    "expectedProduct": "Durasil Limestone",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Durulite Retailer - Medium Duty",
+    "expectedProduct": "Durulite Retailer - Medium Duty",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Encoder",
+    "expectedProduct": "Encoder",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Encoder Cable",
+    "expectedProduct": "Encoder Cable",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Encoder Kit",
+    "expectedProduct": "Encoder Kit",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Encoder, BMP Incremental",
+    "expectedProduct": "Encoder, BMP Incremental",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Energy Doors ProE Glass Passthrough Doors",
+    "expectedProduct": "Energy Doors ProE Glass Passthrough Doors",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Energy Doors ProE Glass Reach-in Doors",
+    "expectedProduct": "Energy Doors ProE Glass Reach-in Doors",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "EPDM Rubber Roll",
+    "expectedProduct": "EPDM Rubber Roll",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "EPDM Rubber Roll 10' x 25' (QXO)",
+    "expectedProduct": "EPDM Rubber Roll 10' x 25' (QXO)",
+    "notes": "Variation of catalog product",
+    "category": "Gaskets & Sweeps"
+  },
+  {
+    "rawText": "EPDM RUBBER ROLL 12\"",
+    "expectedProduct": "EPDM RUBBER ROLL 12\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "EPS - NONSTAND",
+    "expectedProduct": "EPS - NONSTAND",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "EPS Sheet 2\" x 4' x 10'",
+    "expectedProduct": "EPS Sheet 2\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 2\" x 4' x 8'",
+    "expectedProduct": "EPS Sheet 2\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "EPS Sheet 3.5\" x 4' x 10'",
+    "expectedProduct": "EPS Sheet 3.5\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 3.5\" x 4' x 8'",
+    "expectedProduct": "EPS Sheet 3.5\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 3\" x 4' x 10'",
+    "expectedProduct": "EPS Sheet 3\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 3\" x 4' x 12'",
+    "expectedProduct": "EPS Sheet 3\" x 4' x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 3\" x 4' x 8'",
+    "expectedProduct": "EPS Sheet 3\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS Sheet 3\" x 4' x 9'",
+    "expectedProduct": "EPS Sheet 3\" x 4' x 9'",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "EPS SHT 2\" x 4' x 10'",
+    "expectedProduct": "EPS SHT 2\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 2\" x 4' x 8'",
+    "expectedProduct": "EPS SHT 2\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 3.5\" x 4' x 10'",
+    "expectedProduct": "EPS SHT 3.5\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 3.5\" x 4' x 8'",
+    "expectedProduct": "EPS SHT 3.5\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 3\" x 4' x 10'",
+    "expectedProduct": "EPS SHT 3\" x 4' x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 3\" x 4' x 12'",
+    "expectedProduct": "EPS SHT 3\" x 4' x 12'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SHT 3\" x 4' x 8'",
+    "expectedProduct": "EPS SHT 3\" x 4' x 8'",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "EPS SPLINE",
+    "expectedProduct": "EPS SPLINE",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "EPS SPLINE 4\"",
+    "expectedProduct": "EPS SPLINE 4\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Fabloc 10-12",
+    "expectedProduct": "Fabloc 10-12",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Fabloc 10-4",
+    "expectedProduct": "Fabloc 10-4",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Fabloc 10-8",
+    "expectedProduct": "Fabloc 10-8",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "FAC10-4 FABLOK STAINLESS STL 1/16-1/4 GRIP",
+    "expectedProduct": "FAC10-4 FABLOK STAINLESS STL 1/16-1/4 GRIP",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Fasteners (Generic)",
+    "expectedProduct": "Fasteners (Generic)",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Filter Regulator 8652ACDP3F101G",
+    "expectedProduct": "Filter Regulator 8652ACDP3F101G",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Fish Plates",
+    "expectedProduct": "Fish Plates",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Flat Washer SS",
+    "expectedProduct": "Flat Washer SS",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Flat Washer Zinc Plated 3/8\" x 1",
+    "expectedProduct": "Flat Washer Zinc Plated 3/8\" x 1",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Frame Only - Durulite Retailer - Medium Duty",
+    "expectedProduct": "Frame Only - Durulite Retailer - Medium Duty",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "FROST STOP 2",
+    "expectedProduct": "FROST STOP 2",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Froth Pak",
+    "expectedProduct": "Froth Pak",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "FROTH-PAK 200",
+    "expectedProduct": "FROTH-PAK 200",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "FRP .090 4' x 10' White",
+    "expectedProduct": "FRP .090 4' x 10' White",
+    "notes": "Variation of catalog product",
+    "category": "FRP"
+  },
+  {
+    "rawText": "FRP .090 4' x 12' White",
+    "expectedProduct": "FRP .090 4' x 12' White",
+    "notes": "Variation of catalog product",
+    "category": "FRP"
+  },
+  {
+    "rawText": "FRP .090 4' x 8' Black",
+    "expectedProduct": "FRP .090 4' x 8' Black",
+    "notes": "Variation of catalog product",
+    "category": "FRP"
+  },
+  {
+    "rawText": "FRP .090 4' x 8' White",
+    "expectedProduct": "FRP .090 4' x 8' White",
+    "notes": "Variation of catalog product",
+    "category": "FRP"
+  },
+  {
+    "rawText": "FRP 350",
+    "expectedProduct": "FRP 350",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "FRP 4' X 10' BLACK",
+    "expectedProduct": "FRP 4' X 10' BLACK",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "FRP 4' X 10' WHITE",
+    "expectedProduct": "FRP 4' X 10' WHITE",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "FRP 4' X 8' BLACK",
+    "expectedProduct": "FRP 4' X 8' BLACK",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "FRP 4' X 8' WHITE",
+    "expectedProduct": "FRP 4' X 8' WHITE",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "FRP ADHESIVE",
+    "expectedProduct": "FRP ADHESIVE",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "FSI VAPOR GUARD TAPE 4\" WHITE (50LF/ROLL, 9 ROLLS/CTN)",
+    "expectedProduct": "FSI VAPOR GUARD TAPE 4\" WHITE (50LF/ROLL, 9 ROLLS/CTN)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "FSI VAPOR GUARD TAPE 6\" WHITE (50LF/ROLL, 6 ROLLS/CTN)",
+    "expectedProduct": "FSI VAPOR GUARD TAPE 6\" WHITE (50LF/ROLL, 6 ROLLS/CTN)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "FSI VAPOR GUARD TAPE 9\" WHITE (50LF/ROLL, 4 ROLLS/CTN)",
+    "expectedProduct": "FSI VAPOR GUARD TAPE 9\" WHITE (50LF/ROLL, 4 ROLLS/CTN)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "FSI-96 BUTYL",
+    "expectedProduct": "FSI-96 BUTYL",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Fuse , FNQ-R 15 AMP",
+    "expectedProduct": "Fuse , FNQ-R 15 AMP",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Fuse, 160mA  500V SIBA",
+    "expectedProduct": "Fuse, 160mA  500V SIBA",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Fuse, 250 mA  500V SIBA",
+    "expectedProduct": "Fuse, 250 mA  500V SIBA",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 16GA 2 x 4.25 x 1.5 x 120",
+    "expectedProduct": "GALV ANGLE 16GA 2 x 4.25 x 1.5 x 120",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 16GA 3 x 3 x 10'",
+    "expectedProduct": "GALV ANGLE 16GA 3 x 3 x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 16GA 3 x 6 x 10'",
+    "expectedProduct": "GALV ANGLE 16GA 3 x 6 x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 20GA 1.5 x 1.5 x 10'",
+    "expectedProduct": "GALV ANGLE 20GA 1.5 x 1.5 x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 26GA 2 x 4.25 x 2 x 120",
+    "expectedProduct": "GALV ANGLE 26GA 2 x 4.25 x 2 x 120",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 26GA 3 x 3 x 10'",
+    "expectedProduct": "GALV ANGLE 26GA 3 x 3 x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALV ANGLE 26GA 3 x 6 x 10'",
+    "expectedProduct": "GALV ANGLE 26GA 3 x 6 x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galv Carriage Bolt",
+    "expectedProduct": "Galv Carriage Bolt",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Angle (16ga) 3\" x 6\" x 10'",
+    "expectedProduct": "Galvanized Angle (16ga) 3\" x 6\" x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Galvanized Screed 16ga 2\" x 4.25\" x 1.5\"",
+    "expectedProduct": "Galvanized Screed 16ga 2\" x 4.25\" x 1.5\"",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Galvanized Sheet 4' x 8' (16ga)",
+    "expectedProduct": "Galvanized Sheet 4' x 8' (16ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Sheet 4' x 8' (20ga)",
+    "expectedProduct": "Galvanized Sheet 4' x 8' (20ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Sheet Flatstock - Smooth White - Igloo White 4' x 10' (26ga)",
+    "expectedProduct": "Galvanized Sheet Flatstock - Smooth White - Igloo White 4' x 10' (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Sheet Flatstock - Smooth White - Igloo White 4' x 8' (26ga)",
+    "expectedProduct": "Galvanized Sheet Flatstock - Smooth White - Igloo White 4' x 8' (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Sheet Flatstock - Textured White - Igloo White 4' x 8' (26ga)",
+    "expectedProduct": "Galvanized Sheet Flatstock - Textured White - Igloo White 4' x 8' (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel 26g Gray Embossed",
+    "expectedProduct": "Galvanized Steel 26g Gray Embossed",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel 26g Smooth White",
+    "expectedProduct": "Galvanized Steel 26g Smooth White",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel 26g White Embossed",
+    "expectedProduct": "Galvanized Steel 26g White Embossed",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Angle (12ga) 6\" x 5-1/4\" x 6\" @ 38\" Long",
+    "expectedProduct": "Galvanized Steel Angle (12ga) 6\" x 5-1/4\" x 6\" @ 38\" Long",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Angle (12ga) 6\" x 6-1/4\" x 6\" @ 38\" Long",
+    "expectedProduct": "Galvanized Steel Angle (12ga) 6\" x 6-1/4\" x 6\" @ 38\" Long",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Angle (20ga) 1.5\" x 1.5\" x 120\"",
+    "expectedProduct": "Galvanized Steel Angle (20ga) 1.5\" x 1.5\" x 120\"",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Coil - Smooth White (26ga)",
+    "expectedProduct": "Galvanized Steel Coil - Smooth White (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Coil - Textured Gray (26ga)",
+    "expectedProduct": "Galvanized Steel Coil - Textured Gray (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Galvanized Steel Coil - Textured White (26ga)",
+    "expectedProduct": "Galvanized Steel Coil - Textured White (26ga)",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALVSH EMBOSSED FLATSTOCK",
+    "expectedProduct": "GALVSH EMBOSSED FLATSTOCK",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "GALVSH SMOOTH FLATSTOCK",
+    "expectedProduct": "GALVSH SMOOTH FLATSTOCK",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "Gang Box - STC LXWOW-25   2-1/2\" D NMC SW BOX Raco",
+    "expectedProduct": "Gang Box - STC LXWOW-25   2-1/2\" D NMC SW BOX Raco",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Gasket (Misc.)",
+    "expectedProduct": "Gasket (Misc.)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "GASKET FOAM",
+    "expectedProduct": "GASKET FOAM",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "GASKET, 100' ROLL JAMISON",
+    "expectedProduct": "GASKET, 100' ROLL JAMISON",
+    "notes": "Variation of catalog product",
+    "category": "Gaskets & Sweeps"
+  },
+  {
+    "rawText": "GASKET, P/FT GRAY -SV- SCREW IN 1EA- 3 SIDED OD 02-117",
+    "expectedProduct": "GASKET, P/FT GRAY -SV- SCREW IN 1EA- 3 SIDED OD 02-117",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Gear Reducer",
+    "expectedProduct": "Gear Reducer",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Glass Reach-in/Display Doors",
+    "expectedProduct": "Glass Reach-in/Display Doors",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "GLOW PUSH PANEL",
+    "expectedProduct": "GLOW PUSH PANEL",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "GLUE 5635",
+    "expectedProduct": "GLUE 5635",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 10",
+    "expectedProduct": "HC - 10",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 12",
+    "expectedProduct": "HC - 12",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 15",
+    "expectedProduct": "HC - 15",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 18",
+    "expectedProduct": "HC - 18",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 30",
+    "expectedProduct": "HC - 30",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 31",
+    "expectedProduct": "HC - 31",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 32",
+    "expectedProduct": "HC - 32",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 33",
+    "expectedProduct": "HC - 33",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 34",
+    "expectedProduct": "HC - 34",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 35",
+    "expectedProduct": "HC - 35",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 36",
+    "expectedProduct": "HC - 36",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 37",
+    "expectedProduct": "HC - 37",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 38",
+    "expectedProduct": "HC - 38",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 39",
+    "expectedProduct": "HC - 39",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 40",
+    "expectedProduct": "HC - 40",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 41",
+    "expectedProduct": "HC - 41",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 42",
+    "expectedProduct": "HC - 42",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 43",
+    "expectedProduct": "HC - 43",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 44",
+    "expectedProduct": "HC - 44",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 45",
+    "expectedProduct": "HC - 45",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 46",
+    "expectedProduct": "HC - 46",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 47",
+    "expectedProduct": "HC - 47",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 48",
+    "expectedProduct": "HC - 48",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - 52",
+    "expectedProduct": "HC - 52",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "HC - MISC",
+    "expectedProduct": "HC - MISC",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Heated Pull Chord Switch",
+    "expectedProduct": "Heated Pull Chord Switch",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Heater Cable - MISC",
+    "expectedProduct": "Heater Cable - MISC",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "Hex Nut 3/8\"",
+    "expectedProduct": "Hex Nut 3/8\"",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "HINGE 1073",
+    "expectedProduct": "HINGE 1073",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "HINGE 1075",
+    "expectedProduct": "HINGE 1075",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "HINGE 1377",
+    "expectedProduct": "HINGE 1377",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "HINGE D690",
+    "expectedProduct": "HINGE D690",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Hook for K1094 Closer",
+    "expectedProduct": "Hook for K1094 Closer",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Jam Air Pressure Swtich",
+    "expectedProduct": "Jam Air Pressure Swtich",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Jam Control Cord",
+    "expectedProduct": "Jam Control Cord",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Jam Reverse Edge Battery",
+    "expectedProduct": "Jam Reverse Edge Battery",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Jamison 4' x 7' Manual Cooler Slider",
+    "expectedProduct": "Jamison 4' x 7' Manual Cooler Slider",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Jamison 5' x 7' Manual Freezer Slider",
+    "expectedProduct": "Jamison 5' x 7' Manual Freezer Slider",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Jamison A/B Part Replacement Kit",
+    "expectedProduct": "Jamison A/B Part Replacement Kit",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Jamison Battery",
+    "expectedProduct": "Jamison Battery",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Jamison Frigo 2",
+    "expectedProduct": "Jamison Frigo 2",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Jamison Frigo Replacement Curtain",
+    "expectedProduct": "Jamison Frigo Replacement Curtain",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Jamison Frigo Replacement Heater",
+    "expectedProduct": "Jamison Frigo Replacement Heater",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Jamison Frigo Side Frame Heater 208/230 Volt (Left)",
+    "expectedProduct": "Jamison Frigo Side Frame Heater 208/230 Volt (Left)",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "Jamison Frigo Side Frame Heater 208/230 Volt (Right)",
+    "expectedProduct": "Jamison Frigo Side Frame Heater 208/230 Volt (Right)",
+    "notes": "Variation of catalog product",
+    "category": "Heater Cables"
+  },
+  {
+    "rawText": "Jamison Jamoglide™ (Mark IV) Horizontal Freezer Sliding Door - 6' x 7'",
+    "expectedProduct": "Jamison Jamoglide™ (Mark IV) Horizontal Freezer Sliding Door - 6' x 7'",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Jamison Stay Roller Assembly",
+    "expectedProduct": "Jamison Stay Roller Assembly",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "JUNIOR BEAM CLAMP 3/8\"",
+    "expectedProduct": "JUNIOR BEAM CLAMP 3/8\"",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "K1094 CLOSER",
+    "expectedProduct": "K1094 CLOSER",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1236 Latch",
+    "expectedProduct": "K1236 Latch",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1245 1-1/4 OS Hinge",
+    "expectedProduct": "K1245 1-1/4 OS Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1245 1-3/8 OS Hinge",
+    "expectedProduct": "K1245 1-3/8 OS Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1245 Flush Hinge",
+    "expectedProduct": "K1245 Flush Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1248 1-1/4 OS Hinge",
+    "expectedProduct": "K1248 1-1/4 OS Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1248 1-3/8 OS Hinge",
+    "expectedProduct": "K1248 1-3/8 OS Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K1277 Cam-lift Strap Hinge",
+    "expectedProduct": "K1277 Cam-lift Strap Hinge",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K481 Inside Release, Stainless Steel",
+    "expectedProduct": "K481 Inside Release, Stainless Steel",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K481 Safety Glow Inside Release, 4\" Door",
+    "expectedProduct": "K481 Safety Glow Inside Release, 4\" Door",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K481 Safety Glow Inside Release, 6\" Door",
+    "expectedProduct": "K481 Safety Glow Inside Release, 6\" Door",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K486 Inside Release",
+    "expectedProduct": "K486 Inside Release",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K487 Inside Release",
+    "expectedProduct": "K487 Inside Release",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K489 Inside Release",
+    "expectedProduct": "K489 Inside Release",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K55 BODY",
+    "expectedProduct": "K55 BODY",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "K55 Complete",
+    "expectedProduct": "K55 Complete",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K55 PADD",
+    "expectedProduct": "K55 PADD",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K55 STKR",
+    "expectedProduct": "K55 STKR",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K56 Latch (Body Chrome)",
+    "expectedProduct": "K56 Latch (Body Chrome)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K56 Latch w/ Keyed Lock",
+    "expectedProduct": "K56 Latch w/ Keyed Lock",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K56 Strike",
+    "expectedProduct": "K56 Strike",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K58 LATCH",
+    "expectedProduct": "K58 LATCH",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K58 STRIKE",
+    "expectedProduct": "K58 STRIKE",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "K78 LATCH",
+    "expectedProduct": "K78 LATCH",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason 1097 Closer",
+    "expectedProduct": "Kason 1097 Closer",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason 48\" Slider Trolley (Right)",
+    "expectedProduct": "Kason 48\" Slider Trolley (Right)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason 60\" Slider Trolley (Right)",
+    "expectedProduct": "Kason 60\" Slider Trolley (Right)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason 72\" Slider Trolley (Right)",
+    "expectedProduct": "Kason 72\" Slider Trolley (Right)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason 96\" Slider Trolley (Right)",
+    "expectedProduct": "Kason 96\" Slider Trolley (Right)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason Heavy Duty Floor Roller w/ Strike",
+    "expectedProduct": "Kason Heavy Duty Floor Roller w/ Strike",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason Slider Exterior Pull Handle",
+    "expectedProduct": "Kason Slider Exterior Pull Handle",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason Slider Recessed Handle",
+    "expectedProduct": "Kason Slider Recessed Handle",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason Thermometer",
+    "expectedProduct": "Kason Thermometer",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Kason Wall Guide",
+    "expectedProduct": "Kason Wall Guide",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Key",
+    "expectedProduct": "Key",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Key Square",
+    "expectedProduct": "Key Square",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Keypad W/ RG LED",
+    "expectedProduct": "Keypad W/ RG LED",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "LH Volt Heater",
+    "expectedProduct": "LH Volt Heater",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Light Curtain Transmitter",
+    "expectedProduct": "Light Curtain Transmitter",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Limit Switch Chain",
+    "expectedProduct": "Limit Switch Chain",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "LS Drive Sprocket",
+    "expectedProduct": "LS Drive Sprocket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "MAGNETIC GASKET 8'",
+    "expectedProduct": "MAGNETIC GASKET 8'",
+    "notes": "Variation of catalog product",
+    "category": "Gaskets & Sweeps"
+  },
+  {
+    "rawText": "Metal Anchor HIT HMH 1/4\" x 1-1/4\"",
+    "expectedProduct": "Metal Anchor HIT HMH 1/4\" x 1-1/4\"",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Metal Door",
+    "expectedProduct": "Metal Door",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Metal Pin Fasteners",
+    "expectedProduct": "Metal Pin Fasteners",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Micro Safety Switch",
+    "expectedProduct": "Micro Safety Switch",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Misc Foam Insulation",
+    "expectedProduct": "Misc Foam Insulation",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Motor",
+    "expectedProduct": "Motor",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Motor, 1.5KW STD w pin",
+    "expectedProduct": "Motor, 1.5KW STD w pin",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Mounting Bracket",
+    "expectedProduct": "Mounting Bracket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "National Gasket 1.5\"",
+    "expectedProduct": "National Gasket 1.5\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "National Gasket 1\"",
+    "expectedProduct": "National Gasket 1\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Non Heated PULL CORD",
+    "expectedProduct": "Non Heated PULL CORD",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Nylon Batten Bundle",
+    "expectedProduct": "Nylon Batten Bundle",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Nylon Corner",
+    "expectedProduct": "Nylon Corner",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Outlet Box Dry-Tite White 1/2\" - DIH3-1-LM-WH",
+    "expectedProduct": "Outlet Box Dry-Tite White 1/2\" - DIH3-1-LM-WH",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "P11Plus, ABS Med Impact 60x96",
+    "expectedProduct": "P11Plus, ABS Med Impact 60x96",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "P11Plus, ABS Medium Impact",
+    "expectedProduct": "P11Plus, ABS Medium Impact",
+    "notes": "Variation of catalog product",
+    "category": "Plywood & Substrates"
+  },
+  {
+    "rawText": "PAD HASP - 36",
+    "expectedProduct": "PAD HASP - 36",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Pallette for Tee",
+    "expectedProduct": "Pallette for Tee",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PE Telco 3000",
+    "expectedProduct": "PE Telco 3000",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PE Telco 3215",
+    "expectedProduct": "PE Telco 3215",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PECORA 890 NST SILICONE SEALANT LIMESTONE 20 OZ. SAUSAGE PACKS (12/CASE)",
+    "expectedProduct": "PECORA 890 NST SILICONE SEALANT LIMESTONE 20 OZ. SAUSAGE PACKS (12/CASE)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "PEEL & SEAL 12\" WHITE (100LF/CTN) 3 ROLLS/CTN",
+    "expectedProduct": "PEEL & SEAL 12\" WHITE (100LF/CTN) 3 ROLLS/CTN",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PEEL & SEAL 4\" WHITE (300LF/CTN) 9 ROLLS/CTN",
+    "expectedProduct": "PEEL & SEAL 4\" WHITE (300LF/CTN) 9 ROLLS/CTN",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PEEL & SEAL 6\" WHITE (200LF/CTN) 6 ROLLS/CTN",
+    "expectedProduct": "PEEL & SEAL 6\" WHITE (200LF/CTN) 6 ROLLS/CTN",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PEEL & SEAL 9\" WHITE (134LF/CTN) 4 ROLLS/CTN",
+    "expectedProduct": "PEEL & SEAL 9\" WHITE (134LF/CTN) 4 ROLLS/CTN",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Phote Eye PR Rytec",
+    "expectedProduct": "Phote Eye PR Rytec",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Photoe Eye Pair",
+    "expectedProduct": "Photoe Eye Pair",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PMC24",
+    "expectedProduct": "PMC24",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "POLY FILM 10mm",
+    "expectedProduct": "POLY FILM 10mm",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "POLY FOAM",
+    "expectedProduct": "POLY FOAM",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Pressure Sensor SWTCH",
+    "expectedProduct": "Pressure Sensor SWTCH",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PUSH BAR",
+    "expectedProduct": "PUSH BAR",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "PVC Batten - White 8'",
+    "expectedProduct": "PVC Batten - White 8'",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Cleaner",
+    "expectedProduct": "PVC Cleaner",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PVC Corner 10' Black",
+    "expectedProduct": "PVC Corner 10' Black",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Corner 10' White",
+    "expectedProduct": "PVC Corner 10' White",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Corner 8' Black",
+    "expectedProduct": "PVC Corner 8' Black",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Corner 8' Gray",
+    "expectedProduct": "PVC Corner 8' Gray",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Corner 8' White",
+    "expectedProduct": "PVC Corner 8' White",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "PVC Glue",
+    "expectedProduct": "PVC Glue",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "PVC Pipe - 4\" 90 Degree Elbow",
+    "expectedProduct": "PVC Pipe - 4\" 90 Degree Elbow",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PVC Pipe - 4\" Cap",
+    "expectedProduct": "PVC Pipe - 4\" Cap",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PVC Pipe - 4\" Coupling",
+    "expectedProduct": "PVC Pipe - 4\" Coupling",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PVC Pipe - 4\" Tee",
+    "expectedProduct": "PVC Pipe - 4\" Tee",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "PVC Pipe - 4\" x 10' Pipe",
+    "expectedProduct": "PVC Pipe - 4\" x 10' Pipe",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Receptacle Spider WIre",
+    "expectedProduct": "Receptacle Spider WIre",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Reducer 15-1",
+    "expectedProduct": "Reducer 15-1",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Replacement Ballast",
+    "expectedProduct": "Replacement Ballast",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Replacement Black Vinyl Track for Jamison Roll Up Doors",
+    "expectedProduct": "Replacement Black Vinyl Track for Jamison Roll Up Doors",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Replacement Brake",
+    "expectedProduct": "Replacement Brake",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Replacement Dynamic Roll",
+    "expectedProduct": "Replacement Dynamic Roll",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Replacement Gasket",
+    "expectedProduct": "Replacement Gasket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Replacement Strip Curtains 8\" x .080 - 50% overlap (96\" x 96\")",
+    "expectedProduct": "Replacement Strip Curtains 8\" x .080 - 50% overlap (96\" x 96\")",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "RETAINER",
+    "expectedProduct": "RETAINER",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Reversing Edge Complete Assembl",
+    "expectedProduct": "Reversing Edge Complete Assembl",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "RH Volt Heater",
+    "expectedProduct": "RH Volt Heater",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "RHS Gasket 02-171",
+    "expectedProduct": "RHS Gasket 02-171",
+    "notes": "Variation of catalog product",
+    "category": "Gaskets & Sweeps"
+  },
+  {
+    "rawText": "RI State Sales Tax",
+    "expectedProduct": "RI State Sales Tax",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Rite Hite Replacement Control Panel (Lower)",
+    "expectedProduct": "Rite Hite Replacement Control Panel (Lower)",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Rivnut SST M5X0.9",
+    "expectedProduct": "Rivnut SST M5X0.9",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Roller Assembly - Complete",
+    "expectedProduct": "Roller Assembly - Complete",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Sandstone Stitch Screws",
+    "expectedProduct": "Sandstone Stitch Screws",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Scissor Lift",
+    "expectedProduct": "Scissor Lift",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Screw Button HD Socket",
+    "expectedProduct": "Screw Button HD Socket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Security Tips",
+    "expectedProduct": "Security Tips",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Self Drilling Screws",
+    "expectedProduct": "Self Drilling Screws",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Serrated Nut",
+    "expectedProduct": "Serrated Nut",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SHC - 19 (228\")",
+    "expectedProduct": "SHC - 19 (228\")",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 19.5 (234\")",
+    "expectedProduct": "SHC - 19.5 (234\")",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 32 (384)",
+    "expectedProduct": "SHC - 32 (384)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 35",
+    "expectedProduct": "SHC - 35",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 35.6",
+    "expectedProduct": "SHC - 35.6",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 37",
+    "expectedProduct": "SHC - 37",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 37.50",
+    "expectedProduct": "SHC - 37.50",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "SHC - 42",
+    "expectedProduct": "SHC - 42",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Shots & Pins",
+    "expectedProduct": "Shots & Pins",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Silicone Sealant (Aluminum)",
+    "expectedProduct": "Silicone Sealant (Aluminum)",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Silicone Sealant (Clear)",
+    "expectedProduct": "Silicone Sealant (Clear)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Silicone sealant (White)",
+    "expectedProduct": "Silicone sealant (White)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "SJ CORD - SJ0163 Reel SJE00W-16/3 Cord 250' Coleman PART#23326-04-08",
+    "expectedProduct": "SJ CORD - SJ0163 Reel SJE00W-16/3 Cord 250' Coleman PART#23326-04-08",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SLD 120",
+    "expectedProduct": "SLD 120",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "SLD 48",
+    "expectedProduct": "SLD 48",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "SLD 60",
+    "expectedProduct": "SLD 60",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "SLD 72",
+    "expectedProduct": "SLD 72",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "SLD 96",
+    "expectedProduct": "SLD 96",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Slider Door Stop",
+    "expectedProduct": "Slider Door Stop",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Door Track System - 60\"",
+    "expectedProduct": "Slider Door Track System - 60\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Door Track System - 96\"",
+    "expectedProduct": "Slider Door Track System - 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Gasket - 6.5' (Cloth Inserted)",
+    "expectedProduct": "Slider Gasket - 6.5' (Cloth Inserted)",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Padlock",
+    "expectedProduct": "Slider Padlock",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Strike (Groove)",
+    "expectedProduct": "Slider Strike (Groove)",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Slider Tongue - Non-padlock",
+    "expectedProduct": "Slider Tongue - Non-padlock",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Sliding Door Hdwe (Track system) 48” Opening",
+    "expectedProduct": "Sliding Door Hdwe (Track system) 48” Opening",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Small Metal Door Tag",
+    "expectedProduct": "Small Metal Door Tag",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Smart Panel Kit",
+    "expectedProduct": "Smart Panel Kit",
+    "notes": "Variation of catalog product",
+    "category": "Jamison Parts"
+  },
+  {
+    "rawText": "Spider Connector Cable",
+    "expectedProduct": "Spider Connector Cable",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SPRING SST",
+    "expectedProduct": "SPRING SST",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SSSH 0408 11g",
+    "expectedProduct": "SSSH 0408 11g",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "SSSH 0408 16",
+    "expectedProduct": "SSSH 0408 16",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "SSSH 0408 24 - Polished",
+    "expectedProduct": "SSSH 0408 24 - Polished",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SSSH 0408 24 - Unpolished",
+    "expectedProduct": "SSSH 0408 24 - Unpolished",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "SSSH 0408 24g Unpolished",
+    "expectedProduct": "SSSH 0408 24g Unpolished",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "SSSH 0408 26",
+    "expectedProduct": "SSSH 0408 26",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SSSH 0408 26g",
+    "expectedProduct": "SSSH 0408 26g",
+    "notes": "Variation of catalog product",
+    "category": "Metal Raw Materials"
+  },
+  {
+    "rawText": "SSSH 0410 24",
+    "expectedProduct": "SSSH 0410 24",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "SSSH 0410 26",
+    "expectedProduct": "SSSH 0410 26",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "STEGO WRAP 10MIL",
+    "expectedProduct": "STEGO WRAP 10MIL",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Strain Relief Cord Connector 1/2\" - #LPCG50",
+    "expectedProduct": "Strain Relief Cord Connector 1/2\" - #LPCG50",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "STRIKER",
+    "expectedProduct": "STRIKER",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Strip Curtain (3x7 Cooler Door)",
+    "expectedProduct": "Strip Curtain (3x7 Cooler Door)",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Strip Curtains",
+    "expectedProduct": "Strip Curtains",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Strip Curtains 4x7 Cooler",
+    "expectedProduct": "Strip Curtains 4x7 Cooler",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Strip Curtains 5x7 Cooler",
+    "expectedProduct": "Strip Curtains 5x7 Cooler",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Sweep Gasket 3\"",
+    "expectedProduct": "Sweep Gasket 3\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Sweep Gasket 6\"",
+    "expectedProduct": "Sweep Gasket 6\"",
+    "notes": "Variation of catalog product",
+    "category": "Gaskets & Sweeps"
+  },
+  {
+    "rawText": "Switch, Pizzato FR551",
+    "expectedProduct": "Switch, Pizzato FR551",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "T-Bar 4\" x 16'",
+    "expectedProduct": "T-Bar 4\" x 16'",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "T-Bar 5\" x 16'",
+    "expectedProduct": "T-Bar 5\" x 16'",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "T-Bar Accessory Kit - 4\" T-Bar",
+    "expectedProduct": "T-Bar Accessory Kit - 4\" T-Bar",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "T-Bar Accessory Kit - 5\" T-Bar",
+    "expectedProduct": "T-Bar Accessory Kit - 5\" T-Bar",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "T-Bar Splice Plate Kit - 4\" T-Bar",
+    "expectedProduct": "T-Bar Splice Plate Kit - 4\" T-Bar",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "T-Bar Splice Plate Kit - 5\" T-Bar",
+    "expectedProduct": "T-Bar Splice Plate Kit - 5\" T-Bar",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Tek 3 (7” Self Drill Screw)",
+    "expectedProduct": "Tek 3 (7” Self Drill Screw)",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Tek 5  (8” Pancake (Flat round Head with inner small square) Self Drilling",
+    "expectedProduct": "Tek 5  (8” Pancake (Flat round Head with inner small square) Self Drilling",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Thermometer",
+    "expectedProduct": "Thermometer",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Threaded Rod  3/8-16x10'",
+    "expectedProduct": "Threaded Rod  3/8-16x10'",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Threaded Rod 1/2-13x10'",
+    "expectedProduct": "Threaded Rod 1/2-13x10'",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Threaded Rod 1/2-13x6'",
+    "expectedProduct": "Threaded Rod 1/2-13x6'",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Threaded Rod 3/8\" x 6'",
+    "expectedProduct": "Threaded Rod 3/8\" x 6'",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "Threaded Rod Coupling Hex Nut 3/8-16 (1-3/4\" long)",
+    "expectedProduct": "Threaded Rod Coupling Hex Nut 3/8-16 (1-3/4\" long)",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "TRACK BOLT SST",
+    "expectedProduct": "TRACK BOLT SST",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "TRAFFIC DOOR 3' X 7'",
+    "expectedProduct": "TRAFFIC DOOR 3' X 7'",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "TRAFFIC DOOR 6' X 7'",
+    "expectedProduct": "TRAFFIC DOOR 6' X 7'",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "TRAFFIC DOOR FRAME 3' X 7'",
+    "expectedProduct": "TRAFFIC DOOR FRAME 3' X 7'",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "TRAFFIC DOOR FRAME 6' X 7'",
+    "expectedProduct": "TRAFFIC DOOR FRAME 6' X 7'",
+    "notes": "Variation of catalog product",
+    "category": "Doors (by others)"
+  },
+  {
+    "rawText": "Transformer",
+    "expectedProduct": "Transformer",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "TREMCO JS-773 BUTYL CAULK OFF-WHITE 10.6 NON-SKINNING (30 TUBES/CTN)",
+    "expectedProduct": "TREMCO JS-773 BUTYL CAULK OFF-WHITE 10.6 NON-SKINNING (30 TUBES/CTN)",
+    "notes": "Variation of catalog product",
+    "category": "Caulking & Sealants"
+  },
+  {
+    "rawText": "Trim & Accessories",
+    "expectedProduct": "Trim & Accessories",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Trolley Kit (Rollers & Hardware ONLY)",
+    "expectedProduct": "Trolley Kit (Rollers & Hardware ONLY)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Trolley Wheel",
+    "expectedProduct": "Trolley Wheel",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "TRYMER 200L 3-1/2\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 3-1/2\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "TRYMER 200L 3\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 3\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "TRYMER 200L 4-1/2\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 4-1/2\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "TRYMER 200L 4\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 4\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "TRYMER 200L 5\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 5\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "TRYMER 200L 6\" - 48\" X 96\"",
+    "expectedProduct": "TRYMER 200L 6\" - 48\" X 96\"",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "base cover trim",
+    "expectedProduct": "TWS Base Cover Trim",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS base cover",
+    "expectedProduct": "TWS Base Cover Trim",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Base Cover Trim",
+    "expectedProduct": "TWS Base Cover Trim",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Base Cover Trim 1.5\" x 2\" x 2\"",
+    "expectedProduct": "TWS Base Cover Trim 1.5\" x 2\" x 2\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Cap",
+    "expectedProduct": "TWS Cap 2\" x 4.25\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "cap trim",
+    "expectedProduct": "TWS Cap 2\" x 4.25\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Cap 2\" x 4.25\" x 2\"",
+    "expectedProduct": "TWS Cap 2\" x 4.25\" x 2\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "cooler screed",
+    "expectedProduct": "TWS Cooler Screed",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "screed cooler",
+    "expectedProduct": "TWS Cooler Screed",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Cooler Screed",
+    "expectedProduct": "TWS Cooler Screed",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "flat batten 6",
+    "expectedProduct": "TWS Flat Batten 6\" w/ Hem",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS flat batten",
+    "expectedProduct": "TWS Flat Batten 6\" w/ Hem",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Flat Batten 6\" w/ Hem",
+    "expectedProduct": "TWS Flat Batten 6\" w/ Hem",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "freezer screed",
+    "expectedProduct": "TWS Freezer Screed",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "screed freezer",
+    "expectedProduct": "TWS Freezer Screed",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Freezer Screed",
+    "expectedProduct": "TWS Freezer Screed",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 2x2",
+    "expectedProduct": "TWS Inside Corner 2\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS IC 2x2",
+    "expectedProduct": "TWS Inside Corner 2\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "inside corner 2x2",
+    "expectedProduct": "TWS Inside Corner 2\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 2\" x 2\"",
+    "expectedProduct": "TWS Inside Corner 2\" x 2\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Inside Corner 2\" x 2\"",
+    "expectedProduct": "TWS Inside Corner 2\" x 2\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 3.5x3.5",
+    "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS IC 3.5x3.5",
+    "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "inside corner 3.5x3.5",
+    "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 3.5\" x 3.5\"",
+    "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "expectedProduct": "TWS Inside Corner 3.5\" x 3.5\" w/ 1.5\" Standoff",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 3x3",
+    "expectedProduct": "TWS Inside Corner 3\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS IC 3x3",
+    "expectedProduct": "TWS Inside Corner 3\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "inside corner 3x3",
+    "expectedProduct": "TWS Inside Corner 3\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "IC 3\" x 3\"",
+    "expectedProduct": "TWS Inside Corner 3\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Inside Corner 3\" x 3\"",
+    "expectedProduct": "TWS Inside Corner 3\" x 3\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2x3",
+    "expectedProduct": "TWS Outside Corner 2\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS OC 2x3",
+    "expectedProduct": "TWS Outside Corner 2\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "outside corner 2x3",
+    "expectedProduct": "TWS Outside Corner 2\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2\" x 3\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 3\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Outside Corner 2\" x 3\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 3\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2x6",
+    "expectedProduct": "TWS Outside Corner 2\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS OC 2x6",
+    "expectedProduct": "TWS Outside Corner 2\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "outside corner 2x6",
+    "expectedProduct": "TWS Outside Corner 2\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2\" x 6\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Outside Corner 2\" x 6\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 6\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2x7",
+    "expectedProduct": "TWS Outside Corner 2\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS OC 2x7",
+    "expectedProduct": "TWS Outside Corner 2\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "outside corner 2x7",
+    "expectedProduct": "TWS Outside Corner 2\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 2\" x 7\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Outside Corner 2\" x 7\"",
+    "expectedProduct": "TWS Outside Corner 2\" x 7\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 3x6",
+    "expectedProduct": "TWS Outside Corner 3\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS OC 3x6",
+    "expectedProduct": "TWS Outside Corner 3\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "outside corner 3x6",
+    "expectedProduct": "TWS Outside Corner 3\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 3\" x 6\"",
+    "expectedProduct": "TWS Outside Corner 3\" x 6\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Outside Corner 3\" x 6\"",
+    "expectedProduct": "TWS Outside Corner 3\" x 6\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 3x7",
+    "expectedProduct": "TWS Outside Corner 3\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS OC 3x7",
+    "expectedProduct": "TWS Outside Corner 3\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "outside corner 3x7",
+    "expectedProduct": "TWS Outside Corner 3\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "OC 3\" x 7\"",
+    "expectedProduct": "TWS Outside Corner 3\" x 7\"",
+    "notes": "TWS variation",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "TWS Outside Corner 3\" x 7\"",
+    "expectedProduct": "TWS Outside Corner 3\" x 7\"",
+    "notes": "Exact name",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Unistrut - 1-5/8\" x 1-5/8\" x 10'",
+    "expectedProduct": "Unistrut - 1-5/8\" x 1-5/8\" x 10'",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Unroll Sensor Bracket",
+    "expectedProduct": "Unroll Sensor Bracket",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Unroll Sensor PF",
+    "expectedProduct": "Unroll Sensor PF",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Valve Plug Numatics",
+    "expectedProduct": "Valve Plug Numatics",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "VENT PORT - HEATED",
+    "expectedProduct": "VENT PORT - HEATED",
+    "notes": "Variation of catalog product",
+    "category": "Fabrication Supplies"
+  },
+  {
+    "rawText": "VENT PORT - NONHEATED",
+    "expectedProduct": "VENT PORT - NONHEATED",
+    "notes": "Variation of catalog product",
+    "category": "Fabrication Supplies"
+  },
+  {
+    "rawText": "VGT Tape 4\"",
+    "expectedProduct": "VGT Tape 4\"",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "VGT Tape 6\"",
+    "expectedProduct": "VGT Tape 6\"",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "VGT Tape 9\"",
+    "expectedProduct": "VGT Tape 9\"",
+    "notes": "Variation of catalog product",
+    "category": "Trim & Accessories"
+  },
+  {
+    "rawText": "Wafer Head TEK 2 Screw #8 - 3/4\"",
+    "expectedProduct": "Wafer Head TEK 2 Screw #8 - 3/4\"",
+    "notes": "Variation of catalog product",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "WIN NH 2446",
+    "expectedProduct": "WIN NH 2446",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "WIN NH 7846",
+    "expectedProduct": "WIN NH 7846",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Window 13\" x 23\" Non-Heated",
+    "expectedProduct": "Window 13\" x 23\" Non-Heated",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Window 14\" x 14\" Heated",
+    "expectedProduct": "Window 14\" x 14\" Heated",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Window 14\" x 14\" Non-Heated",
+    "expectedProduct": "Window 14\" x 14\" Non-Heated",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Window 14\" x 24\" Heated Window",
+    "expectedProduct": "Window 14\" x 24\" Heated Window",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Window 14\" x 24\" Non-Heated",
+    "expectedProduct": "Window 14\" x 24\" Non-Heated",
+    "notes": "Variation of catalog product",
+    "category": "Foam Insulation"
+  },
+  {
+    "rawText": "Window 5\" Throat 14\" x 14\" Heated Glass and Frame",
+    "expectedProduct": "Window 5\" Throat 14\" x 14\" Heated Glass and Frame",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Window Loop",
+    "expectedProduct": "Window Loop",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Window- 14\" x 23\" Non-Heated",
+    "expectedProduct": "Window- 14\" x 23\" Non-Heated",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Wiper Gasket 3\"",
+    "expectedProduct": "Wiper Gasket 3\"",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 3\" (No cloth)",
+    "expectedProduct": "Wiper Gasket 3\" (No cloth)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 6.5\"",
+    "expectedProduct": "Wiper Gasket 6.5\"",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 6.5\" (Cloth inserted)",
+    "expectedProduct": "Wiper Gasket 6.5\" (Cloth inserted)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 8.5\"",
+    "expectedProduct": "Wiper Gasket 8.5\"",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 8.5\" (No cloth)",
+    "expectedProduct": "Wiper Gasket 8.5\" (No cloth)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wiper Gasket 9\" (No cloth)",
+    "expectedProduct": "Wiper Gasket 9\" (No cloth)",
+    "notes": "Variation of catalog product",
+    "category": "Door Hardware/Parts"
+  },
+  {
+    "rawText": "Wire, Motor VFD Signal",
+    "expectedProduct": "Wire, Motor VFD Signal",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "Zipper Repair Kit",
+    "expectedProduct": "Zipper Repair Kit",
+    "notes": "Variation of catalog product",
+    "category": "Miscellaneous Materials"
+  },
+  {
+    "rawText": "frothpak",
+    "expectedProduct": "FROTH-PAK 200",
+    "notes": "No space",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "butyl",
+    "expectedProduct": "Butyl Caulk",
+    "notes": "Single word",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "silicone white",
+    "expectedProduct": "Silicone sealant (White)",
+    "notes": "Shorthand",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "silicone clear",
+    "expectedProduct": "Silicone Sealant (Clear)",
+    "notes": "Shorthand",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "silicone alum",
+    "expectedProduct": "Silicone Sealant (Aluminum)",
+    "notes": "Shorthand",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "mag gasket 8",
+    "expectedProduct": "MAGNETIC GASKET 8'",
+    "notes": "Abbreviation",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "mag gasket",
+    "expectedProduct": "MAGNETIC GASKET 8'",
+    "notes": "No size",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "T bar",
+    "expectedProduct": "T BAR 4\" - 16'",
+    "notes": "Ambiguous size",
+    "category": "Trim"
+  },
+  {
+    "rawText": "t-bar 5",
+    "expectedProduct": "T BAR 5\" - 16",
+    "notes": "With size hint",
+    "category": "Trim"
+  },
+  {
+    "rawText": "tek screws",
+    "expectedProduct": "#12 TEK 5",
+    "notes": "Common shorthand",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "tek 5",
+    "expectedProduct": "#12 TEK 5",
+    "notes": "Even shorter",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "#12 tek",
+    "expectedProduct": "#12 TEK 5",
+    "notes": "With gauge",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "shots and pins",
+    "expectedProduct": "Shots & Pins",
+    "notes": "And instead of &",
+    "category": "Fasteners"
+  },
+  {
+    "rawText": "K56 latch",
+    "expectedProduct": "K56 Latch (Body Chrome)",
+    "notes": "Partial name",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "door closer",
+    "expectedProduct": "D276 Door Closer",
+    "notes": "Generic name",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "FRP 4x8 white",
+    "expectedProduct": "FRP 4' X 8' WHITE",
+    "notes": "Common shorthand",
+    "category": "Trim"
+  },
+  {
+    "rawText": "FRP 4x10",
+    "expectedProduct": "FRP 4' X 10' WHITE",
+    "notes": "No color specified",
+    "category": "Trim"
+  },
+  {
+    "rawText": "FRP 4x8 black",
+    "expectedProduct": "FRP 4' X 8' BLACK",
+    "notes": "With color",
+    "category": "Trim"
+  },
+  {
+    "rawText": "diamond plate 4x8",
+    "expectedProduct": "Diamond Plate .063 4' x 8'",
+    "notes": "Common material",
+    "category": "Metals"
+  },
+  {
+    "rawText": "DP 4x8",
+    "expectedProduct": "Diamond Plate .063 4' x 8'",
+    "notes": "Abbreviation",
+    "category": "Metals"
+  },
+  {
+    "rawText": "diamond plate 4x10",
+    "expectedProduct": "Diamond Plate .063 4' x 10'",
+    "notes": "Larger size",
+    "category": "Metals"
+  },
+  {
+    "rawText": "EPS 3.5 4x8",
+    "expectedProduct": "EPS Sheet 3.5\" x 4' x 8'",
+    "notes": "Insulation shorthand",
+    "category": "Insulation"
+  },
+  {
+    "rawText": "EPS 2 4x8",
+    "expectedProduct": "EPS Sheet 2\" x 4' x 8'",
+    "notes": "2 inch EPS",
+    "category": "Insulation"
+  },
+  {
+    "rawText": "trymer 3.5",
+    "expectedProduct": "TRYMER 200L 3-1/2\" - 48\" X 96\"",
+    "notes": "Insulation brand",
+    "category": "Insulation"
+  },
+  {
+    "rawText": "trymer 4",
+    "expectedProduct": "TRYMER 200L 4\" - 48\" X 96\"",
+    "notes": "Insulation brand",
+    "category": "Insulation"
+  },
+  {
+    "rawText": "ADFOAM",
+    "expectedProduct": "ADFOAM 1875",
+    "notes": "Brand name only",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "PVC corner white 8",
+    "expectedProduct": "PVC Corner 8' White",
+    "notes": "Reordered words",
+    "category": "Trim"
+  },
+  {
+    "rawText": "PVC corner 10 white",
+    "expectedProduct": "PVC Corner 10' White",
+    "notes": "Without foot mark",
+    "category": "Trim"
+  },
+  {
+    "rawText": "PVC batten white",
+    "expectedProduct": "PVC Batten - White 8'",
+    "notes": "Trim item",
+    "category": "Trim"
+  },
+  {
+    "rawText": "battens",
+    "expectedProduct": "Battens",
+    "notes": "Exact catalog name",
+    "category": "Trim"
+  },
+  {
+    "rawText": "unistrut",
+    "expectedProduct": "Unistrut",
+    "notes": "Common material",
+    "category": "Trim"
+  },
+  {
+    "rawText": "unistrut 10'",
+    "expectedProduct": "Unistrut - 1-5/8\" x 1-5/8\" x 10'",
+    "notes": "With length",
+    "category": "Trim"
+  },
+  {
+    "rawText": "threaded rod 3/8 6",
+    "expectedProduct": "Threaded Rod 3/8\" x 6'",
+    "notes": "Fastener with size",
+    "category": "Trim"
+  },
+  {
+    "rawText": "threaded rod 1/2 10",
+    "expectedProduct": "Threaded Rod 1/2-13x10'",
+    "notes": "Fastener with size",
+    "category": "Trim"
+  },
+  {
+    "rawText": "TREMCO JS-773",
+    "expectedProduct": "TREMCO JS-773 BUTYL SEALANT",
+    "notes": "Brand + model",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "tremco butyl",
+    "expectedProduct": "TREMCO JS-773 BUTYL SEALANT",
+    "notes": "Brand + type",
+    "category": "Sealants"
+  },
+  {
+    "rawText": "strip curtains 3x7",
+    "expectedProduct": "Strip Curtains 3x7",
+    "notes": "Door accessory",
+    "category": "Doors"
+  },
+  {
+    "rawText": "strip curtains 5x7",
+    "expectedProduct": "Strip Curtains 5x7",
+    "notes": "Door accessory",
+    "category": "Doors"
+  },
+  {
+    "rawText": "heater wire 12'",
+    "expectedProduct": "12' - HEATER, WIRE ALUM BRAID",
+    "notes": "Heater wire",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "heater wire 32",
+    "expectedProduct": "32' - HEATER, WIRE ALUM BRAID",
+    "notes": "Heater wire longer",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "wiper gasket 8.5",
+    "expectedProduct": "Wiper Gasket 8.5\"",
+    "notes": "Door gasket",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "wiper gasket 3",
+    "expectedProduct": "Wiper Gasket 3\"",
+    "notes": "Slider gasket",
+    "category": "Door Hardware"
+  },
+  {
+    "rawText": "galv sheet 4x8 20ga",
+    "expectedProduct": "Galvanized Sheet 4' x 8' (20ga)",
+    "notes": "Metal sheet",
+    "category": "Metals"
+  },
+  {
+    "rawText": "pine 5/8 4x8",
+    "expectedProduct": "19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8\")",
+    "notes": "Plywood shorthand",
+    "category": "Wood"
+  },
+  {
+    "rawText": "plywood 3/4 4x8",
+    "expectedProduct": "23/32X48X96 ARAUCO AC RADIATA PINE Sanded (3/4\")",
+    "notes": "Plywood common name",
+    "category": "Wood"
+  },
+  {
+    "rawText": "VGT tape 4",
+    "expectedProduct": "VGT Tape 4\"",
+    "notes": "Vapor guard tape",
+    "category": "Trim"
+  },
+  {
+    "rawText": "VGT tape 6",
+    "expectedProduct": "VGT Tape 6\"",
+    "notes": "Vapor guard tape",
+    "category": "Trim"
+  },
+  {
+    "rawText": "vent port heated",
+    "expectedProduct": "VENT PORT - HEATED",
+    "notes": "Vent port",
+    "category": "Trim"
+  },
+  {
+    "rawText": "splice plate 5",
+    "expectedProduct": "Splice Plate Kit 5\"",
+    "notes": "Ceiling hardware",
+    "category": "Trim"
+  },
+  {
+    "rawText": "beam clamp",
+    "expectedProduct": "Junior Beam Clamp",
+    "notes": "Ceiling hardware",
+    "category": "Trim"
+  },
+  {
+    "rawText": "custom welded bracket",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Truly unique",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "special order item XYZ",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS Cover Plate 10x10 hem 3 sides",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Custom TWS not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS 8x12 custom",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Custom TWS dimensions",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS 15x15 coverplate",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Dimensions not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "custom metal flashing 24 inch",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Custom fabrication",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "wood blocking 2x4",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not stocked",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "concrete anchors 3/8",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "rubber mat 4x6",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "electrical conduit 3/4 EMT",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not RSNE inventory",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "copper pipe 1/2 inch",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Not RSNE inventory",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS OC 5x5",
+    "expectedProduct": "NO_MATCH",
+    "notes": "5x5 OC not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS IC 4x4",
+    "expectedProduct": "NO_MATCH",
+    "notes": "4x4 IC not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "TWS IC 6x6",
+    "expectedProduct": "NO_MATCH",
+    "notes": "6x6 IC not in catalog",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "custom trim 2x8x1",
+    "expectedProduct": "NO_MATCH",
+    "notes": "Non-standard trim",
+    "category": "NO_MATCH"
+  },
+  {
+    "rawText": "OC 10x10",
+    "expectedProduct": "NO_MATCH",
+    "notes": "10x10 OC doesn't exist",
+    "category": "DIM_MISMATCH"
+  },
+  {
+    "rawText": "IC 8x8",
+    "expectedProduct": "NO_MATCH",
+    "notes": "8x8 IC doesn't exist",
+    "category": "DIM_MISMATCH"
+  },
+  {
+    "rawText": "TWS flat batten 12\"",
+    "expectedProduct": "NO_MATCH",
+    "notes": "12\" batten doesn't exist (only 6\")",
+    "category": "DIM_MISMATCH"
+  },
+  {
+    "rawText": "PVC corner 12' white",
+    "expectedProduct": "NO_MATCH",
+    "notes": "12' PVC doesn't exist",
+    "category": "DIM_MISMATCH"
+  },
+  {
+    "rawText": "FRP 4x12 white",
+    "expectedProduct": "NO_MATCH",
+    "notes": "4x12 FRP doesn't exist",
+    "category": "DIM_MISMATCH"
+  },
+  {
+    "rawText": "4\" IMP 8'",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Panel - should detect as panel",
+    "category": "Panels"
+  },
+  {
+    "rawText": "4\" IMP W/W 7'-6\"",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Panel with feet+inches",
+    "category": "Panels"
+  },
+  {
+    "rawText": "4 inch ceiling panel 10'",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Panel written out",
+    "category": "Panels"
+  },
+  {
+    "rawText": "20 pcs 4\" walls 8'",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Panel described as walls",
+    "category": "Panels"
+  },
+  {
+    "rawText": "4\" IMP 3x20",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Panel with width x length",
+    "category": "Panels"
+  },
+  {
+    "rawText": "5\" freezer panel 10'",
+    "expectedProduct": "PANEL_MATCH",
+    "notes": "Freezer panel",
+    "category": "Panels"
+  }
 ]

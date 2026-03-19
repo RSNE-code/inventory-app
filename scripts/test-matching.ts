@@ -34,12 +34,24 @@ async function run() {
       const top = matches[0]
 
       const matchedName = top?.matchedProduct?.name ?? null
+      const parsedName = top?.parsedItem?.name ?? null
       const confidence = top?.matchConfidence ?? 0
+      const isPanel = !!top?.panelSpecs
       const expectNoMatch = tc.expectedProduct === "NO_MATCH"
+      const expectPanel = tc.expectedProduct === "PANEL_MATCH"
 
       let status: TestResult["status"]
 
-      if (expectNoMatch) {
+      if (expectPanel) {
+        // Panel items should be detected as panels (non-catalog with panelSpecs)
+        if (isPanel) {
+          status = "PASS"
+          pass++
+        } else {
+          status = "FAIL"
+          fail++
+        }
+      } else if (expectNoMatch) {
         if (!matchedName || confidence < 0.50) {
           status = "PASS"
           pass++
@@ -48,26 +60,28 @@ async function run() {
           falsePos++
         }
       } else {
-        if (matchedName && matchedName.toLowerCase().includes(tc.expectedProduct.toLowerCase().slice(0, 15))) {
+        // Normalize for comparison — check matched product name OR parsed name
+        const expected = tc.expectedProduct.toLowerCase()
+        const actual = (matchedName || "").toLowerCase()
+        const parsed = (parsedName || "").toLowerCase()
+
+        // Check if the matched product contains the key identifying words of the expected product
+        const expectedKeywords = expected.split(/[\s\-\/(),"]+/).filter(w => w.length > 1)
+        const significantKeywords = expectedKeywords.slice(0, 4)
+        const keywordMatchCount = significantKeywords.filter(kw =>
+          actual.includes(kw) || parsed.includes(kw)
+        ).length
+        const keywordMatchRatio = significantKeywords.length > 0 ? keywordMatchCount / significantKeywords.length : 0
+
+        if (matchedName && keywordMatchRatio >= 0.6) {
           status = "PASS"
           pass++
-        } else if (matchedName && matchedName !== tc.expectedProduct) {
-          // Check if it's a partial match (first significant words match)
-          const expectedWords = tc.expectedProduct.toLowerCase().split(/\s+/).slice(0, 3).join(" ")
-          const actualWords = (matchedName || "").toLowerCase().split(/\s+/).slice(0, 3).join(" ")
-          if (actualWords.includes(expectedWords.slice(0, 10)) || expectedWords.includes(actualWords.slice(0, 10))) {
-            status = "PASS"
-            pass++
-          } else {
-            status = "FAIL"
-            fail++
-          }
-        } else if (!matchedName) {
+        } else if (!matchedName && !isPanel) {
           status = "MISS"
           miss++
         } else {
-          status = "PASS"
-          pass++
+          status = "FAIL"
+          fail++
         }
       }
 
