@@ -368,15 +368,19 @@ export function BomPhotoCapture() {
     // Panels can never become custom items — button is hidden, but guard defensively
     const item = items.find((i) => i.id === id)
     if (item?.isPanel) return
+    // Use rawText as the custom item name — strip leading quantity (e.g., "1 PC 5' 6-6\" Strip Curtain" → "5' 6-6\" Strip Curtain")
+    const customName = item?.rawText
+      ? item.rawText.replace(/^\d+\s*(pc|pcs|ea|each|x)?\s*/i, "").trim() || item.rawText
+      : item?.productName || "Custom item"
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
-          ? { ...i, confidence: 0.99, confirmed: true, isNonCatalog: true }
+          ? { ...i, productName: customName, productId: null, confidence: 0.99, confirmed: true, isNonCatalog: true }
           : i
       )
     )
     setResolvingItemId(null)
-    toast.success(`Added "${item?.productName}" as custom item`)
+    toast.success(`Added "${customName}" as custom item`)
   }
 
   function editItemDimensions(id: string, thickness: number, lengthFt: number, lengthIn: number) {
