@@ -265,18 +265,25 @@ export function LiveItemFeed({
               {/* Inline resolver — expands below tapped item */}
               {resolvingItemId === item.id && onResolveSelect && onResolveKeepAsCustom && (
                 <div className="px-4 py-2 border-b border-border-custom/40 bg-white">
-                  <FlaggedItemResolver
-                    rawText={item.rawText}
-                    primaryMatch={item.productId ? {
-                      productId: item.productId,
-                      productName: item.productName,
-                      confidence: item.confidence,
-                    } : null}
-                    alternatives={item.alternatives || []}
-                    onSelect={(productId, productName) => onResolveSelect(item.id, productId, productName)}
-                    onKeepAsCustom={() => onResolveKeepAsCustom(item.id)}
-                    isPanel={item.isPanel}
-                  />
+                  {item.confirmed && item.isNonCatalog && !item.isPanel ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Check className="h-4 w-4 text-green-600" />
+                      <p className="text-sm font-semibold text-green-700">Added as custom item</p>
+                    </div>
+                  ) : (
+                    <FlaggedItemResolver
+                      rawText={item.rawText}
+                      primaryMatch={item.productId ? {
+                        productId: item.productId,
+                        productName: item.productName,
+                        confidence: item.confidence,
+                      } : null}
+                      alternatives={item.alternatives || []}
+                      onSelect={(productId, productName) => onResolveSelect(item.id, productId, productName)}
+                      onKeepAsCustom={() => onResolveKeepAsCustom(item.id)}
+                      isPanel={item.isPanel}
+                    />
+                  )}
                 </div>
               )}
               </div>
