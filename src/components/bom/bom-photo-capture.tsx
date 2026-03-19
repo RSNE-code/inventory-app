@@ -437,13 +437,15 @@ export function BomPhotoCapture() {
       toast.error("Select a job first")
       return
     }
-    if (items.length === 0) {
+    // Filter out items with 0 quantity
+    const validItems = items.filter((item) => item.quantity > 0)
+    if (validItems.length === 0) {
       toast.error("No items to create BOM")
       return
     }
 
     try {
-      const lineItems = items.map((item) => ({
+      const lineItems = validItems.map((item) => ({
         productId: item.isNonCatalog ? null : item.productId,
         tier: "TIER_1" as const,
         qtyNeeded: item.quantity,
@@ -464,7 +466,7 @@ export function BomPhotoCapture() {
       } as Parameters<typeof createBom.mutateAsync>[0])
 
       // Feed confirmed matches into learning loop
-      const confirmedMatches = items
+      const confirmedMatches = validItems
         .filter((i) => i.productId && i.confidence >= 0.70 && !i.isNonCatalog)
         .map((i) => ({ rawText: i.rawText, productId: i.productId! }))
 
