@@ -231,19 +231,25 @@ Return JSON:
 
 IMPORTANT: For matchedProductId, return the number inside the brackets [id] from the catalog.
 
-CONFIDENCE CALIBRATION (be strict — wrong matches destroy user trust):
-- 0.95-1.0: Product name AND dimensions match exactly
-- 0.85-0.95: Product name matches clearly, dimensions absent or compatible
-- 0.70-0.85: Likely the same product but some ambiguity
-- 0.50-0.70: Plausible but uncertain
-- Below 0.50 or DIMENSIONS CONFLICT: set matchedProductId to null
+MATCHING GUIDANCE:
+- Warehouse workers use abbreviations and shorthand. "tek screws" = TEK screws, "drive pins" = Drive Pins, "OC 2x3" = Outside Corner 2"x3".
+- When an item is generic (e.g., "tek screws" without a size), pick the MOST COMMON variant as the best match and list other sizes in alternativeProductIds. Do NOT return null just because the user didn't specify a size.
+- When multiple catalog products match (e.g., several TEK screw sizes), pick the best one and include 2-3 alternatives. The user can easily switch — but having NO match forces them to search manually.
 
-CRITICAL: If dimensions in the text conflict with the catalog product's dimensions, do NOT match. Return matchedProductId: null. A wrong match is MUCH worse than no match.
+CONFIDENCE CALIBRATION:
+- 0.95-1.0: Product name AND dimensions match exactly (e.g., "#12 TEK 5" → "#12 TEK 5")
+- 0.85-0.95: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
+- 0.70-0.85: Likely match but some ambiguity (e.g., "tek screws" → "#12 TEK 5" — right product family, size unspecified)
+- 0.50-0.70: Plausible but uncertain (e.g., "drive pins" → "Hilti Drive Pins")
+- Below 0.50: Very weak match — still return the best guess with low confidence rather than null
+- DIMENSIONS CONFLICT: If the text specifies dimensions that conflict with the catalog product (e.g., "10x10" vs "6\""), set matchedProductId to null
 
 Rules:
-- Only match if you are CONFIDENT it is the correct product. A wrong match causes silent inventory errors.
+- ALWAYS try to match. A missing match forces the user to manually search the catalog. A wrong match is one tap to fix.
+- Only set matchedProductId to null if the item is truly unlike anything in the catalog OR dimensions explicitly conflict.
+- If dimensions in the text conflict with the catalog product, return null. But MISSING dimensions are NOT a conflict.
 - Ambiguous: pick best match, include alternatives in alternativeProductIds
-- Parse EVERY item mentioned, even vague ones — but set matchedProductId to null if no good match`,
+- Parse EVERY item mentioned, even vague ones`,
   })
 
   const parsed = extractJSON(response) as { items?: AIMatchedItem[] }
@@ -853,32 +859,46 @@ MATCHING EXAMPLES:
    matchedProductId: "445", matchConfidence: 0.95, alternativeProductIds: []
    (OC = Outside Corner, 2x3 = 2"x3" — matches "TWS Outside Corner 2\" x 3\"" exactly)
 
-CONFIDENCE CALIBRATION (be strict — a wrong match at high confidence destroys user trust):
-- 0.95-1.0: Product name AND dimensions match exactly (e.g., "OC 2x3" → "TWS Outside Corner 2\" x 3\"")
-- 0.85-0.95: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
-- 0.70-0.85: Likely the same product but some ambiguity (e.g., "T-Bar" with multiple sizes, "PVC corner" without specifying length)
-- 0.50-0.70: Plausible but uncertain — user should review
-- Below 0.50 or DIMENSIONS CONFLICT: set matchedProductId to null. A wrong match is MUCH worse than no match.
+6. Handwritten says "tek screws" →
+   matchedProductId: "6", matchConfidence: 0.75, alternativeProductIds: ["7", "8"]
+   (Generic — no size specified. Pick most common TEK screw, list other sizes as alternatives. Do NOT return null.)
 
-CRITICAL DIMENSION RULE:
-If the BOM item specifies dimensions (e.g., 10"x10", 8"x12", 3x6) and the best catalog match has DIFFERENT dimensions (e.g., 6", 2"x3"), do NOT match. Return matchedProductId: null. Dimension mismatches mean DIFFERENT PRODUCTS.
+7. Handwritten says "drive pins" →
+   matchedProductId: "512", matchConfidence: 0.70, alternativeProductIds: []
+   (Abbreviated but clearly refers to drive pins in catalog. ALWAYS match when the product family exists.)
+
+MATCHING GUIDANCE:
+- Warehouse workers use abbreviations and shorthand. "tek screws" = TEK screws, "drive pins" = Drive Pins, "OC 2x3" = Outside Corner 2"x3".
+- When an item is generic (e.g., "tek screws" without a size), pick the MOST COMMON variant as the best match and list other sizes in alternativeProductIds. Do NOT return null just because the user didn't specify a size.
+- When multiple catalog products could match (e.g., several TEK screw sizes), pick the best one and include 2-3 alternatives. The user can easily switch — but having NO match forces them to search manually.
+
+CONFIDENCE CALIBRATION:
+- 0.95-1.0: Product name AND dimensions match exactly (e.g., "OC 2x3" → "TWS Outside Corner 2\\" x 3\\"")
+- 0.85-0.95: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
+- 0.70-0.85: Likely match but some ambiguity (e.g., "tek screws" → "#12 TEK 5" — right product family, size unspecified)
+- 0.50-0.70: Plausible but uncertain (e.g., "drive pins" → "Hilti Drive Pins")
+- Below 0.50: Very weak match — still return the best guess with low confidence rather than null
+- DIMENSIONS CONFLICT: If the text specifies dimensions that conflict with the catalog product (e.g., "10x10" vs "6\\""), set matchedProductId to null
+
+DIMENSION RULE:
+If the BOM item specifies dimensions (e.g., 10"x10", 8"x12") and the best catalog match has DIFFERENT dimensions, return matchedProductId: null. But MISSING dimensions are NOT a conflict — "tek screws" without a size should still match.
 
 DIMENSION EXTRACTION (for panels and items with length):
 - For panels, walls, ceiling panels, or any item with a length: set lengthFt and lengthIn.
-  - "7'-6\"" or "7 ft 6 in" → lengthFt: 7, lengthIn: 6
+  - "7'-6\\"" or "7 ft 6 in" → lengthFt: 7, lengthIn: 6
   - "8'" or "8 ft" → lengthFt: 8, lengthIn: 0
   - No length visible → lengthFt: null, lengthIn: null
 - For panels with a thickness (e.g., 4" thick, 4" IMP): set thicknessIn.
-  - "4\" walls" or "4\" IMP" → thicknessIn: 4
+  - "4\\"" walls or "4\\" IMP" → thicknessIn: 4
   - Not a panel or no thickness visible → thicknessIn: null
-- Do NOT confuse thickness with length. "4\" walls x 7'-6\"" means thicknessIn: 4, lengthFt: 7, lengthIn: 6.
+- Do NOT confuse thickness with length. "4\\" walls x 7'-6\\"" means thicknessIn: 4, lengthFt: 7, lengthIn: 6.
 
 Rules:
-- Only match if you are CONFIDENT it is the correct product. A wrong match causes silent inventory errors. A missing match is easy for the user to fix.
-- If dimensions in the BOM text conflict with the catalog product's dimensions, set matchedProductId to null.
-- Set matchConfidence strictly using the calibration guide above.
+- ALWAYS try to match. A missing match forces the user to manually search the catalog. A wrong match is one tap to fix.
+- Only set matchedProductId to null if the item is truly unlike anything in the catalog OR dimensions explicitly conflict.
+- If dimensions in the BOM text conflict with the catalog product, return null. But MISSING dimensions are NOT a conflict.
 - Ambiguous items: pick best match, include alternatives in alternativeProductIds
-- Parse EVERY line item, even vague ones — but set matchedProductId to null if no good match exists
+- Parse EVERY line item, even vague ones
 - Output items in document order`,
           },
         ],
