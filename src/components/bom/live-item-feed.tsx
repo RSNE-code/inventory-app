@@ -165,12 +165,16 @@ export function LiveItemFeed({
 
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    "text-[15px] font-semibold leading-snug truncate",
-                    isFlagged ? "text-orange-700" : "text-navy"
-                  )}>
+                  <button
+                    type="button"
+                    onClick={() => onResolveFlagged(item.id)}
+                    className={cn(
+                      "text-[15px] font-semibold leading-snug truncate text-left w-full",
+                      isFlagged ? "text-orange-700" : "text-navy underline-offset-2 decoration-border-custom hover:underline"
+                    )}
+                  >
                     {item.productName}
-                  </p>
+                  </button>
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { JobPicker } from "@/components/bom/job-picker"
 import { LiveItemFeed } from "@/components/bom/live-item-feed"
 import { FlaggedItemResolver } from "@/components/bom/flagged-item-resolver"
+import { ProductPicker } from "@/components/bom/product-picker"
 import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -622,6 +623,30 @@ export function BomPhotoCapture() {
         onEditDimensions={editItemDimensions}
         onConversionConfirm={handleConversionConfirm}
       />
+
+      {/* Add item — search catalog or type custom */}
+      {phase === "review" && feedPhase === "done" && (
+        <div className="px-4 py-3 border-b border-border-custom/40">
+          <ProductPicker
+            placeholder="Add item from catalog..."
+            onSelect={(product) => {
+              const newItem: FeedItem = {
+                id: `manual-${Date.now()}`,
+                rawText: product.name,
+                productName: product.name,
+                productId: product.id,
+                quantity: 1,
+                unitOfMeasure: product.unitOfMeasure,
+                confidence: 1,
+                isPanel: false,
+                confirmed: true,
+                isNonCatalog: false,
+              }
+              setItems((prev) => [...prev, newItem])
+            }}
+          />
+        </div>
+      )}
 
       {/* Sticky bottom bar */}
       {items.length > 0 && (
