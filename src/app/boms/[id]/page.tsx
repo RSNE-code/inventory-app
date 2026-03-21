@@ -347,7 +347,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      <div className="p-4 space-y-3 pb-48">
+      <div className="p-4 space-y-3 pb-56">
         {/* Job Info */}
         <Card className="px-4 py-3 rounded-xl border-border-custom">
           <div className="flex items-start justify-between gap-2">
@@ -380,7 +380,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 type="button"
                 variant="ghost"
                 onClick={() => setMode("edit")}
-                className="h-12 px-4 text-brand-blue font-semibold"
+                className="h-11 min-w-[44px] px-4 text-brand-blue font-semibold rounded-xl"
               >
                 <Pencil className="h-4 w-4 mr-1.5" />
                 Edit
@@ -508,9 +508,10 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   }
                 } : undefined}
               />
-              {/* Panel dimension editor (edit mode) */}
+              {/* Panel dimension editor (edit mode) — isolated row to prevent overlap */}
               {isPanelItem && mode === "edit" && specs && (
-                <div className="px-4 py-2 bg-blue-50/50">
+                <div className="px-4 py-3 -mt-1 bg-blue-50/30 border-t border-blue-100">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-2">Panel Dimensions</p>
                   <PanelDimensionEditor
                     thickness={(specs.thickness as number) ?? 4}
                     lengthFt={Math.floor((specs.cutLengthFt as number) ?? 0)}
@@ -546,7 +547,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     <button
                       type="button"
                       onClick={() => setPanelCheckoutItem(lineId)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-3 -mt-1 mb-2 rounded-lg bg-brand-orange/10 text-brand-orange text-sm font-semibold hover:bg-brand-orange/20 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 min-h-[44px] py-2.5 px-4 -mt-1 mb-2 rounded-xl bg-brand-orange/10 text-brand-orange text-sm font-semibold active:bg-brand-orange/20 ios-press transition-all"
                     >
                       <Layers className="h-4 w-4" />
                       Check Out Panels ({panelRemaining} remaining)
@@ -615,7 +616,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
         {/* Action buttons — view mode (sticky bottom bar) */}
         {mode === "view" && (
-          <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-4 space-y-2">
+          <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] space-y-2">
             {/* Draft / Pending Review actions */}
             {(bom.status === "DRAFT" || bom.status === "PENDING_REVIEW") && (
               <>

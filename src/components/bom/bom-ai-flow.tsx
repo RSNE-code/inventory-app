@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, PenLine, ClipboardList, Trash2, Plus, X } from "lucide-react"
+import { Camera, PenLine, ClipboardList, Trash2, Plus, X, Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { JobPicker } from "@/components/bom/job-picker"
 import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useHaptic } from "@/hooks/use-haptic"
 import { StepProgress } from "@/components/layout/step-progress"
 import type {
   CatalogMatch,
@@ -28,6 +29,9 @@ export function BomAIFlow() {
   const router = useRouter()
   const createBom = useCreateBom()
   const aiInputRef = useRef<AIInputHandle>(null)
+  const confirmedSectionRef = useRef<HTMLDivElement>(null)
+  const submitSectionRef = useRef<HTMLDivElement>(null)
+  const haptic = useHaptic()
 
   const [phase, setPhase] = useState<"INPUT" | "BUILD">("INPUT")
   const [jobName, setJobName] = useState("")
@@ -41,6 +45,7 @@ export function BomAIFlow() {
   const [nonCatalogName, setNonCatalogName] = useState("")
   const [nonCatalogQty, setNonCatalogQty] = useState(1)
   const [nonCatalogUom, setNonCatalogUom] = useState("each")
+  const [justConfirmedAll, setJustConfirmedAll] = useState(false)
 
   const handleParseComplete = useCallback(
     (result: ParseResult | ReceivingParseResult) => {
@@ -91,17 +96,35 @@ export function BomAIFlow() {
     [confirmedItems]
   )
 
+  // Scroll to confirmed/submit section after all items confirmed
+  function scrollToConfirmed() {
+    setTimeout(() => {
+      const target = submitSectionRef.current || confirmedSectionRef.current
+      target?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 350)
+  }
+
   function handleAcceptItem(item: ConfirmedBomItem) {
     setConfirmedItems((prev) => [...prev, item])
-    setPendingMatches((prev) =>
-      prev.filter((m) => m.parsedItem.rawText !== item.catalogMatch.parsedItem.rawText)
-    )
+    setPendingMatches((prev) => {
+      const remaining = prev.filter((m) => m.parsedItem.rawText !== item.catalogMatch.parsedItem.rawText)
+      // If this was the last pending item, scroll to submit
+      if (remaining.length === 0) {
+        haptic.success()
+        scrollToConfirmed()
+      }
+      return remaining
+    })
   }
 
   function handleRejectItem(match: CatalogMatch) {
-    setPendingMatches((prev) =>
-      prev.filter((m) => m.parsedItem.rawText !== match.parsedItem.rawText)
-    )
+    setPendingMatches((prev) => {
+      const remaining = prev.filter((m) => m.parsedItem.rawText !== match.parsedItem.rawText)
+      if (remaining.length === 0 && confirmedItems.length > 0) {
+        scrollToConfirmed()
+      }
+      return remaining
+    })
   }
 
   function handleQtyOverride(rawText: string, qty: number) {
@@ -137,6 +160,14 @@ export function BomAIFlow() {
     setConfirmedItems((prev) => [...prev, ...newConfirmed])
     setPendingMatches([])
     setQtyOverrides({})
+    setJustConfirmedAll(true)
+    haptic.success()
+
+    // Auto-scroll to the submit area
+    scrollToConfirmed()
+
+    // Clear the flash after animation
+    setTimeout(() => setJustConfirmedAll(false), 2000)
   }
 
   function handleAddProduct(product: ProductResult) {
@@ -379,10 +410,23 @@ export function BomAIFlow() {
 
       {/* Confirmed items */}
       {confirmedItems.length > 0 && (
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-1">
-          <h3 className="text-xs font-semibold text-green-700">
-            {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
-          </h3>
+        <Card
+          ref={confirmedSectionRef}
+          className={cn(
+            "px-3 py-2.5 rounded-xl border-border-custom space-y-1 transition-all duration-300",
+            justConfirmedAll && "ring-2 ring-green-400/50 border-green-300 animate-ios-spring-in"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            {justConfirmedAll && (
+              <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center animate-ios-checkmark">
+                <Check className="h-3 w-3 text-white" />
+              </div>
+            )}
+            <h3 className="text-xs font-semibold text-green-700">
+              {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
+            </h3>
+          </div>
 
           {confirmedItems.map((item, index) => {
             const stockLevel = getItemStockLevel(item)
@@ -561,16 +605,21 @@ export function BomAIFlow() {
 
       {/* Submit */}
       {confirmedItems.length > 0 && (
-        <Button
-          onClick={handleSubmit}
-          disabled={createBom.isPending || !jobName.trim()}
-          className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-sm rounded-xl"
-        >
-          <ClipboardList className="h-5 w-5 mr-2" />
-          {createBom.isPending
-            ? "Creating..."
-            : `Create BOM (${confirmedItems.length} item${confirmedItems.length !== 1 ? "s" : ""})`}
-        </Button>
+        <div ref={submitSectionRef}>
+          <Button
+            onClick={handleSubmit}
+            disabled={createBom.isPending || !jobName.trim()}
+            className={cn(
+              "w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-xl ios-press transition-all",
+              justConfirmedAll && "animate-ios-slide-up"
+            )}
+          >
+            <ClipboardList className="h-5 w-5 mr-2" />
+            {createBom.isPending
+              ? "Creating..."
+              : `Create BOM (${confirmedItems.length} item${confirmedItems.length !== 1 ? "s" : ""})`}
+          </Button>
+        </div>
       )}
 
       {/* Start over */}

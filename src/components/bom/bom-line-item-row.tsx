@@ -120,18 +120,18 @@ export function BomLineItemRow({
     if (outstanding <= 0) return null
 
     return (
-      <div className="py-4 border-b border-border-custom last:border-0">
+      <div className="py-3 border-b border-border-custom last:border-0">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium text-navy truncate">{name}</p>
+              <p className="text-[15px] font-medium text-navy truncate">{name}</p>
               {tier === "TIER_2" && (
                 <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">T2</Badge>
               )}
             </div>
-            <p className="text-xs text-text-muted">{formatQuantity(outstanding)} {activeInputUnit} out</p>
+            <p className="text-xs text-text-muted mt-0.5">{formatQuantity(outstanding)} {activeInputUnit} out</p>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <Input
               type="number"
               value={returnQty || ""}
@@ -140,12 +140,12 @@ export function BomLineItemRow({
                 onReturnQtyChange?.(Math.min(Math.max(isNaN(val) ? 0 : val, 0), outstanding))
               }}
               placeholder="0"
-              className="h-12 w-20 text-center text-sm"
+              className="h-11 w-20 text-center text-[15px] rounded-xl"
               min={0}
               max={outstanding}
               step="any"
             />
-            <span className="text-xs text-text-muted w-8">{activeInputUnit}</span>
+            <span className="text-xs text-text-muted w-10">{activeInputUnit}</span>
           </div>
         </div>
       </div>
@@ -155,17 +155,17 @@ export function BomLineItemRow({
   // Checkout mode render — enter qty to pull
   if (checkoutMode) {
     return (
-      <div className="py-4 border-b border-border-custom last:border-0">
-        <div className="flex items-center justify-between gap-2">
+      <div className="py-3 border-b border-border-custom last:border-0">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="text-sm font-medium text-navy truncate">{name}</p>
+              <p className="text-[15px] font-medium text-navy truncate">{name}</p>
               {fullyCheckedOut && <Check className="h-3.5 w-3.5 text-status-green shrink-0" />}
               {tier === "TIER_2" && (
                 <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">T2</Badge>
               )}
             </div>
-            <p className="text-xs text-text-muted">
+            <p className="text-xs text-text-muted mt-0.5">
               {qtyCheckedOut > 0 ? (
                 <>{formatQuantity(qtyCheckedOut)}/{formatQuantity(qtyNeeded)} {activeInputUnit} pulled</>
               ) : (
@@ -174,17 +174,17 @@ export function BomLineItemRow({
             </p>
           </div>
           {!fullyCheckedOut && (
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <Input
                 type="number"
                 value={checkoutQty || ""}
                 onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
                 placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
-                className="h-12 w-20 text-center text-sm"
+                className="h-11 w-20 text-center text-[15px] rounded-xl"
                 min={0}
                 step="any"
               />
-              <span className="text-xs text-text-muted w-8">{activeInputUnit}</span>
+              <span className="text-xs text-text-muted w-10">{activeInputUnit}</span>
             </div>
           )}
         </div>
@@ -194,11 +194,11 @@ export function BomLineItemRow({
 
   // Normal view render
   return (
-    <div className="py-4 border-b border-border-custom last:border-0">
-      <div className="flex items-center justify-between gap-2">
+    <div className="py-3 border-b border-border-custom last:border-0">
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-medium text-navy truncate">{name}</p>
+            <p className="text-[15px] font-medium text-navy truncate">{name}</p>
             {fullyCheckedOut && qtyCheckedOut > 0 && <Check className="h-3.5 w-3.5 text-status-green shrink-0" />}
             {tier === "TIER_2" && (
               <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">T2</Badge>
@@ -215,10 +215,10 @@ export function BomLineItemRow({
                 onClick={() => onFabricationSourceChange(
                   fabricationSource === "RSNE_MADE" ? "SUPPLIER" : "RSNE_MADE"
                 )}
-                className={`inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors ${
+                className={`inline-flex items-center gap-1 mt-1 px-3 py-1.5 min-h-[44px] rounded-xl text-[11px] font-semibold transition-colors ${
                   fabricationSource === "RSNE_MADE"
-                    ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
-                    : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+                    ? "bg-green-50 text-green-700 border border-green-200 active:bg-green-100"
+                    : "bg-blue-50 text-blue-700 border border-blue-200 active:bg-blue-100"
                 }`}
               >
                 {fabricationSource === "RSNE_MADE" ? (
@@ -250,13 +250,13 @@ export function BomLineItemRow({
         </div>
 
         {editable ? (
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <div>
               <Input
                 type="number"
                 value={qtyNeeded || ""}
                 onChange={(e) => onQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                className="h-12 w-16 text-center text-sm"
+                className="h-11 w-16 text-center text-[15px] rounded-xl"
                 min={0}
                 step="any"
               />
@@ -293,7 +293,7 @@ export function BomLineItemRow({
               size="icon"
               aria-label="Remove item"
               onClick={onRemove}
-              className="h-12 w-12 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
+              className="h-11 w-11 shrink-0 rounded-xl text-status-red hover:text-status-red hover:bg-red-50"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

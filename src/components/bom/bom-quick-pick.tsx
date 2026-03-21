@@ -215,7 +215,7 @@ function CartBar({
   const totalItems = cart.reduce((sum, i) => sum + i.qtyNeeded, 0)
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+    <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
       {/* Expanded cart */}
       {expanded && (
         <div className="max-h-64 overflow-y-auto border-b border-border-custom">
