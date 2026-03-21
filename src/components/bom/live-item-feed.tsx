@@ -55,8 +55,6 @@ export function LiveItemFeed({
   onResolveSelect,
   onResolveKeepAsCustom,
 }: LiveItemFeedProps) {
-  // Items now arrive one at a time from the stream — show them immediately
-  // with a short stagger delay for the receipt-printer feel
   const [visibleCount, setVisibleCount] = useState(0)
 
   useEffect(() => {
@@ -65,21 +63,26 @@ export function LiveItemFeed({
       return
     }
 
-    // When new items arrive from stream, reveal them with a brief delay
     if (items.length > visibleCount) {
       const timer = setTimeout(() => {
         setVisibleCount((prev) => Math.min(prev + 1, items.length))
-      }, 120) // Fast reveal — items already arrive with natural stream delay
+      }, 120)
       return () => clearTimeout(timer)
     }
   }, [items.length, visibleCount, phase])
 
+  // ── Loading state — Vibecode-style ──
   if (phase === "loading") {
     return (
-      <div className="py-12 text-center">
-        <div className="inline-flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-brand-orange animate-pulse" />
-          <p className="text-[15px] font-semibold text-navy">Reading your list...</p>
+      <div className="py-16 text-center animate-phase-enter">
+        <div className="inline-flex flex-col items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="h-2 w-2 rounded-full bg-brand-orange animate-building-pulse" style={{ animationDelay: "0s" }} />
+            <div className="h-2 w-2 rounded-full bg-brand-orange animate-building-pulse" style={{ animationDelay: "0.3s" }} />
+            <div className="h-2 w-2 rounded-full bg-brand-orange animate-building-pulse" style={{ animationDelay: "0.6s" }} />
+          </div>
+          <p className="text-[15px] font-bold text-navy">Reading your list</p>
+          <p className="text-xs text-text-muted">Matching items to catalog...</p>
         </div>
       </div>
     )
@@ -94,35 +97,43 @@ export function LiveItemFeed({
 
   const needsReviewCount = items.filter((i) => !i.confirmed).length
   const flaggedCount = items.filter((i) => i.confidence < 0.70 && !i.confirmed).length
+  const confirmedCount = items.filter((i) => i.confirmed).length
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {phase === "done" && flaggedCount === 0 && (
-            <Check className="h-5 w-5 text-green-600" />
+            <div className="circle-checkbox checked" style={{ width: 22, height: 22 }}>
+              <Check className="h-3 w-3 text-white" />
+            </div>
           )}
           {phase === "done" && flaggedCount > 0 && (
-            <AlertCircle className="h-5 w-5 text-orange-500" />
+            <div className="circle-checkbox flagged" style={{ width: 22, height: 22 }}>
+              <AlertCircle className="h-3 w-3 text-brand-orange" />
+            </div>
           )}
           {(phase === "pass1" || phase === "pass2") && (
-            <div className="h-2 w-2 rounded-full bg-brand-orange animate-pulse" />
+            <div className="h-2.5 w-2.5 rounded-full bg-brand-orange animate-building-pulse" />
           )}
-          <p className="text-[15px] font-semibold text-navy">{headerText}</p>
+          <p className="text-[15px] font-bold text-navy">{headerText}</p>
         </div>
-        {phase === "done" && needsReviewCount > 0 && (
-          <span className="text-xs font-semibold text-blue-600">
-            {needsReviewCount} to review
-          </span>
+        {phase === "done" && (
+          <div className="flex items-center gap-3">
+            {confirmedCount > 0 && (
+              <span className="text-xs font-semibold text-green-600">{confirmedCount} confirmed</span>
+            )}
+            {needsReviewCount > 0 && (
+              <span className="text-xs font-semibold text-brand-blue">{needsReviewCount} to review</span>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Progress bar for Pass 2 */}
+      {/* Progress bar for Pass 2 — indeterminate shimmer */}
       {phase === "pass2" && (
-        <div className="mx-4 mb-2 h-1 rounded-full bg-border-custom overflow-hidden">
-          <div className="h-full bg-brand-orange rounded-full animate-[progress_8s_ease-in-out_forwards]" />
-        </div>
+        <div className="mx-4 mb-3 progress-indeterminate" />
       )}
 
       {/* Item rows */}
@@ -139,39 +150,38 @@ export function LiveItemFeed({
               <div>
               <div
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 transition-all duration-300",
-                  isFlagged ? "bg-orange-50/50" : "",
+                  "flex items-center gap-3 px-4 py-3.5 transition-all duration-300",
+                  isFlagged ? "bg-orange-50/40" : "",
                   !showConversion ? "border-b" : "",
-                  isFlagged ? "border-orange-200" : "border-border-custom/40",
-                  // Entry animation
-                  "animate-[slideInUp_200ms_ease-out]"
+                  isFlagged ? "border-orange-200/60" : "border-border-custom/30",
+                  "animate-item-enter"
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Status indicator: green = confirmed, blue = likely match, orange = needs review */}
+                {/* Things 3 circle checkbox */}
                 <div className="shrink-0">
                   {isConfirmed ? (
-                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-                      <Check className="h-3.5 w-3.5 text-green-600" />
+                    <div className="circle-checkbox checked">
+                      <Check className="h-3.5 w-3.5 text-white" />
                     </div>
                   ) : isLikelyMatch ? (
                     <button
                       type="button"
                       onClick={() => onResolveFlagged(item.id)}
-                      className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center"
+                      className="circle-checkbox likely ios-press"
                     >
-                      <Check className="h-3.5 w-3.5 text-blue-500" />
+                      <Check className="h-3.5 w-3.5 text-brand-blue" />
                     </button>
                   ) : isFlagged ? (
                     <button
                       type="button"
                       onClick={() => onResolveFlagged(item.id)}
-                      className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center"
+                      className="circle-checkbox flagged ios-press"
                     >
-                      <AlertCircle className="h-3.5 w-3.5 text-orange-500" />
+                      <AlertCircle className="h-3.5 w-3.5 text-brand-orange" />
                     </button>
                   ) : (
-                    <div className="h-6 w-6 rounded-full border-2 border-dashed border-border-custom" />
+                    <div className="circle-checkbox" />
                   )}
                 </div>
 
@@ -181,8 +191,8 @@ export function LiveItemFeed({
                     type="button"
                     onClick={() => onResolveFlagged(item.id)}
                     className={cn(
-                      "text-[15px] font-semibold leading-snug truncate text-left w-full",
-                      isFlagged ? "text-orange-700" : "text-navy underline-offset-2 decoration-border-custom hover:underline"
+                      "text-[15px] font-semibold leading-snug text-left w-full break-words",
+                      isFlagged ? "text-orange-700" : "text-navy"
                     )}
                   >
                     {item.productName}
@@ -191,7 +201,7 @@ export function LiveItemFeed({
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}
                   {item.isNonCatalog && !item.isPanel && (
-                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">Custom</span>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
                   )}
                   {/* Panel dimension editor */}
                   {item.isPanel && item.panelSpecs && onEditDimensions && (
@@ -208,19 +218,19 @@ export function LiveItemFeed({
                     <button
                       type="button"
                       onClick={() => onResolveFlagged(item.id)}
-                      className="text-xs text-orange-500 font-semibold mt-0.5"
+                      className="text-xs text-orange-500 font-semibold mt-1"
                     >
                       Tap to review
                     </button>
                   )}
                 </div>
 
-                {/* Quantity stepper */}
+                {/* Quantity stepper — compact iOS style */}
                 <div className="flex items-center gap-0 shrink-0">
                   <button
                     type="button"
                     onClick={() => onUpdateQty(item.id, Math.max(0, Math.round((item.quantity - 0.5) * 10) / 10))}
-                    className="h-10 w-10 flex items-center justify-center rounded-l-lg border border-border-custom bg-surface-secondary text-navy active:bg-border-custom"
+                    className="h-10 w-10 flex items-center justify-center rounded-l-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -228,24 +238,24 @@ export function LiveItemFeed({
                     type="number"
                     value={item.quantity}
                     onChange={(e) => onUpdateQty(item.id, Math.max(0, Number(e.target.value) || 0))}
-                    className="w-14 h-10 text-center text-sm font-bold border-y border-border-custom bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-14 h-10 text-center text-sm font-bold border-y border-border-custom bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     min={0}
                     step="0.5"
                   />
                   <button
                     type="button"
                     onClick={() => onUpdateQty(item.id, Math.round((item.quantity + 0.5) * 10) / 10)}
-                    className="h-10 w-10 flex items-center justify-center rounded-r-lg border border-border-custom bg-surface-secondary text-navy active:bg-border-custom"
+                    className="h-10 w-10 flex items-center justify-center rounded-r-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
 
-                {/* Delete button */}
+                {/* Delete button — subtle */}
                 <button
                   type="button"
                   onClick={() => onDelete(item.id)}
-                  className="h-10 w-10 flex items-center justify-center text-red-400 hover:text-red-600 shrink-0"
+                  className="h-10 w-10 flex items-center justify-center text-text-muted/30 hover:text-red-500 transition-colors shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -264,10 +274,12 @@ export function LiveItemFeed({
               )}
               {/* Inline resolver — expands below tapped item */}
               {resolvingItemId === item.id && onResolveSelect && onResolveKeepAsCustom && (
-                <div className="px-4 py-2 border-b border-border-custom/40 bg-white">
+                <div className="px-4 py-3 border-b border-border-custom/40 bg-surface-secondary/50 animate-ios-expand">
                   {item.confirmed && item.isNonCatalog && !item.isPanel ? (
                     <div className="flex items-center gap-2 py-2">
-                      <Check className="h-4 w-4 text-green-600" />
+                      <div className="circle-checkbox checked" style={{ width: 20, height: 20 }}>
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
                       <p className="text-sm font-semibold text-green-700">Added as custom item</p>
                     </div>
                   ) : (

@@ -115,7 +115,7 @@ export function ProductPicker({ onSelect, placeholder = "Search products...", ex
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-navy truncate">{p.name}</p>
+                    <p className="text-sm font-medium text-navy break-words">{p.name}</p>
                     <p className="text-xs text-text-muted">
                       {p.sku || "No SKU"} &middot; {p.unitOfMeasure}
                       {p.category ? ` &middot; ${p.category.name}` : ""}

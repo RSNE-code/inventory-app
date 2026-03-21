@@ -313,11 +313,11 @@ export function BomAIFlow() {
   // ─── INPUT phase — entry-path cards (mirrors receiving module) ───
   if (phase === "INPUT") {
     return (
-      <div className="space-y-3 animate-fade-in-up">
+      <div className="space-y-3 animate-phase-enter">
         <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
         {/* Entry path cards */}
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-3">
           {/* Photo / Camera */}
           <button
             type="button"
@@ -379,12 +379,12 @@ export function BomAIFlow() {
 
   // ─── BUILD phase — job picker, items review, submit ───
   return (
-    <div className="space-y-2 animate-fade-in-up">
+    <div className="space-y-3 animate-phase-enter">
       <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
       {/* Job picker */}
-      <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
-        <h3 className="text-sm font-semibold text-navy">Job *</h3>
+      <Card className="px-4 py-3 rounded-2xl border-border-custom/60 shadow-brand space-y-2">
+        <h3 className="text-sm font-bold text-navy">Job *</h3>
         <JobPicker
           onSelect={(job) => {
             setJobName(job.name)
@@ -397,7 +397,7 @@ export function BomAIFlow() {
 
       {/* Pending items to review */}
       {pendingMatches.length > 0 && (
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom">
+        <Card className="px-4 py-3 rounded-2xl border-border-custom/60 shadow-brand">
           <BomConfirmationList
             matches={pendingMatches}
             onAccept={handleAcceptItem}
@@ -408,41 +408,50 @@ export function BomAIFlow() {
         </Card>
       )}
 
-      {/* Confirmed items */}
+      {/* Confirmed items — Monday-style green accent */}
       {confirmedItems.length > 0 && (
         <Card
           ref={confirmedSectionRef}
           className={cn(
-            "px-3 py-2.5 rounded-xl border-border-custom space-y-1 transition-all duration-300",
+            "rounded-2xl border-border-custom/60 overflow-hidden transition-all duration-300",
             justConfirmedAll && "ring-2 ring-green-400/50 border-green-300 animate-ios-spring-in"
           )}
         >
-          <div className="flex items-center gap-2">
-            {justConfirmedAll && (
-              <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center animate-ios-checkmark">
-                <Check className="h-3 w-3 text-white" />
-              </div>
-            )}
-            <h3 className="text-xs font-semibold text-green-700">
-              {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
-            </h3>
+          {/* Header bar */}
+          <div className="flex items-center justify-between px-4 py-3 bg-green-50/60 border-b border-green-100">
+            <div className="flex items-center gap-2">
+              {justConfirmedAll && (
+                <div className="circle-checkbox checked" style={{ width: 20, height: 20 }}>
+                  <Check className="h-3 w-3 text-white" />
+                </div>
+              )}
+              <h3 className="text-sm font-bold text-green-800">
+                {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
+              </h3>
+            </div>
           </div>
 
-          {confirmedItems.map((item, index) => {
-            const stockLevel = getItemStockLevel(item)
-            return (
-              <div
-                key={`${item.productId ?? "nc"}-${index}`}
-                className="py-1.5 border-b border-gray-50 last:border-0"
-              >
-                <div className="flex items-start justify-between gap-2">
+          {/* Item rows */}
+          <div className="divide-y divide-border-custom/30">
+            {confirmedItems.map((item, index) => {
+              const stockLevel = getItemStockLevel(item)
+              return (
+                <div
+                  key={`${item.productId ?? "nc"}-${index}`}
+                  className="px-4 py-3 flex items-start gap-3"
+                >
+                  {/* Things 3 confirmed circle */}
+                  <div className="circle-checkbox checked mt-0.5" style={{ width: 20, height: 20 }}>
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-xs font-medium text-gray-900">{item.productName}</p>
+                    <div className="flex items-start gap-1.5 flex-wrap">
+                      <p className="text-[13px] font-semibold text-navy break-words">{item.productName}</p>
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-[10px] px-1 py-0",
+                          "text-[10px] px-1.5 py-0 rounded-md shrink-0",
                           item.tier === "TIER_1"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : "bg-purple-50 text-purple-700 border-purple-200"
@@ -451,7 +460,7 @@ export function BomAIFlow() {
                         {item.tier === "TIER_1" ? "T1" : "T2"}
                       </Badge>
                       {item.isNonCatalog && (
-                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 px-1 py-0">
+                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 bg-orange-50 px-1.5 py-0 rounded-md shrink-0">
                           Non-catalog
                         </Badge>
                       )}
@@ -459,11 +468,11 @@ export function BomAIFlow() {
 
                     {/* Stock status */}
                     {stockLevel !== "unknown" && (
-                      <div className="flex items-center gap-1 mt-0.5">
+                      <div className="flex items-center gap-1 mt-1">
                         <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", stockDotColor[stockLevel])} />
                         <span
                           className={cn(
-                            "text-[10px]",
+                            "text-[11px] font-medium",
                             stockLevel === "sufficient" && "text-green-600",
                             stockLevel === "low" && "text-yellow-600",
                             stockLevel === "out" && "text-red-500"
@@ -475,30 +484,28 @@ export function BomAIFlow() {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <input
                       type="number"
                       min={0}
                       step="any"
                       value={item.qtyNeeded}
                       onChange={(e) => handleQtyChange(index, Number(e.target.value) || 0)}
-                      className="w-16 rounded-md border border-gray-200 px-1.5 py-1 text-xs text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-14 rounded-lg border border-border-custom px-1.5 py-1.5 text-xs text-center font-bold text-navy tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-blue [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-[10px] text-gray-500 w-8">{item.unitOfMeasure}</span>
-                    <Button
+                    <span className="text-[10px] text-text-muted w-8">{item.unitOfMeasure}</span>
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
                       onClick={() => handleRemoveConfirmed(index)}
-                      className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted/30 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </Card>
       )}
 
@@ -507,21 +514,21 @@ export function BomAIFlow() {
         <button
           type="button"
           onClick={() => setAddRowOpen(true)}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-brand-blue/30 text-brand-blue hover:bg-blue-50/50 hover:border-brand-blue/50 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-brand-blue/20 text-brand-blue hover:bg-blue-50/30 hover:border-brand-blue/40 transition-all ios-press"
         >
           <Plus className="h-4 w-4" />
-          <span className="text-xs font-semibold">Add item</span>
+          <span className="text-sm font-semibold">Add item</span>
         </button>
       ) : (
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-2">
+        <Card className="px-4 py-3 rounded-2xl border-border-custom/60 shadow-brand space-y-2.5 animate-ios-expand">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-navy">Add Item</h3>
+            <h3 className="text-sm font-bold text-navy">Add Item</h3>
             <button
               type="button"
               onClick={() => { setAddRowOpen(false); setNonCatalogOpen(false) }}
-              className="text-gray-400 hover:text-gray-600 p-0.5"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-navy hover:bg-surface-secondary transition-all"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -536,19 +543,19 @@ export function BomAIFlow() {
             <button
               type="button"
               onClick={() => setNonCatalogOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-medium text-brand-orange hover:text-brand-orange-hover transition-colors px-0.5"
+              className="flex items-center gap-1.5 text-xs font-semibold text-brand-orange hover:text-brand-orange-hover transition-colors px-0.5 min-h-[44px]"
             >
               <Plus className="h-3.5 w-3.5" />
               Non-catalog item
             </button>
           ) : (
-            <div className="space-y-2 rounded-lg border border-orange-200 bg-orange-50/50 p-2.5">
+            <div className="space-y-2.5 rounded-xl border border-orange-200 bg-orange-50/30 p-3 animate-ios-expand">
               <input
                 type="text"
                 value={nonCatalogName}
                 onChange={(e) => setNonCatalogName(e.target.value)}
                 placeholder="Item name or description"
-                className="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                className="w-full rounded-xl border border-border-custom px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
                 autoFocus
               />
               <div className="flex items-center gap-2">
@@ -558,12 +565,12 @@ export function BomAIFlow() {
                   step="any"
                   value={nonCatalogQty}
                   onChange={(e) => setNonCatalogQty(Number(e.target.value) || 1)}
-                  className="w-16 rounded-md border border-gray-200 px-1.5 py-1.5 text-xs text-center focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                  className="w-16 rounded-xl border border-border-custom px-1.5 py-2 text-sm text-center font-bold focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <select
                   value={nonCatalogUom}
                   onChange={(e) => setNonCatalogUom(e.target.value)}
-                  className="flex-1 rounded-md border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
+                  className="flex-1 rounded-xl border border-border-custom px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange bg-white"
                 >
                   <option value="each">each</option>
                   <option value="linear ft">linear ft</option>
@@ -576,14 +583,19 @@ export function BomAIFlow() {
                   <option value="bundle">bundle</option>
                   <option value="panel">panel</option>
                 </select>
-                <Button
+                <button
                   type="button"
                   onClick={handleAddNonCatalog}
                   disabled={!nonCatalogName.trim()}
-                  className="h-8 px-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-semibold rounded-lg"
+                  className={cn(
+                    "h-10 px-4 rounded-xl text-sm font-bold transition-all ios-press",
+                    nonCatalogName.trim()
+                      ? "bg-brand-orange text-white hover:bg-brand-orange-hover"
+                      : "bg-surface-secondary text-text-muted"
+                  )}
                 >
                   Add
-                </Button>
+                </button>
               </div>
             </div>
           )}
@@ -592,25 +604,25 @@ export function BomAIFlow() {
 
       {/* Notes */}
       {confirmedItems.length > 0 && (
-        <Card className="px-3 py-2.5 rounded-xl border-border-custom space-y-1.5">
-          <Label className="text-sm">Notes</Label>
+        <Card className="px-4 py-3 rounded-2xl border-border-custom/60 shadow-brand space-y-2">
+          <Label className="text-sm font-bold text-navy">Notes</Label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Optional notes about this BOM..."
-            className="w-full rounded-lg border border-border-custom p-2.5 text-sm min-h-[50px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[50px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </Card>
       )}
 
       {/* Submit */}
       {confirmedItems.length > 0 && (
-        <div ref={submitSectionRef}>
+        <div ref={submitSectionRef} className="pt-1">
           <Button
             onClick={handleSubmit}
             disabled={createBom.isPending || !jobName.trim()}
             className={cn(
-              "w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-xl ios-press transition-all",
+              "w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-2xl ios-press transition-all shadow-[0_4px_16px_rgba(232,121,43,0.3)]",
               justConfirmedAll && "animate-ios-slide-up"
             )}
           >
@@ -625,7 +637,7 @@ export function BomAIFlow() {
       {/* Start over */}
       <button
         onClick={handleReset}
-        className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
+        className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-3 transition-colors"
       >
         Start over
       </button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useImperativeHandle, forwardRef, useEffect, useCallback } from "react"
+import { useState, useRef, useImperativeHandle, forwardRef, useEffect, useCallback, useMemo } from "react"
 import { Mic, Send, Loader2, Search } from "lucide-react"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
@@ -77,6 +77,11 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
       handleTextSubmit(finalTranscript)
     })
 
+  // Stabilize excludeIds to prevent re-renders from triggering search loops
+  const excludeIdsKey = useMemo(() => JSON.stringify(excludeIds.slice().sort()), [excludeIds])
+  const excludeIdsRef = useRef(excludeIds)
+  excludeIdsRef.current = excludeIds
+
   // Live catalog search — debounced
   useEffect(() => {
     if (!onProductSelect || text.length < 2) {
@@ -95,7 +100,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
         if (res.ok) {
           const json = await res.json()
           const filtered = (json.data || []).filter(
-            (p: ProductResult) => !excludeIds.includes(p.id)
+            (p: ProductResult) => !excludeIdsRef.current.includes(p.id)
           )
           setSearchResults(filtered)
           setSearchOpen(filtered.length > 0)
@@ -115,7 +120,8 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [text, onProductSelect, excludeIds])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, onProductSelect, excludeIdsKey])
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -403,37 +409,45 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
             </div>
           )}
 
-          {/* Live catalog search dropdown */}
+          {/* Live catalog search dropdown — iOS Spotlight style */}
           {searchOpen && !isListening && !isProcessing && (
-            <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 top-full mt-1.5 w-full bg-white/[0.98] backdrop-blur-xl border border-border-custom/60 rounded-2xl shadow-[0_8px_32px_rgba(11,29,58,0.12)] max-h-64 overflow-y-auto animate-dropdown-in">
               {searchLoading ? (
-                <div className="p-3 text-center text-text-muted text-sm">Searching...</div>
+                <div className="px-4 py-4">
+                  <div className="progress-indeterminate" />
+                  <p className="text-xs text-text-muted text-center mt-2">Searching catalog...</p>
+                </div>
               ) : (
-                searchResults.map((p, idx) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleSelectProduct(p)}
-                    className={cn(
-                      "w-full text-left px-3 py-2.5 border-b border-border-custom/50 last:border-0 transition-colors",
-                      idx === highlightIdx ? "bg-blue-50" : "hover:bg-surface-secondary"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-navy truncate">{p.name}</p>
-                        <p className="text-[11px] text-text-muted">
-                          {p.sku || "No SKU"} &middot; {p.unitOfMeasure}
-                          {p.category ? ` \u00b7 ${p.category.name}` : ""}
+                <div className="py-1">
+                  {searchResults.map((p, idx) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => handleSelectProduct(p)}
+                      className={cn(
+                        "search-result-row w-full text-left px-4 py-3 flex items-start justify-between gap-3",
+                        idx === highlightIdx ? "bg-brand-blue/[0.06]" : ""
+                      )}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[15px] font-semibold text-navy leading-snug break-words">{p.name}</p>
+                        <p className="text-xs text-text-muted mt-0.5">
+                          {p.sku || "No SKU"} · {p.unitOfMeasure}
+                          {p.category ? ` · ${p.category.name}` : ""}
                         </p>
                       </div>
-                      <span className="text-[11px] text-text-muted whitespace-nowrap shrink-0">
-                        {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)} ${d.unit}` })()}
-                      </span>
-                    </div>
-                  </button>
-                ))
+                      <div className="text-right shrink-0 pt-0.5">
+                        <span className="text-xs font-semibold text-brand-blue tabular-nums">
+                          {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)}` })()}
+                        </span>
+                        <p className="text-[10px] text-text-muted">
+                          {(() => { const d = getDisplayQty(p); return d.unit })()}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           )}

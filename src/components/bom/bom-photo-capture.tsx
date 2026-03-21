@@ -368,9 +368,10 @@ export function BomPhotoCapture() {
     // Panels can never become custom items — button is hidden, but guard defensively
     const item = items.find((i) => i.id === id)
     if (item?.isPanel) return
-    // Use rawText as the custom item name — strip leading quantity (e.g., "1 PC 5' 6-6\" Strip Curtain" → "5' 6-6\" Strip Curtain")
+    // Use rawText as the custom item name — strip leading quantity + unit abbreviation
+    // e.g., "5s TWS Cover Plate" → "TWS Cover Plate", "2 pcs Hinge" → "Hinge"
     const customName = item?.rawText
-      ? item.rawText.replace(/^\d+\s*(pc|pcs|ea|each|x)?\s*/i, "").trim() || item.rawText
+      ? item.rawText.replace(/^\d+\s*(pc|pcs|ea|each|x|s|sheets?|boxes?|tubes?|rolls?|cases?|bundles?|panels?|ft|lf|sf|sqft|lbs?|pounds?|pallets?|cartons?|bags?|ct|count)?\s*/i, "").trim() || item.rawText
       : item?.productName || "Custom item"
     setItems((prev) =>
       prev.map((i) =>

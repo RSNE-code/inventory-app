@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Check, X, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useHaptic } from "@/hooks/use-haptic"
@@ -61,17 +60,16 @@ export function BomConfirmationCard({
   }
 
   function handleAccept(overrideProductId?: string) {
-    if (isAccepted) return // Prevent double-tap
+    if (isAccepted) return
     setIsAccepted(true)
     haptic.success()
-    // Animate out, then call parent
     setTimeout(() => {
       onAccept(buildConfirmedItem(overrideProductId))
     }, 250)
   }
 
   function handleReject() {
-    if (isRejected) return // Prevent double-tap
+    if (isRejected) return
     setIsRejected(true)
     haptic.warning()
     setTimeout(() => {
@@ -79,28 +77,29 @@ export function BomConfirmationCard({
     }, 200)
   }
 
-  // Exit animation states
+  // ── Exit animation: accepted ──
   if (isAccepted) {
     return (
-      <div className="animate-ios-spring-out rounded-xl border border-green-300 bg-green-50 p-4 flex items-center gap-3 overflow-hidden">
-        <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center shrink-0 animate-ios-checkmark">
-          <Check className="h-5 w-5 text-white" />
+      <div className="animate-ios-spring-out bom-card-confirmed rounded-2xl p-4 flex items-center gap-3 overflow-hidden">
+        <div className="circle-checkbox checked">
+          <Check className="h-3.5 w-3.5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-green-800 truncate">
+          <p className="text-sm font-semibold text-green-800 break-words">
             {match.matchedProduct?.name ?? match.parsedItem.name}
           </p>
-          <p className="text-xs text-green-600">Added to BOM</p>
+          <p className="text-xs text-green-600 mt-0.5">Added to BOM</p>
         </div>
       </div>
     )
   }
 
+  // ── Exit animation: rejected ──
   if (isRejected) {
     return (
-      <div className="animate-ios-spring-out rounded-xl border border-red-200 bg-red-50/50 p-4 flex items-center gap-3 overflow-hidden opacity-50">
+      <div className="animate-ios-spring-out rounded-2xl border border-red-200 bg-red-50/50 p-4 flex items-center gap-3 overflow-hidden opacity-50">
         <X className="h-5 w-5 text-red-400 shrink-0" />
-        <p className="text-sm text-red-400 truncate">
+        <p className="text-sm text-red-400 break-words">
           {match.matchedProduct?.name ?? match.parsedItem.name} removed
         </p>
       </div>
@@ -110,27 +109,44 @@ export function BomConfirmationCard({
   return (
     <div
       className={cn(
-        "rounded-xl border p-4 space-y-3 animate-ios-spring-in",
-        isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-border-custom bg-white"
+        "rounded-2xl border p-4 space-y-3 animate-item-enter",
+        isLowConfidence ? "bom-card-flagged" : "border-border-custom/60 bg-white shadow-brand"
       )}
     >
-      {/* Header: product info + actions */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Header: Things 3 circle + product info + reject */}
+      <div className="flex items-start gap-3">
+        {/* Things 3 circle checkbox — tap to accept */}
+        <button
+          type="button"
+          onClick={() => handleAccept()}
+          className="mt-0.5 ios-press"
+        >
+          <div className={cn(
+            "circle-checkbox",
+            isLowConfidence ? "flagged" : "likely"
+          )}>
+            <Check className={cn(
+              "h-3.5 w-3.5",
+              isLowConfidence ? "text-brand-orange" : "text-brand-blue"
+            )} />
+          </div>
+        </button>
+
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[15px] text-navy leading-snug">
+          <p className="font-semibold text-[15px] text-navy leading-snug break-words">
             {match.matchedProduct?.name ?? match.parsedItem.name}
           </p>
 
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             {match.matchedProduct && (
               <>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-lg">
                   {match.matchedProduct.categoryName}
                 </Badge>
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-xs",
+                    "text-[11px] px-2 py-0.5 rounded-lg",
                     match.matchedProduct.tier === "TIER_1"
                       ? "text-blue-700 border-blue-200 bg-blue-50"
                       : "text-purple-700 border-purple-200 bg-purple-50"
@@ -142,7 +158,7 @@ export function BomConfirmationCard({
             )}
 
             {match.isNonCatalog && (
-              <Badge variant="outline" className="text-xs text-orange-600 border-orange-300">
+              <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-lg text-orange-600 border-orange-300 bg-orange-50">
                 Non-catalog
               </Badge>
             )}
@@ -154,7 +170,7 @@ export function BomConfirmationCard({
               <span className={cn("h-2 w-2 rounded-full shrink-0", stockDotColor[stockLevel])} />
               <span
                 className={cn(
-                  "text-xs",
+                  "text-xs font-medium",
                   stockLevel === "sufficient" && "text-green-600",
                   stockLevel === "low" && "text-yellow-600",
                   stockLevel === "out" && "text-red-500"
@@ -190,46 +206,29 @@ export function BomConfirmationCard({
           )}
 
           {isLowConfidence && (
-            <div className="flex items-center gap-1.5 mt-2 text-yellow-600 text-xs font-medium">
+            <div className="flex items-center gap-1.5 mt-2 text-orange-600 text-xs font-semibold">
               <AlertTriangle className="h-3.5 w-3.5" />
               <span>Low confidence — please verify</span>
             </div>
           )}
 
-          <p className="text-xs text-text-muted mt-1.5 truncate">
-            Parsed from: &ldquo;{match.parsedItem.rawText}&rdquo;
+          <p className="text-[11px] text-text-muted/70 mt-1.5 break-words">
+            Parsed: &ldquo;{match.parsedItem.rawText}&rdquo;
           </p>
         </div>
 
-        {/* Accept / Reject — 44pt touch targets */}
-        <div className="flex gap-2 shrink-0">
-          <button
-            type="button"
-            className={cn(
-              "h-11 w-11 flex items-center justify-center rounded-xl",
-              "bg-green-50 border border-green-200 text-green-600",
-              "active:bg-green-100 ios-press transition-all"
-            )}
-            onClick={() => handleAccept()}
-          >
-            <Check className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            className={cn(
-              "h-11 w-11 flex items-center justify-center rounded-xl",
-              "bg-red-50 border border-red-200 text-red-500",
-              "active:bg-red-100 ios-press transition-all"
-            )}
-            onClick={handleReject}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        {/* Reject button — minimal, right side */}
+        <button
+          type="button"
+          className="h-9 w-9 flex items-center justify-center rounded-xl text-text-muted/40 hover:text-red-500 hover:bg-red-50 ios-press transition-all shrink-0 mt-0.5"
+          onClick={handleReject}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Editable quantity — iOS-style stepper */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 pl-[38px]">
         <div className="flex items-center gap-0 rounded-xl border border-border-custom overflow-hidden">
           <button
             type="button"
@@ -261,7 +260,7 @@ export function BomConfirmationCard({
 
       {/* Alternative matches */}
       {match.alternativeMatches && match.alternativeMatches.length > 0 && (
-        <div>
+        <div className="pl-[38px]">
           <button
             className="flex items-center gap-1.5 text-xs font-semibold text-brand-blue min-h-[44px] py-2"
             onClick={() => setShowAlternatives(!showAlternatives)}
@@ -276,19 +275,19 @@ export function BomConfirmationCard({
           </button>
 
           {showAlternatives && (
-            <div className="mt-1 space-y-1">
+            <div className="mt-1 space-y-1.5">
               {match.alternativeMatches.map((alt) => (
                 <button
                   key={alt.id}
                   className={cn(
                     "block w-full text-left text-sm px-4 py-3 rounded-xl",
                     "hover:bg-surface-secondary active:bg-brand-blue/5",
-                    "border border-border-custom/60",
+                    "border border-border-custom/40 bg-white",
                     "min-h-[44px] ios-press transition-all"
                   )}
                   onClick={() => handleAccept(alt.id)}
                 >
-                  <span className="font-medium text-navy">{alt.name}</span>
+                  <span className="font-medium text-navy break-words">{alt.name}</span>
                   <span className="ml-2 text-xs text-text-muted">
                     {Math.round(alt.matchConfidence * 100)}%
                   </span>
@@ -336,9 +335,9 @@ export function BomConfirmationList({
             type="button"
             onClick={() => { onConfirmAll(); haptic.success() }}
             className={cn(
-              "flex items-center gap-1.5 h-11 px-4 rounded-xl",
+              "flex items-center gap-1.5 h-11 px-5 rounded-xl",
               "bg-green-600 text-white font-semibold text-sm",
-              "active:bg-green-700 ios-press transition-all"
+              "active:bg-green-700 ios-press transition-all shadow-sm"
             )}
           >
             <Check className="h-4 w-4" />

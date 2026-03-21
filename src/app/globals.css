@@ -385,3 +385,164 @@
 .ios-press:active {
   transform: scale(0.97);
 }
+
+/* ── Search Dropdown — iOS Spotlight feel ── */
+
+@keyframes dropdown-in {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes dropdown-out {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+.animate-dropdown-in {
+  animation: dropdown-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.search-result-row {
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+.search-result-row:active {
+  transform: scale(0.98);
+  background-color: rgba(46, 125, 186, 0.06);
+}
+
+/* ── Building BOM — Vibecode progress animation ── */
+
+@keyframes building-pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes building-dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-building-pulse {
+  animation: building-pulse 1.8s ease-in-out infinite;
+}
+
+.shimmer-bar {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--color-brand-blue) 0%, var(--color-brand-blue) 100%);
+  border-radius: 9999px;
+}
+.shimmer-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: shimmer-slide 1.5s ease-in-out infinite;
+}
+
+/* ── Things 3 — Circle checkbox ── */
+
+@keyframes circle-check-fill {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.circle-checkbox {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid var(--color-border-custom);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  flex-shrink: 0;
+}
+.circle-checkbox.checked {
+  border-color: var(--color-status-green);
+  background-color: var(--color-status-green);
+}
+.circle-checkbox.checked svg {
+  animation: circle-check-fill 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.circle-checkbox.flagged {
+  border-color: var(--color-brand-orange);
+  background-color: rgba(232, 121, 43, 0.1);
+}
+.circle-checkbox.likely {
+  border-color: var(--color-brand-blue);
+  background-color: rgba(46, 125, 186, 0.1);
+}
+
+/* ── Monday-style bright cards ── */
+
+.bom-card-confirmed {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border-left: 3px solid var(--color-status-green);
+}
+
+.bom-card-flagged {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+  border-left: 3px solid var(--color-brand-orange);
+}
+
+.bom-card-pending {
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+  border-left: 3px solid var(--color-brand-blue);
+}
+
+/* ── Staggered item entry ── */
+
+@keyframes item-slide-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-item-enter {
+  animation: item-slide-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Phase transition — smooth crossfade ── */
+
+@keyframes phase-enter {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-phase-enter {
+  animation: phase-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Progress bar indeterminate ── */
+
+@keyframes progress-indeterminate {
+  0% { left: -30%; width: 30%; }
+  50% { left: 50%; width: 40%; }
+  100% { left: 100%; width: 30%; }
+}
+
+.progress-indeterminate {
+  position: relative;
+  overflow: hidden;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(46, 125, 186, 0.12);
+}
+.progress-indeterminate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 9999px;
+  background: var(--color-brand-blue);
+  animation: progress-indeterminate 1.6s ease-in-out infinite;
+}
