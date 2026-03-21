@@ -13,6 +13,7 @@ The app lives in `rsne-inventory/`. It's a Next.js 16 app with TypeScript, Tailw
 - **UI Components:** shadcn/ui
 - **Data Fetching:** React Query (TanStack Query)
 - **Validation:** Zod
+- **Native Mobile:** Capacitor 8 (iOS + Android wrapper around the deployed web app)
 
 ## Key Architecture Rules
 - **AI-first interaction model.** Voice, photo, and natural language are the primary inputs. Traditional forms are fallback only.
@@ -23,10 +24,18 @@ The app lives in `rsne-inventory/`. It's a Next.js 16 app with TypeScript, Tailw
 
 ## Run Commands
 ```bash
-cd rsne-inventory
 npm run dev      # Start dev server
 npm run build    # Production build
 npx prisma db push   # Push schema to database
 npx prisma db seed   # Seed with real RSNE inventory data (483 items)
 npx prisma generate  # Regenerate Prisma client
+```
+
+## Native App Commands
+```bash
+npx cap sync         # Sync web assets + plugins to native projects
+npm run cap:ios      # Sync + open Xcode
+npm run cap:android  # Sync + open Android Studio
+npx cap run ios      # Build + run on iOS Simulator
+npx cap run android  # Build + run on Android Emulator
 ```

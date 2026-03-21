@@ -50,3 +50,13 @@ next-env.d.ts
 
 # Test artifacts
 /test-results/
+
+# Capacitor native build artifacts
+ios/App/Pods/
+ios/DerivedData/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+src-OLD*

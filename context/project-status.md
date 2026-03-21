@@ -22,5 +22,14 @@ Complete — see `plans/2026-03-07-ai-first-redesign.md`
 - **Receipt ↔ PO linking:** Receipts link to POs via purchaseOrderId for traceability
 - See `plans/2026-03-11-po-match-receiving.md`
 
+## Native App (Capacitor)
+- **Status:** Configured — iOS and Android projects initialized, plugins installed
+- **Architecture:** Thin native wrapper loading the deployed Vercel URL in a WebView
+- **Plugins:** Push Notifications, Camera, Haptics, Status Bar, Splash Screen
+- **iOS permissions:** Camera, Microphone, Speech Recognition configured in Info.plist
+- **Android permissions:** Camera, Record Audio, Post Notifications configured in AndroidManifest.xml
+- **Next steps:** Install full Xcode for simulator testing, set up Apple/Google developer accounts for store distribution
+- See `plans/2026-03-19-capacitor-native-app.md`
+
 ## Deployment
 - **Live at:** inventory-app-three-tan.vercel.app (Phase 1 + 2A only; AI-first redesign ready to deploy)

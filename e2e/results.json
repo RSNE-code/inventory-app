@@ -1,0 +1,1478 @@
+{
+  "config": {
+    "configFile": "/Users/gabeperez/Developer/Inventory Management App/playwright.config.ts",
+    "rootDir": "/Users/gabeperez/Developer/Inventory Management App/e2e",
+    "forbidOnly": true,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/gabeperez/Developer/Inventory Management App/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "/Users/gabeperez/Developer/Inventory Management App/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/global-setup\\.ts/"
+        ],
+        "timeout": 300000
+      },
+      {
+        "outputDir": "/Users/gabeperez/Developer/Inventory Management App/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/gabeperez/Developer/Inventory Management App/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "e2e/report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "e2e/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 60000
+    }
+  },
+  "suites": [
+    {
+      "title": "global-setup.ts",
+      "file": "global-setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "authenticate",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2409,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-03-13T23:13:29.209Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "13722ad43cd6b8b1aa42-e8c8e49b686d9f6bb558",
+          "file": "global-setup.ts",
+          "line": 7,
+          "column": 6
+        }
+      ]
+    },
+    {
+      "title": "ai-input.spec.ts",
+      "file": "ai-input.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "1. Live Catalog Search",
+          "file": "ai-input.spec.ts",
+          "line": 22,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1.1 Typing shows catalog search results dropdown",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5927,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:25:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:25:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:13:32.586Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6447,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:25:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:25:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:13:39.261Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-834f5-log-search-results-dropdown-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-c2103a43bd46aa603be7",
+              "file": "ai-input.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "1.2 Clicking a search result adds the product",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6032,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:40:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:40:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:13:46.480Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6155,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:40:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:40:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:13:53.245Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c02f2-rch-result-adds-the-product-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-22fcf786abca6a8b073a",
+              "file": "ai-input.spec.ts",
+              "line": 39,
+              "column": 7
+            },
+            {
+              "title": "1.3 Short text (< 2 chars) does not trigger search",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6311,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:73:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:73:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:14:00.262Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6216,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:73:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:73:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:14:07.310Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-551df-ars-does-not-trigger-search-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-e9445e9225e113421a7e",
+              "file": "ai-input.spec.ts",
+              "line": 72,
+              "column": 7
+            },
+            {
+              "title": "1.4 Search with no matches shows no dropdown",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6121,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:85:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:85:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:14:14.384Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6512,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:85:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:85:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:14:21.275Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-2ff43-o-matches-shows-no-dropdown-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-e441c760911a8af988f5",
+              "file": "ai-input.spec.ts",
+              "line": 84,
+              "column": 7
+            },
+            {
+              "title": "1.5 Clicking outside closes dropdown",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6021,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:96:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:96:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:14:28.545Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6474,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:96:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:96:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:14:35.322Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-1-Live-Catalog-Se-c870b-ing-outside-closes-dropdown-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-9cf4ce8b129d4f292605",
+              "file": "ai-input.spec.ts",
+              "line": 95,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "2. AI Text Parsing",
+          "file": "ai-input.spec.ts",
+          "line": 116,
+          "column": 6,
+          "specs": [
+            {
+              "title": "2.1 Sending text triggers AI parse and adds items",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6084,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:119:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:119:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:14:42.638Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6166,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:119:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:119:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:14:49.549Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-c1969-ers-AI-parse-and-adds-items-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-4ca942678f7764018afd",
+              "file": "ai-input.spec.ts",
+              "line": 118,
+              "column": 7
+            },
+            {
+              "title": "2.2 Empty text does not trigger parse",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6172,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:137:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:137:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:14:56.493Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6363,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:137:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:137:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:15:03.420Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-121b4-text-does-not-trigger-parse-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-f3c2380f30aecfad9de9",
+              "file": "ai-input.spec.ts",
+              "line": 136,
+              "column": 7
+            },
+            {
+              "title": "2.3 Enter key sends to AI parse (no dropdown selection)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6349,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:149:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:149:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:10.535Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6160,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:149:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:149:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:15:17.633Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-2-AI-Text-Parsing-467cd-arse-no-dropdown-selection--chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-83e888fe1ce40813bbb2",
+              "file": "ai-input.spec.ts",
+              "line": 148,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "3. Mic Button",
+          "file": "ai-input.spec.ts",
+          "line": 173,
+          "column": 6,
+          "specs": [
+            {
+              "title": "3.1 Mic button is visible",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6029,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:176:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:176:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:24.580Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    },
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 6110,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:176:5",
+                        "location": {
+                          "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                          "column": 47,
+                          "line": 10
+                        },
+                        "snippet": "   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                            "column": 47,
+                            "line": 10
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Job Name *')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Job Name *')\u001b[22m\n\n\n   8 |   await expect(page.getByRole(\"heading\", { name: \"New BOM\" })).toBeVisible({ timeout: 10_000 })\n   9 |   // Wait for the manual form to render (has Job Name field)\n> 10 |   await expect(page.getByLabel(\"Job Name *\")).toBeVisible({ timeout: 5_000 })\n     |                                               ^\n  11 | }\n  12 |\n  13 | /** Get the AIInput text field (the one with search icon) */\n    at goToManualBom (/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:10:47)\n    at /Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts:176:5"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-03-13T23:15:31.348Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/Users/gabeperez/Developer/Inventory Management App/test-results/ai-input-3-Mic-Button-3-1-Mic-button-is-visible-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/gabeperez/Developer/Inventory Management App/e2e/ai-input.spec.ts",
+                        "column": 47,
+                        "line": 10
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-465f87e007367d8c57ab",
+              "file": "ai-input.spec.ts",
+              "line": 175,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "4. BOM AI Flow — Add Item",
+          "file": "ai-input.spec.ts",
+          "line": 190,
+          "column": 6,
+          "specs": [
+            {
+              "title": "4.1 Add Item button opens input with search",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7810,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:38.221Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-5f97f3039bcdae81a5e0",
+              "file": "ai-input.spec.ts",
+              "line": 192,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "5. BOM Templates",
+          "file": "ai-input.spec.ts",
+          "line": 225,
+          "column": 6,
+          "specs": [
+            {
+              "title": "5.1 Template create page has unified search input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 635,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:46.354Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-85676b8bfacdfbb7c286",
+              "file": "ai-input.spec.ts",
+              "line": 227,
+              "column": 7
+            },
+            {
+              "title": "5.2 Template search finds and adds catalog product",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3558,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:46.993Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-f8132481cbd2f5e87eef",
+              "file": "ai-input.spec.ts",
+              "line": 235,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "6. Error Handling",
+          "file": "ai-input.spec.ts",
+          "line": 272,
+          "column": 6,
+          "specs": [
+            {
+              "title": "6.1 Pages load without console errors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8354,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-13T23:15:50.558Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "342cbfb18ae92c50b339-7a918c51e723feb5209a",
+              "file": "ai-input.spec.ts",
+              "line": 274,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-13T23:13:28.668Z",
+    "duration": 150271.51599999997,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

@@ -6,5 +6,20 @@
     "marketing-skills@claude-code-skills": true,
     "pm-skills@claude-code-skills": true,
     "self-improving-agent@claude-code-skills": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_input.filePath // \"unknown\"' | { read -r f; case \"$f\" in *.md|*.json|*.env*|*settings*|*MEMORY*|*memory*|*plans/*) exit 0 ;; esac; echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"SKILL GATE CHECK: Before editing code, have you invoked the relevant skill? If not, STOP and invoke it FIRST. Skill gates are BLOCKING per CLAUDE.md — no exceptions, even for small fixes. UI → frontend-design. API/backend → engineering-skills. Architecture → engineering-skills. DB → engineering-advanced-skills. Security → engineering-advanced-skills. Product/UX → product-skills.\"}}'; }",
+            "timeout": 5,
+            "statusMessage": "Checking skill gates..."
+          }
+        ]
+      }
+    ]
   }
 }
