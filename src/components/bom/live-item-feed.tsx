@@ -165,21 +165,33 @@ export function LiveItemFeed({
                       <Check className="h-3.5 w-3.5 text-white" />
                     </div>
                   ) : isLikelyMatch ? (
-                    <button
-                      type="button"
-                      onClick={() => onResolveFlagged(item.id)}
-                      className="circle-checkbox likely ios-press"
-                    >
-                      <Check className="h-3.5 w-3.5 text-brand-blue" />
-                    </button>
+                    item.isPanel ? (
+                      <div className="circle-checkbox likely">
+                        <Check className="h-3.5 w-3.5 text-brand-blue" />
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onResolveFlagged(item.id)}
+                        className="circle-checkbox likely ios-press"
+                      >
+                        <Check className="h-3.5 w-3.5 text-brand-blue" />
+                      </button>
+                    )
                   ) : isFlagged ? (
-                    <button
-                      type="button"
-                      onClick={() => onResolveFlagged(item.id)}
-                      className="circle-checkbox flagged ios-press"
-                    >
-                      <AlertCircle className="h-3.5 w-3.5 text-brand-orange" />
-                    </button>
+                    item.isPanel ? (
+                      <div className="circle-checkbox flagged">
+                        <AlertCircle className="h-3.5 w-3.5 text-brand-orange" />
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onResolveFlagged(item.id)}
+                        className="circle-checkbox flagged ios-press"
+                      >
+                        <AlertCircle className="h-3.5 w-3.5 text-brand-orange" />
+                      </button>
+                    )
                   ) : (
                     <div className="circle-checkbox" />
                   )}
@@ -187,16 +199,25 @@ export function LiveItemFeed({
 
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => onResolveFlagged(item.id)}
-                    className={cn(
+                  {item.isPanel ? (
+                    <p className={cn(
                       "text-[15px] font-semibold leading-snug text-left w-full break-words",
                       isFlagged ? "text-orange-700" : "text-navy"
-                    )}
-                  >
-                    {item.productName}
-                  </button>
+                    )}>
+                      {item.productName}
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onResolveFlagged(item.id)}
+                      className={cn(
+                        "text-[15px] font-semibold leading-snug text-left w-full break-words",
+                        isFlagged ? "text-orange-700" : "text-navy"
+                      )}
+                    >
+                      {item.productName}
+                    </button>
+                  )}
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}
@@ -214,7 +235,7 @@ export function LiveItemFeed({
                       />
                     </div>
                   )}
-                  {isFlagged && (
+                  {isFlagged && !item.isPanel && (
                     <button
                       type="button"
                       onClick={() => onResolveFlagged(item.id)}
@@ -272,8 +293,8 @@ export function LiveItemFeed({
                   />
                 </div>
               )}
-              {/* Inline resolver — expands below tapped item */}
-              {resolvingItemId === item.id && onResolveSelect && onResolveKeepAsCustom && (
+              {/* Inline resolver — expands below tapped item (never for panels) */}
+              {resolvingItemId === item.id && !item.isPanel && onResolveSelect && onResolveKeepAsCustom && (
                 <div className="px-4 py-3 border-b border-border-custom/40 bg-surface-secondary/50 animate-ios-expand">
                   {item.confirmed && item.isNonCatalog && !item.isPanel ? (
                     <div className="flex items-center gap-2 py-2">
