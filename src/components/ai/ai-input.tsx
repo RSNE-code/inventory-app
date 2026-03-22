@@ -68,7 +68,39 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   }))
 
   const [isMounted, setIsMounted] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounterRef = useRef(0)
   useEffect(() => { setIsMounted(true) }, [])
+
+  function handleContainerDragEnter(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current++
+    if (e.dataTransfer.types.includes("Files")) setIsDragging(true)
+  }
+  function handleContainerDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounterRef.current--
+    if (dragCounterRef.current === 0) setIsDragging(false)
+  }
+  function handleContainerDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  function handleContainerDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    dragCounterRef.current = 0
+    const files = e.dataTransfer.files
+    if (files.length > 0 && fileInputRef.current) {
+      const dt = new DataTransfer()
+      for (let i = 0; i < files.length; i++) dt.items.add(files[i])
+      fileInputRef.current.files = dt.files
+      fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }))
+    }
+  }
 
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } =
     useVoiceInput((finalTranscript) => {
@@ -324,7 +356,14 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
   const showSearchIcon = searchIcon || !!onProductSelect
 
   return (
-    <div ref={containerRef} className={cn("space-y-2", className)}>
+    <div
+      ref={containerRef}
+      className={cn("space-y-2", className, isDragging && "ring-2 ring-brand-orange/40 rounded-2xl animate-drag-glow")}
+      onDragEnter={handleContainerDragEnter}
+      onDragLeave={handleContainerDragLeave}
+      onDragOver={handleContainerDragOver}
+      onDrop={handleContainerDrop}
+    >
       {/* Mic + Input row */}
       <div className="flex items-center gap-2.5">
         {/* Mic button — orange CTA */}

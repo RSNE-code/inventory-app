@@ -65,7 +65,7 @@ export function StepProgress({ steps, currentStep, className, onStepClick }: Ste
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  "flex-1 h-0.5 mx-2 mt-[-20px] min-[400px]:mt-0 min-[400px]:-translate-y-3",
+                  "flex-1 h-0.5 mx-2 mt-[-20px] min-[400px]:mt-0 min-[400px]:-translate-y-3 transition-all duration-500",
                   index < currentStep
                     ? "bg-brand-blue"
                     : "bg-gray-200 border-t border-dashed border-gray-300 h-0"

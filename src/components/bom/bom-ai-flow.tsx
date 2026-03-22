@@ -46,6 +46,8 @@ export function BomAIFlow() {
   const [nonCatalogQty, setNonCatalogQty] = useState(1)
   const [nonCatalogUom, setNonCatalogUom] = useState("each")
   const [justConfirmedAll, setJustConfirmedAll] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false)
 
   const handleParseComplete = useCallback(
     (result: ParseResult | ReceivingParseResult) => {
@@ -256,6 +258,7 @@ export function BomAIFlow() {
   }
 
   async function handleSubmit() {
+    if (submitted) return
     if (!jobName.trim()) {
       toast.error("Job name is required")
       return
@@ -266,7 +269,7 @@ export function BomAIFlow() {
     }
 
     try {
-      const result = await createBom.mutateAsync({
+      await createBom.mutateAsync({
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
         notes: notes.trim() || null,
@@ -282,8 +285,11 @@ export function BomAIFlow() {
           nonCatalogSpecs: item.catalogMatch.panelSpecs ?? undefined,
         })),
       })
-      toast.success("BOM created")
-      router.push(`/boms/${result.data.id}`)
+      setSubmitted(true)
+      setShowSuccessOverlay(true)
+      setTimeout(() => {
+        router.push("/boms")
+      }, 1200)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create BOM")
     }
@@ -322,7 +328,9 @@ export function BomAIFlow() {
           <button
             type="button"
             onClick={() => aiInputRef.current?.triggerCamera()}
+            style={{ animationDelay: "50ms" }}
             className={cn(
+              "animate-fade-in-up",
               "group relative flex flex-col items-center gap-2 p-4 rounded-2xl border",
               "border-brand-orange/25 bg-gradient-to-b from-orange-50/80 to-white",
               "shadow-[0_2px_12px_rgba(232,121,43,0.08)]",
@@ -342,7 +350,9 @@ export function BomAIFlow() {
           <button
             type="button"
             onClick={() => router.push("/boms/new?tab=manual")}
+            style={{ animationDelay: "100ms" }}
             className={cn(
+              "animate-fade-in-up",
               "group relative flex flex-col items-center gap-2 p-4 rounded-2xl border",
               "border-brand-blue/25 bg-gradient-to-b from-blue-50/80 to-white",
               "shadow-[0_2px_12px_rgba(46,125,186,0.08)]",
@@ -380,6 +390,15 @@ export function BomAIFlow() {
   // ─── BUILD phase — job picker, items review, submit ───
   return (
     <div className="space-y-3 animate-phase-enter">
+      {/* Success overlay */}
+      {showSuccessOverlay && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-green-900/80 backdrop-blur-sm animate-fade-in-up">
+          <div className="animate-ios-checkmark h-20 w-20 rounded-full bg-green-500 flex items-center justify-center mb-4">
+            <Check className="h-10 w-10 text-white" />
+          </div>
+          <p className="text-2xl font-bold text-white animate-fade-in-up" style={{ animationDelay: "200ms" }}>BOM Created!</p>
+        </div>
+      )}
       <StepProgress steps={BOM_STEPS} currentStep={bomCurrentStep} />
 
       {/* Job picker */}
@@ -438,7 +457,8 @@ export function BomAIFlow() {
               return (
                 <div
                   key={`${item.productId ?? "nc"}-${index}`}
-                  className="px-4 py-3 flex items-start gap-3"
+                  className="px-4 py-3 flex items-start gap-3 animate-item-enter"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {/* Things 3 confirmed circle */}
                   <div className="circle-checkbox checked mt-0.5" style={{ width: 20, height: 20 }}>
@@ -620,16 +640,18 @@ export function BomAIFlow() {
         <div ref={submitSectionRef} className="pt-1">
           <Button
             onClick={handleSubmit}
-            disabled={createBom.isPending || !jobName.trim()}
+            disabled={submitted || createBom.isPending || !jobName.trim()}
             className={cn(
-              "w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-2xl ios-press transition-all shadow-[0_4px_16px_rgba(232,121,43,0.3)]",
+              "w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-2xl ios-press transition-all shadow-[0_4px_16px_rgba(232,121,43,0.25)] hover:shadow-[0_6px_24px_rgba(232,121,43,0.35)] active:scale-95",
               justConfirmedAll && "animate-ios-slide-up"
             )}
           >
             <ClipboardList className="h-5 w-5 mr-2" />
-            {createBom.isPending
-              ? "Creating..."
-              : `Create BOM (${confirmedItems.length} item${confirmedItems.length !== 1 ? "s" : ""})`}
+            {submitted
+              ? "Created!"
+              : createBom.isPending
+                ? "Creating..."
+                : `Create BOM (${confirmedItems.length} item${confirmedItems.length !== 1 ? "s" : ""})`}
           </Button>
         </div>
       )}

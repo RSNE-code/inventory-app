@@ -110,7 +110,11 @@ export function BomConfirmationCard({
     <div
       className={cn(
         "rounded-2xl border p-4 space-y-3 animate-item-enter",
-        isLowConfidence ? "bom-card-flagged" : "border-border-custom/60 bg-white shadow-brand"
+        isLowConfidence
+          ? "bom-card-flagged"
+          : match.isNonCatalog
+            ? "bom-card-flagged"
+            : "border-border-custom/60 bg-white shadow-brand"
       )}
     >
       {/* Header: Things 3 circle + product info + reject */}
@@ -337,7 +341,7 @@ export function BomConfirmationList({
             className={cn(
               "flex items-center gap-1.5 h-11 px-5 rounded-xl",
               "bg-green-600 text-white font-semibold text-sm",
-              "active:bg-green-700 ios-press transition-all shadow-sm"
+              "active:bg-green-700 active:scale-95 ios-press transition-all shadow-sm"
             )}
           >
             <Check className="h-4 w-4" />

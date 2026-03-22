@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { JobPicker } from "@/components/bom/job-picker"
@@ -12,12 +12,14 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import {
   Camera,
+  Check,
   ClipboardList,
   ImagePlus,
   ShoppingCart,
   ChevronUp,
   Minus,
   Plus,
+  Upload,
   X,
 } from "lucide-react"
 import type { CatalogMatch } from "@/lib/ai/types"
@@ -142,6 +144,49 @@ export function BomPhotoCapture() {
   const [resolvingItemId, setResolvingItemId] = useState<string | null>(null)
   const [cartExpanded, setCartExpanded] = useState(false)
   const [photoThumbnail, setPhotoThumbnail] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [showSuccessFlash, setShowSuccessFlash] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false)
+
+  // ─── Drag-and-drop handlers ────────────────
+  const dragCounter = useRef(0)
+
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current++
+    if (e.dataTransfer.types.includes("Files")) setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragging(false)
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    dragCounter.current = 0
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      // Feed files through the same pipeline as the input
+      const dt = new DataTransfer()
+      for (let i = 0; i < files.length; i++) dt.items.add(files[i])
+      if (fileInputRef.current) {
+        fileInputRef.current.files = dt.files
+        fileInputRef.current.dispatchEvent(new Event("change", { bubbles: true }))
+      }
+    }
+  }
 
   // ─── Photo capture + parse pipeline ─────────
 
@@ -294,6 +339,11 @@ export function BomPhotoCapture() {
 
       setFeedPhase("done")
 
+      // Success flash before transitioning to review
+      setShowSuccessFlash(true)
+      await new Promise((r) => setTimeout(r, 800))
+      setShowSuccessFlash(false)
+
       // Auto-resolve known unit conversions
       setItems((currentItems) => {
         const itemsNeedingConversion = currentItems.filter((i) => i.needsConversion && i.parsedUom && i.catalogUom)
@@ -440,6 +490,7 @@ export function BomPhotoCapture() {
   // ─── Submit BOM ─────────────────────────────
 
   async function handleSubmit() {
+    if (submitted) return
     if (!jobName.trim()) {
       toast.error("Select a job first")
       return
@@ -472,6 +523,8 @@ export function BomPhotoCapture() {
         source: "photo",
       } as Parameters<typeof createBom.mutateAsync>[0])
 
+      setSubmitted(true)
+
       // Feed confirmed matches into learning loop (catalog + custom items)
       const allConfirmedMatches = validItems
         .filter((i) => i.confidence >= 0.70 && (i.productId || i.isNonCatalog))
@@ -490,8 +543,11 @@ export function BomPhotoCapture() {
         }).catch(() => {}) // Fire and forget
       }
 
-      toast.success("BOM created")
-      router.push(`/boms/${result.data.id}`)
+      // Show success overlay then navigate to BOM list
+      setShowSuccessOverlay(true)
+      setTimeout(() => {
+        router.push("/boms")
+      }, 1200)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create BOM")
     }
@@ -501,7 +557,13 @@ export function BomPhotoCapture() {
 
   if (phase === "capture") {
     return (
-      <div className="space-y-4">
+      <div
+        className="space-y-4"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         {/* Job picker */}
         <div className="px-0">
           <JobPicker
@@ -519,19 +581,36 @@ export function BomPhotoCapture() {
           />
         </div>
 
-        {/* Camera hero */}
+        {/* Camera hero — drag-and-drop enabled */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="w-full flex flex-col items-center justify-center gap-4 py-16 rounded-2xl bg-gradient-to-b from-navy/[0.03] to-navy/[0.08] border-2 border-dashed border-brand-orange/40 hover:border-brand-orange/60 active:scale-[0.99] transition-all"
+          className={cn(
+            "w-full flex flex-col items-center justify-center gap-4 py-16 rounded-2xl bg-gradient-to-b from-navy/[0.03] to-navy/[0.08] border-2 border-dashed border-brand-orange/40 hover:border-brand-orange/60 active:scale-[0.99] transition-all animate-fade-in-up",
+            isDragging && "animate-drag-glow bg-brand-orange/[0.04]"
+          )}
         >
-          <div className="h-20 w-20 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg shadow-brand-orange/20">
-            <Camera className="h-10 w-10 text-white" />
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-bold text-navy">Snap Your Material List</p>
-            <p className="text-sm text-text-muted mt-1">Take a photo of your handwritten or printed list</p>
-          </div>
+          {isDragging ? (
+            <>
+              <div className="h-20 w-20 rounded-2xl bg-brand-orange/20 border-2 border-brand-orange flex items-center justify-center">
+                <Upload className="h-10 w-10 text-brand-orange" />
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold text-brand-orange">Drop your image here</p>
+                <p className="text-sm text-brand-orange/60 mt-1">Release to start scanning</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="h-20 w-20 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg shadow-brand-orange/20">
+                <Camera className="h-10 w-10 text-white" />
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold text-navy">Snap Your Material List</p>
+                <p className="text-sm text-text-muted mt-1">Take a photo or drag & drop an image</p>
+              </div>
+            </>
+          )}
         </button>
 
         <input
@@ -563,30 +642,60 @@ export function BomPhotoCapture() {
   const totalQty = items.reduce((sum, i) => sum + i.quantity, 0)
 
   return (
-    <div className={cn("pb-52")}>
-      {/* Photo thumbnail + job reference */}
-      <div className="flex items-center gap-3 px-4 py-2">
-        {photoThumbnail && (
-          <img
-            src={photoThumbnail}
-            alt="Material list"
-            className="h-10 w-10 rounded-lg object-cover border border-border-custom"
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          {jobName ? (
-            <p className="text-sm font-semibold text-navy truncate">{jobName}</p>
-          ) : (
-            <JobPicker
-              onSelect={(job) => {
-                if (job.name) { setJobName(job.name); setJobNumber(job.number) }
-              }}
-              selectedName={undefined}
-              selectedNumber={null}
+    <div className={cn("pb-52", showSuccessFlash && "animate-success-flash rounded-2xl")}>
+      {/* Success overlay */}
+      {showSuccessOverlay && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-green-900/80 backdrop-blur-sm animate-fade-in-up">
+          <div className="animate-ios-checkmark h-20 w-20 rounded-full bg-green-500 flex items-center justify-center mb-4">
+            <Check className="h-10 w-10 text-white" />
+          </div>
+          <p className="text-2xl font-bold text-white animate-fade-in-up" style={{ animationDelay: "200ms" }}>BOM Created!</p>
+        </div>
+      )}
+
+      {/* Photo thumbnail — large during processing, small during review */}
+      {phase === "processing" && photoThumbnail && (
+        <div className="px-4 py-3">
+          <div className="relative rounded-2xl overflow-hidden ring-2 ring-brand-orange/40 animate-processing-glow">
+            <img
+              src={photoThumbnail}
+              alt="Material list"
+              className="w-full max-h-64 object-cover"
+            />
+            <div className="animate-scan-line" />
+          </div>
+          <div className="flex items-center justify-center gap-1 mt-3">
+            <p className="text-sm font-semibold text-navy">Analyzing materials</p>
+            <span className="analyzing-dots flex gap-0.5 text-brand-orange font-bold">
+              <span>.</span><span>.</span><span>.</span>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Compact header during review */}
+      {phase === "review" && (
+        <div className="flex items-center gap-3 px-4 py-2">
+          {photoThumbnail && (
+            <img
+              src={photoThumbnail}
+              alt="Material list"
+              className="h-10 w-10 rounded-lg object-cover border border-border-custom"
             />
           )}
-        </div>
-        {phase === "review" && (
+          <div className="flex-1 min-w-0">
+            {jobName ? (
+              <p className="text-sm font-semibold text-navy truncate">{jobName}</p>
+            ) : (
+              <JobPicker
+                onSelect={(job) => {
+                  if (job.name) { setJobName(job.name); setJobNumber(job.number) }
+                }}
+                selectedName={undefined}
+                selectedNumber={null}
+              />
+            )}
+          </div>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -594,8 +703,8 @@ export function BomPhotoCapture() {
           >
             <ImagePlus className="h-5 w-5" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}
@@ -677,15 +786,17 @@ export function BomPhotoCapture() {
 
             <Button
               onClick={handleSubmit}
-              disabled={createBom.isPending || !jobName.trim() || items.length === 0 || feedPhase !== "done"}
-              className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl"
+              disabled={submitted || createBom.isPending || !jobName.trim() || items.length === 0 || feedPhase !== "done"}
+              className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl shadow-[0_4px_16px_rgba(232,121,43,0.25)] hover:shadow-[0_6px_24px_rgba(232,121,43,0.35)] transition-all active:scale-95"
             >
               <ClipboardList className="h-5 w-5 mr-2" />
-              {createBom.isPending
-                ? "Creating..."
-                : feedPhase !== "done"
-                  ? "Processing..."
-                  : `Create BOM (${items.length} item${items.length !== 1 ? "s" : ""})`}
+              {submitted
+                ? "Created!"
+                : createBom.isPending
+                  ? "Creating..."
+                  : feedPhase !== "done"
+                    ? "Processing..."
+                    : `Create BOM (${items.length} item${items.length !== 1 ? "s" : ""})`}
             </Button>
           </div>
         </div>
