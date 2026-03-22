@@ -147,13 +147,14 @@ export function LiveItemFeed({
 
           return (
             <SwipeableRow key={item.id} onDelete={() => onDelete(item.id)}>
-              <div>
+              <div className={cn(
+                "border-b",
+                isFlagged ? "border-orange-200/60" : "border-border-custom/30"
+              )}>
               <div
                 className={cn(
                   "flex items-center gap-3 px-4 py-3.5 transition-all duration-300",
                   isFlagged ? "bg-orange-50/40" : "",
-                  !showConversion ? "border-b" : "",
-                  isFlagged ? "border-orange-200/60" : "border-border-custom/30",
                   "animate-item-enter"
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -272,7 +273,7 @@ export function LiveItemFeed({
               </div>
               {/* Panel dimension editor — full width below item row */}
               {item.isPanel && item.panelSpecs && onEditDimensions && (
-                <div className="px-4 pb-3">
+                <div className="px-4 pt-1 pb-3">
                   <PanelDimensionEditor
                     thickness={(item.panelSpecs as { thickness?: number }).thickness ?? 4}
                     lengthFt={Math.floor((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0)}
