@@ -1,6 +1,6 @@
 "use client"
 
-import { use } from "react"
+import { use, useState } from "react"
 import Link from "next/link"
 import { useProduct } from "@/hooks/use-products"
 import { Header } from "@/components/layout/header"
@@ -10,10 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatQuantity } from "@/lib/utils"
 import { getDisplayQty, getDisplayReorder } from "@/lib/units"
-import { Pencil, ArrowUpDown, MapPin, Clock, Ruler } from "lucide-react"
+import { Pencil, ArrowUpDown, MapPin, Clock, Ruler, Sparkles, ImageIcon } from "lucide-react"
 import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { StockoutRiskCard } from "@/components/inventory/stockout-risk-card"
 import { InventoryForecastChart } from "@/components/inventory/inventory-forecast-chart"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -38,10 +41,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     )
   }
 
+  const queryClient = useQueryClient()
+  const [generating, setGenerating] = useState(false)
+
   const qty = Number(product.currentQty)
   const reorder = Number(product.reorderPoint)
   const display = getDisplayQty(product)
   const displayReorder = getDisplayReorder({ ...product, reorderPoint: reorder })
+
+  async function handleGenerateImage() {
+    setGenerating(true)
+    try {
+      const res = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: id }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to generate image")
+      }
+      toast.success("Product photo generated!")
+      queryClient.invalidateQueries({ queryKey: ["product", id] })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate image")
+    } finally {
+      setGenerating(false)
+    }
+  }
 
   return (
     <div>
@@ -63,6 +90,59 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       ]} />
 
       <div className="p-4 space-y-4">
+        {/* Product image */}
+        {product.imageUrl ? (
+          <Card className="rounded-xl border-border-custom shadow-brand overflow-hidden animate-fade-in-up">
+            <div className="relative">
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-48 object-contain bg-white"
+              />
+              <button
+                type="button"
+                onClick={handleGenerateImage}
+                disabled={generating}
+                className="absolute bottom-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/90 backdrop-blur-sm border border-border-custom text-xs font-semibold text-text-secondary hover:text-navy shadow-brand transition-all active:scale-[0.97]"
+              >
+                <Sparkles className={cn("h-3 w-3", generating && "animate-spin")} />
+                {generating ? "Generating..." : "Regenerate"}
+              </button>
+            </div>
+          </Card>
+        ) : (
+          <button
+            type="button"
+            onClick={handleGenerateImage}
+            disabled={generating}
+            className={cn(
+              "w-full flex items-center gap-3 p-4 rounded-xl border-2 border-dashed transition-all active:scale-[0.98]",
+              generating
+                ? "border-brand-blue/40 bg-brand-blue/[0.04]"
+                : "border-border-custom hover:border-brand-blue/40 hover:bg-brand-blue/[0.03]"
+            )}
+          >
+            <div className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors",
+              generating ? "bg-brand-blue/10" : "bg-surface-secondary"
+            )}>
+              {generating ? (
+                <Sparkles className="h-5 w-5 text-brand-blue animate-spin" />
+              ) : (
+                <ImageIcon className="h-5 w-5 text-text-muted" />
+              )}
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold text-navy">
+                {generating ? "Generating product photo..." : "Generate Product Photo"}
+              </p>
+              <p className="text-xs text-text-muted mt-0.5">
+                {generating ? "This takes a few seconds" : "AI-powered thumbnail using Nano Banana 2"}
+              </p>
+            </div>
+          </button>
+        )}
+
         {/* Stock level card */}
         <Card className="p-6 rounded-xl border-border-custom text-center">
           <StockBadge currentQty={qty} reorderPoint={reorder} />

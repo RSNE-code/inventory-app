@@ -155,6 +155,7 @@ model Product {
   avgCost       Decimal       @default(0) @db.Decimal(12, 4)
   lastCost      Decimal       @default(0) @db.Decimal(12, 4)
   location      String?
+  imageUrl      String?
   isActive      Boolean       @default(true)
   notes         String?
   leadTimeDays  Int?
