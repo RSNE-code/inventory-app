@@ -102,6 +102,31 @@ Reads the plan, executes each step in order, validates the work, and updates the
 
 Example: `/implement plans/2026-01-28-competitor-analysis-command.md`
 
+### /ux-audit [focus]
+
+**Purpose:** Run a comprehensive UX quality audit — design tokens, button affordance, mobile layout, copy review.
+
+Runs automated scripts (`npm run ux:all`) plus manual review across 6 phases. Produces a report in `outputs/`.
+
+Example: `/ux-audit boms`
+
+### /walkthrough [workflow]
+
+**Purpose:** Simulate a user workflow step-by-step and identify friction points.
+
+Predefined workflows: `bom-creation`, `bom-photo`, `bom-checkout`, `receiving`, `door-creation`, `inventory-adjust`, `cycle-count`. Produces a report in `outputs/`.
+
+Example: `/walkthrough bom-creation`
+
+### UX Scripts (npm)
+
+```bash
+npm run ux:lint     # UX anti-pattern linter
+npm run ux:tokens   # Design token consistency checker
+npm run ux:a11y     # Accessibility checker
+npm run ux:all      # Run all three
+```
+
 ---
 
 ## Critical Instruction: Maintain Context and Reference Files

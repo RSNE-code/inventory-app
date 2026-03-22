@@ -49,6 +49,38 @@ plan_path: $ARGUMENTS (path to the plan file, e.g., `plans/2026-01-28-add-guest-
 
 ---
 
+### Phase 3b: UX Verification (after any UI change)
+
+If ANY step in the plan touched UI components (`.tsx` files in `src/components/` or `src/app/`):
+
+1. **Read `reference/ux-checklist.md`** and run through every checkbox on the changed files.
+
+2. **Run token audit on changed files:**
+   Run `npx tsx scripts/token-audit.ts` (if the script exists). Otherwise, manually check each changed `.tsx` file for off-brand tokens: `text-gray-*`, `bg-gray-*`, `border-gray-*`, `shadow-sm/md/lg`, `rounded-md/lg` on cards.
+
+3. **Run button affordance check on changed files:**
+   For every `<button>` or element with `onClick` in changed files, verify it has visual affordance (bg color, border, or shadow). Flag any that look like plain text.
+
+4. **Mobile sanity check:**
+   For each changed page/component, mentally render at 375px and flag:
+   - Horizontal overflow risks (too many flex items, no wrapping)
+   - Touch targets < 44px
+   - Text that would truncate and hide critical info
+   - Labels beside controls that should stack on mobile
+
+5. **Copy review:**
+   Read all new/changed user-facing strings. Flag:
+   - Vague button labels (just "OK", "Submit")
+   - Directional references ("below", "above", "here") that may be wrong
+   - Missing error/empty state messages
+
+6. **Design consistency check:**
+   Compare the changed component's styling to similar existing components. Flag inconsistencies in: card shadows, border radius, spacing, color tokens, tab styles, filter pills.
+
+**CRITICAL:** Fix ALL issues found BEFORE marking the step complete. Do not leave UX issues for a separate pass.
+
+---
+
 ### Phase 3: Validate
 
 1. **Run through the Validation Checklist** from the plan

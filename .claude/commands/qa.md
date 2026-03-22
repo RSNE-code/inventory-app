@@ -190,6 +190,27 @@ Report:
 
 ---
 
+### Phase 7: UX Quality
+
+Run the three UX scripts and include their output:
+
+1. **Token audit** — Run `npx tsx scripts/token-audit.ts 2>&1` — report all off-brand token usage
+2. **UX lint** — Run `npx tsx scripts/ux-lint.ts 2>&1` — report all UX anti-patterns
+3. **Accessibility check** — Run `npx tsx scripts/accessibility-check.ts 2>&1` — report all a11y issues
+
+Then manually review:
+
+4. **Button affordance spot-check** — Pick 5 random pages, identify every clickable element, verify it looks clickable (has bg, border, or shadow — not plain text)
+5. **Mobile overflow spot-check** — Pick 5 random pages, check for horizontal overflow patterns at 375px (too many flex items, fixed widths > 320px)
+6. **Copy consistency spot-check** — Check that "Create", "Save", "Confirm", "Done" are used consistently across flows. Check that directional references ("below", "above") match actual layout.
+
+Report:
+- Script-detected issues (grouped by severity)
+- Manual spot-check findings
+- Design consistency score (1-10) with justification
+
+---
+
 ## Output Format
 
 Produce a structured report with severity levels:
