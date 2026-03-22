@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, Star } from "lucide-react"
+import { AlertCircle, Star, Plus } from "lucide-react"
 
 interface Alternative {
   productId: string
@@ -81,9 +81,10 @@ export function FlaggedItemResolver({
         <button
           type="button"
           onClick={onKeepAsCustom}
-          className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-2"
+          className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-brand-orange text-white font-semibold text-sm shadow-[0_4px_12px_rgba(232,121,43,0.25)] hover:shadow-[0_6px_20px_rgba(232,121,43,0.35)] active:scale-[0.97] transition-all"
         >
-          None of these — add as custom item
+          <Plus className="h-4 w-4" />
+          Add as custom item
         </button>
       )}
     </div>
