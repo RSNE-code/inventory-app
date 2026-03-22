@@ -224,17 +224,6 @@ export function LiveItemFeed({
                   {item.isNonCatalog && !item.isPanel && (
                     <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
                   )}
-                  {/* Panel dimension editor */}
-                  {item.isPanel && item.panelSpecs && onEditDimensions && (
-                    <div className="mt-1.5">
-                      <PanelDimensionEditor
-                        thickness={(item.panelSpecs as { thickness?: number }).thickness ?? 4}
-                        lengthFt={Math.floor((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0)}
-                        lengthIn={Math.round(((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0) % 1 * 12)}
-                        onUpdate={(t, ft, inches) => onEditDimensions(item.id, t, ft, inches)}
-                      />
-                    </div>
-                  )}
                   {isFlagged && !item.isPanel && (
                     <button
                       type="button"
@@ -281,6 +270,17 @@ export function LiveItemFeed({
                   <X className="h-4 w-4" />
                 </button>
               </div>
+              {/* Panel dimension editor — full width below item row */}
+              {item.isPanel && item.panelSpecs && onEditDimensions && (
+                <div className="px-4 pb-3">
+                  <PanelDimensionEditor
+                    thickness={(item.panelSpecs as { thickness?: number }).thickness ?? 4}
+                    lengthFt={Math.floor((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0)}
+                    lengthIn={Math.round(((item.panelSpecs as { cutLengthFt?: number }).cutLengthFt ?? 0) % 1 * 12)}
+                    onUpdate={(t, ft, inches) => onEditDimensions(item.id, t, ft, inches)}
+                  />
+                </div>
+              )}
               {/* Unit conversion prompt — full width below item */}
               {showConversion && (
                 <div className="px-4 pb-3 border-b border-border-custom/40">
