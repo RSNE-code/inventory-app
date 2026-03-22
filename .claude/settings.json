@@ -8,6 +8,19 @@
     "self-improving-agent@claude-code-skills": true
   },
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_input.filePath // \"unknown\"' | { read -r f; case \"$f\" in *.tsx) cd /Users/gabeperez/Documents/GitHub/inventory-app && ISSUES=$(grep -n \"text-gray-\\|bg-gray-\\|border-gray-\\|shadow-sm\\b\\|shadow-md\\b\\|shadow-lg\\b\" \"$f\" 2>/dev/null | head -10); DIVCLICK=$(grep -n '<div[^>]*onClick\\|<span[^>]*onClick' \"$f\" 2>/dev/null | grep -v 'fixed inset-0' | head -5); if [ -n \"$ISSUES\" ] || [ -n \"$DIVCLICK\" ]; then MSG=\"UX ISSUES in $(basename $f):\"; [ -n \"$ISSUES\" ] && MSG=\"$MSG OFF-BRAND TOKENS: $ISSUES.\"; [ -n \"$DIVCLICK\" ] && MSG=\"$MSG DIV-ONCLICK (use <button>): $DIVCLICK.\"; MSG=\"$MSG FIX THESE NOW before proceeding. See reference/ux-checklist.md.\"; echo \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"PostToolUse\\\",\\\"additionalContext\\\":\\\"$MSG\\\"}}\"; fi ;; esac; }",
+            "timeout": 10,
+            "statusMessage": "UX checking..."
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
