@@ -124,12 +124,12 @@ export default function CycleCountsPage() {
               <Card className="p-4 rounded-xl border-[#E8792B] border-2 space-y-3">
                 <h3 className="font-semibold text-navy">{activeCount.productName}</h3>
                 {activeCount.location && (
-                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                  <div className="flex items-center gap-1.5 text-sm text-text-muted">
                     <MapPin className="h-3.5 w-3.5" />
                     {activeCount.location}
                   </div>
                 )}
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-text-secondary">
                   Count this item, then enter the actual quantity below.
                 </p>
                 <div>
@@ -176,14 +176,14 @@ export default function CycleCountsPage() {
                 <h3 className="font-semibold text-navy">{activeCount?.productName}</h3>
                 <div className="flex items-center justify-center gap-4 py-3">
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">System</p>
-                    <p className="text-2xl font-bold tabular-nums text-gray-400">
+                    <p className="text-xs text-text-secondary">System</p>
+                    <p className="text-2xl font-bold tabular-nums text-text-muted">
                       {formatQuantity(showResult.systemQty)}
                     </p>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-gray-300" />
+                  <ArrowRight className="h-5 w-5 text-text-muted/60" />
                   <div className="text-center">
-                    <p className="text-xs text-gray-500">Actual</p>
+                    <p className="text-xs text-text-secondary">Actual</p>
                     <p className="text-2xl font-bold tabular-nums text-navy">
                       {formatQuantity(showResult.actualQty)}
                     </p>
@@ -201,12 +201,12 @@ export default function CycleCountsPage() {
                     )}>
                       {showResult.variance > 0 ? "+" : ""}{formatQuantity(showResult.variance)} {showResult.unitOfMeasure}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Stock adjusted automatically</p>
+                    <p className="text-xs text-text-secondary mt-1">Stock adjusted automatically</p>
                   </div>
                 ) : (
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <p className="text-lg font-bold text-green-600">No variance</p>
-                    <p className="text-xs text-gray-500">Count matches system</p>
+                    <p className="text-xs text-text-secondary">Count matches system</p>
                   </div>
                 )}
 
@@ -229,7 +229,7 @@ export default function CycleCountsPage() {
                   <div className="text-center py-8 text-text-muted">Loading suggestions...</div>
                 ) : suggestions.length === 0 ? (
                   <div className="text-center py-8">
-                    <ClipboardCheck className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <ClipboardCheck className="h-12 w-12 mx-auto mb-3 text-text-muted/60" />
                     <p className="text-text-muted">All items recently counted</p>
                   </div>
                 ) : (
@@ -237,7 +237,7 @@ export default function CycleCountsPage() {
                     {suggestions.map((item: Record<string, unknown>) => (
                       <Card
                         key={item.id as string}
-                        className="p-3 rounded-xl border-border-custom hover:shadow-md transition-shadow cursor-pointer"
+                        className="p-3 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 cursor-pointer active:scale-[0.98]"
                         onClick={() => handleStartCount({
                           id: item.id as string,
                           name: item.name as string,
@@ -255,13 +255,13 @@ export default function CycleCountsPage() {
                                 {item.categoryName as string}
                               </Badge>
                               {item.location ? (
-                                <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                                <span className="text-xs text-text-muted flex items-center gap-0.5">
                                   <MapPin className="h-3 w-3" />
                                   {String(item.location)}
                                 </span>
                               ) : null}
                             </div>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-text-muted mt-0.5">
                               {item.lastCountedAt
                                 ? `Last counted: ${new Date(item.lastCountedAt as string).toLocaleDateString()}`
                                 : "Never counted"}
@@ -295,17 +295,17 @@ export default function CycleCountsPage() {
                 {recentCounts.map((count: Record<string, unknown>) => {
                   const variance = Number(count.variance)
                   return (
-                    <Card key={count.id as string} className="p-3 rounded-xl border-border-custom">
+                    <Card key={count.id as string} className="p-3 rounded-xl border-border-custom shadow-brand">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-navy">
                             {count.productName as string}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-text-muted">
                             {count.countedBy as string} — {new Date(count.countedAt as string).toLocaleString()}
                           </p>
                           {count.reason ? (
-                            <p className="text-xs text-gray-500 mt-0.5">{String(count.reason)}</p>
+                            <p className="text-xs text-text-secondary mt-0.5">{String(count.reason)}</p>
                           ) : null}
                         </div>
                         <div className="text-right">

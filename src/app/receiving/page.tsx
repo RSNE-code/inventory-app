@@ -15,30 +15,32 @@ export default function ReceivingPage() {
     <div>
       <Header title="Receive Material" showMenu />
 
-      {/* Tab bar */}
-      <div className="flex border-b border-gray-200 px-4">
-        <button
-          onClick={() => setActiveTab("receive")}
-          className={cn(
-            "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
-            activeTab === "receive"
-              ? "border-brand-orange text-brand-orange"
-              : "border-transparent text-text-muted hover:text-navy"
-          )}
-        >
-          AI Receive
-        </button>
-        <button
-          onClick={() => setActiveTab("history")}
-          className={cn(
-            "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
-            activeTab === "history"
-              ? "border-brand-orange text-brand-orange"
-              : "border-transparent text-text-muted hover:text-navy"
-          )}
-        >
-          Receipt History
-        </button>
+      {/* Tab bar — segmented control */}
+      <div className="px-4 pt-3">
+        <div className="flex gap-1 bg-surface-secondary rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab("receive")}
+            className={cn(
+              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              activeTab === "receive"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
+            )}
+          >
+            AI Receive
+          </button>
+          <button
+            onClick={() => setActiveTab("history")}
+            className={cn(
+              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              activeTab === "history"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
+            )}
+          >
+            Receipt History
+          </button>
+        </div>
       </div>
 
       <div className="p-4">

@@ -24,24 +24,28 @@ export default function SettingsPage() {
 
       <div className="p-4 space-y-4">
         <Link href="/receiving">
-          <Card className="p-4 rounded-xl border-border-custom hover:shadow-md transition-shadow">
+          <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <PackageCheck className="h-5 w-5 text-brand-blue" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+                  <PackageCheck className="h-[18px] w-[18px] text-brand-blue" />
+                </div>
                 <div>
-                  <h3 className="font-semibold text-navy">Receive Material</h3>
+                  <h3 className="font-semibold text-navy text-sm">Receive Material</h3>
                   <p className="text-text-muted text-xs">Log incoming deliveries</p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-text-muted" />
+              <ChevronRight className="h-4 w-4 text-text-muted/30" />
             </div>
           </Card>
         </Link>
 
-        <Card className="p-4 rounded-xl border-border-custom">
+        <Card className="p-4 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
-            <Users className="h-5 w-5 text-brand-blue" />
-            <h3 className="font-semibold text-navy">User Management</h3>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+              <Users className="h-[18px] w-[18px] text-brand-blue" />
+            </div>
+            <h3 className="font-semibold text-navy text-sm">User Management</h3>
           </div>
           <p className="text-text-secondary text-sm">
             Manage team members and their roles. Admin access required.
@@ -51,10 +55,12 @@ export default function SettingsPage() {
           </p>
         </Card>
 
-        <Card className="p-4 rounded-xl border-border-custom">
+        <Card className="p-4 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
-            <Info className="h-5 w-5 text-brand-blue" />
-            <h3 className="font-semibold text-navy">About</h3>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+              <Info className="h-[18px] w-[18px] text-brand-blue" />
+            </div>
+            <h3 className="font-semibold text-navy text-sm">About</h3>
           </div>
           <div className="space-y-1 text-sm">
             <p className="text-text-secondary">
@@ -69,7 +75,7 @@ export default function SettingsPage() {
         <Button
           onClick={handleSignOut}
           variant="outline"
-          className="w-full h-12 text-status-red border-status-red/30 hover:bg-status-red/5"
+          className="w-full h-12 rounded-xl text-status-red border-status-red/30 hover:bg-status-red/5"
         >
           <LogOut className="h-4 w-4 mr-2" />
           Sign Out

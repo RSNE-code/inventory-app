@@ -39,30 +39,32 @@ export default function BomsPage() {
     <div>
       <Header title="Bills of Materials" />
 
-      {/* Tab bar */}
-      <div className="flex border-b border-gray-200 px-4">
-        <button
-          onClick={() => setActiveTab("create")}
-          className={cn(
-            "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
-            activeTab === "create"
-              ? "border-brand-orange text-brand-orange"
-              : "border-transparent text-text-muted hover:text-navy"
-          )}
-        >
-          Create BOM
-        </button>
-        <button
-          onClick={() => setActiveTab("list")}
-          className={cn(
-            "flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors",
-            activeTab === "list"
-              ? "border-brand-orange text-brand-orange"
-              : "border-transparent text-text-muted hover:text-navy"
-          )}
-        >
-          BOM List
-        </button>
+      {/* Tab bar — segmented control */}
+      <div className="px-4 pt-3">
+        <div className="flex gap-1 bg-surface-secondary rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab("create")}
+            className={cn(
+              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              activeTab === "create"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
+            )}
+          >
+            Create BOM
+          </button>
+          <button
+            onClick={() => setActiveTab("list")}
+            className={cn(
+              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              activeTab === "list"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
+            )}
+          >
+            BOM List
+          </button>
+        </div>
       </div>
 
       {activeTab === "create" ? (

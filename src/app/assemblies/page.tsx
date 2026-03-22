@@ -124,8 +124,8 @@ export default function AssembliesPage() {
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all",
                 statusFilter === tab.value
-                  ? "bg-navy text-white shadow-[0_2px_6px_rgba(11,29,58,0.2)]"
-                  : "bg-surface-secondary text-text-muted hover:text-navy"
+                  ? "bg-brand-blue text-white shadow-[0_2px_6px_rgba(46,125,186,0.25)]"
+                  : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
               )}
             >
               {tab.label}
