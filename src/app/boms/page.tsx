@@ -45,7 +45,7 @@ export default function BomsPage() {
           <button
             onClick={() => setActiveTab("create")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
               activeTab === "create"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -56,7 +56,7 @@ export default function BomsPage() {
           <button
             onClick={() => setActiveTab("list")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
+              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
               activeTab === "list"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -80,16 +80,16 @@ export default function BomsPage() {
               placeholder="Search by job name or number..."
             />
 
-            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               {statuses.map((s) => (
                 <button
                   key={s.value}
                   onClick={() => { setStatus(s.value); setPage(1) }}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all",
+                    "px-4 py-2.5 min-h-[44px] rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300",
                     status === s.value
                       ? "bg-brand-blue text-white shadow-[0_2px_6px_rgba(46,125,186,0.25)]"
-                      : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
+                      : "bg-white border border-border-custom text-navy hover:bg-surface-secondary"
                   )}
                 >
                   {s.label}
@@ -98,7 +98,7 @@ export default function BomsPage() {
             </div>
           </div>
 
-          <div className="px-4 space-y-2 pb-24">
+          <div className="px-4 space-y-3 pb-24">
             {isLoading ? (
               <ListSkeleton count={5} />
             ) : boms.length === 0 ? (
@@ -127,7 +127,7 @@ export default function BomsPage() {
                       sequenceLabel = `BOM ${jobNameSeq[jn]}`
                     }
                     return (
-                      <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 8)}`}>
+                      <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
                         <BomCard
                           id={bom.id as string}
                           jobName={jn}

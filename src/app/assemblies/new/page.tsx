@@ -186,7 +186,7 @@ export default function NewAssemblyPage() {
                   onClick={() => handleSelectType(value)}
                   className="h-16 justify-start gap-3 rounded-xl text-left"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-blue/10">
                     <Icon className="h-5 w-5 text-brand-blue" />
                   </div>
                   <span className="font-semibold text-navy">{label}</span>
@@ -203,7 +203,7 @@ export default function NewAssemblyPage() {
             <Button
               variant="ghost"
               onClick={() => setStep("type")}
-              className="w-full text-gray-400"
+              className="w-full text-text-muted"
             >
               Back to Type Selection
             </Button>
@@ -214,12 +214,12 @@ export default function NewAssemblyPage() {
         {step === "template" && assemblyType && assemblyType !== "DOOR" && (
           <Card className="p-4 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">Select Template</h3>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-secondary">
               Choose an existing template or build a custom assembly
             </p>
 
             {templatesLoading ? (
-              <p className="text-sm text-gray-400">Loading templates...</p>
+              <p className="text-sm text-text-muted">Loading templates...</p>
             ) : (
               <>
                 <div className="space-y-2">
@@ -234,7 +234,7 @@ export default function NewAssemblyPage() {
                       >
                         <div>
                           <p className="font-semibold text-navy">{t.name as string}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-text-secondary">
                             {comps.length} components
                             {t.description ? ` — ${t.description}` : ""}
                           </p>
@@ -256,7 +256,7 @@ export default function NewAssemblyPage() {
                 <Button
                   variant="ghost"
                   onClick={() => setStep("type")}
-                  className="w-full text-gray-400"
+                  className="w-full text-text-muted"
                 >
                   Back
                 </Button>
@@ -301,7 +301,7 @@ export default function NewAssemblyPage() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Mic className="h-4 w-4 text-[#E8792B]" />
-                  <p className="text-xs text-gray-500">Add materials by voice or text</p>
+                  <p className="text-xs text-text-secondary">Add materials by voice or text</p>
                 </div>
                 <AIInput
                   onParseComplete={handleAIAddComponents}
@@ -317,10 +317,10 @@ export default function NewAssemblyPage() {
                     return (
                       <div
                         key={`${comp.productId}-${index}`}
-                        className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+                        className="flex items-center justify-between py-2 border-b border-border-custom/40 last:border-0"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-navy truncate">
                             {comp.productName}
                           </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
@@ -330,7 +330,7 @@ export default function NewAssemblyPage() {
                                 hasEnough ? "bg-green-500" : "bg-red-500"
                               )}
                             />
-                            <span className={cn("text-xs", hasEnough ? "text-green-600" : "text-red-500")}>
+                            <span className={cn("text-xs", hasEnough ? "text-status-green" : "text-status-red")}>
                               {formatQuantity(comp.currentQty)} {comp.unitOfMeasure} in stock
                             </span>
                           </div>
@@ -344,9 +344,9 @@ export default function NewAssemblyPage() {
                             onChange={(e) =>
                               handleComponentQtyChange(index, Number(e.target.value) || 0)
                             }
-                            className="w-16 rounded-lg border border-gray-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-16 rounded-lg border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
-                          <span className="text-xs text-gray-500 w-8">{comp.unitOfMeasure}</span>
+                          <span className="text-xs text-text-secondary w-8">{comp.unitOfMeasure}</span>
                           <Button
                             type="button"
                             variant="ghost"
@@ -361,7 +361,7 @@ export default function NewAssemblyPage() {
                     )
                   })}
                   {batchSize > 1 && (
-                    <p className="text-xs text-gray-400 pt-1">
+                    <p className="text-xs text-text-muted pt-1">
                       Quantities shown per unit. Total = qty x {batchSize} batch size
                     </p>
                   )}
@@ -369,7 +369,7 @@ export default function NewAssemblyPage() {
               )}
 
               {components.length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-4">
+                <p className="text-sm text-text-muted text-center py-4">
                   Use AI input above or add components from the catalog
                 </p>
               )}
@@ -401,7 +401,7 @@ export default function NewAssemblyPage() {
               <Button
                 variant="ghost"
                 onClick={() => setStep("template")}
-                className="w-full text-gray-400"
+                className="w-full text-text-muted"
               >
                 Back
               </Button>

@@ -392,13 +392,13 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
         {/* Input area */}
         <div className="flex-1 relative">
           {isListening ? (
-            <div className="w-full h-11 rounded-xl border-2 border-brand-orange/30 bg-brand-orange/5 flex items-center justify-center gap-[3px] px-4">
-              <span className="text-sm font-semibold text-brand-orange/70 mr-2">Listening</span>
-              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-1" />
-              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-2" />
-              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-3" />
-              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-4" />
-              <span className="w-[3px] rounded-full bg-brand-orange/60 animate-soundbar-5" />
+            <div className="w-full h-11 rounded-xl border-2 border-brand-orange bg-brand-orange/10 flex items-center justify-center gap-[3px] px-4">
+              <span className="text-sm font-semibold text-brand-orange mr-2">Listening</span>
+              <span className="w-[3px] rounded-full bg-brand-orange/80 animate-soundbar-1" />
+              <span className="w-[3px] rounded-full bg-brand-orange/80 animate-soundbar-2" />
+              <span className="w-[3px] rounded-full bg-brand-orange/80 animate-soundbar-3" />
+              <span className="w-[3px] rounded-full bg-brand-orange/80 animate-soundbar-4" />
+              <span className="w-[3px] rounded-full bg-brand-orange/80 animate-soundbar-5" />
             </div>
           ) : isProcessing ? (
             <div className="w-full h-11 rounded-xl border-2 border-border-custom bg-surface-secondary/50 flex items-center justify-center">

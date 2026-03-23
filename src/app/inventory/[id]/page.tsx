@@ -192,7 +192,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <h3 className="font-semibold text-navy mb-3">Recent Activity</h3>
             <div className="space-y-2">
               {product.transactions.map((t: Record<string, unknown>) => (
-                <div key={t.id as string} className="flex items-center justify-between py-2 border-b border-border-custom last:border-0">
+                <div key={t.id as string} className="flex items-center justify-between py-3.5 border-b border-border-custom last:border-0">
                   <div>
                     <p className="text-sm font-medium text-navy">
                       {formatTransactionType(t.type as string)}

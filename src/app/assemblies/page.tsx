@@ -18,23 +18,33 @@ type QueueTab = "DOOR_SHOP" | "FABRICATION"
 type StatusFilter = "all" | "AWAITING_APPROVAL" | "APPROVED" | "PLANNED" | "IN_PRODUCTION" | "COMPLETED"
 
 const statusColors: Record<string, string> = {
-  PLANNED: "bg-gray-100 text-gray-600",
-  AWAITING_APPROVAL: "bg-status-yellow/8 text-status-yellow",
-  APPROVED: "bg-brand-blue/8 text-brand-blue",
-  IN_PRODUCTION: "bg-brand-orange/8 text-brand-orange",
-  COMPLETED: "bg-status-green/8 text-status-green",
+  PLANNED: "bg-surface-secondary text-text-secondary",
+  AWAITING_APPROVAL: "bg-status-yellow/15 text-status-yellow",
+  APPROVED: "bg-brand-blue/15 text-brand-blue",
+  IN_PRODUCTION: "bg-brand-orange/15 text-brand-orange",
+  COMPLETED: "bg-status-green/15 text-status-green",
   ALLOCATED: "bg-purple-100 text-purple-700",
-  SHIPPED: "bg-gray-100 text-gray-500",
+  SHIPPED: "bg-surface-secondary text-text-secondary",
+}
+
+const statusAccentClass: Record<string, string> = {
+  PLANNED: "card-accent-gray",
+  AWAITING_APPROVAL: "card-accent-yellow",
+  APPROVED: "card-accent-blue",
+  IN_PRODUCTION: "card-accent-orange",
+  COMPLETED: "card-accent-green",
+  ALLOCATED: "card-accent-blue",
+  SHIPPED: "card-accent-gray",
 }
 
 const statusDots: Record<string, string> = {
-  PLANNED: "bg-gray-400",
+  PLANNED: "bg-text-muted",
   AWAITING_APPROVAL: "bg-status-yellow animate-pulse",
   APPROVED: "bg-brand-blue",
   IN_PRODUCTION: "bg-brand-orange animate-pulse",
   COMPLETED: "bg-status-green",
   ALLOCATED: "bg-purple-500",
-  SHIPPED: "bg-gray-400",
+  SHIPPED: "bg-text-muted",
 }
 
 const statusLabels: Record<string, string> = {
@@ -160,9 +170,9 @@ export default function AssembliesPage() {
           <>
             {/* Not Started */}
             {notStarted.length > 0 && (
-              <div className="space-y-2 animate-fade-in-up stagger-1">
+              <div className="space-y-3 animate-fade-in-up stagger-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-text-muted" />
                   <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
                     Not Started
                   </h3>
@@ -176,7 +186,7 @@ export default function AssembliesPage() {
 
             {/* In Progress */}
             {inProgress.length > 0 && (
-              <div className="space-y-2 animate-fade-in-up stagger-3">
+              <div className="space-y-3 animate-fade-in-up stagger-3">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse" />
                   <h3 className="text-xs font-bold text-brand-orange uppercase tracking-wider">
@@ -192,7 +202,7 @@ export default function AssembliesPage() {
 
             {/* Completed */}
             {completed.length > 0 && (
-              <div className="space-y-2 animate-fade-in-up stagger-5">
+              <div className="space-y-3 animate-fade-in-up stagger-5">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-status-green" />
                   <h3 className="text-xs font-bold text-status-green uppercase tracking-wider">
@@ -222,13 +232,13 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
 
   return (
     <Link href={`/assemblies/${assembly.id}`}>
-      <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
+      <Card className={cn("p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccentClass[status] || "card-accent-gray")}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="font-semibold text-navy text-sm">{name as string}</p>
-              <Badge className={cn("text-[12px] px-1.5 py-0 gap-1", statusColors[status])}>
-                <span className={cn("h-1 w-1 rounded-full shrink-0", statusDots[status])} />
+              <p className="font-semibold text-navy text-base">{name as string}</p>
+              <Badge className={cn("text-[12px] px-2.5 py-1 gap-1.5 border-0", statusColors[status])}>
+                <span className={cn("h-2 w-2 rounded-full shrink-0", statusDots[status])} />
                 {statusLabels[status] || status}
               </Badge>
             </div>
@@ -256,7 +266,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                     <Badge className={cn(
                       "text-[12px] px-1.5 py-0 border-0",
                       temp === "FREEZER"
-                        ? "bg-blue-50 text-blue-600"
+                        ? "bg-brand-blue/10 text-brand-blue"
                         : "bg-cyan-50 text-cyan-600"
                     )}>
                       {temp === "FREEZER" ? (

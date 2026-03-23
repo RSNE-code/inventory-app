@@ -193,19 +193,19 @@ export default function CycleCountsPage() {
                 {showResult.variance !== 0 ? (
                   <div className={cn(
                     "text-center p-3 rounded-lg",
-                    showResult.variance > 0 ? "bg-green-50" : "bg-red-50"
+                    showResult.variance > 0 ? "bg-status-green/10" : "bg-status-red/10"
                   )}>
                     <p className={cn(
                       "text-lg font-bold",
-                      showResult.variance > 0 ? "text-green-600" : "text-red-500"
+                      showResult.variance > 0 ? "text-status-green" : "text-status-red"
                     )}>
                       {showResult.variance > 0 ? "+" : ""}{formatQuantity(showResult.variance)} {showResult.unitOfMeasure}
                     </p>
                     <p className="text-xs text-text-secondary mt-1">Stock adjusted automatically</p>
                   </div>
                 ) : (
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <p className="text-lg font-bold text-green-600">No variance</p>
+                  <div className="text-center p-3 bg-status-green/10 rounded-lg">
+                    <p className="text-lg font-bold text-status-green">No variance</p>
                     <p className="text-xs text-text-secondary">Count matches system</p>
                   </div>
                 )}
@@ -314,8 +314,8 @@ export default function CycleCountsPage() {
                           </p>
                           <p className={cn(
                             "text-xs font-semibold tabular-nums",
-                            variance === 0 ? "text-green-600" :
-                            variance > 0 ? "text-blue-600" : "text-red-500"
+                            variance === 0 ? "text-status-green" :
+                            variance > 0 ? "text-brand-blue" : "text-status-red"
                           )}>
                             {variance === 0 ? "Match" : `${variance > 0 ? "+" : ""}${formatQuantity(variance)}`}
                           </p>

@@ -26,7 +26,7 @@
   --color-border-custom: #E2E6EB;
   --color-text-primary: #0B1D3A;
   --color-text-secondary: #4A5B6E;
-  --color-text-muted: #8899AB;
+  --color-text-muted: #6B7F96;
   --color-status-green: #22C55E;
   --color-status-yellow: #EAB308;
   --color-status-red: #EF4444;
@@ -83,7 +83,7 @@
   --secondary: #F4F6F8;
   --secondary-foreground: #0B1D3A;
   --muted: #F4F6F8;
-  --muted-foreground: #8899AB;
+  --muted-foreground: #6B7F96;
   --accent: #F4F6F8;
   --accent-foreground: #0B1D3A;
   --destructive: #EF4444;
@@ -292,6 +292,17 @@
 .stagger-6 { animation-delay: 0.3s; }
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
+.stagger-9 { animation-delay: 0.45s; }
+.stagger-10 { animation-delay: 0.5s; }
+.stagger-11 { animation-delay: 0.55s; }
+.stagger-12 { animation-delay: 0.6s; }
+
+/* Skeleton shimmer — replaces animate-pulse for loading states */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--color-surface-secondary) 25%, #e8ecf0 50%, var(--color-surface-secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer-slide 1.5s ease-in-out infinite;
+}
 
 /* Card shadow with brand warmth */
 .shadow-brand {
@@ -299,6 +310,9 @@
 }
 .shadow-brand-md {
   box-shadow: 0 4px 12px rgba(11, 29, 58, 0.08), 0 2px 4px rgba(11, 29, 58, 0.04);
+}
+.shadow-brand-lg {
+  box-shadow: 0 8px 24px rgba(11, 29, 58, 0.12), 0 4px 8px rgba(11, 29, 58, 0.06);
 }
 
 /* AI Input focused glow */
@@ -315,6 +329,12 @@
 .card-accent-left {
   border-left: 3px solid var(--color-brand-blue);
 }
+.card-accent-green { border-left: 4px solid var(--color-status-green); }
+.card-accent-yellow { border-left: 4px solid var(--color-status-yellow); }
+.card-accent-red { border-left: 4px solid var(--color-status-red); }
+.card-accent-blue { border-left: 4px solid var(--color-brand-blue); }
+.card-accent-orange { border-left: 4px solid var(--color-brand-orange); }
+.card-accent-gray { border-left: 4px solid var(--color-border-custom); }
 
 /* Critical badge pulse */
 .badge-critical-pulse {

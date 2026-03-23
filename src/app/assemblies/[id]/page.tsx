@@ -28,13 +28,13 @@ import {
 } from "lucide-react"
 
 const statusColors: Record<string, string> = {
-  PLANNED: "bg-gray-100 text-gray-700",
-  AWAITING_APPROVAL: "bg-yellow-100 text-yellow-700",
-  APPROVED: "bg-blue-100 text-blue-700",
-  IN_PRODUCTION: "bg-orange-100 text-orange-700",
-  COMPLETED: "bg-green-100 text-green-700",
+  PLANNED: "bg-surface-secondary text-text-primary",
+  AWAITING_APPROVAL: "bg-status-yellow/10 text-status-yellow",
+  APPROVED: "bg-brand-blue/10 text-brand-blue",
+  IN_PRODUCTION: "bg-brand-orange/10 text-brand-orange",
+  COMPLETED: "bg-status-green/10 text-status-green",
   ALLOCATED: "bg-purple-100 text-purple-700",
-  SHIPPED: "bg-gray-100 text-gray-500",
+  SHIPPED: "bg-surface-secondary text-text-secondary",
 }
 
 const statusLabels: Record<string, string> = {
@@ -222,7 +222,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               <p className="text-brand-blue font-medium">Job: {assembly.jobName}</p>
             )}
             {Number(assembly.batchSize) > 1 && (
-              <p className="text-gray-600">Batch size: {assembly.batchSize}</p>
+              <p className="text-text-secondary">Batch size: {assembly.batchSize}</p>
             )}
           </div>
 
@@ -232,7 +232,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             </p>
           )}
           {assembly.approvalNotes && (
-            <p className="text-sm text-text-secondary bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <p className="text-sm text-text-secondary bg-status-yellow/10 p-3 rounded-lg border border-status-yellow/30">
               Approval note: {assembly.approvalNotes}
             </p>
           )}
@@ -295,7 +295,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                 (field) =>
                   specs[field] ? (
                     <div key={field}>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-text-secondary">
                         {field === "doorType" ? "Type" : field.charAt(0).toUpperCase() + field.slice(1)}
                       </p>
                       <p className="text-sm font-medium">{String(specs[field])}</p>
@@ -304,7 +304,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               )}
               {specs.specialNotes ? (
                 <div className="col-span-2">
-                  <p className="text-xs text-gray-500">Special Notes</p>
+                  <p className="text-xs text-text-secondary">Special Notes</p>
                   <p className="text-sm font-medium">{String(specs.specialNotes)}</p>
                 </div>
               ) : null}
@@ -327,16 +327,16 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             return (
               <div
                 key={comp.id as string}
-                className="py-2 border-b border-gray-50 last:border-0"
+                className="py-2 border-b border-border-custom/40 last:border-0"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-navy truncate">
                       {product.name as string}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       {category && (
-                        <span className="text-xs text-gray-400">{category.name as string}</span>
+                        <span className="text-xs text-text-muted">{category.name as string}</span>
                       )}
                       {status !== "COMPLETED" && status !== "SHIPPED" && (
                         <div className="flex items-center gap-1">
@@ -346,7 +346,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                               hasEnough ? "bg-green-500" : "bg-red-500"
                             )}
                           />
-                          <span className={cn("text-xs", hasEnough ? "text-green-600" : "text-red-500")}>
+                          <span className={cn("text-xs", hasEnough ? "text-status-green" : "text-status-red")}>
                             {formatQuantity(currentQty)} avail
                           </span>
                         </div>
@@ -357,15 +357,15 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                     <p className="text-sm font-semibold tabular-nums">
                       {formatQuantity(qtyUsed)}
                     </p>
-                    <p className="text-xs text-gray-400">{product.unitOfMeasure as string}</p>
+                    <p className="text-xs text-text-muted">{product.unitOfMeasure as string}</p>
                   </div>
                 </div>
               </div>
             )
           })}
           {assembly.cost && (
-            <div className="pt-2 flex justify-between border-t border-gray-200">
-              <span className="text-sm font-medium text-gray-600">Total Cost</span>
+            <div className="pt-2 flex justify-between border-t border-border-custom">
+              <span className="text-sm font-medium text-text-secondary">Total Cost</span>
               <span className="text-sm font-bold text-navy">
                 ${Number(assembly.cost).toFixed(2)}
               </span>
@@ -377,19 +377,19 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         {changeLog.length > 0 && (
           <Card className="p-4 rounded-xl border-border-custom space-y-2">
             <div className="flex items-center gap-2">
-              <History className="h-4 w-4 text-gray-400" />
+              <History className="h-4 w-4 text-text-muted" />
               <h3 className="font-semibold text-navy text-sm">Change History</h3>
             </div>
             {changeLog.map((entry) => {
               const changedBy = entry.changedBy as Record<string, unknown>
               return (
-                <div key={entry.id as string} className="text-xs py-1.5 border-b border-gray-50 last:border-0">
-                  <p className="text-gray-700">
+                <div key={entry.id as string} className="text-xs py-1.5 border-b border-border-custom/40 last:border-0">
+                  <p className="text-text-primary">
                     <span className="font-medium">{String(entry.fieldName)}</span>:
-                    {entry.oldValue ? <span className="text-red-400 line-through ml-1">{String(entry.oldValue)}</span> : null}
-                    <span className="text-green-600 ml-1">{String(entry.newValue)}</span>
+                    {entry.oldValue ? <span className="text-status-red/70 line-through ml-1">{String(entry.oldValue)}</span> : null}
+                    <span className="text-status-green ml-1">{String(entry.newValue)}</span>
                   </p>
-                  <p className="text-gray-400 mt-0.5">
+                  <p className="text-text-muted mt-0.5">
                     {String(changedBy.name)} — {new Date(String(entry.createdAt)).toLocaleString()}
                     {entry.reason ? ` — ${String(entry.reason)}` : null}
                   </p>

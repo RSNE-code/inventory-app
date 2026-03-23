@@ -96,7 +96,7 @@ function InventoryContent() {
           <>
             <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">{data?.total || 0} products</p>
             {products.map((p: Record<string, unknown>, i: number) => (
-              <div key={p.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 8)}`}>
+              <div key={p.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
                 <ProductCard
                   id={p.id as string}
                   name={p.name as string}

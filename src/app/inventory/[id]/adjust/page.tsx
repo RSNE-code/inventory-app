@@ -145,7 +145,7 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
 
         {/* Preview */}
         {qty > 0 && (
-          <Card className="p-3 rounded-xl bg-surface-secondary border-0 text-center">
+          <Card className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 text-center">
             <p className="text-sm text-text-secondary">
               {formatQuantity(display.qty)} → <span className="font-bold text-navy">{formatQuantity(newDisplayQty)}</span>{" "}
               {display.unit}{" "}

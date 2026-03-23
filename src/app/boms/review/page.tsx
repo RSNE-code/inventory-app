@@ -81,7 +81,7 @@ export default function ReviewQueuePage() {
       <div className="p-4 space-y-3 pb-24">
         {boms.length === 0 ? (
           <div className="text-center py-12">
-            <ClipboardCheck className="h-12 w-12 text-green-300 mx-auto mb-3" />
+            <ClipboardCheck className="h-12 w-12 text-status-green/50 mx-auto mb-3" />
             <p className="text-base font-semibold text-navy">All caught up</p>
             <p className="text-sm text-text-muted mt-1">No BOMs pending review</p>
           </div>
@@ -134,7 +134,7 @@ export default function ReviewQueuePage() {
                         return (
                           <div key={liId} className={cn(
                             "px-4 py-3 border-b border-border-custom/40 last:border-0",
-                            isLow && "bg-orange-50/50"
+                            isLow && "bg-brand-orange/10"
                           )}>
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
@@ -152,8 +152,8 @@ export default function ReviewQueuePage() {
                                       <div
                                         className={cn(
                                           "h-full rounded-full",
-                                          confidence >= 0.9 ? "bg-green-500" :
-                                          confidence >= 0.7 ? "bg-yellow-500" : "bg-red-500"
+                                          confidence >= 0.9 ? "bg-status-green" :
+                                          confidence >= 0.7 ? "bg-status-yellow" : "bg-status-red"
                                         )}
                                         style={{ width: `${confidence * 100}%` }}
                                       />
@@ -175,22 +175,22 @@ export default function ReviewQueuePage() {
                                       type="button"
                                       onClick={() => handleConfirmItem(bomId, liId)}
                                       disabled={reviewMutation.isPending}
-                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-green-50 text-green-600 hover:bg-green-100 active:scale-95"
+                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-green/10 text-status-green hover:bg-status-green/20 active:scale-95"
                                     >
                                       <Check className="h-4 w-4" />
                                     </button>
                                     <button
                                       type="button"
                                       onClick={() => setFixingItemId(isFixing ? null : liId)}
-                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 active:scale-95"
+                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-red/10 text-status-red hover:bg-status-red/20 active:scale-95"
                                     >
                                       <X className="h-4 w-4" />
                                     </button>
                                   </>
                                 )}
                                 {isConfirmed && (
-                                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-green-100">
-                                    <Check className="h-4 w-4 text-green-600" />
+                                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-green/15">
+                                    <Check className="h-4 w-4 text-status-green" />
                                   </div>
                                 )}
                               </div>

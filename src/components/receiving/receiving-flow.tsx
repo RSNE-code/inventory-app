@@ -492,7 +492,7 @@ export function ReceivingFlow() {
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">Supplier</h3>
             {supplierAutoMatched && supplierName && (
-              <span className="text-xs text-green-600">Auto-matched</span>
+              <span className="text-xs text-status-green">Auto-matched</span>
             )}
           </div>
           <SupplierPicker
@@ -515,13 +515,13 @@ export function ReceivingFlow() {
 
         {confirmedItems.length > 0 && (
           <Card className="p-4 rounded-xl border-border-custom space-y-2">
-            <h3 className="font-semibold text-sm text-green-700">
+            <h3 className="font-semibold text-sm text-status-green">
               {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} confirmed
             </h3>
             {confirmedItems.map((item, i) => (
               <div
                 key={`${item.productId ?? "nc"}-${i}`}
-                className="flex items-center justify-between py-1 text-sm text-gray-600"
+                className="flex items-center justify-between py-1 text-sm text-text-secondary"
               >
                 <span className="truncate flex-1">
                   {item.quantity} {item.unitOfMeasure} {item.productName}
@@ -530,7 +530,7 @@ export function ReceivingFlow() {
                   onClick={() =>
                     setConfirmedItems((prev) => prev.filter((_, idx) => idx !== i))
                   }
-                  className="text-xs text-red-500 hover:underline ml-2 shrink-0"
+                  className="text-xs text-status-red hover:underline ml-2 shrink-0"
                 >
                   Remove
                 </button>
@@ -540,7 +540,7 @@ export function ReceivingFlow() {
         )}
 
         <Card className="p-4 rounded-xl border-border-custom space-y-2">
-          <h3 className="text-sm font-medium text-gray-500">Add more items</h3>
+          <h3 className="text-sm font-medium text-text-secondary">Add more items</h3>
           <AIInput
             onParseComplete={(result) => {
               setPendingMatches((prev) => [...prev, ...result.items])

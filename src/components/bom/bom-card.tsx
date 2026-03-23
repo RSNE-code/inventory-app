@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { BomStatusBadge } from "./bom-status-badge"
 import { ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface BomCardProps {
   id: string
@@ -16,13 +17,22 @@ interface BomCardProps {
   sequenceLabel?: string | null
 }
 
+const statusAccent: Record<string, string> = {
+  DRAFT: "card-accent-gray",
+  PENDING_REVIEW: "card-accent-orange",
+  APPROVED: "card-accent-blue",
+  IN_PROGRESS: "card-accent-yellow",
+  COMPLETED: "card-accent-green",
+  CANCELLED: "card-accent-red",
+}
+
 export function BomCard({ id, jobName, jobNumber, status, lineItemCount, createdByName, createdAt, sequenceLabel }: BomCardProps) {
   return (
     <Link href={`/boms/${id}`}>
-      <Card className="p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
+      <Card className={cn("p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccent[status] || "card-accent-gray")}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-navy text-sm leading-tight">
+            <h3 className="font-semibold text-navy text-base leading-tight">
               {jobName}
               {sequenceLabel && (
                 <span className="text-text-muted font-normal"> — {sequenceLabel}</span>
@@ -44,7 +54,7 @@ export function BomCard({ id, jobName, jobNumber, status, lineItemCount, created
             <span className="text-xs text-text-muted tabular-nums">
               {new Date(createdAt).toLocaleDateString()}
             </span>
-            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-brand-blue group-hover:translate-x-1 transition-all duration-300" />
           </div>
         </div>
       </Card>

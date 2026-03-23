@@ -59,10 +59,10 @@ export function SidebarNav() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                "flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
                 isActive
-                  ? "bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                  ? "bg-brand-blue/15 text-white border-l-4 border-brand-blue-bright pl-2 pr-3"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/8 border-l-4 border-transparent pl-2 pr-3"
               )}
             >
               <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive && "text-brand-blue-bright")} />

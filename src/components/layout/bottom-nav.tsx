@@ -33,17 +33,17 @@ export function BottomNav() {
               key={tab.name}
               href={tab.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-2",
-                "min-w-[48px] transition-all duration-200",
+                "flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl",
+                "min-w-[48px] transition-all duration-300",
                 isActive
-                  ? "text-brand-blue"
+                  ? "text-brand-blue bg-brand-blue/10"
                   : "text-text-muted hover:text-text-secondary"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive && "scale-110")} />
+              <Icon className={cn("h-5 w-5 transition-all duration-300", isActive && "scale-110")} />
               <span className={cn(
-                "text-[12px] font-semibold",
-                isActive && "text-brand-blue"
+                "text-[11px]",
+                isActive ? "font-bold text-brand-blue" : "font-semibold"
               )}>{tab.name}</span>
             </Link>
           )

@@ -27,7 +27,7 @@ export function VoiceOrb({
   className,
 }: VoiceOrbProps) {
   const isSm = size === "sm"
-  const orbSize = isSm ? "h-10 w-10" : "h-12 w-12"
+  const orbSize = isSm ? "h-11 w-11" : "h-12 w-12"
   const iconSize = isSm ? "h-4.5 w-4.5" : "h-5 w-5"
 
   return (

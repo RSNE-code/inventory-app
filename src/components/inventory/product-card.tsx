@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { StockBadge } from "./stock-badge"
-import { formatQuantity } from "@/lib/utils"
+import { cn, formatQuantity, getStockStatus } from "@/lib/utils"
 import { getDisplayQty } from "@/lib/units"
 import { MapPin, ChevronRight } from "lucide-react"
 
@@ -27,13 +27,15 @@ export function ProductCard({
   dimLength, dimLengthUnit, dimWidth, dimWidthUnit, location,
 }: ProductCardProps) {
   const display = getDisplayQty({ currentQty, unitOfMeasure, shopUnit, dimLength, dimLengthUnit, dimWidth, dimWidthUnit })
+  const stockStatus = getStockStatus(currentQty, reorderPoint)
+  const accentClass = stockStatus === "out" ? "card-accent-red" : stockStatus === "low" ? "card-accent-yellow" : "card-accent-green"
 
   return (
     <Link href={`/inventory/${id}`}>
-      <Card className="p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md transition-all duration-300 active:scale-[0.98] group">
+      <Card className={cn("p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", accentClass)}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-navy text-sm leading-tight truncate">
+            <h3 className="font-semibold text-navy text-base leading-tight truncate">
               {name}
             </h3>
             <p className="text-text-muted text-xs mt-0.5">{categoryName}</p>
@@ -54,7 +56,7 @@ export function ProductCard({
                 <span>{location}</span>
               </div>
             )}
-            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+            <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-brand-blue group-hover:translate-x-1 transition-all duration-300" />
           </div>
         </div>
       </Card>

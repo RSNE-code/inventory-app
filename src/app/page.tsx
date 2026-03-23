@@ -40,7 +40,7 @@ export default function DashboardPage() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/15 transition-all duration-300"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -71,18 +71,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-4">
         {isLoading ? (
           <div className="space-y-4">
             {/* Skeleton loaders */}
-            <div className="grid grid-cols-2 gap-4">
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className={cn("h-16 rounded-xl bg-surface-secondary animate-pulse", `stagger-${i + 1}`)} />
-              ))}
+            <div className="h-28 rounded-xl skeleton-shimmer stagger-1" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-20 rounded-xl skeleton-shimmer stagger-2" />
+              <div className="h-20 rounded-xl skeleton-shimmer stagger-3" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="h-20 rounded-xl bg-surface-secondary animate-pulse" />
-              <div className="h-20 rounded-xl bg-surface-secondary animate-pulse" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-20 rounded-xl skeleton-shimmer stagger-4" />
+              <div className="h-20 rounded-xl skeleton-shimmer stagger-5" />
             </div>
           </div>
         ) : dashboard ? (
@@ -93,11 +93,11 @@ export default function DashboardPage() {
             </div>
 
             {/* Active BOMs + Fabrication — same grid as stock cards */}
-            <div className="grid grid-cols-2 gap-4 animate-fade-in-up stagger-3">
+            <div className="grid grid-cols-2 gap-3 animate-fade-in-up stagger-3">
               <Link href="/boms">
-                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group">
+                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 group card-accent-blue overflow-hidden">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8 group-hover:bg-brand-blue/14 transition-colors">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/12 group-hover:bg-brand-blue/20 transition-colors">
                       <ClipboardList className="h-[18px] w-[18px] text-brand-blue" />
                     </div>
                     <div className="min-w-0">
@@ -109,9 +109,9 @@ export default function DashboardPage() {
               </Link>
 
               <Link href="/assemblies">
-                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 group">
+                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 group card-accent-orange overflow-hidden">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-orange/8 group-hover:bg-brand-orange/14 transition-colors">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-orange/12 group-hover:bg-brand-orange/20 transition-colors">
                       <Factory className="h-[18px] w-[18px] text-brand-orange" />
                     </div>
                     <div className="min-w-0">
@@ -137,10 +137,10 @@ export default function DashboardPage() {
               {dashboard.recentTransactions.length > 0 && (
                 <div className="animate-fade-in-up stagger-6">
                   <Card className="p-4 rounded-xl border-border-custom shadow-brand">
-                    <h3 className="font-semibold text-navy mb-3 text-sm tracking-tight">Recent Activity</h3>
+                    <h3 className="font-semibold text-navy mb-3 text-base tracking-tight">Recent Activity</h3>
                     <div className="space-y-0">
-                      {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }) => (
-                        <div key={t.id} className="flex items-center justify-between py-2.5 border-b border-border-custom/60 last:border-0">
+                      {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }, i: number) => (
+                        <div key={t.id} className={`flex items-center justify-between py-3.5 border-b border-border-custom/60 last:border-0 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-navy truncate">{t.productName}</p>
                             <p className="text-xs text-text-muted mt-0.5">
