@@ -129,3 +129,26 @@ export function useUpdateAssembly() {
     },
   })
 }
+
+export function useBatchShip() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (assemblyIds: string[]) => {
+      const res = await fetch("/api/assemblies/batch-ship", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assemblyIds }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to ship assemblies")
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assemblies"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] })
+    },
+  })
+}

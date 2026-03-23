@@ -117,7 +117,7 @@ export async function PATCH(
       if (data.status === "IN_PRODUCTION" || data.status === "COMPLETED") {
         requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "SHOP_FOREMAN", "DOOR_SHOP"])
       } else if (data.status === "SHIPPED") {
-        requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER"])
+        requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "SHOP_FOREMAN"])
       }
 
       updateData.status = data.status

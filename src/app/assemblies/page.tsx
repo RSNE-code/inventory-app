@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight } from "lucide-react"
+import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
+import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
 
-type QueueTab = "DOOR_SHOP" | "FABRICATION"
+type QueueTab = "DOOR_SHOP" | "FABRICATION" | "SHIPPING"
 type StatusFilter = "all" | "AWAITING_APPROVAL" | "APPROVED" | "PLANNED" | "IN_PRODUCTION" | "COMPLETED"
 
 const statusColors: Record<string, string> = {
@@ -69,10 +70,12 @@ export default function AssembliesPage() {
   const { data: meData } = useMe()
   const me = meData?.data
 
-  const { data, isLoading } = useAssemblies({
-    queueType: queueTab,
-    ...(statusFilter !== "all" ? { status: statusFilter } : {}),
-  })
+  const { data, isLoading } = useAssemblies(
+    queueTab !== "SHIPPING" ? {
+      queueType: queueTab as "DOOR_SHOP" | "FABRICATION",
+      ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+    } : {}
+  )
 
   const assemblies = data?.data || []
 
@@ -96,7 +99,7 @@ export default function AssembliesPage() {
           <button
             onClick={() => setQueueTab("DOOR_SHOP")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5",
+              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-1.5",
               queueTab === "DOOR_SHOP"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -108,7 +111,7 @@ export default function AssembliesPage() {
           <button
             onClick={() => setQueueTab("FABRICATION")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5",
+              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-1.5",
               queueTab === "FABRICATION"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -117,8 +120,25 @@ export default function AssembliesPage() {
             <Layers className="h-4 w-4" />
             Fabrication
           </button>
+          <button
+            onClick={() => setQueueTab("SHIPPING")}
+            className={cn(
+              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-1.5",
+              queueTab === "SHIPPING"
+                ? "bg-white text-navy shadow-brand"
+                : "text-text-muted hover:text-text-secondary"
+            )}
+          >
+            <Truck className="h-4 w-4" />
+            Ship
+          </button>
         </div>
 
+        {/* Shipping tab — separate content */}
+        {queueTab === "SHIPPING" ? (
+          <FinishedGoodsList />
+        ) : (
+        <>
         {/* Status filter */}
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {([
@@ -216,6 +236,8 @@ export default function AssembliesPage() {
               </div>
             )}
           </>
+        )}
+        </>
         )}
       </div>
     </div>
