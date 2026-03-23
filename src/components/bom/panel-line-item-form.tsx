@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { PANEL_THICKNESSES, PANEL_PROFILES, type PanelProfile } from "@/lib/panels"
@@ -42,18 +41,18 @@ interface PanelLineItemFormProps {
 
 const FEET_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
 const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+const WIDTH_OPTIONS = [24, 30, 36, 40, 42, 44, 45, 46]
+const COLOR_OPTIONS = ["Blue-White", "White", "Regal White", "Imperial White", "Warm White", "Surrey Beige", "Pearl Gray", "Royal Blue", "Slate Gray", "Driftwood", "Sandstone"]
 
 export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
   const [thickness, setThickness] = useState<number>(4)
   const [lengthFt, setLengthFt] = useState<string>("")
   const [lengthIn, setLengthIn] = useState<string>("0")
   const [qty, setQty] = useState("")
+  const [width, setWidth] = useState<number>(44)
+  const [profile, setProfile] = useState<PanelProfile>("Mesa")
+  const [color, setColor] = useState<string>("Blue-White")
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  // Defaults
-  const width = 44
-  const profile: PanelProfile = "Mesa"
-  const color = "White"
 
   function handleAdd() {
     const errs: Record<string, string> = {}
@@ -189,18 +188,47 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
         </div>
       </div>
 
-      {/* Defaults display */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-          {width}" wide
-        </Badge>
-        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-          {profile}
-        </Badge>
-        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-          {color}
-        </Badge>
-        <span className="text-xs text-text-muted">Standard defaults</span>
+      {/* Width, Profile, Color */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <p className="text-xs font-medium text-text-muted mb-1.5">Width</p>
+          <Select value={String(width)} onValueChange={(v) => setWidth(parseInt(v))}>
+            <SelectTrigger className="h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WIDTH_OPTIONS.map((w) => (
+                <SelectItem key={w} value={String(w)}>{w}&quot;</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-medium text-text-muted mb-1.5">Profile</p>
+          <Select value={profile} onValueChange={(v) => setProfile(v as PanelProfile)}>
+            <SelectTrigger className="h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PANEL_PROFILES.map((p) => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <p className="text-xs font-medium text-text-muted mb-1.5">Color</p>
+          <Select value={color} onValueChange={setColor}>
+            <SelectTrigger className="h-11">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {COLOR_OPTIONS.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Actions */}
