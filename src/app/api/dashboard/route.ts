@@ -16,6 +16,8 @@ export async function GET() {
       inProductionCount,
       completedAssemblies,
       needsCountingCount,
+      bomStatusGroups,
+      doorQueueCount,
     ] = await Promise.all([
       prisma.product.count({ where: { isActive: true, tier: "TIER_1" } }),
       prisma.product.count({ where: { isActive: true, tier: "TIER_1", currentQty: { lte: 0 } } }),
@@ -46,7 +48,23 @@ export async function GET() {
           ],
         },
       }),
+      prisma.bom.groupBy({
+        by: ["status"],
+        where: { status: { in: ["DRAFT", "PENDING_REVIEW", "APPROVED", "IN_PROGRESS"] } },
+        _count: true,
+      }),
+      prisma.assembly.count({
+        where: { type: "DOOR", status: { in: ["PLANNED", "AWAITING_APPROVAL", "APPROVED"] } },
+      }),
     ])
+
+    // Transform groupBy result into a Record
+    const bomStatusCounts: Record<string, number> = {
+      DRAFT: 0, PENDING_REVIEW: 0, APPROVED: 0, IN_PROGRESS: 0,
+    }
+    for (const group of bomStatusGroups) {
+      bomStatusCounts[group.status] = group._count
+    }
 
     let totalValue = 0
     let lowStockCount = 0
@@ -153,6 +171,8 @@ export async function GET() {
           createdAt: t.createdAt.toISOString(),
         })),
         activeBomCount,
+        bomStatusCounts,
+        doorQueueCount,
         alerts,
         fabrication: {
           pendingApprovals,

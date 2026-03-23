@@ -3,14 +3,15 @@
 import { useState } from "react"
 import { useDashboard } from "@/hooks/use-dashboard"
 import { StockSummaryCards } from "@/components/dashboard/stock-summary-card"
+import { ActionItems } from "@/components/dashboard/action-items"
+import { WorkPipelines } from "@/components/dashboard/work-pipelines"
 import { LowStockList } from "@/components/dashboard/low-stock-list"
 import { Card } from "@/components/ui/card"
 import { formatQuantity } from "@/lib/utils"
 import { InventoryTrendChart } from "@/components/dashboard/inventory-trend-chart"
-import { ClipboardList, AlertCircle, Factory, Menu, Settings, ClipboardCheck, X } from "lucide-react"
+import { AlertCircle, Menu, Settings, ClipboardCheck, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
 
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useDashboard()
@@ -34,9 +35,9 @@ export default function DashboardPage() {
                 priority
               />
             </div>
-            <h1 className="text-white text-xl font-bold tracking-tight">Inventory Dashboard</h1>
+            <h1 className="text-white text-xl font-bold tracking-tight">Dashboard</h1>
           </div>
-          {/* Menu button — opens additional options */}
+          {/* Menu button */}
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -71,98 +72,84 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 pb-24">
         {isLoading ? (
           <div className="space-y-4">
-            {/* Skeleton loaders */}
-            <div className="h-28 rounded-xl skeleton-shimmer stagger-1" />
+            {/* Skeleton loaders matching new layout */}
+            <div className="h-24 rounded-xl skeleton-shimmer stagger-1" />
             <div className="grid grid-cols-2 gap-3">
-              <div className="h-20 rounded-xl skeleton-shimmer stagger-2" />
-              <div className="h-20 rounded-xl skeleton-shimmer stagger-3" />
+              <div className="h-36 rounded-xl skeleton-shimmer stagger-2" />
+              <div className="h-36 rounded-xl skeleton-shimmer stagger-3" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="h-20 rounded-xl skeleton-shimmer stagger-4" />
-              <div className="h-20 rounded-xl skeleton-shimmer stagger-5" />
-            </div>
+            <div className="h-24 rounded-xl skeleton-shimmer stagger-4" />
+            <div className="h-48 rounded-xl skeleton-shimmer stagger-5" />
           </div>
         ) : dashboard ? (
           <>
-            {/* Stock Summary Cards */}
+            {/* Section 1: Needs Attention (urgency zone) */}
             <div className="animate-fade-in-up stagger-1">
+              <ActionItems
+                bomStatusCounts={dashboard.bomStatusCounts || {}}
+                doorQueueCount={dashboard.doorQueueCount || 0}
+                lowStockCount={dashboard.summary.lowStockCount}
+                outOfStockCount={dashboard.summary.outOfStockCount}
+                pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
+              />
+            </div>
+
+            {/* Section 2: Work Pipelines (BOM + Fabrication) */}
+            <div className="animate-fade-in-up stagger-2">
+              <WorkPipelines
+                bomStatusCounts={dashboard.bomStatusCounts || {}}
+                fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
+                doorQueueCount={dashboard.doorQueueCount || 0}
+              />
+            </div>
+
+            {/* Section 3: Inventory Value (context) */}
+            <div className="animate-fade-in-up stagger-3">
               <StockSummaryCards summary={dashboard.summary} />
             </div>
 
-            {/* Active BOMs + Fabrication — same grid as stock cards */}
-            <div className="grid grid-cols-2 gap-3 animate-fade-in-up stagger-3">
-              <Link href="/boms">
-                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 group card-accent-blue overflow-hidden">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/12 group-hover:bg-brand-blue/20 transition-colors">
-                      <ClipboardList className="h-[18px] w-[18px] text-brand-blue" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.activeBomCount}</p>
-                      <p className="text-text-muted text-[12px] mt-1 font-medium">Active BOMs</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-
-              <Link href="/assemblies">
-                <Card className="px-4 py-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 group card-accent-orange overflow-hidden">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-orange/12 group-hover:bg-brand-orange/20 transition-colors">
-                      <Factory className="h-[18px] w-[18px] text-brand-orange" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight leading-none">{dashboard.fabrication ? dashboard.fabrication.inProduction + dashboard.fabrication.pendingApprovals : 0}</p>
-                      <p className="text-text-muted text-[12px] mt-1 font-medium">Active Builds</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+            {/* Section 4: Low Stock List */}
+            <div className="animate-fade-in-up stagger-4">
+              <LowStockList items={dashboard.lowStockItems} />
             </div>
 
-            {/* Inventory Value Trend Chart */}
-            <div className="animate-fade-in-up stagger-4">
+            {/* Section 5: Inventory Trend Chart */}
+            <div className="animate-fade-in-up stagger-5">
               <InventoryTrendChart />
             </div>
 
-            {/* Low stock + Recent activity */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="animate-fade-in-up stagger-5">
-                <LowStockList items={dashboard.lowStockItems} />
-              </div>
-
-              {dashboard.recentTransactions.length > 0 && (
-                <div className="animate-fade-in-up stagger-6">
-                  <Card className="p-4 rounded-xl border-border-custom shadow-brand">
-                    <h3 className="font-semibold text-navy mb-3 text-base tracking-tight">Recent Activity</h3>
-                    <div className="space-y-0">
-                      {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }, i: number) => (
-                        <div key={t.id} className={`flex items-center justify-between py-3.5 border-b border-border-custom/60 last:border-0 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-navy truncate">{t.productName}</p>
-                            <p className="text-xs text-text-muted mt-0.5">
-                              {formatTransactionType(t.type)} by {t.userName}
-                            </p>
-                          </div>
-                          <p className={`text-sm font-bold tabular-nums ml-3 ${
-                            isPositiveType(t.type) ? "text-status-green" : "text-status-red"
-                          }`}>
-                            {isPositiveType(t.type) ? "+" : "-"}{formatQuantity(t.quantity)}
+            {/* Section 6: Recent Activity */}
+            {dashboard.recentTransactions.length > 0 && (
+              <div className="animate-fade-in-up stagger-6">
+                <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+                  <h3 className="font-semibold text-navy mb-3 text-base tracking-tight">Recent Activity</h3>
+                  <div className="space-y-0">
+                    {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }, i: number) => (
+                      <div key={t.id} className={`flex items-center justify-between py-3.5 border-b border-border-custom/60 last:border-0 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-navy truncate">{t.productName}</p>
+                          <p className="text-xs text-text-muted mt-0.5">
+                            {formatTransactionType(t.type)} by {t.userName}
                           </p>
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-                </div>
-              )}
-            </div>
+                        <p className={`text-sm font-bold tabular-nums ml-3 ${
+                          isPositiveType(t.type) ? "text-status-green" : "text-status-red"
+                        }`}>
+                          {isPositiveType(t.type) ? "+" : "-"}{formatQuantity(t.quantity)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
           </>
         ) : error ? (
           <div className="text-center py-16 animate-fade-in">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 mx-auto mb-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-status-red/10 mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-status-red" />
             </div>
             <p className="text-text-secondary font-medium mb-1">Something went wrong</p>

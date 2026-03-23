@@ -38,6 +38,8 @@ export interface DashboardData {
   lowStockItems: LowStockItem[]
   recentTransactions: RecentTransaction[]
   activeBomCount: number
+  bomStatusCounts: Record<string, number>
+  doorQueueCount: number
   alerts: DashboardAlert[]
   fabrication: FabricationSummary
 }
