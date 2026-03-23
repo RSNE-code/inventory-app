@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { PANEL_THICKNESSES, PANEL_PROFILES, type PanelProfile } from "@/lib/panels"
 import { Layers } from "lucide-react"
@@ -39,52 +40,13 @@ interface PanelLineItemFormProps {
   onCancel: () => void
 }
 
-/**
- * Parse a cut length string like "7'6", "7'6\"", "7 6", "9'4", "10" into decimal feet.
- * Supports: 7'6" → 7.5, 9'4 → 9.333, 10 → 10, 7.5 → 7.5
- */
-function parseCutLength(input: string): { ft: number; display: string } | null {
-  const trimmed = input.trim()
-  if (!trimmed) return null
-
-  // Match feet'inches pattern: 7'6, 7'6", 7' 6, 7'06
-  const feetInches = trimmed.match(/^(\d+)\s*['′]\s*(\d+)\s*["″]?\s*$/)
-  if (feetInches) {
-    const feet = parseInt(feetInches[1])
-    const inches = parseInt(feetInches[2])
-    if (inches >= 12) return null
-    const total = feet + inches / 12
-    return {
-      ft: Math.round(total * 10000) / 10000,
-      display: `${feet}'${inches}"`,
-    }
-  }
-
-  // Match feet only with tick: 10', 8'
-  const feetOnly = trimmed.match(/^(\d+)\s*['′]\s*$/)
-  if (feetOnly) {
-    const feet = parseInt(feetOnly[1])
-    return { ft: feet, display: `${feet}'` }
-  }
-
-  // Plain number — treat as feet
-  const num = parseFloat(trimmed)
-  if (!isNaN(num) && num > 0) {
-    // If it has a fractional part, format nicely
-    const wholeFeet = Math.floor(num)
-    const remainingInches = Math.round((num - wholeFeet) * 12)
-    if (remainingInches > 0 && remainingInches < 12) {
-      return { ft: num, display: `${wholeFeet}'${remainingInches}"` }
-    }
-    return { ft: num, display: `${wholeFeet}'` }
-  }
-
-  return null
-}
+const FEET_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
+const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
 export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
   const [thickness, setThickness] = useState<number>(4)
-  const [cutLengthInput, setCutLengthInput] = useState("")
+  const [lengthFt, setLengthFt] = useState<string>("")
+  const [lengthIn, setLengthIn] = useState<string>("0")
   const [qty, setQty] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -96,9 +58,9 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
   function handleAdd() {
     const errs: Record<string, string> = {}
 
-    const parsed = parseCutLength(cutLengthInput)
-    if (!parsed) {
-      errs.cutLength = "Enter a valid cut length (e.g., 7'6\" or 10)"
+    const feet = lengthFt ? parseInt(lengthFt) : 0
+    if (!feet || feet <= 0) {
+      errs.cutLength = "Select feet"
     }
 
     const qtyNum = parseFloat(qty)
@@ -113,17 +75,21 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
 
     setErrors({})
 
+    const inches = lengthIn ? parseInt(lengthIn) : 0
+    const cutLengthFt = feet + inches / 12
+    const cutLengthDisplay = inches > 0 ? `${feet}'${inches}"` : `${feet}'`
+
     const specs: PanelSpecs = {
       type: "panel",
       thickness,
-      cutLengthFt: parsed!.ft,
-      cutLengthDisplay: parsed!.display,
+      cutLengthFt: Math.round(cutLengthFt * 10000) / 10000,
+      cutLengthDisplay,
       widthIn: width,
       profile,
       color,
     }
 
-    const displayName = `${thickness}" IMP Panel × ${parsed!.display} cut`
+    const displayName = `${thickness}" IMP Panel × ${cutLengthDisplay} cut`
 
     const item: PanelLineItem = {
       tempId: crypto.randomUUID(),
@@ -173,25 +139,38 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
         </div>
       </div>
 
-      {/* Cut length + Quantity */}
-      <div className="flex gap-3">
+      {/* Cut length (ft + in dropdowns) + Quantity */}
+      <div className="flex gap-3 items-end">
         <div className="flex-1">
           <p className="text-xs font-medium text-text-muted mb-1.5">Cut Length</p>
-          <Input
-            value={cutLengthInput}
-            onChange={(e) => {
-              setCutLengthInput(e.target.value)
-              setErrors((prev) => { const { cutLength, ...rest } = prev; return rest })
-            }}
-            placeholder="e.g., 7'6&quot; or 10"
-            className={cn("h-11", errors.cutLength && "border-status-red")}
-          />
+          <div className="flex gap-2">
+            <Select value={lengthFt} onValueChange={(v) => { setLengthFt(v); setErrors((prev) => { const { cutLength, ...rest } = prev; return rest }) }}>
+              <SelectTrigger className={cn("h-11 flex-1", errors.cutLength && "border-status-red")}>
+                <SelectValue placeholder="Feet" />
+              </SelectTrigger>
+              <SelectContent>
+                {FEET_OPTIONS.map((ft) => (
+                  <SelectItem key={ft} value={String(ft)}>{ft}&apos;</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={lengthIn} onValueChange={setLengthIn}>
+              <SelectTrigger className="h-11 w-20">
+                <SelectValue placeholder="In" />
+              </SelectTrigger>
+              <SelectContent>
+                {INCHES_OPTIONS.map((inch) => (
+                  <SelectItem key={inch} value={String(inch)}>{inch}&quot;</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {errors.cutLength && (
             <p className="text-xs text-status-red mt-0.5">{errors.cutLength}</p>
           )}
         </div>
         <div className="w-24">
-          <p className="text-xs font-medium text-text-muted mb-1.5">Qty (panels)</p>
+          <p className="text-xs font-medium text-text-muted mb-1.5">Qty</p>
           <Input
             type="number"
             value={qty}
