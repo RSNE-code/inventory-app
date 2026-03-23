@@ -63,7 +63,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
 
   const isCreator = me && bom && me.id === bom.createdById
-  const canEdit = isCreator && bom && ["DRAFT", "PENDING_REVIEW", "APPROVED"].includes(bom.status)
+  const canEdit = isCreator && bom && ["DRAFT", "APPROVED"].includes(bom.status)
   const canCheckout = bom && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && me &&
     ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SHOP_FOREMAN"].includes(me.role)
   const canApprove = me && ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER"].includes(me.role)
@@ -423,25 +423,9 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             </div>
           )}
 
-          {/* Edit mode — voice/text AI input + product picker */}
+          {/* Edit mode — product picker */}
           {mode === "edit" && (
-            <div className="mb-3 space-y-3">
-              <div className="flex items-center gap-2">
-                <Mic className="h-4 w-4 text-brand-orange" />
-                <p className="text-sm text-text-secondary">Speak or type to add items</p>
-              </div>
-              <AIInput
-                onParseComplete={handleAIAddItems}
-                placeholder={`"Add 10 sheets foam and 2 boxes screws..."`}
-              />
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border-custom/60" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-white px-2 text-text-muted">or search catalog</span>
-                </div>
-              </div>
+            <div className="mb-3">
               <ProductPicker
                 onSelect={handleAddProduct}
                 placeholder="Search catalog to add items..."
@@ -536,29 +520,18 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   }
                 } : undefined}
               />
-              {/* Panel specs summary (view mode) */}
-              {isPanelItem && mode === "view" && specs && (
-                <div className="flex items-center gap-1.5 flex-wrap px-4 py-2 -mt-1 text-xs">
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.widthIn as number) ?? 44}&quot; wide</span>
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.profile as string) ?? "Mesa"}</span>
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.color as string) ?? "Igloo White"}</span>
-                </div>
-              )}
               {/* Panel dimension editor (edit mode) — isolated row to prevent overlap */}
               {isPanelItem && mode === "edit" && specs && (
-                <div className="px-4 py-3 -mt-1 bg-brand-blue/[0.04] border-t border-brand-blue/20">
-                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-2">Panel Specs</p>
+                <div className="px-4 py-3 -mt-1 bg-blue-50/30 border-t border-blue-100">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wide mb-2">Panel Dimensions</p>
                   <PanelDimensionEditor
                     thickness={(specs.thickness as number) ?? 4}
                     lengthFt={Math.floor((specs.cutLengthFt as number) ?? 0)}
                     lengthIn={Math.round(((specs.cutLengthFt as number) ?? 0) % 1 * 12)}
-                    widthIn={(specs.widthIn as number) ?? 44}
-                    profile={(specs.profile as string) ?? "Mesa"}
-                    color={(specs.color as string) ?? "Igloo White"}
-                    onUpdate={async (thickness, lengthFt, lengthIn, widthIn, profile, color) => {
+                    onUpdate={async (thickness, lengthFt, lengthIn) => {
                       const cutLengthFt = lengthFt + lengthIn / 12
                       const cutLengthDisplay = lengthIn > 0 ? `${lengthFt}'${lengthIn}"` : `${lengthFt}'`
-                      const newSpecs = { ...specs, thickness, cutLengthFt, cutLengthDisplay, widthIn: widthIn ?? 44, profile: profile ?? "Mesa", color: color ?? "Igloo White" }
+                      const newSpecs = { ...specs, thickness, cutLengthFt, cutLengthDisplay }
                       const newName = `${thickness}" IMP — ${cutLengthDisplay}`
                       try {
                         await fetch(`/api/boms/${id}`, {
@@ -569,7 +542,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                           }),
                         })
                       } catch {
-                        toast.error("Failed to update panel specs")
+                        toast.error("Failed to update dimensions")
                       }
                     }}
                   />

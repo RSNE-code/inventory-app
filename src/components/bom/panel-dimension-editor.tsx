@@ -2,31 +2,20 @@
 
 import { useState } from "react"
 import { Minus, Plus, Pencil, Check } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useHaptic } from "@/hooks/use-haptic"
-import { PANEL_PROFILES, type PanelProfile } from "@/lib/panels"
-
-const WIDTH_OPTIONS = [24, 30, 36, 40, 42, 44, 45, 46]
-const COLOR_OPTIONS = ["Igloo White", "White", "Regal White", "Imperial White", "Warm White", "Surrey Beige", "Pearl Gray", "Royal Blue", "Slate Gray", "Driftwood", "Sandstone"]
 
 interface PanelDimensionEditorProps {
   thickness: number
   lengthFt: number
   lengthIn: number
-  widthIn?: number
-  profile?: string
-  color?: string
-  onUpdate: (thickness: number, lengthFt: number, lengthIn: number, widthIn?: number, profile?: string, color?: string) => void
+  onUpdate: (thickness: number, lengthFt: number, lengthIn: number) => void
 }
 
 export function PanelDimensionEditor({
   thickness,
   lengthFt,
   lengthIn,
-  widthIn = 44,
-  profile = "Mesa",
-  color = "Igloo White",
   onUpdate,
 }: PanelDimensionEditorProps) {
   const [expanded, setExpanded] = useState(false)
@@ -37,24 +26,24 @@ export function PanelDimensionEditor({
   function updateThickness(delta: number) {
     const next = Math.min(8, Math.max(2, thickness + delta))
     if (next !== thickness) haptic.light()
-    onUpdate(next, lengthFt, lengthIn, widthIn, profile, color)
+    onUpdate(next, lengthFt, lengthIn)
   }
 
   function updateLengthFt(val: string) {
     const n = parseInt(val) || 0
     const clamped = Math.min(50, Math.max(1, n))
-    onUpdate(thickness, clamped, lengthIn, widthIn, profile, color)
+    onUpdate(thickness, clamped, lengthIn)
   }
 
   function updateLengthIn(delta: number) {
     haptic.light()
     const next = lengthIn + delta
     if (next < 0) {
-      if (lengthFt > 1) onUpdate(thickness, lengthFt - 1, 11, widthIn, profile, color)
+      if (lengthFt > 1) onUpdate(thickness, lengthFt - 1, 11)
     } else if (next > 11) {
-      onUpdate(thickness, lengthFt + 1, 0, widthIn, profile, color)
+      onUpdate(thickness, lengthFt + 1, 0)
     } else {
-      onUpdate(thickness, lengthFt, next, widthIn, profile, color)
+      onUpdate(thickness, lengthFt, next)
     }
   }
 
@@ -65,13 +54,13 @@ export function PanelDimensionEditor({
         onClick={() => { setExpanded(true); haptic.light() }}
         className={cn(
           "flex items-center gap-2 px-3 py-2.5 rounded-xl",
-          "bg-brand-blue/10 border border-brand-blue/30",
+          "bg-blue-50 border border-blue-200",
           "text-sm font-semibold text-brand-blue",
           "min-h-[44px]",
           "ios-press transition-all duration-200"
         )}
       >
-        <span>{thickness}" × {display} · {widthIn}"w · {profile} · {color}</span>
+        <span>{thickness}" × {display}</span>
         <Pencil className="h-3.5 w-3.5 opacity-60" />
       </button>
     )
@@ -79,7 +68,7 @@ export function PanelDimensionEditor({
 
   return (
     <div className={cn(
-      "rounded-xl bg-brand-blue/10 border border-brand-blue/30 p-3",
+      "rounded-xl bg-blue-50 border border-blue-200 p-3",
       "animate-ios-spring-in",
       "space-y-3"
     )}>
@@ -161,49 +150,6 @@ export function PanelDimensionEditor({
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Width, Profile, Color */}
-      <div className="flex gap-2">
-        <div className="flex-1 space-y-1.5">
-          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Width</span>
-          <Select value={String(widthIn)} onValueChange={(v) => onUpdate(thickness, lengthFt, lengthIn, parseInt(v), profile, color)}>
-            <SelectTrigger className="h-10 bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {WIDTH_OPTIONS.map((w) => (
-                <SelectItem key={w} value={String(w)}>{w}&quot;</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Profile</span>
-          <Select value={profile} onValueChange={(v) => onUpdate(thickness, lengthFt, lengthIn, widthIn, v as PanelProfile, color)}>
-            <SelectTrigger className="h-10 bg-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PANEL_PROFILES.map((p) => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Color</span>
-        <Select value={color} onValueChange={(v) => onUpdate(thickness, lengthFt, lengthIn, widthIn, profile, v)}>
-          <SelectTrigger className="h-10 bg-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {COLOR_OPTIONS.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Done */}

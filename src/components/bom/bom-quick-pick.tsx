@@ -483,11 +483,6 @@ export function BomQuickPick() {
           selectedName={jobName || undefined}
           selectedNumber={jobNumber}
         />
-        {!jobName && cart.length > 0 && (
-          <div className="mt-2 flex items-center gap-2 px-3 py-2.5 rounded-xl bg-brand-orange/10 border border-brand-orange/20">
-            <span className="text-brand-orange text-sm font-semibold">Select a job to create this BOM</span>
-          </div>
-        )}
       </div>
 
       {/* ── Zone 2: Search Bar ── */}
