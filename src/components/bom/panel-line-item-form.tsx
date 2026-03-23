@@ -42,7 +42,7 @@ interface PanelLineItemFormProps {
 const FEET_OPTIONS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
 const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 const WIDTH_OPTIONS = [24, 30, 36, 40, 42, 44, 45, 46]
-const COLOR_OPTIONS = ["Blue-White", "White", "Regal White", "Imperial White", "Warm White", "Surrey Beige", "Pearl Gray", "Royal Blue", "Slate Gray", "Driftwood", "Sandstone"]
+const COLOR_OPTIONS = ["Igloo White", "White", "Regal White", "Imperial White", "Warm White", "Surrey Beige", "Pearl Gray", "Royal Blue", "Slate Gray", "Driftwood", "Sandstone"]
 
 export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
   const [thickness, setThickness] = useState<number>(4)
@@ -51,7 +51,7 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
   const [qty, setQty] = useState("")
   const [width, setWidth] = useState<number>(44)
   const [profile, setProfile] = useState<PanelProfile>("Mesa")
-  const [color, setColor] = useState<string>("Blue-White")
+  const [color, setColor] = useState<string>("Igloo White")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   function handleAdd() {
