@@ -15,6 +15,7 @@ import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
 import { PanelDimensionEditor } from "@/components/bom/panel-dimension-editor"
+import { SwipeToDelete } from "@/components/ui/swipe-to-delete"
 import { Pencil, Plus, Undo2, Mic, Info, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -443,6 +444,17 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
             return (
               <div key={lineId}>
+              <SwipeToDelete
+                enabled={canEdit && mode === "view"}
+                onDelete={async () => {
+                  try {
+                    await updateBom.mutateAsync({ id, removeLineItemIds: [lineId] })
+                    toast.success("Item removed")
+                  } catch {
+                    toast.error("Failed to remove item")
+                  }
+                }}
+              >
               <BomLineItemRow
                 name={
                   (item.isNonCatalog as boolean)
@@ -536,6 +548,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   />
                 </div>
               )}
+              </SwipeToDelete>
               {/* Panel checkout button */}
               {isPanelItem && canCheckout && mode === "view" && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && (
                 (() => {

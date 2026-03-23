@@ -101,6 +101,12 @@ export async function GET(request: NextRequest) {
         { name: { contains: search, mode: "insensitive" } },
         { sku: { contains: search, mode: "insensitive" } },
       ]
+      // Exclude branded panel products from search — panels are added via
+      // the generic PanelLineItemForm, brand is selected at checkout
+      const panelTerms = ["panel", "imp", "insulated metal"]
+      if (panelTerms.some((term) => search.toLowerCase().includes(term))) {
+        where.category = { name: { not: { equals: "Insulated Metal Panel" } } }
+      }
     }
 
     if (category) {

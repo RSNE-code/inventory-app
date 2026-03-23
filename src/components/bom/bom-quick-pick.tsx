@@ -8,6 +8,7 @@ import { JobPicker } from "@/components/bom/job-picker"
 import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn, formatQuantity } from "@/lib/utils"
+import { PanelLineItemForm, type PanelLineItem } from "@/components/bom/panel-line-item-form"
 import {
   ClipboardList,
   Minus,
@@ -36,12 +37,18 @@ interface CartItem {
   unitOfMeasure: string
   tier: "TIER_1" | "TIER_2"
   qtyNeeded: number
+  isNonCatalog?: boolean
+  nonCatalogName?: string
+  nonCatalogCategory?: string
+  nonCatalogUom?: string
+  nonCatalogSpecs?: Record<string, unknown>
 }
 
 // ─── Cart Reducer ─────────────────────────────────
 
 type CartAction =
   | { type: "ADD"; product: BrowseProduct }
+  | { type: "ADD_PANEL"; panel: PanelLineItem }
   | { type: "INCREMENT"; productId: string }
   | { type: "DECREMENT"; productId: string }
   | { type: "SET_QTY"; productId: string; qty: number }
@@ -50,6 +57,22 @@ type CartAction =
 
 function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
   switch (action.type) {
+    case "ADD_PANEL":
+      return [
+        ...state,
+        {
+          productId: action.panel.tempId,
+          productName: action.panel.productName,
+          unitOfMeasure: action.panel.unitOfMeasure,
+          tier: action.panel.tier,
+          qtyNeeded: action.panel.qtyNeeded,
+          isNonCatalog: true,
+          nonCatalogName: action.panel.nonCatalogName,
+          nonCatalogCategory: action.panel.nonCatalogCategory,
+          nonCatalogUom: action.panel.nonCatalogUom,
+          nonCatalogSpecs: action.panel.nonCatalogSpecs,
+        },
+      ]
     case "ADD": {
       const existing = state.find((i) => i.productId === action.product.id)
       if (existing) {
@@ -353,11 +376,20 @@ export function BomQuickPick() {
     }, 300)
   }
 
+  // Detect whether we should show the panel form instead of catalog products
+  const PANEL_SEARCH_TERMS = ["panel", "imp", "insulated metal"]
+  const isPanelSearch = search.length >= 2 && PANEL_SEARCH_TERMS.some(
+    (term) => search.toLowerCase().includes(term)
+  )
+  const showPanelForm = activeCategory === "Panels" || isPanelSearch
+
   // Category change
   function handleCategoryChange(category: string) {
     setActiveCategory(category)
     setSearch("")
-    fetchProducts("", category)
+    if (category !== "Panels") {
+      fetchProducts("", category)
+    }
   }
 
   // ─── Cart helpers ───────────────────────────
@@ -411,7 +443,15 @@ export function BomQuickPick() {
       const result = await createBom.mutateAsync({
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
-        lineItems: cart.map((item) => ({
+        lineItems: cart.map((item) => item.isNonCatalog ? ({
+          tier: item.tier,
+          qtyNeeded: item.qtyNeeded,
+          isNonCatalog: true,
+          nonCatalogName: item.nonCatalogName,
+          nonCatalogCategory: item.nonCatalogCategory,
+          nonCatalogUom: item.nonCatalogUom,
+          nonCatalogSpecs: item.nonCatalogSpecs,
+        }) : ({
           productId: item.productId,
           tier: item.tier,
           qtyNeeded: item.qtyNeeded,
@@ -486,9 +526,23 @@ export function BomQuickPick() {
         ))}
       </div>
 
-      {/* ── Zone 4: Product List ── */}
+      {/* ── Zone 4: Product List or Panel Form ── */}
       <div className="flex-1 bg-white rounded-t-2xl border-t border-border-custom/60">
-        {loading ? (
+        {showPanelForm ? (
+          <div className="p-4">
+            <PanelLineItemForm
+              onAdd={(panel) => {
+                dispatch({ type: "ADD_PANEL", panel })
+                toast.success(`Added ${panel.productName}`)
+              }}
+              onCancel={() => {
+                setActiveCategory("★ Recent")
+                setSearch("")
+                fetchProducts("", "★ Recent")
+              }}
+            />
+          </div>
+        ) : loading ? (
           <div className="px-4 py-8 text-center">
             <p className="text-sm text-text-muted">Loading products...</p>
           </div>
