@@ -2,30 +2,59 @@
 
 These rules are non-negotiable. Skipping them will produce work that gets rejected.
 
-### Before ANY plan or code that touches UI/frontend:
-STOP. Invoke `frontend-design` skill FIRST. Use its output to inform component design, layout, and interaction patterns. Do not write UI code or plan UI changes without this step.
+---
 
-### Before ANY plan or code that touches API routes or backend logic:
-STOP. Invoke `engineering-skills` (backend) skill FIRST. Use its output for API design patterns, validation, and error handling.
+### THE GOLDEN RULE — NO EXCEPTIONS
 
-### Before ANY plan or code that involves architecture decisions or new modules:
-STOP. Invoke `engineering-skills` (architecture or fullstack) skill FIRST. Use its output for system design, module boundaries, and data flow.
+**You may NOT edit, write, or commit ANY file until you have invoked the relevant skill gate(s).**
 
-### Before ANY plan or code that touches database schema or migrations:
-STOP. Invoke `engineering-advanced-skills` (database design) skill FIRST. Use its output for schema changes, migration safety, and data integrity.
+This applies to ALL changes — no matter how small. "It's just data," "it's one line," "it's only config" are NOT valid reasons to skip. If you are about to call the Edit or Write tool, STOP and ask yourself: "Have I invoked the relevant skill for this change?" If the answer is no, invoke it FIRST.
 
-### Before ANY plan or code that touches auth, payments, API keys, or security:
-STOP. Invoke `engineering-advanced-skills` (security auditing) skill FIRST. Use its output to identify and prevent vulnerabilities.
+**You may NOT commit or push code that was not produced through this process.** If you skipped a gate and already made edits, you must invoke the skill BEFORE committing. Code that bypassed the process must never be committed.
 
-### Before ANY product decision, feature prioritization, or UX flow:
-STOP. Invoke `product-skills` (product manager, UX researcher, or product strategist) skill FIRST. Use its output to validate the approach from a user-centered perspective.
+---
 
-### Before ANY plan amendment or revision based on user feedback:
-STOP. Re-invoke the same skill gates that applied to the original plan BEFORE making changes. User feedback (e.g., "keep it at panels", "change the layout", "add a field") is new input that must go through the same skill process. Do not amend or update a plan on your own without running the relevant skills first — even if the change seems small.
+### Gate: UI / Frontend
+**Trigger:** ANY file in `src/components/`, `src/app/` (pages), or ANY change that affects what users see — including data/config that populates UI (e.g., standard size lists, template definitions, display labels).
+**Action:** Invoke `frontend-design` skill FIRST.
+
+### Gate: API / Backend
+**Trigger:** ANY file in `src/app/api/`, `src/lib/` (business logic), or server-side functions.
+**Action:** Invoke `engineering-skills` (backend) FIRST.
+
+### Gate: Architecture / New Modules
+**Trigger:** New files, new directories, new patterns, or structural changes.
+**Action:** Invoke `engineering-skills` (architecture or fullstack) FIRST.
+
+### Gate: Database / Schema
+**Trigger:** ANY change to `prisma/schema.prisma`, migrations, or seed files.
+**Action:** Invoke `engineering-advanced-skills` (database design) FIRST.
+
+### Gate: Security
+**Trigger:** Auth, payments, API keys, environment variables, or access control.
+**Action:** Invoke `engineering-advanced-skills` (security auditing) FIRST.
+
+### Gate: Product / UX Decisions
+**Trigger:** Feature prioritization, UX flow changes, or product decisions.
+**Action:** Invoke `product-skills` (product manager, UX researcher, or product strategist) FIRST.
+
+### Gate: Plan Amendments
+**Trigger:** ANY revision to an existing plan based on user feedback — even "small" changes.
+**Action:** Re-invoke the same skill gates that applied to the original plan BEFORE amending.
+
+---
 
 ### How to apply:
-1. At the START of `/create-plan`: identify which skill gates apply, invoke them, and include a "Skill Inputs" section in the plan documenting what each skill contributed.
-2. At the START of each `/implement` step: if the step touches a gated area, invoke the relevant skill before writing code for that step.
-3. For direct requests (no plan): invoke the relevant skill(s) before writing any code.
-4. If multiple gates apply (e.g., UI + API), invoke all relevant skills — design first, then implement.
-5. When user provides feedback or refinements to an existing plan: re-invoke the relevant skill gates before amending the plan. The skills must process the new input just as they would for the original plan.
+1. **Before ANY Edit/Write tool call:** Identify which gates apply. Invoke them. No exceptions.
+2. At the START of `/create-plan`: identify gates, invoke skills, include "Skill Inputs" section.
+3. At the START of each `/implement` step: if the step touches a gated area, invoke the skill first.
+4. For direct requests (no plan): invoke relevant skill(s) before writing any code.
+5. If multiple gates apply (e.g., UI + API), invoke all — design first, then implement.
+6. **Before committing:** Verify every changed file went through its skill gate. If any didn't, invoke the skill before committing.
+
+### Common rationalizations that are NOT valid:
+- "It's just adding data to an existing structure" — **NO.** Data that populates UI goes through `frontend-design`.
+- "It's a one-line fix" — **NO.** One line can break the app. Invoke the skill.
+- "The skill won't add anything for this" — **NO.** You don't get to decide that. Invoke it.
+- "I'll invoke it after" — **NO.** The skill informs the work. After is too late.
+- "The hook warned me but it's fine" — **NO.** The hook exists because you keep skipping. Listen to it.

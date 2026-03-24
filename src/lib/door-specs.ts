@@ -539,10 +539,15 @@ function buildConfig(
 
   // Build description from hardware
   const hwParts: string[] = []
-  if (hw.hingeModel) hwParts.push(hw.hingeModel)
-  if (hw.latchModel) hwParts.push(hw.latchModel)
-  if (hw.closerModel) hwParts.push(hw.closerModel.replace("DENT ", ""))
-  if (hw.gasketType) hwParts.push(hw.gasketType === "MAGNETIC" ? "Magnetic" : "Neoprene")
+  if (opening === "SLIDE") {
+    hwParts.push("Floor rollers · Strikers")
+    if (temp === "FREEZER") hwParts.push("Heater cable")
+  } else {
+    if (hw.hingeModel) hwParts.push(hw.hingeModel)
+    if (hw.latchModel) hwParts.push(hw.latchModel)
+    if (hw.closerModel) hwParts.push(hw.closerModel.replace("DENT ", ""))
+    if (hw.gasketType) hwParts.push(hw.gasketType === "MAGNETIC" ? "Magnetic" : "Neoprene")
+  }
   const description = hwParts.join(" · ") || "Standard hardware"
 
   return { id, label, description, widthInClear: widthIn, heightInClear: heightIn, specs: baseSpecs }
@@ -557,6 +562,7 @@ export const STANDARD_DOOR_CONFIGS: Record<DoorTypeKey, StandardDoorConfig[]> = 
   FREEZER_SWING: [
     buildConfig("freezer-swing-3x7", "3' × 7'", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
     buildConfig("freezer-swing-4x7", "4' × 7'", "48", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
+    buildConfig("freezer-swing-5x7", "5' × 7'", "60", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
   ],
   COOLER_SLIDER: [
     buildConfig("cooler-slider-4x7", "4' × 7'", "48", "84", "SLIDING", "COOLER", "SLIDE"),
@@ -565,7 +571,14 @@ export const STANDARD_DOOR_CONFIGS: Record<DoorTypeKey, StandardDoorConfig[]> = 
     buildConfig("cooler-slider-6x8", "6' × 8'", "72", "96", "SLIDING", "COOLER", "SLIDE"),
     buildConfig("cooler-slider-8x8", "8' × 8'", "96", "96", "SLIDING", "COOLER", "SLIDE"),
   ],
-  FREEZER_SLIDER: [],
+  FREEZER_SLIDER: [
+    buildConfig("freezer-slider-4x7", "4' × 7'", "48", "84", "SLIDING", "FREEZER", "SLIDE"),
+    buildConfig("freezer-slider-5x7", "5' × 7'", "60", "84", "SLIDING", "FREEZER", "SLIDE"),
+    buildConfig("freezer-slider-6x7", "6' × 7'", "72", "84", "SLIDING", "FREEZER", "SLIDE"),
+    buildConfig("freezer-slider-6x8", "6' × 8'", "72", "96", "SLIDING", "FREEZER", "SLIDE"),
+    buildConfig("freezer-slider-8x8", "8' × 8'", "96", "96", "SLIDING", "FREEZER", "SLIDE"),
+    buildConfig("freezer-slider-10x10", "10' × 10'", "120", "120", "SLIDING", "FREEZER", "SLIDE"),
+  ],
 }
 
 /** Resolve gap answer string to the correct typed value */
