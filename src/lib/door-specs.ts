@@ -485,6 +485,89 @@ export function calculateHeaterCable(specs: Partial<DoorSpecs>): string | null {
   return `${feet} FT`
 }
 
+// ---------------------------------------------------------------------------
+// Standard door configurations — template-first flow
+// ---------------------------------------------------------------------------
+
+export type DoorTypeKey = "COOLER_SWING" | "FREEZER_SWING" | "COOLER_SLIDER" | "FREEZER_SLIDER"
+
+export interface StandardDoorConfig {
+  id: string
+  label: string          // e.g. "3' × 7'"
+  description: string    // hardware summary
+  widthInClear: string
+  heightInClear: string
+  specs: Partial<DoorSpecs>
+}
+
+function buildConfig(
+  id: string,
+  label: string,
+  widthIn: string,
+  heightIn: string,
+  category: DoorCategory,
+  temp: TemperatureType,
+  opening: OpeningType,
+): StandardDoorConfig {
+  const hw = getStandardHardware(category, widthIn, false)
+  const baseSpecs: Partial<DoorSpecs> = {
+    ...getDefaultSpecs(),
+    doorCategory: category,
+    temperatureType: temp,
+    openingType: opening,
+    widthInClear: widthIn,
+    heightInClear: heightIn,
+    finish: "WPG",
+    panelInsulated: true,
+    wiper: true,
+    highSill: false,
+    ...(opening === "HINGE" ? { frameType: "FULL_FRAME" as FrameType } : {}),
+    ...(hw.hingeMfrName ? { hingeMfrName: hw.hingeMfrName } : {}),
+    ...(hw.hingeModel ? { hingeModel: hw.hingeModel } : {}),
+    ...(hw.latchMfrName ? { latchMfrName: hw.latchMfrName } : {}),
+    ...(hw.latchModel ? { latchModel: hw.latchModel } : {}),
+    ...(hw.closerModel ? { closerModel: hw.closerModel } : {}),
+    ...(hw.gasketType ? { gasketType: hw.gasketType } : {}),
+    ...(temp === "FREEZER" ? { insulationType: "PIR" as InsulationType } : { insulationType: "EPS" as InsulationType }),
+  }
+
+  // Auto-calculate heater cable for freezers
+  if (temp === "FREEZER") {
+    const cable = calculateHeaterCable(baseSpecs)
+    if (cable) baseSpecs.heaterSize = cable
+  }
+
+  // Build description from hardware
+  const hwParts: string[] = []
+  if (hw.hingeModel) hwParts.push(hw.hingeModel)
+  if (hw.latchModel) hwParts.push(hw.latchModel)
+  if (hw.closerModel) hwParts.push(hw.closerModel.replace("DENT ", ""))
+  if (hw.gasketType) hwParts.push(hw.gasketType === "MAGNETIC" ? "Magnetic" : "Neoprene")
+  const description = hwParts.join(" · ") || "Standard hardware"
+
+  return { id, label, description, widthInClear: widthIn, heightInClear: heightIn, specs: baseSpecs }
+}
+
+export const STANDARD_DOOR_CONFIGS: Record<DoorTypeKey, StandardDoorConfig[]> = {
+  COOLER_SWING: [
+    buildConfig("cooler-swing-3x7", "3' × 7'", "36", "84", "HINGED_COOLER", "COOLER", "HINGE"),
+    buildConfig("cooler-swing-4x7", "4' × 7'", "48", "84", "HINGED_COOLER", "COOLER", "HINGE"),
+    buildConfig("cooler-swing-5x7", "5' × 7'", "60", "84", "HINGED_COOLER", "COOLER", "HINGE"),
+  ],
+  FREEZER_SWING: [
+    buildConfig("freezer-swing-3x7", "3' × 7'", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
+    buildConfig("freezer-swing-4x7", "4' × 7'", "48", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
+  ],
+  COOLER_SLIDER: [
+    buildConfig("cooler-slider-4x7", "4' × 7'", "48", "84", "SLIDING", "COOLER", "SLIDE"),
+    buildConfig("cooler-slider-5x7", "5' × 7'", "60", "84", "SLIDING", "COOLER", "SLIDE"),
+    buildConfig("cooler-slider-6x7", "6' × 7'", "72", "84", "SLIDING", "COOLER", "SLIDE"),
+    buildConfig("cooler-slider-6x8", "6' × 8'", "72", "96", "SLIDING", "COOLER", "SLIDE"),
+    buildConfig("cooler-slider-8x8", "8' × 8'", "96", "96", "SLIDING", "COOLER", "SLIDE"),
+  ],
+  FREEZER_SLIDER: [],
+}
+
 /** Resolve gap answer string to the correct typed value */
 export function resolveGapAnswer(
   field: string,

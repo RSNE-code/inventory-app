@@ -187,6 +187,14 @@ export function DoorConfirmation({
 
   return (
     <div className="space-y-4 overscroll-fix">
+      {/* Job badge — read-only display of selected job */}
+      {jobName && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-navy/8 rounded-xl">
+          <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">Job</span>
+          <span className="text-sm font-bold text-navy">{jobName}</span>
+        </div>
+      )}
+
       {/* Spec Sections */}
       {SPEC_SECTIONS.map((section) => {
         // Skip sliding section for hinged doors and vice versa
@@ -314,27 +322,15 @@ export function DoorConfirmation({
         </Card>
       )}
 
-      {/* Job Assignment */}
+      {/* Notes */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-base">Assignment</h3>
-        <div>
-          <Label className="text-xs">Job Name</Label>
-          <Input
-            value={jobName}
-            onChange={(e) => onJobNameChange(e.target.value)}
-            placeholder="Job name or leave empty for stock"
-            className="h-10 mt-1"
-          />
-        </div>
-        <div>
-          <Label className="text-xs">Notes</Label>
-          <textarea
-            value={notes}
-            onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Optional notes..."
-            className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue mt-1"
-          />
-        </div>
+        <h3 className="font-semibold text-navy text-base">Notes</h3>
+        <textarea
+          value={notes}
+          onChange={(e) => onNotesChange(e.target.value)}
+          placeholder="Optional notes for the shop..."
+          className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+        />
       </Card>
 
       {/* Components */}
