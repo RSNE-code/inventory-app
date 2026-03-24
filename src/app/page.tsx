@@ -23,7 +23,7 @@ export default function DashboardPage() {
       {/* Compact Header — logo + title inline */}
       <header className="relative bg-navy px-4 pt-[env(safe-area-inset-top)] z-50">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
-        <div className="relative z-10 flex items-center justify-between py-2">
+        <div className="relative z-10 flex items-center justify-between pb-2">
           <div className="flex items-center gap-3 animate-fade-in">
             <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
               <Image
