@@ -12,6 +12,8 @@ This applies to ALL changes — no matter how small. "It's just data," "it's one
 
 **You may NOT commit or push code that was not produced through this process.** If you skipped a gate and already made edits, you must invoke the skill BEFORE committing. Code that bypassed the process must never be committed.
 
+**You may NOT commit or push until QA has passed.** After writing code, you MUST run QA validation (TypeScript check, token audit, and test the actual behavior) BEFORE committing. The full process is: **Skill Gate → Write Code → QA → Commit/Push**. Pushing untested code wastes Gabe's time and has caused multiple rounds of bug-fixing that QA would have caught.
+
 ---
 
 ### Gate: UI / Frontend
@@ -44,13 +46,20 @@ This applies to ALL changes — no matter how small. "It's just data," "it's one
 
 ---
 
+### The full process — every time, no shortcuts:
+```
+1. Identify skill gates → 2. Invoke skills → 3. Write code → 4. Run QA → 5. Commit/Push
+```
+Skipping step 4 is just as bad as skipping step 2. Both waste Gabe's time.
+
 ### How to apply:
 1. **Before ANY Edit/Write tool call:** Identify which gates apply. Invoke them. No exceptions.
 2. At the START of `/create-plan`: identify gates, invoke skills, include "Skill Inputs" section.
 3. At the START of each `/implement` step: if the step touches a gated area, invoke the skill first.
 4. For direct requests (no plan): invoke relevant skill(s) before writing any code.
 5. If multiple gates apply (e.g., UI + API), invoke all — design first, then implement.
-6. **Before committing:** Verify every changed file went through its skill gate. If any didn't, invoke the skill before committing.
+6. **Before committing:** Run QA — at minimum: `npx tsc --noEmit`, `npx tsx scripts/token-audit.ts`, and verify the change actually works (don't just check types — think through the runtime behavior).
+7. **Before committing:** Verify every changed file went through its skill gate. If any didn't, invoke the skill before committing.
 
 ### Common rationalizations that are NOT valid:
 - "It's just adding data to an existing structure" — **NO.** Data that populates UI goes through `frontend-design`.
@@ -58,3 +67,5 @@ This applies to ALL changes — no matter how small. "It's just data," "it's one
 - "The skill won't add anything for this" — **NO.** You don't get to decide that. Invoke it.
 - "I'll invoke it after" — **NO.** The skill informs the work. After is too late.
 - "The hook warned me but it's fine" — **NO.** The hook exists because you keep skipping. Listen to it.
+- "TypeScript passed so it works" — **NO.** Types passing does not mean the feature works. Think through runtime behavior. The window.location.search bug passed tsc but was broken at runtime.
+- "I'll QA after I push" — **NO.** QA happens BEFORE commit. Pushing broken code wastes Gabe's time.
