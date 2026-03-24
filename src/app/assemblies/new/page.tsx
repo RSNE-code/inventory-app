@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAssemblyTemplates, useCreateAssembly } from "@/hooks/use-assemblies"
 import { Header } from "@/components/layout/header"
@@ -42,6 +42,18 @@ const typeOptions: Array<{ value: AssemblyType; label: string; icon: typeof Door
 ]
 
 export default function NewAssemblyPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <div className="h-6 w-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <NewAssemblyContent />
+    </Suspense>
+  )
+}
+
+function NewAssemblyContent() {
   const router = useRouter()
   const { celebrate } = useCelebration()
   const { data: templatesData, isLoading: templatesLoading } = useAssemblyTemplates()
