@@ -37,7 +37,7 @@ export function StepProgress({ steps, currentStep, className, onStepClick }: Ste
                   "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all shrink-0",
                   isCompleted && "bg-brand-blue text-white",
                   isCurrent && "bg-brand-blue text-white",
-                  isFuture && "border-2 border-gray-300 text-gray-400",
+                  isFuture && "border-2 border-border-custom text-text-muted",
                   isClickable && !isCurrent && "group-hover:scale-110 group-hover:shadow-[0_0_0_3px_rgba(46,125,186,0.15)] group-active:scale-95",
                   isClickable && isCurrent && "ring-2 ring-brand-blue/20 ring-offset-2"
                 )}
@@ -53,7 +53,7 @@ export function StepProgress({ steps, currentStep, className, onStepClick }: Ste
                   "text-[12px] leading-tight text-center hidden min-[400px]:block transition-colors",
                   isCompleted && "text-brand-blue font-medium",
                   isCurrent && "text-brand-blue font-semibold",
-                  isFuture && "text-gray-400",
+                  isFuture && "text-text-muted",
                   isClickable && !isCurrent && "group-hover:text-navy group-hover:font-semibold"
                 )}
               >
@@ -65,11 +65,12 @@ export function StepProgress({ steps, currentStep, className, onStepClick }: Ste
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  "flex-1 h-0.5 mx-2 mt-[-20px] min-[400px]:mt-0 min-[400px]:-translate-y-3 transition-all duration-500",
+                  "flex-1 mx-2 transition-all duration-500",
                   index < currentStep
-                    ? "bg-brand-blue"
-                    : "bg-gray-200 border-t border-dashed border-gray-300 h-0"
+                    ? "h-0.5 bg-brand-blue"
+                    : "h-[1px] bg-border-custom"
                 )}
+                style={{ marginTop: "-20px" }}
               />
             )}
           </div>
