@@ -27,7 +27,7 @@ export function UnitConversionPrompt({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-50 border border-green-200 text-xs font-medium text-green-700"
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-status-green/10 border border-green-200 text-xs font-medium text-green-700"
       >
         <Check className="h-3 w-3" />
         <span>{parsedQty} {parsedUnit} = {parsedQty * knownFactor} {catalogUnit}</span>

@@ -14,8 +14,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (isLoading) {
     return (
       <div>
-        <Header title="Loading..." showBack />
-        <div className="p-4 text-center text-text-muted py-12">Loading...</div>
+        <Header title="Edit Product" showBack />
+        <div className="p-4 space-y-3">
+          <div className="h-20 rounded-xl skeleton-shimmer" />
+          <div className="h-48 rounded-xl skeleton-shimmer stagger-1" />
+          <div className="h-32 rounded-xl skeleton-shimmer stagger-2" />
+        </div>
       </div>
     )
   }

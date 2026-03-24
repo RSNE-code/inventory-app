@@ -122,7 +122,7 @@ export function LiveItemFeed({
         {phase === "done" && (
           <div className="flex items-center gap-3">
             {confirmedCount > 0 && (
-              <span className="text-xs font-semibold text-green-600">{confirmedCount} confirmed</span>
+              <span className="text-xs font-semibold text-status-green">{confirmedCount} confirmed</span>
             )}
             {needsReviewCount > 0 && (
               <span className="text-xs font-semibold text-brand-blue">{needsReviewCount} to review</span>
@@ -266,7 +266,7 @@ export function LiveItemFeed({
                 <button
                   type="button"
                   onClick={() => onDelete(item.id)}
-                  className="h-10 w-10 flex items-center justify-center text-text-muted/30 hover:text-red-500 transition-colors shrink-0"
+                  className="h-10 w-10 flex items-center justify-center text-text-muted/30 hover:text-status-red transition-colors shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </button>

@@ -329,7 +329,7 @@ export function PanelCheckoutSheet({
                             {stockPanels !== null ? (
                               <span className={cn(
                                 "font-medium",
-                                stockPanels >= row.quantity ? "text-green-600" : "text-red-500"
+                                stockPanels >= row.quantity ? "text-status-green" : "text-status-red"
                               )}>
                                 {stockPanels} avail
                               </span>
@@ -343,7 +343,7 @@ export function PanelCheckoutSheet({
                           <button
                             type="button"
                             onClick={() => removeRow(row.id)}
-                            className="h-11 w-11 flex items-center justify-center rounded-xl text-red-400 active:text-red-600 active:bg-red-50 ios-press transition-all shrink-0"
+                            className="h-11 w-11 flex items-center justify-center rounded-xl text-red-400 active:text-red-600 active:bg-status-red/10 ios-press transition-all shrink-0"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -370,8 +370,8 @@ export function PanelCheckoutSheet({
                         <div className="text-right">
                           <span className={cn(
                             "text-xl font-bold tabular-nums",
-                            totalPanels === remaining ? "text-green-600" :
-                            totalPanels > remaining ? "text-red-500" : "text-navy"
+                            totalPanels === remaining ? "text-status-green" :
+                            totalPanels > remaining ? "text-status-red" : "text-navy"
                           )}>
                             {totalPanels}
                           </span>
@@ -414,7 +414,7 @@ export function PanelCheckoutSheet({
                       )}
 
                       {totalPanels > remaining && (
-                        <p className="text-xs text-red-500 font-medium">
+                        <p className="text-xs text-status-red font-medium">
                           Exceeds remaining by {totalPanels - remaining} panels
                         </p>
                       )}

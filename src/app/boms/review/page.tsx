@@ -69,7 +69,11 @@ export default function ReviewQueuePage() {
     return (
       <div>
         <Header title="Review Queue" showMenu />
-        <div className="text-center py-12 text-text-muted">Loading...</div>
+        <div className="p-4 space-y-3">
+          <div className="h-20 rounded-xl skeleton-shimmer" />
+          <div className="h-48 rounded-xl skeleton-shimmer stagger-1" />
+          <div className="h-32 rounded-xl skeleton-shimmer stagger-2" />
+        </div>
       </div>
     )
   }

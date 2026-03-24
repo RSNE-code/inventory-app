@@ -4,8 +4,7 @@ import { useState } from "react"
 import type { DoorSpecs, Cutout, DoorCategory } from "@/lib/door-specs"
 import { getStandardHardware, calculateHeaterCable } from "@/lib/door-specs"
 import { InterviewStep, ChoiceButton, DimensionInput } from "./interview-step"
-import { SwingDoorDiagram } from "./door-diagram-swing"
-import { SliderDoorDiagram } from "./door-diagram-slider"
+import { DoorPreview } from "./door-preview"
 import { StepProgress } from "@/components/layout/step-progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -118,6 +117,13 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
     <div className="space-y-4">
       <StepProgress steps={PROGRESS_LABELS} currentStep={currentGroup} />
 
+      {/* Persistent door preview — visible after TYPE step */}
+      {step !== "TYPE" && (
+        <div className="flex justify-center py-1 animate-fade-in">
+          <DoorPreview specs={specs} className="max-w-[200px] w-full" />
+        </div>
+      )}
+
       {/* Q1: Swing or Slider */}
       {step === "TYPE" && (
         <InterviewStep
@@ -153,13 +159,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
           question="Clear Opening Width?"
           description="Width of the door opening (in inches)"
           onBack={goBack}
-          diagram={
-            <SwingDoorDiagram
-              width={inputValue || undefined}
-              height={specs.heightInClear}
-              jambDepth={specs.jambDepth}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -178,13 +177,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
           question="Clear Opening Height?"
           description="Height of the door opening (in inches)"
           onBack={goBack}
-          diagram={
-            <SwingDoorDiagram
-              width={specs.widthInClear}
-              height={inputValue || undefined}
-              jambDepth={specs.jambDepth}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -203,13 +195,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
           question="Jamb Depth?"
           description="Depth of the door frame (in inches)"
           onBack={goBack}
-          diagram={
-            <SwingDoorDiagram
-              width={specs.widthInClear}
-              height={specs.heightInClear}
-              jambDepth={inputValue || undefined}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -260,36 +245,36 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         >
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Left Side (LHS)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Left Side (LHS)</label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={frameLHS}
                 onChange={(e) => setFrameLHS(e.target.value)}
                 placeholder='e.g. 4"'
-                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none"
+                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-border-custom focus:border-brand-blue focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Right Side (RHS)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Right Side (RHS)</label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={frameRHS}
                 onChange={(e) => setFrameRHS(e.target.value)}
                 placeholder='e.g. 4"'
-                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none"
+                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-border-custom focus:border-brand-blue focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Top (Header)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Top (Header)</label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={frameTop}
                 onChange={(e) => setFrameTop(e.target.value)}
                 placeholder='e.g. 4"'
-                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none"
+                className="w-full h-12 text-center text-lg font-bold rounded-xl border-2 border-border-custom focus:border-brand-blue focus:outline-none"
               />
             </div>
             <Button
@@ -344,7 +329,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         >
           <div className="space-y-4">
             {cutouts.map((cutout, i) => (
-              <div key={i} className="p-3 bg-gray-50 rounded-xl space-y-2 relative">
+              <div key={i} className="p-3 bg-surface-secondary rounded-xl space-y-2 relative">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-navy">Cutout {i + 1}</span>
                   {cutouts.length > 1 && (
@@ -360,7 +345,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[12px] text-gray-500">Floor→Bottom</label>
+                    <label className="text-[12px] text-text-secondary">Floor→Bottom</label>
                     <Input
                       value={cutout.floorToBottom}
                       onChange={(e) => {
@@ -373,7 +358,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[12px] text-gray-500">Floor→Top</label>
+                    <label className="text-[12px] text-text-secondary">Floor→Top</label>
                     <Input
                       value={cutout.floorToTop}
                       onChange={(e) => {
@@ -386,7 +371,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[12px] text-gray-500">Width</label>
+                    <label className="text-[12px] text-text-secondary">Width</label>
                     <Input
                       value={cutout.frameWidth}
                       onChange={(e) => {
@@ -459,14 +444,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
           question="Sill Height?"
           description="Floor to bottom of clear opening"
           onBack={goBack}
-          diagram={
-            <SwingDoorDiagram
-              width={specs.widthInClear}
-              height={specs.heightInClear}
-              jambDepth={specs.jambDepth}
-              sillHeight={inputValue || "?"}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -584,7 +561,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         >
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Hinge (make + model)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Hinge (make + model)</label>
               <Input
                 value={customHinge}
                 onChange={(e) => setCustomHinge(e.target.value)}
@@ -593,7 +570,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               />
             </div>
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Latch (make + model)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Latch (make + model)</label>
               <Input
                 value={customLatch}
                 onChange={(e) => setCustomLatch(e.target.value)}
@@ -602,7 +579,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               />
             </div>
             <div>
-              <label className="text-sm text-gray-500 mb-1 block">Closer (model)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Closer (model)</label>
               <Input
                 value={customCloser}
                 onChange={(e) => setCustomCloser(e.target.value)}
@@ -665,7 +642,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               }}
             />
             <div className="pt-1">
-              <label className="text-sm text-gray-500 mb-1 block">Other (custom)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Other (custom)</label>
               <div className="flex gap-2">
                 <Input
                   value={customFinish}
@@ -762,13 +739,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         <InterviewStep
           question="Clear Opening Width?"
           onBack={goBack}
-          diagram={
-            <SliderDoorDiagram
-              width={inputValue || undefined}
-              height={specs.heightInClear}
-              slideSide={specs.slideSide}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -786,13 +756,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         <InterviewStep
           question="Clear Opening Height?"
           onBack={goBack}
-          diagram={
-            <SliderDoorDiagram
-              width={specs.widthInClear}
-              height={inputValue || undefined}
-              slideSide={specs.slideSide}
-            />
-          }
         >
           <DimensionInput
             value={inputValue}
@@ -833,7 +796,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               onClick={() => finalize({ finish: "Galvalume" })}
             />
             <div className="pt-1">
-              <label className="text-sm text-gray-500 mb-1 block">Other (custom)</label>
+              <label className="text-sm text-text-secondary mb-1 block">Other (custom)</label>
               <div className="flex gap-2">
                 <Input
                   value={customFinish}
@@ -981,14 +944,14 @@ function ChipToggle({
       onClick={() => onChange(!checked)}
       className={`w-full flex items-center justify-between py-3 px-4 rounded-xl border-2 transition-all ${
         checked
-          ? "border-brand-blue bg-blue-50 text-brand-blue"
-          : "border-gray-200 bg-white text-gray-700"
+          ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
+          : "border-border-custom bg-white text-text-primary"
       }`}
     >
       <span className="font-medium">{label}</span>
       <div
         className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-          checked ? "border-brand-blue bg-brand-blue" : "border-gray-300"
+          checked ? "border-brand-blue bg-brand-blue" : "border-border-custom"
         }`}
       >
         {checked && (

@@ -372,7 +372,7 @@ function PanelLineRow({
           <p className="text-sm font-bold text-navy leading-tight truncate">
             {lineItem.productName || lineItem.description}
           </p>
-          <span className="text-sm font-bold px-2 py-0.5 rounded-full text-status-green bg-green-50">
+          <span className="text-sm font-bold px-2 py-0.5 rounded-full text-status-green bg-status-green/10">
             COMPLETE
           </span>
         </div>
@@ -396,7 +396,7 @@ function PanelLineRow({
 
     return (
       <div
-        className="flex items-center px-4 py-3.5 gap-3 border-l-[3px] border-l-status-green bg-green-50/30 animate-fade-in"
+        className="flex items-center px-4 py-3.5 gap-3 border-l-[3px] border-l-status-green bg-status-green/[0.06] animate-fade-in"
         style={{ animationDelay: `${index * 50}ms` }}
       >
         <div className="flex-1 min-w-0">
@@ -404,7 +404,7 @@ function PanelLineRow({
             {lineItem.productName || lineItem.description}
           </p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-status-green bg-green-50 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-status-green bg-status-green/10 px-2 py-0.5 rounded-full">
               <Layers className="h-3 w-3" />
               {breakoutItems.length} size{breakoutItems.length !== 1 ? "s" : ""}
             </span>
@@ -703,7 +703,7 @@ function ReceiveLineRow({
       className={cn(
         "flex items-center px-4 py-3.5 gap-3 transition-all duration-200 animate-fade-in",
         // Color-coded left border for instant visual feedback
-        isReceivingFull && "border-l-[3px] border-l-status-green bg-green-50/30",
+        isReceivingFull && "border-l-[3px] border-l-status-green bg-status-green/[0.06]",
         isReceivingPartial && "border-l-[3px] border-l-brand-orange bg-orange-50/20",
         isReceivingNone && "border-l-[3px] border-l-transparent opacity-40",
         isFullyReceived && "border-l-[3px] border-l-transparent opacity-30 bg-surface-secondary/30",
@@ -723,7 +723,7 @@ function ReceiveLineRow({
               className={cn(
                 "text-sm font-bold px-2 py-0.5 rounded-full",
                 isFullyReceived
-                  ? "text-status-green bg-green-50"
+                  ? "text-status-green bg-status-green/10"
                   : "text-brand-orange bg-orange-50"
               )}
             >
@@ -753,7 +753,7 @@ function ReceiveLineRow({
             className={cn(
               "flex items-center rounded-xl border-2 transition-colors",
               isReceivingFull
-                ? "border-status-green/40 bg-green-50/50"
+                ? "border-status-green/40 bg-status-green/[0.08]"
                 : isReceivingPartial
                   ? "border-brand-orange/30 bg-orange-50/30"
                   : "border-border-custom bg-white"

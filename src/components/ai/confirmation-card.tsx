@@ -24,10 +24,10 @@ export function ConfirmationCard({
 
   const confidenceColor =
     match.matchConfidence >= 0.8
-      ? "text-green-600"
+      ? "text-status-green"
       : match.matchConfidence >= 0.5
         ? "text-yellow-600"
-        : "text-red-500"
+        : "text-status-red"
 
   const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog
 
@@ -35,7 +35,7 @@ export function ConfirmationCard({
     <div
       className={cn(
         "rounded-lg border p-4 space-y-3",
-        isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
+        isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-border-custom bg-white"
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -45,9 +45,9 @@ export function ConfirmationCard({
               {match.parsedItem.quantity} {match.parsedItem.unitOfMeasure}
             </span>
             {match.matchedProduct ? (
-              <span className="text-gray-900">{match.matchedProduct.name}</span>
+              <span className="text-navy">{match.matchedProduct.name}</span>
             ) : (
-              <span className="text-gray-900">{match.parsedItem.name}</span>
+              <span className="text-navy">{match.parsedItem.name}</span>
             )}
           </div>
 
@@ -59,7 +59,7 @@ export function ConfirmationCard({
               <Badge variant="outline" className="text-xs">
                 {match.matchedProduct.tier === "TIER_1" ? "Tracked" : "Expensed"}
               </Badge>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-text-secondary">
                 In stock: {match.matchedProduct.currentQty} {match.matchedProduct.unitOfMeasure}
               </span>
             </div>
@@ -81,7 +81,7 @@ export function ConfirmationCard({
           )}
 
           {/* Show what the AI parsed from the raw input */}
-          <p className="text-xs text-gray-400 mt-1 truncate">
+          <p className="text-xs text-text-muted mt-1 truncate">
             Parsed from: &ldquo;{match.parsedItem.rawText}&rdquo;
           </p>
         </div>
@@ -90,7 +90,7 @@ export function ConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-green-600 hover:bg-green-50"
+            className="h-10 w-10 text-status-green hover:bg-status-green/10"
             onClick={() => onAccept(match)}
           >
             <Check className="h-5 w-5" />
@@ -98,7 +98,7 @@ export function ConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-red-500 hover:bg-red-50"
+            className="h-10 w-10 text-status-red hover:bg-status-red/10"
             onClick={() => onReject(match)}
           >
             <X className="h-5 w-5" />
@@ -110,7 +110,7 @@ export function ConfirmationCard({
       {match.alternativeMatches && match.alternativeMatches.length > 0 && (
         <div>
           <button
-            className="text-xs text-blue-600 flex items-center gap-1"
+            className="text-xs text-brand-blue flex items-center gap-1"
             onClick={() => setShowAlternatives(!showAlternatives)}
           >
             {showAlternatives ? (
@@ -127,7 +127,7 @@ export function ConfirmationCard({
               {match.alternativeMatches.map((alt) => (
                 <button
                   key={alt.id}
-                  className="block w-full text-left text-sm px-3 py-2 rounded hover:bg-gray-50 border border-gray-100"
+                  className="block w-full text-left text-sm px-3 py-2 rounded hover:bg-surface-secondary border border-border-custom/40"
                   onClick={() => onAccept(match, alt.id)}
                 >
                   <span>{alt.name}</span>
@@ -168,7 +168,7 @@ export function ConfirmationList({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm text-gray-700">
+        <h3 className="font-semibold text-sm text-text-primary">
           {matches.length} item{matches.length !== 1 ? "s" : ""} parsed
         </h3>
         {allHighConfidence && matches.length > 1 && (

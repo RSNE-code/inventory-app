@@ -18,8 +18,8 @@ function MfgCheckbox({ label, checked }: { label: string; checked?: boolean }) {
         className={cn(
           "inline-flex h-5 w-5 items-center justify-center rounded border-2 text-xs font-bold",
           checked
-            ? "border-gray-900 bg-gray-900 text-white"
-            : "border-gray-400 bg-white"
+            ? "border-navy bg-navy text-white"
+            : "border-border-custom bg-white"
         )}
       >
         {checked && "\u2713"}
@@ -39,7 +39,7 @@ function MfgField({
   large?: boolean
 }) {
   return (
-    <div className="flex items-baseline gap-2 py-2 border-b border-gray-300">
+    <div className="flex items-baseline gap-2 py-2 border-b border-border-custom">
       <span className="text-sm font-bold uppercase shrink-0">{label}</span>
       <span
         className={cn(
@@ -62,9 +62,9 @@ export function DoorManufacturingSheet({
   const isHinged = specs.openingType === "HINGE"
 
   return (
-    <Card className="rounded-xl border-2 border-gray-900 overflow-hidden bg-white print:shadow-none print:rounded-none">
+    <Card className="rounded-xl border-2 border-navy overflow-hidden bg-white print:shadow-none print:rounded-none">
       {/* Header */}
-      <div className="text-center py-3 border-b-2 border-gray-900">
+      <div className="text-center py-3 border-b-2 border-navy">
         <p className="text-sm font-semibold tracking-wide">
           Refrigerated Structures of New England
         </p>
@@ -84,7 +84,7 @@ export function DoorManufacturingSheet({
         <MfgField label="JWO or JOB #" value={specs.jobNumber} />
 
         {/* Serial # */}
-        <div className="flex items-center gap-6 py-2 border-b border-gray-300">
+        <div className="flex items-center gap-6 py-2 border-b border-border-custom">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-bold uppercase">SERIAL #</span>
             <span className="text-sm font-medium">
@@ -106,19 +106,19 @@ export function DoorManufacturingSheet({
           }
         />
         {specs.jobSiteName && (
-          <div className="pl-20 -mt-1 pb-2 border-b border-gray-300">
+          <div className="pl-20 -mt-1 pb-2 border-b border-border-custom">
             <span className="text-sm font-medium">{specs.jobSiteName}</span>
           </div>
         )}
 
         {/* Cooler / Freezer */}
-        <div className="flex items-center gap-8 py-3 border-b border-gray-300">
+        <div className="flex items-center gap-8 py-3 border-b border-border-custom">
           <MfgCheckbox label="COOLER DOOR" checked={!isFreezer} />
           <MfgCheckbox label="FREEZER DOOR" checked={isFreezer} />
         </div>
 
         {/* Door Size */}
-        <div className="flex items-baseline gap-2 py-3 border-b border-gray-300">
+        <div className="flex items-baseline gap-2 py-3 border-b border-border-custom">
           <span className="text-sm font-bold uppercase">DOOR SIZE</span>
           <span className="text-xl font-extrabold tracking-wide">
             {formatDoorSize(specs) || "\u00A0"}
@@ -126,7 +126,7 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* Frame Type */}
-        <div className="flex items-center gap-6 py-3 border-b border-gray-300">
+        <div className="flex items-center gap-6 py-3 border-b border-border-custom">
           <MfgCheckbox
             label="FULL FRAME"
             checked={specs.frameType === "FULL_FRAME"}
@@ -142,13 +142,13 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* High Sill / Wiper */}
-        <div className="flex items-center gap-8 py-3 border-b border-gray-300">
+        <div className="flex items-center gap-8 py-3 border-b border-border-custom">
           <MfgCheckbox label="HIGH SILL" checked={specs.highSill} />
           <MfgCheckbox label="WIPER" checked={specs.wiper} />
         </div>
 
         {/* Jamb Depth / Heater */}
-        <div className="flex items-center gap-6 py-2 border-b border-gray-300">
+        <div className="flex items-center gap-6 py-2 border-b border-border-custom">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-bold uppercase">JAMB DEPTH</span>
             <span className="text-sm font-semibold">
@@ -166,7 +166,7 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* Finish + Hinge/Slide Side */}
-        <div className="flex items-center gap-4 py-2 border-b border-gray-300">
+        <div className="flex items-center gap-4 py-2 border-b border-border-custom">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-bold uppercase">FINISH</span>
             <span className="text-sm font-semibold">
@@ -197,7 +197,7 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* Hardware */}
-        <div className="py-2 border-b border-gray-300 space-y-1">
+        <div className="py-2 border-b border-border-custom space-y-1">
           <div className="flex items-baseline gap-2">
             <span className="text-sm font-bold uppercase">
               HINGE MFR&apos;S NAME
@@ -205,42 +205,42 @@ export function DoorManufacturingSheet({
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 pl-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-xs font-bold text-gray-600">
+              <span className="text-xs font-bold text-text-secondary">
                 {specs.hingeMfrName || "\u00A0"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">PART #&apos;S</span>
+              <span className="text-xs text-text-secondary">PART #&apos;S</span>
               <span className="text-xs font-medium">
                 {specs.closerModel || "\u00A0"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">HINGE</span>
+              <span className="text-xs text-text-secondary">HINGE</span>
               <span className="text-xs font-medium">
                 {specs.hingeModel || "\u00A0"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">OFFSET</span>
+              <span className="text-xs text-text-secondary">OFFSET</span>
               <span className="text-xs font-medium">
                 {specs.hingeOffset || "\u00A0"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">LATCH</span>
+              <span className="text-xs text-text-secondary">LATCH</span>
               <span className="text-xs font-medium">
                 {specs.latchModel || "\u00A0"}
               </span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">OFFSET</span>
+              <span className="text-xs text-text-secondary">OFFSET</span>
               <span className="text-xs font-medium">
                 {specs.latchOffset || "\u00A0"}
               </span>
             </div>
             <div className="col-span-2 flex items-baseline gap-1">
-              <span className="text-xs text-gray-500">INSIDE RELEASE</span>
+              <span className="text-xs text-text-secondary">INSIDE RELEASE</span>
               <span className="text-xs font-medium">
                 {specs.insideRelease || "\u00A0"}
               </span>
@@ -249,7 +249,7 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* Gasket Type */}
-        <div className="py-3 border-b border-gray-300">
+        <div className="py-3 border-b border-border-custom">
           <span className="text-sm font-bold uppercase">GASKET TYPE</span>
           <div className="flex items-center gap-6 mt-1 pl-4">
             <MfgCheckbox

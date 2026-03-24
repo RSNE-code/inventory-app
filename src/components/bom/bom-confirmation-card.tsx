@@ -88,7 +88,7 @@ export function BomConfirmationCard({
           <p className="text-sm font-semibold text-green-800 break-words">
             {match.matchedProduct?.name ?? match.parsedItem.name}
           </p>
-          <p className="text-xs text-green-600 mt-0.5">Added to BOM</p>
+          <p className="text-xs text-status-green mt-0.5">Added to BOM</p>
         </div>
       </div>
     )
@@ -175,9 +175,9 @@ export function BomConfirmationCard({
               <span
                 className={cn(
                   "text-xs font-medium",
-                  stockLevel === "sufficient" && "text-green-600",
+                  stockLevel === "sufficient" && "text-status-green",
                   stockLevel === "low" && "text-yellow-600",
-                  stockLevel === "out" && "text-red-500"
+                  stockLevel === "out" && "text-status-red"
                 )}
               >
                 {stockLabel[stockLevel]}: {match.matchedProduct.currentQty} {match.matchedProduct.unitOfMeasure}
@@ -224,7 +224,7 @@ export function BomConfirmationCard({
         {/* Reject button — minimal, right side */}
         <button
           type="button"
-          className="h-9 w-9 flex items-center justify-center rounded-xl text-text-muted/40 hover:text-red-500 hover:bg-red-50 ios-press transition-all shrink-0 mt-0.5"
+          className="h-9 w-9 flex items-center justify-center rounded-xl text-text-muted/40 hover:text-status-red hover:bg-status-red/10 ios-press transition-all shrink-0 mt-0.5"
           onClick={handleReject}
         >
           <X className="h-4 w-4" />

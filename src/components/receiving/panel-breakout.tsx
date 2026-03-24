@@ -746,7 +746,7 @@ function SizeRowInput({
       <div
         className={cn(
           "relative flex items-center px-4 py-3 gap-2 bg-white",
-          noProduct && "bg-red-50/50",
+          noProduct && "bg-status-red/10",
           isSwiping ? "" : "transition-transform duration-200 ease-out"
         )}
         style={{ transform: `translateX(${swipeX}px)` }}
@@ -862,7 +862,7 @@ function SizeRowInput({
                 }
                 onToggleWarning(!showWarning)
               }}
-              className="h-7 w-7 flex items-center justify-center rounded-md text-status-red hover:bg-red-50 transition-colors shrink-0"
+              className="h-7 w-7 flex items-center justify-center rounded-md text-status-red hover:bg-status-red/10 transition-colors shrink-0"
             >
               <AlertTriangle className="h-3.5 w-3.5" />
             </button>

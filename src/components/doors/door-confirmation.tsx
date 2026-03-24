@@ -230,17 +230,17 @@ export function DoorConfirmation({
                     <button
                       key={field}
                       onClick={() => toggleBoolean(field)}
-                      className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-surface-secondary transition-colors"
                     >
                       <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
                       <div className="flex items-center gap-2 flex-1 justify-end">
-                        <span className={cn("text-sm font-medium", value ? "text-green-600" : "text-gray-400")}>
+                        <span className={cn("text-sm font-medium", value ? "text-status-green" : "text-text-muted")}>
                           {value ? "Yes" : "No"}
                         </span>
                         <div
                           className={cn(
                             "w-4 h-4 rounded border-2 flex items-center justify-center",
-                            value ? "border-green-500 bg-green-500" : "border-gray-300"
+                            value ? "border-green-500 bg-green-500" : "border-border-custom"
                           )}
                         >
                           {value && (
@@ -256,11 +256,11 @@ export function DoorConfirmation({
                   <button
                     key={field}
                     onClick={() => startEdit(field, value)}
-                    className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-gray-50 transition-colors text-left"
+                    className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-surface-secondary transition-colors text-left"
                   >
                     <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
                     <span className="text-sm font-medium text-navy flex-1">{formatValue(field, value)}</span>
-                    <Pencil className="h-3 w-3 text-gray-300 shrink-0 ml-2" />
+                    <Pencil className="h-3 w-3 text-text-muted/60 shrink-0 ml-2" />
                   </button>
                 )
               })}
@@ -274,7 +274,7 @@ export function DoorConfirmation({
         <Card className="p-4 rounded-xl border-border-custom">
           <h3 className="font-semibold text-navy text-sm mb-2">Cutouts ({specs.cutouts.length})</h3>
           {specs.cutouts.map((c, i) => (
-            <div key={i} className="text-sm py-1 border-b border-gray-50 last:border-0">
+            <div key={i} className="text-sm py-1 border-b border-border-custom/40 last:border-0">
               <span className="text-text-muted text-xs">Cutout {i + 1}:</span>{" "}
               <span className="font-medium">
                 {c.floorToBottom} → {c.floorToTop}, Width: {c.frameWidth}
@@ -290,7 +290,7 @@ export function DoorConfirmation({
           <h3 className="font-semibold text-navy text-sm mb-2">Additional Items</h3>
           <div className="flex flex-wrap gap-2">
             {specs.additionalItems.map((item, i) => (
-              <span key={i} className="px-3 py-1 bg-blue-50 text-brand-blue text-sm rounded-full font-medium">
+              <span key={i} className="px-3 py-1 bg-brand-blue/10 text-brand-blue text-sm rounded-full font-medium">
                 {item}
               </span>
             ))}
@@ -302,7 +302,7 @@ export function DoorConfirmation({
       {specs.specialNotes && (
         <Card className="p-4 rounded-xl border-border-custom">
           <h3 className="font-semibold text-navy text-sm mb-1">Special Notes</h3>
-          <p className="text-sm text-gray-700">{specs.specialNotes}</p>
+          <p className="text-sm text-text-primary">{specs.specialNotes}</p>
         </Card>
       )}
 
@@ -337,7 +337,7 @@ export function DoorConfirmation({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Mic className="h-4 w-4 text-[#E8792B]" />
-            <p className="text-xs text-gray-500">Add materials by voice or text</p>
+            <p className="text-xs text-text-secondary">Add materials by voice or text</p>
           </div>
           <AIInput
             onParseComplete={onAddComponents}
@@ -352,13 +352,13 @@ export function DoorConfirmation({
               return (
                 <div
                   key={`${comp.productId}-${index}`}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-border-custom/40 last:border-0"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{comp.productName}</p>
+                    <p className="text-sm font-medium text-navy truncate">{comp.productName}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className={cn("h-1.5 w-1.5 rounded-full", hasEnough ? "bg-green-500" : "bg-red-500")} />
-                      <span className={cn("text-xs", hasEnough ? "text-green-600" : "text-red-500")}>
+                      <span className={cn("text-xs", hasEnough ? "text-status-green" : "text-status-red")}>
                         {formatQuantity(comp.currentQty)} {comp.unitOfMeasure} in stock
                       </span>
                     </div>
@@ -370,9 +370,9 @@ export function DoorConfirmation({
                       step="any"
                       value={comp.qtyUsed}
                       onChange={(e) => onComponentChange(index, Number(e.target.value) || 0)}
-                      className="w-16 rounded-lg border border-gray-200 px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-16 rounded-lg border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <span className="text-xs text-gray-500 w-8">{comp.unitOfMeasure}</span>
+                    <span className="text-xs text-text-secondary w-8">{comp.unitOfMeasure}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -390,7 +390,7 @@ export function DoorConfirmation({
         )}
 
         {components.length === 0 && (
-          <p className="text-sm text-gray-400 text-center py-4">
+          <p className="text-sm text-text-muted text-center py-4">
             Add components from the catalog or skip for now
           </p>
         )}
@@ -406,7 +406,7 @@ export function DoorConfirmation({
           <Factory className="h-5 w-5 mr-2" />
           {isSubmitting ? "Creating..." : "Submit Door Sheet for Approval"}
         </Button>
-        <Button variant="ghost" onClick={onBack} className="w-full text-gray-400">
+        <Button variant="ghost" onClick={onBack} className="w-full text-text-muted">
           Back
         </Button>
       </div>

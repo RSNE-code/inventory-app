@@ -38,9 +38,9 @@ export function InventoryForecastChart({
       <Card className="p-4 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy text-sm mb-2">Projected Inventory</h3>
         <div className="text-center py-6 text-text-muted text-sm">
-          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />
           <p>Not enough data to project</p>
-          <p className="text-xs text-gray-400 mt-1">Need at least 3 recent transactions</p>
+          <p className="text-xs text-text-muted mt-1">Need at least 3 recent transactions</p>
         </div>
       </Card>
     )

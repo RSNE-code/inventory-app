@@ -14,6 +14,7 @@ import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useHaptic } from "@/hooks/use-haptic"
+import { useCelebration } from "@/hooks/use-celebration"
 import { StepProgress } from "@/components/layout/step-progress"
 import type {
   CatalogMatch,
@@ -32,6 +33,7 @@ export function BomAIFlow() {
   const confirmedSectionRef = useRef<HTMLDivElement>(null)
   const submitSectionRef = useRef<HTMLDivElement>(null)
   const haptic = useHaptic()
+  const { celebrate } = useCelebration()
 
   const [phase, setPhase] = useState<"INPUT" | "BUILD">("INPUT")
   const [jobName, setJobName] = useState("")
@@ -287,6 +289,7 @@ export function BomAIFlow() {
       })
       setSubmitted(true)
       setShowSuccessOverlay(true)
+      celebrate()
       setTimeout(() => {
         router.push("/boms")
       }, 1200)
@@ -437,14 +440,14 @@ export function BomAIFlow() {
           )}
         >
           {/* Header bar */}
-          <div className="flex items-center justify-between px-4 py-3 bg-green-50/60 border-b border-green-100">
+          <div className="flex items-center justify-between px-4 py-3 bg-status-green/10 border-b border-status-green/20">
             <div className="flex items-center gap-2">
               {justConfirmedAll && (
                 <div className="circle-checkbox checked" style={{ width: 20, height: 20 }}>
                   <Check className="h-3 w-3 text-white" />
                 </div>
               )}
-              <h3 className="text-sm font-bold text-green-800">
+              <h3 className="text-sm font-bold text-status-green">
                 {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} on BOM
               </h3>
             </div>
@@ -473,7 +476,7 @@ export function BomAIFlow() {
                         className={cn(
                           "text-[10px] px-1.5 py-0 rounded-md shrink-0",
                           item.tier === "TIER_1"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            ? "bg-brand-blue/10 text-brand-blue border-brand-blue/30"
                             : "bg-purple-50 text-purple-700 border-purple-200"
                         )}
                       >
@@ -493,9 +496,9 @@ export function BomAIFlow() {
                         <span
                           className={cn(
                             "text-[11px] font-medium",
-                            stockLevel === "sufficient" && "text-green-600",
+                            stockLevel === "sufficient" && "text-status-green",
                             stockLevel === "low" && "text-yellow-600",
-                            stockLevel === "out" && "text-red-500"
+                            stockLevel === "out" && "text-status-red"
                           )}
                         >
                           {item.currentQty} {item.unitOfMeasure} in stock
@@ -517,7 +520,7 @@ export function BomAIFlow() {
                     <button
                       type="button"
                       onClick={() => handleRemoveConfirmed(index)}
-                      className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted/30 hover:text-red-500 hover:bg-red-50 transition-all"
+                      className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted/30 hover:text-status-red hover:bg-status-red/10 transition-all"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -534,7 +537,7 @@ export function BomAIFlow() {
         <button
           type="button"
           onClick={() => setAddRowOpen(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-brand-blue/20 text-brand-blue hover:bg-blue-50/30 hover:border-brand-blue/40 transition-all ios-press"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-brand-blue/20 text-brand-blue hover:bg-brand-blue/10 hover:border-brand-blue/40 transition-all ios-press"
         >
           <Plus className="h-4 w-4" />
           <span className="text-sm font-semibold">Add item</span>

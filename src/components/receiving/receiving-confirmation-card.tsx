@@ -33,10 +33,10 @@ export function ReceivingConfirmationCard({
 
   const confidenceColor =
     match.matchConfidence >= 0.8
-      ? "text-green-600"
+      ? "text-status-green"
       : match.matchConfidence >= 0.5
         ? "text-yellow-600"
-        : "text-red-500"
+        : "text-status-red"
 
   const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog
 
@@ -57,13 +57,13 @@ export function ReceivingConfirmationCard({
     <div
       className={cn(
         "rounded-lg border p-4 space-y-3",
-        isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-gray-200 bg-white"
+        isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-border-custom bg-white"
       )}
     >
       {/* Header: product info + actions */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-base text-gray-900">
+          <p className="font-semibold text-base text-navy">
             {match.matchedProduct?.name ?? match.parsedItem.name}
           </p>
 
@@ -72,7 +72,7 @@ export function ReceivingConfirmationCard({
               <Badge variant="secondary" className="text-xs">
                 {match.matchedProduct.categoryName}
               </Badge>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-text-secondary">
                 In stock: {match.matchedProduct.currentQty} {match.matchedProduct.unitOfMeasure}
               </span>
             </div>
@@ -91,7 +91,7 @@ export function ReceivingConfirmationCard({
             </div>
           )}
 
-          <p className="text-xs text-gray-400 mt-1 truncate">
+          <p className="text-xs text-text-muted mt-1 truncate">
             Parsed from: &ldquo;{match.parsedItem.rawText}&rdquo;
           </p>
         </div>
@@ -100,7 +100,7 @@ export function ReceivingConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-green-600 hover:bg-green-50"
+            className="h-10 w-10 text-status-green hover:bg-status-green/10"
             onClick={() => handleAccept()}
           >
             <Check className="h-5 w-5" />
@@ -108,7 +108,7 @@ export function ReceivingConfirmationCard({
           <Button
             size="icon"
             variant="ghost"
-            className="h-10 w-10 text-red-500 hover:bg-red-50"
+            className="h-10 w-10 text-status-red hover:bg-status-red/10"
             onClick={() => onReject(match)}
           >
             <X className="h-5 w-5" />
@@ -119,17 +119,17 @@ export function ReceivingConfirmationCard({
       {/* Editable field: qty only */}
       <div className="flex items-center gap-3">
         <div className="flex-1">
-          <label className="text-xs text-gray-500 mb-1 block">Qty Received</label>
+          <label className="text-xs text-text-secondary mb-1 block">Qty Received</label>
           <input
             type="number"
             min={0}
             step="any"
             value={quantity}
             onChange={(e) => handleQtyChange(Number(e.target.value) || 0)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-border-custom px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="text-xs text-gray-400 pt-5">
+        <div className="text-xs text-text-muted pt-5">
           {match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure}
         </div>
       </div>
@@ -138,7 +138,7 @@ export function ReceivingConfirmationCard({
       {match.alternativeMatches && match.alternativeMatches.length > 0 && (
         <div>
           <button
-            className="text-xs text-blue-600 flex items-center gap-1"
+            className="text-xs text-brand-blue flex items-center gap-1"
             onClick={() => setShowAlternatives(!showAlternatives)}
           >
             {showAlternatives ? (
@@ -155,7 +155,7 @@ export function ReceivingConfirmationCard({
               {match.alternativeMatches.map((alt) => (
                 <button
                   key={alt.id}
-                  className="block w-full text-left text-sm px-3 py-2 rounded hover:bg-gray-50 border border-gray-100"
+                  className="block w-full text-left text-sm px-3 py-2 rounded hover:bg-surface-secondary border border-border-custom/40"
                   onClick={() => handleAccept(alt.id)}
                 >
                   <span>{alt.name}</span>
@@ -196,7 +196,7 @@ export function ReceivingConfirmationList({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm text-gray-700">
+        <h3 className="font-semibold text-sm text-text-primary">
           {matches.length} item{matches.length !== 1 ? "s" : ""} parsed
         </h3>
         {allHighConfidence && matches.length > 1 && (

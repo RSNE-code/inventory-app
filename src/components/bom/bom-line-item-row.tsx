@@ -217,7 +217,7 @@ export function BomLineItemRow({
                 )}
                 className={`inline-flex items-center gap-1 mt-1 px-3 py-1.5 min-h-[44px] rounded-xl text-[11px] font-semibold transition-colors ${
                   fabricationSource === "RSNE_MADE"
-                    ? "bg-green-50 text-green-700 border border-green-200 active:bg-green-100"
+                    ? "bg-status-green/10 text-green-700 border border-green-200 active:bg-green-100"
                     : "bg-blue-50 text-blue-700 border border-blue-200 active:bg-blue-100"
                 }`}
               >
@@ -230,7 +230,7 @@ export function BomLineItemRow({
             ) : (
               <span className={`inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                 fabricationSource === "RSNE_MADE"
-                  ? "bg-green-50 text-green-700"
+                  ? "bg-status-green/10 text-green-700"
                   : "bg-blue-50 text-blue-700"
               }`}>
                 {fabricationSource === "RSNE_MADE" ? (
@@ -293,7 +293,7 @@ export function BomLineItemRow({
               size="icon"
               aria-label="Remove item"
               onClick={onRemove}
-              className="h-11 w-11 shrink-0 rounded-xl text-status-red hover:text-status-red hover:bg-red-50"
+              className="h-11 w-11 shrink-0 rounded-xl text-status-red hover:text-status-red hover:bg-status-red/10"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

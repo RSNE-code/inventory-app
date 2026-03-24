@@ -30,9 +30,9 @@ function SpecRow({
   if (value === undefined || value === null || value === "") return null
   const display = typeof value === "boolean" ? (value ? "Yes" : "No") : String(value)
   return (
-    <div className={cn("flex justify-between py-1.5 border-b border-gray-100 last:border-0", className)}>
-      <span className="text-xs text-gray-500 uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{display}</span>
+    <div className={cn("flex justify-between py-1.5 border-b border-border-custom/40 last:border-0", className)}>
+      <span className="text-xs text-text-secondary uppercase tracking-wide">{label}</span>
+      <span className="text-sm font-medium text-navy">{display}</span>
     </div>
   )
 }
@@ -51,12 +51,12 @@ function CheckboxRow({
           "h-4 w-4 rounded border flex items-center justify-center",
           checked
             ? "bg-navy border-navy text-white"
-            : "border-gray-300 bg-white"
+            : "border-border-custom bg-white"
         )}
       >
         {checked && <span className="text-[12px] font-bold">&#10003;</span>}
       </div>
-      <span className="text-sm text-gray-700">{label}</span>
+      <span className="text-sm text-text-primary">{label}</span>
     </div>
   )
 }
@@ -84,7 +84,7 @@ export function DoorSpecSheet({
       <div className="bg-navy text-white px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[12px] uppercase tracking-widest text-gray-300">
+            <p className="text-[12px] uppercase tracking-widest text-text-muted/60">
               Refrigerated Structures of New England
             </p>
             <h3 className="text-base font-bold mt-0.5">
@@ -126,18 +126,18 @@ export function DoorSpecSheet({
           <div className="flex gap-4">
             {specs.serialNumber && (
               <div>
-                <span className="text-xs text-gray-500">Serial #</span>
+                <span className="text-xs text-text-secondary">Serial #</span>
                 <p className="text-sm font-semibold">{specs.serialNumber}</p>
               </div>
             )}
             {specs.quantity && specs.quantity > 0 && (
               <div>
-                <span className="text-xs text-gray-500">Qty</span>
+                <span className="text-xs text-text-secondary">Qty</span>
                 <p className="text-sm font-semibold">{specs.quantity}</p>
               </div>
             )}
             <div>
-              <span className="text-xs text-gray-500">Label</span>
+              <span className="text-xs text-text-secondary">Label</span>
               <p className="text-sm font-semibold">{specs.label ? "Yes" : "No"}</p>
             </div>
           </div>
@@ -146,10 +146,10 @@ export function DoorSpecSheet({
         {/* Dimensions */}
         <div>
           <SectionHeader>Dimensions</SectionHeader>
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-surface-secondary rounded-lg p-3">
             <div className="text-center mb-2">
               <p className="text-2xl font-bold text-navy">{formatDoorSize(specs) || "---"}</p>
-              <p className="text-xs text-gray-500">Size in Clear (W x H)</p>
+              <p className="text-xs text-text-secondary">Size in Clear (W x H)</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <SpecRow label="Wall Thickness" value={specs.wallThickness} />
@@ -205,8 +205,8 @@ export function DoorSpecSheet({
           <SectionHeader>Hardware</SectionHeader>
           <div className="space-y-1">
             {(specs.hingeMfrName || specs.hingeModel) && (
-              <div className="bg-gray-50 rounded-lg p-2">
-                <p className="text-xs text-gray-500 mb-1">Hinges</p>
+              <div className="bg-surface-secondary rounded-lg p-2">
+                <p className="text-xs text-text-secondary mb-1">Hinges</p>
                 <div className="grid grid-cols-2 gap-2">
                   <SpecRow label="Mfr" value={specs.hingeMfrName} />
                   <SpecRow label="Model" value={specs.hingeModel} />
@@ -215,8 +215,8 @@ export function DoorSpecSheet({
               </div>
             )}
             {(specs.latchMfrName || specs.latchModel) && (
-              <div className="bg-gray-50 rounded-lg p-2">
-                <p className="text-xs text-gray-500 mb-1">Latch</p>
+              <div className="bg-surface-secondary rounded-lg p-2">
+                <p className="text-xs text-text-secondary mb-1">Latch</p>
                 <div className="grid grid-cols-2 gap-2">
                   <SpecRow label="Mfr" value={specs.latchMfrName} />
                   <SpecRow label="Model" value={specs.latchModel} />
@@ -262,7 +262,7 @@ export function DoorSpecSheet({
         {specs.specialNotes && (
           <div>
             <SectionHeader>Special Notes</SectionHeader>
-            <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+            <p className="text-sm text-text-primary bg-status-yellow/10 p-3 rounded-lg border border-status-yellow/30">
               {specs.specialNotes}
             </p>
           </div>
@@ -284,14 +284,14 @@ export function DoorSpecSheet({
           </div>
           <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
             <div>
-              <span className="text-xs text-gray-500">By</span>
-              <p className="font-medium border-b border-gray-300 min-h-[1.5rem]">
+              <span className="text-xs text-text-secondary">By</span>
+              <p className="font-medium border-b border-border-custom min-h-[1.5rem]">
                 {approvedBy || ""}
               </p>
             </div>
             <div>
-              <span className="text-xs text-gray-500">Date</span>
-              <p className="font-medium border-b border-gray-300 min-h-[1.5rem]">
+              <span className="text-xs text-text-secondary">Date</span>
+              <p className="font-medium border-b border-border-custom min-h-[1.5rem]">
                 {approvedAt ? new Date(approvedAt).toLocaleDateString() : ""}
               </p>
             </div>

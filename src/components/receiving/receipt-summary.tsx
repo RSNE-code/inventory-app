@@ -83,9 +83,9 @@ export function ReceiptSummary({
         <h3 className="font-semibold text-navy mb-3">Receipt Summary</h3>
 
         {/* Supplier */}
-        <div className="flex items-center justify-between py-2 border-b border-gray-100">
-          <span className="text-sm text-gray-500">Supplier</span>
-          <span className="text-sm font-medium text-gray-900">{supplier.name}</span>
+        <div className="flex items-center justify-between py-2 border-b border-border-custom/40">
+          <span className="text-sm text-text-secondary">Supplier</span>
+          <span className="text-sm font-medium text-navy">{supplier.name}</span>
         </div>
 
         {/* Panel breakout groups */}
@@ -123,9 +123,9 @@ export function ReceiptSummary({
                     return (
                       <div
                         key={`panel-${gi}-${i}`}
-                        className="flex items-center justify-between py-1.5 border-b border-gray-50"
+                        className="flex items-center justify-between py-1.5 border-b border-border-custom/40"
                       >
-                        <span className="text-sm text-gray-700">
+                        <span className="text-sm text-text-primary">
                           {item.panelHeight}&apos; tall
                         </span>
                         <span className="text-sm font-bold text-navy tabular-nums">
@@ -158,10 +158,10 @@ export function ReceiptSummary({
           {nonPanelCatalogItems.map((item, i) => (
             <div
               key={`${item.productId}-${i}`}
-              className="flex items-center justify-between py-2 border-b border-gray-50"
+              className="flex items-center justify-between py-2 border-b border-border-custom/40"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-navy truncate">
                   {item.productName}
                 </p>
               </div>
@@ -173,16 +173,16 @@ export function ReceiptSummary({
 
           {nonCatalogItems.length > 0 && (
             <>
-              <p className="text-xs text-gray-400 pt-2">Non-catalog items (logged only)</p>
+              <p className="text-xs text-text-muted pt-2">Non-catalog items (logged only)</p>
               {nonCatalogItems.map((item, i) => (
                 <div
                   key={`nc-${i}`}
-                  className="flex items-center justify-between py-2 border-b border-gray-50 opacity-60"
+                  className="flex items-center justify-between py-2 border-b border-border-custom/40 opacity-60"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700 truncate">{item.productName}</p>
+                    <p className="text-sm text-text-primary truncate">{item.productName}</p>
                   </div>
-                  <span className="text-sm text-gray-500 ml-3 tabular-nums">
+                  <span className="text-sm text-text-secondary ml-3 tabular-nums">
                     {item.quantity} {item.unitOfMeasure}
                   </span>
                 </div>
@@ -192,8 +192,8 @@ export function ReceiptSummary({
         </div>
 
         {/* Item count */}
-        <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-200">
-          <span className="text-sm font-semibold text-gray-700">Total</span>
+        <div className="flex items-center justify-between pt-3 mt-2 border-t border-border-custom">
+          <span className="text-sm font-semibold text-text-primary">Total</span>
           <span className="text-sm font-semibold text-navy">
             {items.length} item{items.length !== 1 ? "s" : ""}
           </span>

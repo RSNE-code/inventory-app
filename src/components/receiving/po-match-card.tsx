@@ -66,7 +66,7 @@ export function POMatchCard({ matchedPO, supplierId, onConfirm, onSkip }: POMatc
 
   const confidenceColor =
     matchedPO.confidence >= 0.7
-      ? "text-status-green bg-green-50 border-status-green/20"
+      ? "text-status-green bg-status-green/10 border-status-green/20"
       : matchedPO.confidence >= 0.5
         ? "text-brand-orange bg-orange-50 border-brand-orange/20"
         : "text-text-muted bg-surface-secondary border-border-custom"
@@ -248,7 +248,7 @@ function ExpandablePO({ po }: { po: MatchedPO }) {
                           x{li.qtyOrdered}
                         </span>
                         {isComplete && (
-                          <span className="text-[12px] font-bold text-status-green bg-green-50 px-2 py-0.5 rounded-full">
+                          <span className="text-[12px] font-bold text-status-green bg-status-green/10 px-2 py-0.5 rounded-full">
                             RECEIVED
                           </span>
                         )}
@@ -331,7 +331,7 @@ function POSearchView({
           {searchText && (
             <button
               onClick={() => onSearchChange("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-gray-200 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-border-custom transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>

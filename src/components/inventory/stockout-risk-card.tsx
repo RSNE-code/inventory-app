@@ -70,9 +70,9 @@ export function StockoutRiskCard({
       <Card className="p-4 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy text-sm mb-2">Stockout Risk</h3>
         <div className="text-center py-4 text-text-muted text-sm">
-          <TrendingDown className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+          <TrendingDown className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />
           <p>Not enough consumption data to estimate risk</p>
-          <p className="text-xs text-gray-400 mt-1">Need at least 3 checkout transactions</p>
+          <p className="text-xs text-text-muted mt-1">Need at least 3 checkout transactions</p>
         </div>
       </Card>
     )
@@ -94,15 +94,15 @@ export function StockoutRiskCard({
   }
 
   const riskBgColors = {
-    safe: "bg-green-50 border-green-200",
+    safe: "bg-status-green/10 border-status-green/30",
     watch: "bg-yellow-50 border-yellow-200",
-    critical: "bg-red-50 border-red-200",
+    critical: "bg-status-red/10 border-status-red/30",
   }
 
   const riskBadgeColors = {
-    safe: "bg-green-100 text-green-700",
+    safe: "bg-status-green/20 text-status-green",
     watch: "bg-yellow-100 text-yellow-700",
-    critical: "bg-red-100 text-red-700",
+    critical: "bg-status-red/20 text-status-red",
   }
 
   // Gauge position: 0% = critical, 100% = safe

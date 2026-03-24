@@ -38,7 +38,7 @@ export function ReceiptHistory() {
         {searchText && (
           <button
             onClick={() => setSearchText("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-gray-200 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-surface-secondary transition-colors"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -164,7 +164,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
               {itemCount} item{itemCount !== 1 ? "s" : ""}
             </span>
             {isVoided && (
-              <span className="text-sm font-bold text-status-red bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="text-sm font-bold text-status-red bg-status-red/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Voided
               </span>
             )}
@@ -248,7 +248,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
 
               {/* Void confirmation */}
               {showVoidConfirm ? (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 border border-red-100 animate-fade-in">
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-status-red/10 border border-red-100 animate-fade-in">
                   <AlertTriangle className="h-4 w-4 text-status-red shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-status-red">

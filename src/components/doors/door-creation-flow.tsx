@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { StepProgress } from "@/components/layout/step-progress"
 import { toast } from "sonner"
+import { useCelebration } from "@/hooks/use-celebration"
 import { Hammer, LayoutTemplate } from "lucide-react"
 import type { DoorSpecs } from "@/lib/door-specs"
 import { getDefaultSpecs, getStandardHardware } from "@/lib/door-specs"
@@ -34,6 +35,7 @@ interface ComponentItem {
 
 export function DoorCreationFlow() {
   const router = useRouter()
+  const { celebrate } = useCelebration()
   const createAssembly = useCreateAssembly()
   const { data: templatesData } = useAssemblyTemplates()
 
@@ -180,6 +182,7 @@ export function DoorCreationFlow() {
         })),
       })
       toast.success("Door sheet submitted for approval")
+      celebrate()
       router.push(`/assemblies/${result.data.id}`)
     } catch (err) {
       toast.error(
@@ -217,7 +220,7 @@ export function DoorCreationFlow() {
               </div>
               <div>
                 <h3 className="font-bold text-navy text-lg">Door Builder</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-text-secondary">
                   Step-by-step guided interview
                 </p>
               </div>
@@ -238,7 +241,7 @@ export function DoorCreationFlow() {
                 </div>
                 <div>
                   <h3 className="font-bold text-navy text-lg">Use Template</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-text-secondary">
                     Start from a pre-built door spec
                   </p>
                 </div>
@@ -271,7 +274,7 @@ export function DoorCreationFlow() {
           <Button
             variant="ghost"
             onClick={() => setPhase("ENTRY")}
-            className="w-full text-gray-400"
+            className="w-full text-text-muted"
           >
             Back
           </Button>

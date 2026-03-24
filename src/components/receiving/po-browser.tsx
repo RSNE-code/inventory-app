@@ -57,7 +57,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
           {searchText && (
             <button
               onClick={() => setSearchText("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-gray-200 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-surface-secondary flex items-center justify-center text-text-muted hover:text-navy hover:bg-border-custom transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>

@@ -51,7 +51,7 @@ export function InventoryTrendChart() {
       <Card className="p-4 rounded-xl border-border-custom shadow-brand">
         <h3 className="font-semibold text-navy text-sm tracking-tight mb-3">Inventory Value Trend</h3>
         <div className="text-center py-8 text-text-muted text-sm">
-          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+          <TrendingUp className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />
           <p>Not enough data to chart</p>
         </div>
       </Card>

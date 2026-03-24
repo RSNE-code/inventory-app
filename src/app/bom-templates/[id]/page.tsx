@@ -188,7 +188,11 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
     return (
       <div>
         <Header title="Template Detail" showBack />
-        <div className="text-center py-12 text-text-muted">Loading...</div>
+        <div className="p-4 space-y-3">
+          <div className="h-20 rounded-xl skeleton-shimmer" />
+          <div className="h-48 rounded-xl skeleton-shimmer stagger-1" />
+          <div className="h-32 rounded-xl skeleton-shimmer stagger-2" />
+        </div>
       </div>
     )
   }
@@ -364,7 +368,7 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
                         onClick={() =>
                           setPendingRemovals((prev) => [...prev, lineId])
                         }
-                        className="h-9 w-9 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
+                        className="h-9 w-9 shrink-0 text-status-red hover:text-status-red hover:bg-status-red/10"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

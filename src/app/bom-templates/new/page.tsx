@@ -264,7 +264,7 @@ export default function NewBomTemplatePage() {
                           onClick={() =>
                             setLineItems((prev) => prev.filter((i) => i.tempId !== item.tempId))
                           }
-                          className="h-9 w-9 shrink-0 text-status-red hover:text-status-red hover:bg-red-50"
+                          className="h-9 w-9 shrink-0 text-status-red hover:text-status-red hover:bg-status-red/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
