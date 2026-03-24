@@ -113,9 +113,52 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
   // Step history for back navigation
   const [history, setHistory] = useState<BuilderStep[]>([])
 
+  // Map steps to their corresponding spec field so we can restore values on back nav
+  const STEP_SPEC_FIELD: Partial<Record<BuilderStep, keyof DoorSpecs>> = {
+    SWING_WIDTH: "widthInClear",
+    SWING_HEIGHT: "heightInClear",
+    SWING_JAMB: "jambDepth",
+    SWING_SILL_HEIGHT: "sillHeight",
+    SLIDER_WIDTH: "widthInClear",
+    SLIDER_HEIGHT: "heightInClear",
+  }
+
+  function restoreInputForStep(targetStep: BuilderStep) {
+    const field = STEP_SPEC_FIELD[targetStep]
+    if (field && specs[field] != null && specs[field] !== "") {
+      setInputValue(String(specs[field]))
+    } else {
+      setInputValue("")
+    }
+
+    // Restore cutouts from specs when going back to cutout detail
+    if (targetStep === "SWING_CUTOUT_DETAIL" && specs.cutouts && specs.cutouts.length > 0) {
+      setCutouts([...specs.cutouts])
+    }
+
+    // Restore custom frame dimensions
+    if (targetStep === "SWING_FRAME_CUSTOM") {
+      setFrameLHS(specs.frameLHS || "")
+      setFrameRHS(specs.frameRHS || "")
+      setFrameTop(specs.frameTop || "")
+    }
+
+    // Restore hardware selections
+    if (targetStep === "SWING_HARDWARE_CUSTOM") {
+      if (specs.hingeMfrName && specs.hingeModel) {
+        setSelectedHinge(`${specs.hingeMfrName}|${specs.hingeModel}`)
+      }
+      if (specs.latchMfrName && specs.latchModel) {
+        setSelectedLatch(`${specs.latchMfrName}|${specs.latchModel}`)
+      }
+      if (specs.closerModel) setSelectedCloser(specs.closerModel)
+      if (specs.insideRelease) setSelectedRelease(specs.insideRelease)
+    }
+  }
+
   function goTo(next: BuilderStep) {
     setHistory((h) => [...h, step])
-    setInputValue("")
+    restoreInputForStep(next)
     setStep(next)
   }
 
@@ -126,7 +169,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
     }
     const prev = history[history.length - 1]
     setHistory((h) => h.slice(0, -1))
-    setInputValue("")
+    restoreInputForStep(prev)
     setStep(prev)
   }
 
@@ -165,7 +208,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
       targetStep = "TYPE" as BuilderStep
     }
     setHistory(newHistory)
-    setInputValue("")
+    restoreInputForStep(targetStep)
     setStep(targetStep)
   }
 
