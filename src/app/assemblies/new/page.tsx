@@ -161,7 +161,7 @@ export default function NewAssemblyPage() {
 
   return (
     <div>
-      <Header title="New Assembly" showBack />
+      <Header title="New Assembly" />
       <Breadcrumb items={[
         { label: "Assemblies", href: "/assemblies" },
         ...(step === "door-flow" ? [{ label: "Door Shop", href: "/assemblies?queue=DOOR_SHOP" }] : []),
