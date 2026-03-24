@@ -128,6 +128,7 @@ model User {
   cycleCounts     CycleCount[]
   notifications   Notification[]
   doorApprovals   Assembly[]           @relation("DoorApprover")
+  assemblyStarts  Assembly[]           @relation("AssemblyStarter")
   assemblyChanges AssemblyChangeLog[]
   projectedJobs   ProjectedJob[]
   matchHistory    MatchHistory[]
@@ -393,6 +394,8 @@ model Assembly {
 
   producedBy   User   @relation(fields: [producedById], references: [id])
   producedById String
+  startedBy    User?  @relation("AssemblyStarter", fields: [startedById], references: [id])
+  startedById  String?
   startedAt    DateTime?
   completedAt  DateTime?
   shippedAt    DateTime?

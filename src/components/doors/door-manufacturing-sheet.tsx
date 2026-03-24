@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { formatDoorSize, getFrameTypeLabel } from "@/lib/door-specs"
+import { formatDoorSize } from "@/lib/door-specs"
 import type { DoorSpecs } from "@/lib/door-specs"
 
 interface DoorManufacturingSheetProps {
@@ -39,16 +39,41 @@ function MfgField({
   large?: boolean
 }) {
   return (
-    <div className="flex items-baseline gap-2 py-2 border-b border-border-custom">
-      <span className="text-sm font-bold uppercase shrink-0">{label}</span>
+    <div className="flex items-baseline gap-3 py-2 border-b border-border-custom">
+      <span className="text-sm font-bold uppercase shrink-0 w-28">{label}</span>
       <span
         className={cn(
-          "flex-1 border-b border-transparent",
+          "flex-1 tabular-nums",
           large ? "text-lg font-bold" : "text-sm font-medium"
         )}
       >
         {value || "\u00A0"}
       </span>
+    </div>
+  )
+}
+
+/** Hardware box for manufacturing sheet — compact with part # */
+function MfgHardwareBox({
+  title,
+  partNumber,
+  offset,
+}: {
+  title: string
+  partNumber?: string
+  offset?: string
+}) {
+  return (
+    <div className="bg-surface-secondary rounded-lg p-2.5">
+      <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{title}</p>
+      <p className="text-sm font-semibold text-navy tabular-nums">
+        {partNumber || "\u00A0"}
+      </p>
+      {offset && (
+        <p className="text-xs text-text-secondary mt-0.5">
+          Offset: {offset}
+        </p>
+      )}
     </div>
   )
 }
@@ -85,8 +110,8 @@ export function DoorManufacturingSheet({
 
         {/* Serial # */}
         <div className="flex items-center gap-6 py-2 border-b border-border-custom">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold uppercase">SERIAL #</span>
+          <div className="flex items-baseline gap-3">
+            <span className="text-sm font-bold uppercase w-28 shrink-0">SERIAL #</span>
             <span className="text-sm font-medium">
               {specs.serialNumber || "\u00A0"}
             </span>
@@ -101,15 +126,10 @@ export function DoorManufacturingSheet({
         <MfgField
           label="JOB NAME"
           value={
-            [specs.jobName, specs.jobSiteName].filter(Boolean).join("\n") ||
+            [specs.jobName, specs.jobSiteName].filter(Boolean).join(" — ") ||
             undefined
           }
         />
-        {specs.jobSiteName && (
-          <div className="pl-20 -mt-1 pb-2 border-b border-border-custom">
-            <span className="text-sm font-medium">{specs.jobSiteName}</span>
-          </div>
-        )}
 
         {/* Cooler / Freezer */}
         <div className="flex items-center gap-8 py-3 border-b border-border-custom">
@@ -118,9 +138,9 @@ export function DoorManufacturingSheet({
         </div>
 
         {/* Door Size */}
-        <div className="flex items-baseline gap-2 py-3 border-b border-border-custom">
-          <span className="text-sm font-bold uppercase">DOOR SIZE</span>
-          <span className="text-xl font-extrabold tracking-wide">
+        <div className="flex items-baseline gap-3 py-3 border-b border-border-custom">
+          <span className="text-sm font-bold uppercase w-28 shrink-0">DOOR SIZE</span>
+          <span className="text-xl font-extrabold tracking-wide tabular-nums">
             {formatDoorSize(specs) || "\u00A0"}
           </span>
         </div>
@@ -149,26 +169,35 @@ export function DoorManufacturingSheet({
 
         {/* Jamb Depth / Heater */}
         <div className="flex items-center gap-6 py-2 border-b border-border-custom">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold uppercase">JAMB DEPTH</span>
-            <span className="text-sm font-semibold">
-              {specs.jambDepth || "\u00A0"}
+          <div className="flex items-baseline gap-3">
+            <span className="text-sm font-bold uppercase w-28 shrink-0">JAMB DEPTH</span>
+            <span className="text-base font-semibold tabular-nums">
+              {specs.jambDepth ? (specs.jambDepth.includes('"') ? specs.jambDepth : `${specs.jambDepth}"`) : "\u00A0"}
             </span>
           </div>
           {isFreezer && (
             <div className="flex items-baseline gap-2">
               <span className="text-sm font-bold uppercase">HEATER SIZE</span>
-              <span className="text-sm font-semibold">
+              <span className="text-base font-semibold tabular-nums">
                 {specs.heaterSize || "\u00A0"}
               </span>
             </div>
           )}
         </div>
 
+        {/* Insulation */}
+        <div className="flex items-baseline gap-3 py-2 border-b border-border-custom">
+          <span className="text-sm font-bold uppercase w-28 shrink-0">INSULATION</span>
+          <span className="text-sm font-semibold">
+            {specs.insulationType || specs.insulation || "\u00A0"}
+            {specs.panelThickness ? ` ${specs.panelThickness}` : ""}
+          </span>
+        </div>
+
         {/* Finish + Hinge/Slide Side */}
         <div className="flex items-center gap-4 py-2 border-b border-border-custom">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold uppercase">FINISH</span>
+          <div className="flex items-baseline gap-3">
+            <span className="text-sm font-bold uppercase w-28 shrink-0">FINISH</span>
             <span className="text-sm font-semibold">
               {specs.finish || "\u00A0"}
             </span>
@@ -196,55 +225,27 @@ export function DoorManufacturingSheet({
           </div>
         </div>
 
-        {/* Hardware */}
-        <div className="py-2 border-b border-border-custom space-y-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold uppercase">
-              HINGE MFR&apos;S NAME
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 pl-4">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs font-bold text-text-secondary">
-                {specs.hingeMfrName || "\u00A0"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">PART #&apos;S</span>
-              <span className="text-xs font-medium">
-                {specs.closerModel || "\u00A0"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">HINGE</span>
-              <span className="text-xs font-medium">
-                {specs.hingeModel || "\u00A0"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">OFFSET</span>
-              <span className="text-xs font-medium">
-                {specs.hingeOffset || "\u00A0"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">LATCH</span>
-              <span className="text-xs font-medium">
-                {specs.latchModel || "\u00A0"}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">OFFSET</span>
-              <span className="text-xs font-medium">
-                {specs.latchOffset || "\u00A0"}
-              </span>
-            </div>
-            <div className="col-span-2 flex items-baseline gap-1">
-              <span className="text-xs text-text-secondary">INSIDE RELEASE</span>
-              <span className="text-xs font-medium">
-                {specs.insideRelease || "\u00A0"}
-              </span>
-            </div>
+        {/* Hardware — 4-box grid */}
+        <div className="py-3 border-b border-border-custom">
+          <span className="text-sm font-bold uppercase block mb-2">HARDWARE</span>
+          <div className="grid grid-cols-2 gap-2">
+            <MfgHardwareBox
+              title="HINGE"
+              partNumber={[specs.hingeMfrName, specs.hingeModel].filter(Boolean).join(" ") || undefined}
+              offset={specs.hingeOffset}
+            />
+            <MfgHardwareBox
+              title="LATCH"
+              partNumber={[specs.latchMfrName, specs.latchModel].filter(Boolean).join(" ") || undefined}
+            />
+            <MfgHardwareBox
+              title="CLOSER"
+              partNumber={specs.closerModel}
+            />
+            <MfgHardwareBox
+              title="INSIDE RELEASE"
+              partNumber={specs.insideRelease}
+            />
           </div>
         </div>
 
@@ -262,6 +263,17 @@ export function DoorManufacturingSheet({
             />
           </div>
         </div>
+
+        {/* Window */}
+        {specs.windowSize && (
+          <div className="flex items-baseline gap-3 py-2 border-b border-border-custom">
+            <span className="text-sm font-bold uppercase w-28 shrink-0">WINDOW</span>
+            <span className="text-sm font-semibold">
+              {specs.windowSize === "14x14" ? '14" x 14"' : '14" x 24"'}
+              {specs.windowHeated ? " (Heated)" : " (Non-Heated)"}
+            </span>
+          </div>
+        )}
 
         {/* Info line */}
         <MfgField

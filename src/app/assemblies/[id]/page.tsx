@@ -3,6 +3,7 @@
 import { use, useState, useEffect } from "react"
 import { useAssembly, useUpdateAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
+import { useCelebration } from "@/hooks/use-celebration"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { DoorSpecSheet } from "@/components/doors/door-spec-sheet"
 import { DoorManufacturingSheet } from "@/components/doors/door-manufacturing-sheet"
+import { StartBuildModal } from "@/components/shared/start-build-modal"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { Breadcrumb } from "@/components/layout/breadcrumb"
@@ -25,14 +27,15 @@ import {
   Truck,
   FileText,
   ClipboardList,
+  Hammer,
 } from "lucide-react"
 
 const statusColors: Record<string, string> = {
   PLANNED: "bg-surface-secondary text-text-primary",
-  AWAITING_APPROVAL: "bg-status-yellow/10 text-status-yellow",
-  APPROVED: "bg-brand-blue/10 text-brand-blue",
-  IN_PRODUCTION: "bg-brand-orange/10 text-brand-orange",
-  COMPLETED: "bg-status-green/10 text-status-green",
+  AWAITING_APPROVAL: "bg-status-yellow/15 text-status-yellow",
+  APPROVED: "bg-brand-blue/15 text-brand-blue",
+  IN_PRODUCTION: "bg-brand-orange/15 text-brand-orange",
+  COMPLETED: "bg-status-green/15 text-status-green",
   ALLOCATED: "bg-purple-100 text-purple-700",
   SHIPPED: "bg-surface-secondary text-text-secondary",
 }
@@ -61,9 +64,11 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   const { data, isLoading } = useAssembly(id)
   const { data: meData } = useMe()
   const updateAssembly = useUpdateAssembly()
+  const { celebrate } = useCelebration()
   const me = meData?.data
 
   const [approvalNotes, setApprovalNotes] = useState("")
+  const [showStartBuildModal, setShowStartBuildModal] = useState(false)
 
   // Door sheet view toggle
   const [sheetView, setSheetView] = useState<"spec" | "manufacturing">("spec")
@@ -79,7 +84,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
   if (isLoading) {
     return (
-      <div>
+      <div className="overscroll-fix">
         <Header title="Assembly Detail" showBack />
         <div className="p-4 space-y-3">
           <div className="h-20 rounded-xl skeleton-shimmer" />
@@ -92,7 +97,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
   if (!assembly) {
     return (
-      <div>
+      <div className="overscroll-fix">
         <Header title="Assembly Detail" showBack />
         <div className="text-center py-12 text-text-muted">Assembly not found</div>
       </div>
@@ -102,11 +107,14 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   const template = assembly.template as Record<string, unknown> | null
   const producedBy = assembly.producedBy as Record<string, unknown>
   const approvedBy = assembly.approvedBy as Record<string, unknown> | null
+  const startedBy = assembly.startedBy as Record<string, unknown> | null
   const components = assembly.components as Array<Record<string, unknown>>
   const changeLog = assembly.changeLog as Array<Record<string, unknown>>
   const specs = assembly.specs as Record<string, unknown> | null
 
-  const name = template?.name || `Custom ${typeLabels[assembly.type] || assembly.type}`
+  const name = assembly.jobName
+    ? String(assembly.jobName)
+    : template?.name || `Custom ${typeLabels[assembly.type] || assembly.type}`
   const status = assembly.status as string
   const isDoor = assembly.type === "DOOR"
 
@@ -128,6 +136,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         approvalNotes: approvalNotes.trim() || null,
       })
       toast.success("Assembly approved")
+      celebrate()
       setApprovalNotes("")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to approve")
@@ -153,14 +162,11 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   }
 
   async function handleStartBuild() {
-    const confirmed = window.confirm(
-      "Are you sure? This will deduct materials from inventory."
-    )
-    if (!confirmed) return
-
     try {
       await updateAssembly.mutateAsync({ id, status: "IN_PRODUCTION" })
       toast.success("Build started — materials deducted from inventory")
+      celebrate()
+      setShowStartBuildModal(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to start build")
     }
@@ -170,6 +176,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
     try {
       await updateAssembly.mutateAsync({ id, status: "COMPLETED" })
       toast.success("Build completed — finished good added to inventory")
+      celebrate()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to complete")
     }
@@ -179,13 +186,14 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
     try {
       await updateAssembly.mutateAsync({ id, status: "SHIPPED" })
       toast.success("Marked as shipped")
+      celebrate()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update")
     }
   }
 
   return (
-    <div>
+    <div className="overscroll-fix">
       <Header title={name as string} showBack />
       <Breadcrumb items={[
         { label: "Assemblies", href: "/assemblies" },
@@ -222,6 +230,21 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                 </span>
               </div>
             )}
+            {startedBy && (
+              <div className="flex items-center gap-2 text-text-secondary">
+                <Hammer className="h-4 w-4 text-brand-orange" />
+                <span>
+                  Started by {startedBy.name as string}
+                  {assembly.startedAt && ` on ${new Date(assembly.startedAt).toLocaleDateString()}`}
+                </span>
+              </div>
+            )}
+            {assembly.completedAt && (
+              <div className="flex items-center gap-2 text-text-secondary">
+                <Package className="h-4 w-4 text-status-green" />
+                <span>Completed on {new Date(assembly.completedAt).toLocaleDateString()}</span>
+              </div>
+            )}
             {assembly.jobName && (
               <p className="text-brand-blue font-medium">Job: {assembly.jobName}</p>
             )}
@@ -250,7 +273,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               <button
                 onClick={() => setSheetView("manufacturing")}
                 className={cn(
-                  "flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
+                  "flex-1 py-2 min-h-[44px] rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
                   sheetView === "manufacturing"
                     ? "bg-white text-navy shadow-sm"
                     : "text-text-muted"
@@ -262,7 +285,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               <button
                 onClick={() => setSheetView("spec")}
                 className={cn(
-                  "flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
+                  "flex-1 py-2 min-h-[44px] rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
                   sheetView === "spec"
                     ? "bg-white text-navy shadow-sm"
                     : "text-text-muted"
@@ -439,12 +462,12 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         <div className="space-y-2">
           {canStartBuild && (
             <Button
-              onClick={handleStartBuild}
+              onClick={() => setShowStartBuildModal(true)}
               disabled={updateAssembly.isPending}
-              className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
+              className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)]"
             >
               <Play className="h-5 w-5 mr-2" />
-              {updateAssembly.isPending ? "Starting..." : "Start Build"}
+              Start Build
             </Button>
           )}
 
@@ -452,7 +475,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             <Button
               onClick={handleComplete}
               disabled={updateAssembly.isPending}
-              className="w-full h-14 bg-status-green hover:bg-status-green/90 text-white font-semibold text-base rounded-xl"
+              className="w-full h-14 bg-status-green hover:bg-status-green/90 text-white font-semibold text-base rounded-xl shadow-[0_2px_8px_rgba(34,197,94,0.25)]"
             >
               <Package className="h-5 w-5 mr-2" />
               {updateAssembly.isPending ? "Completing..." : "Complete Build"}
@@ -463,7 +486,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             <Button
               onClick={handleShip}
               disabled={updateAssembly.isPending}
-              className="w-full h-14 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-base rounded-xl"
+              className="w-full h-14 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold text-base rounded-xl shadow-[0_2px_8px_rgba(46,125,186,0.25)]"
             >
               <Truck className="h-5 w-5 mr-2" />
               {updateAssembly.isPending ? "Shipping..." : "Mark as Shipped"}
@@ -471,6 +494,20 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </div>
+
+      {/* Start Build Confirmation Modal */}
+      <StartBuildModal
+        open={showStartBuildModal}
+        onOpenChange={setShowStartBuildModal}
+        onConfirm={handleStartBuild}
+        assemblyName={name as string}
+        components={components as Array<{
+          id: string
+          product: { name: string; unitOfMeasure: string; currentQty: number }
+          qtyUsed: number | string
+        }>}
+        isPending={updateAssembly.isPending}
+      />
     </div>
   )
 }

@@ -5,33 +5,32 @@ import type { DoorSpecs } from "@/lib/door-specs"
 interface DoorPreviewProps {
   specs: Partial<DoorSpecs>
   className?: string
+  showHardware?: boolean
 }
 
 /** Finish → panel fill color */
 const FINISH_COLORS: Record<string, string> = {
-  "WPG (White Painted Galv)": "#F8F9FA",
-  "White/White": "#FAFBFC",
-  "Stainless Steel": "#C0C7CE",
-  "Galvalume": "#A8ADB3",
+  WPG: "#F8F9FA",
+  SS: "#C0C7CE",
+  Gray: "#9CA3AF",
 }
 
 function getFinishColor(finish?: string): string {
   if (!finish) return "#EDF2F7"
-  // Check exact match first, then partial
   if (FINISH_COLORS[finish]) return FINISH_COLORS[finish]
   const lower = finish.toLowerCase()
   if (lower.includes("wpg") || lower.includes("white")) return "#F8F9FA"
   if (lower.includes("stainless") || lower.includes("ss")) return "#C0C7CE"
+  if (lower.includes("gray") || lower.includes("grey")) return "#9CA3AF"
   if (lower.includes("galvalume") || lower.includes("galv")) return "#A8ADB3"
-  if (lower.includes("frp")) return "#D5CDC4"
   return "#EDF2F7"
 }
 
 /**
  * Unified door configurator SVG that updates as specs change.
- * Shows frame, panel finish, hardware, temperature, cutouts, sill, dimensions.
+ * Shows frame, panel finish, hardware, temperature, cutouts on frame edges, sill, dimensions.
  */
-export function DoorPreview({ specs, className }: DoorPreviewProps) {
+export function DoorPreview({ specs, className, showHardware = true }: DoorPreviewProps) {
   const isSlider = specs.openingType === "SLIDE"
   const svgW = 240
   const svgH = 300
@@ -63,7 +62,7 @@ export function DoorPreview({ specs, className }: DoorPreviewProps) {
   const hingeOnLeft = hingeSide === "LEFT"
   const widthNum = specs.widthInClear ? parseFloat(specs.widthInClear) : 36
   const hingeCount = widthNum > 36 ? 3 : 2
-  const hingeX = hingeOnLeft ? panelX + 4 : panelX + panelW - 4
+  const hingeX = hingeOnLeft ? frameX + 1 : frameX + frameW - 1
   const latchX = hingeOnLeft ? panelX + panelW - 6 : panelX + 6
 
   // Slider
@@ -76,6 +75,11 @@ export function DoorPreview({ specs, className }: DoorPreviewProps) {
   const isCool = specs.temperatureType === "COOLER"
 
   const ts: React.CSSProperties = { transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)" }
+
+  // Scale cutout positions to SVG coordinates
+  // Frame bottom = floor level, frame height represents full door height
+  const doorHeightIn = specs.heightInClear ? parseFloat(specs.heightInClear) : 84
+  const pxPerInch = panelH / doorHeightIn
 
   return (
     <div
@@ -174,33 +178,48 @@ export function DoorPreview({ specs, className }: DoorPreviewProps) {
               />
             )}
 
-            {/* Hinges */}
-            {hingeSide && Array.from({ length: hingeCount }).map((_, i) => {
+            {/* Hinges — rendered as small rectangular plates with pin */}
+            {showHardware && hingeSide && Array.from({ length: hingeCount }).map((_, i) => {
               const spacing = panelH / (hingeCount + 1)
               const cy = panelY + spacing * (i + 1)
               return (
-                <circle
-                  key={`hinge-${i}`}
-                  cx={hingeX} cy={cy} r={4}
-                  fill="var(--color-navy)" opacity={0.7}
-                  stroke="var(--color-navy)" strokeWidth={1}
-                  style={ts}
-                />
+                <g key={`hinge-${i}`} style={ts}>
+                  <rect
+                    x={hingeOnLeft ? hingeX - 5 : hingeX - 5}
+                    y={cy - 4}
+                    width={10} height={8}
+                    fill="var(--color-navy)" opacity={0.65}
+                    rx={1.5}
+                  />
+                  <circle
+                    cx={hingeOnLeft ? hingeX : hingeX}
+                    cy={cy}
+                    r={1.5}
+                    fill="var(--color-navy)" opacity={0.9}
+                  />
+                </g>
               )
             })}
 
-            {/* Latch */}
-            {hingeSide && (
-              <circle
-                cx={latchX} cy={panelY + panelH * 0.42} r={3.5}
-                fill="var(--color-brand-orange)" opacity={0.8}
-                stroke="var(--color-brand-orange)" strokeWidth={1}
-                style={ts}
-              />
+            {/* Latch — rendered as small handle shape */}
+            {showHardware && hingeSide && (
+              <g style={ts}>
+                <rect
+                  x={latchX - 2} y={panelY + panelH * 0.38}
+                  width={4} height={14}
+                  fill="var(--color-brand-orange)" opacity={0.8}
+                  rx={2}
+                />
+                <circle
+                  cx={latchX} cy={panelY + panelH * 0.38}
+                  r={3}
+                  fill="var(--color-brand-orange)" opacity={0.6}
+                />
+              </g>
             )}
 
             {/* Closer arm at top */}
-            {specs.closerModel && (
+            {showHardware && specs.closerModel && (
               <rect
                 x={hingeOnLeft ? panelX + 2 : panelX + panelW - 18}
                 y={panelY + 3}
@@ -211,21 +230,47 @@ export function DoorPreview({ specs, className }: DoorPreviewProps) {
               />
             )}
 
-            {/* Cutouts */}
-            {specs.cutouts?.map((_, i) => {
-              const cW = panelW * 0.35
-              const cX = panelX + (panelW - cW) / 2
-              const cH = 14
-              const cY = panelY + panelH * 0.3 + i * 22
+            {/* Cutouts — rendered as notches on the frame edges (not inside panel) */}
+            {specs.cutouts?.map((cutout, i) => {
+              const floorToBottom = parseFloat(cutout.floorToBottom) || 0
+              const floorToTop = parseFloat(cutout.floorToTop) || 0
+              const cutWidth = parseFloat(cutout.frameWidth) || 0
+
+              // Convert inches to SVG pixels — floor is at frame bottom
+              const frameBottom = frameY + frameH
+              const cutBottomY = frameBottom - (floorToBottom * pxPerInch)
+              const cutTopY = frameBottom - (floorToTop * pxPerInch)
+              const cutH = cutBottomY - cutTopY
+              const cutW = Math.min(cutWidth * pxPerInch * 0.5, frameThick + 8) // Scale width
+
+              // Position on the left frame edge
+              const cutX = frameX - 1
+
+              if (cutH <= 0) return null
+
               return (
-                <rect
-                  key={`cutout-${i}`}
-                  x={cX} y={cY} width={cW} height={cH}
-                  fill="none"
-                  stroke="var(--color-brand-blue)" strokeWidth={1.5} strokeDasharray="3 2"
-                  rx={1}
-                  style={ts}
-                />
+                <g key={`cutout-${i}`} style={ts}>
+                  {/* Cutout notch — "bite" from the frame */}
+                  <rect
+                    x={cutX} y={cutTopY}
+                    width={cutW} height={cutH}
+                    fill="var(--color-brand-blue)" opacity={0.12}
+                    stroke="var(--color-brand-blue)" strokeWidth={1.5} strokeDasharray="3 2"
+                    rx={1}
+                  />
+                  {/* Floor to bottom measurement */}
+                  <line
+                    x1={cutX - 8} y1={frameBottom}
+                    x2={cutX - 8} y2={cutBottomY}
+                    stroke="var(--color-brand-blue)" strokeWidth={0.5} opacity={0.6}
+                  />
+                  <text
+                    x={cutX - 10} y={(frameBottom + cutBottomY) / 2}
+                    textAnchor="end" fontSize={7} fill="var(--color-brand-blue)" opacity={0.7}
+                  >
+                    {cutout.floorToBottom}&quot;
+                  </text>
+                </g>
               )
             })}
           </>

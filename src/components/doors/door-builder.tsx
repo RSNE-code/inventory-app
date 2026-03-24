@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import type { DoorSpecs, Cutout, DoorCategory } from "@/lib/door-specs"
+import type { DoorSpecs, Cutout, DoorCategory, InsulationType, WindowSize, FinishType } from "@/lib/door-specs"
 import { getStandardHardware, calculateHeaterCable } from "@/lib/door-specs"
 import { InterviewStep, ChoiceButton, DimensionInput } from "./interview-step"
 import { DoorPreview } from "./door-preview"
+import { DoorDiagramContextual } from "./door-diagram-contextual"
 import { StepProgress } from "@/components/layout/step-progress"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,11 +23,14 @@ type BuilderStep =
   | "SWING_CUTOUT_DETAIL"
   | "SWING_SILL"
   | "SWING_SILL_HEIGHT"
+  | "SWING_INSULATION"
   // Swing branch — features
   | "SWING_TEMP"
+  | "SWING_WINDOW"
   | "SWING_HINGE"
   | "SWING_HARDWARE"
   | "SWING_HARDWARE_CUSTOM"
+  | "SWING_GASKET"
   | "SWING_FINISH"
   | "SWING_EXTRAS"
   // Slider branch
@@ -47,12 +51,41 @@ const STEP_GROUPS: Record<string, number> = {
   TYPE: 0,
   SWING_WIDTH: 1, SWING_HEIGHT: 1, SWING_JAMB: 1, SWING_FRAME: 1, SWING_FRAME_CUSTOM: 1,
   SWING_CUTOUTS: 1, SWING_CUTOUT_DETAIL: 1, SWING_SILL: 1, SWING_SILL_HEIGHT: 1,
-  SWING_TEMP: 2, SWING_HINGE: 2, SWING_HARDWARE: 2, SWING_HARDWARE_CUSTOM: 2, SWING_FINISH: 2, SWING_EXTRAS: 2,
+  SWING_INSULATION: 1,
+  SWING_TEMP: 2, SWING_WINDOW: 2, SWING_HINGE: 2, SWING_HARDWARE: 2, SWING_HARDWARE_CUSTOM: 2,
+  SWING_GASKET: 2, SWING_FINISH: 2, SWING_EXTRAS: 2,
   SLIDER_TEMP: 1, SLIDER_SIDE: 1, SLIDER_WIDTH: 1, SLIDER_HEIGHT: 1, SLIDER_FINISH: 1,
   DONE: 3,
 }
 
 const PROGRESS_LABELS = ["Type", "Dimensions", "Features", "Review"]
+
+// Standard hardware options for dropdowns
+const HINGE_OPTIONS = [
+  { label: "DENT D690", value: "DENT|D690" },
+  { label: "DENT D690CS", value: "DENT|D690CS" },
+  { label: "Kason K1277 Cam-lift", value: "Kason|K1277 Cam-lift" },
+  { label: "Kason K1248 Spring", value: "Kason|K1248" },
+  { label: "Kason K1245", value: "Kason|K1245" },
+]
+
+const LATCH_OPTIONS = [
+  { label: "DENT D90", value: "DENT|D90" },
+  { label: "Kason K56 (Body Chrome)", value: "Kason|K56" },
+  { label: "Kason K55 Complete", value: "Kason|K55 Complete" },
+]
+
+const CLOSER_OPTIONS = [
+  { label: "DENT D276", value: "DENT D276" },
+  { label: "Kason K1094", value: "Kason K1094" },
+  { label: "None", value: "" },
+]
+
+const INSIDE_RELEASE_OPTIONS = [
+  { label: "Kason K481 Safety Glow", value: "K481 Safety Glow" },
+  { label: "Glow Push Panel", value: "Glow Push Panel" },
+  { label: "None", value: "" },
+]
 
 export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
   const [step, setStep] = useState<BuilderStep>("TYPE")
@@ -67,13 +100,15 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
   // Temp state for dimension inputs
   const [inputValue, setInputValue] = useState("")
   const [cutouts, setCutouts] = useState<Cutout[]>([])
-  const [customHinge, setCustomHinge] = useState("")
-  const [customLatch, setCustomLatch] = useState("")
-  const [customCloser, setCustomCloser] = useState("")
-  const [customFinish, setCustomFinish] = useState("")
   const [frameLHS, setFrameLHS] = useState("")
   const [frameRHS, setFrameRHS] = useState("")
   const [frameTop, setFrameTop] = useState("")
+
+  // Hardware dropdown selections
+  const [selectedHinge, setSelectedHinge] = useState("")
+  const [selectedLatch, setSelectedLatch] = useState("")
+  const [selectedCloser, setSelectedCloser] = useState("")
+  const [selectedRelease, setSelectedRelease] = useState("")
 
   // Step history for back navigation
   const [history, setHistory] = useState<BuilderStep[]>([])
@@ -113,14 +148,39 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
 
   const currentGroup = STEP_GROUPS[step] ?? 0
 
+  function navigateToGroup(targetGroup: number) {
+    if (targetGroup >= currentGroup) return
+    let newHistory = [...history]
+    let targetStep = step
+    while (newHistory.length > 0) {
+      const prev = newHistory[newHistory.length - 1]
+      const prevGroup = STEP_GROUPS[prev] ?? 0
+      if (prevGroup <= targetGroup) {
+        targetStep = prev
+        break
+      }
+      newHistory = newHistory.slice(0, -1)
+    }
+    if (newHistory.length === 0 && targetGroup === 0) {
+      targetStep = "TYPE" as BuilderStep
+    }
+    setHistory(newHistory)
+    setInputValue("")
+    setStep(targetStep)
+  }
+
   return (
     <div className="space-y-4">
-      <StepProgress steps={PROGRESS_LABELS} currentStep={currentGroup} />
+      <StepProgress
+        steps={PROGRESS_LABELS}
+        currentStep={currentGroup}
+        onStepClick={(stepIndex) => navigateToGroup(stepIndex)}
+      />
 
-      {/* Persistent door preview — visible after TYPE step */}
+      {/* Contextual door diagram — shows step-specific measurement visualization */}
       {step !== "TYPE" && (
         <div className="flex justify-center py-1 animate-fade-in">
-          <DoorPreview specs={specs} className="max-w-[200px] w-full" />
+          <DoorDiagramContextual step={step} specs={specs} className="max-w-[220px] w-full" />
         </div>
       )}
 
@@ -210,15 +270,29 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
 
       {step === "SWING_FRAME" && (
         <InterviewStep
-          question="Standard Frame or Custom?"
-          description="Custom lets you set LHS, RHS, and Top dimensions separately"
+          question="Frame Type?"
+          description="Select the frame style for this door"
           onBack={goBack}
         >
           <div className="space-y-3">
             <ChoiceButton
-              label="Standard Frame"
+              label="Full Frame"
               onClick={() => {
                 updateSpecs({ frameCustom: false, frameType: "FULL_FRAME" })
+                goTo("SWING_CUTOUTS")
+              }}
+            />
+            <ChoiceButton
+              label="Face Frame"
+              onClick={() => {
+                updateSpecs({ frameCustom: false, frameType: "FACE_FRAME" })
+                goTo("SWING_CUTOUTS")
+              }}
+            />
+            <ChoiceButton
+              label="Bally Type"
+              onClick={() => {
+                updateSpecs({ frameCustom: false, frameType: "BALLY_TYPE" })
                 goTo("SWING_CUTOUTS")
               }}
             />
@@ -229,7 +303,6 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 setFrameLHS("")
                 setFrameRHS("")
                 setFrameTop("")
-                // Show custom frame inputs inline
                 goTo("SWING_FRAME_CUSTOM")
               }}
             />
@@ -299,7 +372,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
       {step === "SWING_CUTOUTS" && (
         <InterviewStep
           question="Any Cutouts?"
-          description="Openings cut into the door panel (for pass-throughs, vents, etc.)"
+          description="Cutouts along the door frame to accommodate existing fixtures (thermometers, light switches, etc.)"
           onBack={goBack}
         >
           <div className="space-y-3">
@@ -324,7 +397,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
       {step === "SWING_CUTOUT_DETAIL" && (
         <InterviewStep
           question={`Cutout Details (${cutouts.length})`}
-          description="Enter dimensions for each cutout"
+          description="Measurements from floor, width from frame edge"
           onBack={goBack}
         >
           <div className="space-y-4">
@@ -345,7 +418,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
-                    <label className="text-[12px] text-text-secondary">Floor→Bottom</label>
+                    <label className="text-[11px] text-text-secondary">Floor to Bottom</label>
                     <Input
                       value={cutout.floorToBottom}
                       onChange={(e) => {
@@ -358,7 +431,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[12px] text-text-secondary">Floor→Top</label>
+                    <label className="text-[11px] text-text-secondary">Floor to Top</label>
                     <Input
                       value={cutout.floorToTop}
                       onChange={(e) => {
@@ -371,7 +444,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     />
                   </div>
                   <div>
-                    <label className="text-[12px] text-text-secondary">Width</label>
+                    <label className="text-[11px] text-text-secondary">Width from Edge</label>
                     <Input
                       value={cutout.frameWidth}
                       onChange={(e) => {
@@ -425,7 +498,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
               label="No — Standard (Wiper)"
               onClick={() => {
                 updateSpecs({ highSill: false, wiper: true, sillHeight: undefined })
-                goTo("SWING_TEMP")
+                goTo("SWING_INSULATION")
               }}
             />
             <ChoiceButton
@@ -450,10 +523,43 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
             onChange={setInputValue}
             onSubmit={() => {
               updateSpecs({ sillHeight: inputValue.trim() })
-              goTo("SWING_TEMP")
+              goTo("SWING_INSULATION")
             }}
             placeholder='e.g. 6"'
           />
+        </InterviewStep>
+      )}
+
+      {/* ── NEW: Insulation Step ── */}
+      {step === "SWING_INSULATION" && (
+        <InterviewStep
+          question="Insulation Type?"
+          description="Select the insulation material for the door panel"
+          onBack={goBack}
+        >
+          <div className="space-y-3">
+            <ChoiceButton
+              label="IMP — Insulated Metal Panel"
+              onClick={() => {
+                updateSpecs({ insulationType: "IMP" as InsulationType })
+                goTo("SWING_TEMP")
+              }}
+            />
+            <ChoiceButton
+              label="EPS — Expanded Polystyrene"
+              onClick={() => {
+                updateSpecs({ insulationType: "EPS" as InsulationType })
+                goTo("SWING_TEMP")
+              }}
+            />
+            <ChoiceButton
+              label="PIR — Polyisocyanurate"
+              onClick={() => {
+                updateSpecs({ insulationType: "PIR" as InsulationType })
+                goTo("SWING_TEMP")
+              }}
+            />
+          </div>
         </InterviewStep>
       )}
 
@@ -472,7 +578,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                   temperatureType: "COOLER",
                   doorCategory: "HINGED_COOLER",
                 })
-                goTo("SWING_HINGE")
+                goTo("SWING_WINDOW")
               }}
             />
             <ChoiceButton
@@ -481,6 +587,47 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 updateSpecs({
                   temperatureType: "FREEZER",
                   doorCategory: "HINGED_FREEZER",
+                })
+                goTo("SWING_WINDOW")
+              }}
+            />
+          </div>
+        </InterviewStep>
+      )}
+
+      {/* ── NEW: Window Step ── */}
+      {step === "SWING_WINDOW" && (
+        <InterviewStep
+          question="View Window?"
+          description={specs.temperatureType === "FREEZER"
+            ? "Freezer doors require heated windows"
+            : "Cooler doors use non-heated windows"}
+          onBack={goBack}
+        >
+          <div className="space-y-3">
+            <ChoiceButton
+              label="No Window"
+              onClick={() => {
+                updateSpecs({ windowSize: undefined, windowHeated: undefined })
+                goTo("SWING_HINGE")
+              }}
+            />
+            <ChoiceButton
+              label='14" x 14" (Standard)'
+              onClick={() => {
+                updateSpecs({
+                  windowSize: "14x14" as WindowSize,
+                  windowHeated: specs.temperatureType === "FREEZER",
+                })
+                goTo("SWING_HINGE")
+              }}
+            />
+            <ChoiceButton
+              label='14" x 24"'
+              onClick={() => {
+                updateSpecs({
+                  windowSize: "14x24" as WindowSize,
+                  windowHeated: specs.temperatureType === "FREEZER",
                 })
                 goTo("SWING_HINGE")
               }}
@@ -535,17 +682,17 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                   latchMfrName: hw.latchMfrName,
                   latchModel: hw.latchModel,
                   closerModel: hw.closerModel,
-                  gasketType: hw.gasketType || "MAGNETIC",
                 })
-                goTo("SWING_FINISH")
+                goTo("SWING_GASKET")
               }}
             />
             <ChoiceButton
               label="No — Specify Custom"
               onClick={() => {
-                setCustomHinge("")
-                setCustomLatch("")
-                setCustomCloser("")
+                setSelectedHinge("")
+                setSelectedLatch("")
+                setSelectedCloser("")
+                setSelectedRelease("")
                 goTo("SWING_HARDWARE_CUSTOM")
               }}
             />
@@ -555,49 +702,78 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
 
       {step === "SWING_HARDWARE_CUSTOM" && (
         <InterviewStep
-          question="Custom Hardware"
-          description="Enter hinge, latch, and closer models"
+          question="Select Hardware"
+          description="Choose hinge, latch, closer, and inside release"
           onBack={goBack}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="text-sm text-text-secondary mb-1 block">Hinge (make + model)</label>
-              <Input
-                value={customHinge}
-                onChange={(e) => setCustomHinge(e.target.value)}
-                placeholder="e.g. Kason K1277"
-                className="h-12 text-center"
-              />
+              <label className="text-sm font-medium text-text-secondary mb-1.5 block">Hinge *</label>
+              <select
+                value={selectedHinge}
+                onChange={(e) => setSelectedHinge(e.target.value)}
+                className="w-full h-12 rounded-xl border-2 border-border-custom px-3 text-base font-medium focus:border-brand-blue focus:outline-none bg-white"
+              >
+                <option value="">Select hinge...</option>
+                {HINGE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="text-sm text-text-secondary mb-1 block">Latch (make + model)</label>
-              <Input
-                value={customLatch}
-                onChange={(e) => setCustomLatch(e.target.value)}
-                placeholder="e.g. Kason K56"
-                className="h-12 text-center"
-              />
+              <label className="text-sm font-medium text-text-secondary mb-1.5 block">Latch *</label>
+              <select
+                value={selectedLatch}
+                onChange={(e) => setSelectedLatch(e.target.value)}
+                className="w-full h-12 rounded-xl border-2 border-border-custom px-3 text-base font-medium focus:border-brand-blue focus:outline-none bg-white"
+              >
+                <option value="">Select latch...</option>
+                {LATCH_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="text-sm text-text-secondary mb-1 block">Closer (model)</label>
-              <Input
-                value={customCloser}
-                onChange={(e) => setCustomCloser(e.target.value)}
-                placeholder="e.g. DENT D276 (or none)"
-                className="h-12 text-center"
-              />
+              <label className="text-sm font-medium text-text-secondary mb-1.5 block">Closer</label>
+              <select
+                value={selectedCloser}
+                onChange={(e) => setSelectedCloser(e.target.value)}
+                className="w-full h-12 rounded-xl border-2 border-border-custom px-3 text-base font-medium focus:border-brand-blue focus:outline-none bg-white"
+              >
+                <option value="">Select closer...</option>
+                {CLOSER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-text-secondary mb-1.5 block">Inside Release</label>
+              <select
+                value={selectedRelease}
+                onChange={(e) => setSelectedRelease(e.target.value)}
+                className="w-full h-12 rounded-xl border-2 border-border-custom px-3 text-base font-medium focus:border-brand-blue focus:outline-none bg-white"
+              >
+                <option value="">Select inside release...</option>
+                {INSIDE_RELEASE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
             <Button
               onClick={() => {
+                const [hingeMfr, hingeModel] = selectedHinge.split("|")
+                const [latchMfr, latchModel] = selectedLatch.split("|")
                 updateSpecs({
-                  hingeMfrName: customHinge.split(" ")[0] || undefined,
-                  hingeModel: customHinge.trim() || undefined,
-                  latchMfrName: customLatch.split(" ")[0] || undefined,
-                  latchModel: customLatch.trim() || undefined,
-                  closerModel: customCloser.trim() || undefined,
+                  hingeMfrName: hingeMfr || undefined,
+                  hingeModel: hingeModel || undefined,
+                  latchMfrName: latchMfr || undefined,
+                  latchModel: latchModel || undefined,
+                  closerModel: selectedCloser || undefined,
+                  insideRelease: selectedRelease || undefined,
                 })
-                goTo("SWING_FINISH")
+                goTo("SWING_GASKET")
               }}
+              disabled={!selectedHinge || !selectedLatch}
               className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl"
             >
               Next
@@ -606,64 +782,60 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
         </InterviewStep>
       )}
 
+      {/* ── NEW: Gasket Step ── */}
+      {step === "SWING_GASKET" && (
+        <InterviewStep
+          question="Gasket Type?"
+          description="Select the gasket for this door"
+          onBack={goBack}
+        >
+          <div className="space-y-3">
+            <ChoiceButton
+              label="Magnetic"
+              onClick={() => {
+                updateSpecs({ gasketType: "MAGNETIC" })
+                goTo("SWING_FINISH")
+              }}
+            />
+            <ChoiceButton
+              label="Neoprene"
+              onClick={() => {
+                updateSpecs({ gasketType: "NEOPRENE" })
+                goTo("SWING_FINISH")
+              }}
+            />
+          </div>
+        </InterviewStep>
+      )}
+
       {step === "SWING_FINISH" && (
         <InterviewStep
           question="Door Finish?"
-          description="Select the skin / finish for this door"
+          description="Select the color for this door"
           onBack={goBack}
         >
           <div className="space-y-3">
             <ChoiceButton
               label="WPG (White Painted Galv)"
               onClick={() => {
-                updateSpecs({ finish: "WPG" })
+                updateSpecs({ finish: "WPG" as FinishType })
                 goTo("SWING_EXTRAS")
               }}
             />
             <ChoiceButton
-              label="White/White"
+              label="SS (Stainless Steel)"
               onClick={() => {
-                updateSpecs({ finish: "White/White" })
+                updateSpecs({ finish: "SS" as FinishType })
                 goTo("SWING_EXTRAS")
               }}
             />
             <ChoiceButton
-              label="Stainless Steel"
+              label="Gray"
               onClick={() => {
-                updateSpecs({ finish: "Stainless Steel" })
+                updateSpecs({ finish: "Gray" as FinishType })
                 goTo("SWING_EXTRAS")
               }}
             />
-            <ChoiceButton
-              label="Galvalume"
-              onClick={() => {
-                updateSpecs({ finish: "Galvalume" })
-                goTo("SWING_EXTRAS")
-              }}
-            />
-            <div className="pt-1">
-              <label className="text-sm text-text-secondary mb-1 block">Other (custom)</label>
-              <div className="flex gap-2">
-                <Input
-                  value={customFinish}
-                  onChange={(e) => setCustomFinish(e.target.value)}
-                  placeholder="e.g. Brushed Aluminum"
-                  className="h-12 text-center flex-1"
-                />
-                <Button
-                  onClick={() => {
-                    if (customFinish.trim()) {
-                      updateSpecs({ finish: customFinish.trim() })
-                      goTo("SWING_EXTRAS")
-                    }
-                  }}
-                  disabled={!customFinish.trim()}
-                  className="h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl px-6"
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
           </div>
         </InterviewStep>
       )}
@@ -775,48 +947,22 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
       {step === "SLIDER_FINISH" && (
         <InterviewStep
           question="Door Finish?"
-          description="Select the skin / finish for this door"
+          description="Select the color for this door"
           onBack={goBack}
         >
           <div className="space-y-3">
             <ChoiceButton
               label="WPG (White Painted Galv)"
-              onClick={() => finalize({ finish: "WPG" })}
+              onClick={() => finalize({ finish: "WPG" as FinishType })}
             />
             <ChoiceButton
-              label="White/White"
-              onClick={() => finalize({ finish: "White/White" })}
+              label="SS (Stainless Steel)"
+              onClick={() => finalize({ finish: "SS" as FinishType })}
             />
             <ChoiceButton
-              label="Stainless Steel"
-              onClick={() => finalize({ finish: "Stainless Steel" })}
+              label="Gray"
+              onClick={() => finalize({ finish: "Gray" as FinishType })}
             />
-            <ChoiceButton
-              label="Galvalume"
-              onClick={() => finalize({ finish: "Galvalume" })}
-            />
-            <div className="pt-1">
-              <label className="text-sm text-text-secondary mb-1 block">Other (custom)</label>
-              <div className="flex gap-2">
-                <Input
-                  value={customFinish}
-                  onChange={(e) => setCustomFinish(e.target.value)}
-                  placeholder="e.g. Brushed Aluminum"
-                  className="h-12 text-center flex-1"
-                />
-                <Button
-                  onClick={() => {
-                    if (customFinish.trim()) {
-                      finalize({ finish: customFinish.trim() })
-                    }
-                  }}
-                  disabled={!customFinish.trim()}
-                  className="h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl px-6"
-                >
-                  Done
-                </Button>
-              </div>
-            </div>
           </div>
         </InterviewStep>
       )}
@@ -835,7 +981,6 @@ function getHardwareDescription(
   if (hw.hingeModel) parts.push(`${hw.hingeMfrName} ${hw.hingeModel} (${hw.hingeQty})`)
   if (hw.latchModel) parts.push(`${hw.latchMfrName} ${hw.latchModel}`)
   if (hw.closerModel) parts.push(hw.closerModel)
-  if (hw.gasketType) parts.push(`${hw.gasketType} gasket`)
   return parts.join(" + ")
 }
 
@@ -853,19 +998,6 @@ function ExtrasSelector({
   const [additionalItems, setAdditionalItems] = useState<string[]>(specs.additionalItems || [])
   const [customExtra, setCustomExtra] = useState("")
 
-  const presetExtras = [
-    { key: "splash", label: "Exterior Splash Guard" },
-    { key: "window", label: "Window" },
-  ]
-
-  function togglePreset(label: string) {
-    setAdditionalItems((items) =>
-      items.includes(label)
-        ? items.filter((i) => i !== label)
-        : [...items, label]
-    )
-  }
-
   return (
     <div className="space-y-4">
       {/* Toggle chips */}
@@ -873,14 +1005,6 @@ function ExtrasSelector({
         <ChipToggle label="Weather Shield" checked={weatherShield} onChange={setWeatherShield} />
         <ChipToggle label="Threshold Plate" checked={thresholdPlate} onChange={setThresholdPlate} />
         <ChipToggle label="Exterior Door" checked={isExterior} onChange={setIsExterior} />
-        {presetExtras.map((e) => (
-          <ChipToggle
-            key={e.key}
-            label={e.label}
-            checked={additionalItems.includes(e.label)}
-            onChange={() => togglePreset(e.label)}
-          />
-        ))}
       </div>
 
       {/* Custom extra */}
@@ -913,6 +1037,19 @@ function ExtrasSelector({
         </Button>
       </div>
 
+      {additionalItems.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {additionalItems.map((item, i) => (
+            <span key={i} className="px-3 py-1 bg-brand-blue/10 text-brand-blue text-sm rounded-full font-medium flex items-center gap-1">
+              {item}
+              <button onClick={() => setAdditionalItems((items) => items.filter((_, idx) => idx !== i))} className="ml-1 text-brand-blue/60 hover:text-brand-blue">
+                &times;
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       <Button
         onClick={() =>
           onComplete({
@@ -942,7 +1079,7 @@ function ChipToggle({
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`w-full flex items-center justify-between py-3 px-4 rounded-xl border-2 transition-all ${
+      className={`w-full flex items-center justify-between py-3 px-4 rounded-xl border-2 transition-all min-h-[44px] ${
         checked
           ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
           : "border-border-custom bg-white text-text-primary"

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import {
   getDoorCategoryLabel,
   getFrameTypeLabel,
-  formatDoorSize,
 } from "@/lib/door-specs"
 import type { DoorSpecs } from "@/lib/door-specs"
 import { CheckCircle, Snowflake, Thermometer } from "lucide-react"
@@ -30,9 +29,9 @@ function SpecRow({
   if (value === undefined || value === null || value === "") return null
   const display = typeof value === "boolean" ? (value ? "Yes" : "No") : String(value)
   return (
-    <div className={cn("flex justify-between py-1.5 border-b border-border-custom/40 last:border-0", className)}>
-      <span className="text-xs text-text-secondary uppercase tracking-wide">{label}</span>
-      <span className="text-sm font-medium text-navy">{display}</span>
+    <div className={cn("flex justify-between py-2 border-b border-border-custom/40 last:border-0", className)}>
+      <span className="text-sm text-text-secondary uppercase tracking-wide">{label}</span>
+      <span className="text-base font-medium text-navy">{display}</span>
     </div>
   )
 }
@@ -48,13 +47,13 @@ function CheckboxRow({
     <div className="flex items-center gap-2 py-1">
       <div
         className={cn(
-          "h-4 w-4 rounded border flex items-center justify-center",
+          "h-5 w-5 rounded border-2 flex items-center justify-center",
           checked
             ? "bg-navy border-navy text-white"
             : "border-border-custom bg-white"
         )}
       >
-        {checked && <span className="text-[12px] font-bold">&#10003;</span>}
+        {checked && <span className="text-xs font-bold">&#10003;</span>}
       </div>
       <span className="text-sm text-text-primary">{label}</span>
     </div>
@@ -63,9 +62,53 @@ function CheckboxRow({
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="text-xs font-bold text-navy uppercase tracking-wider border-b-2 border-navy pb-1 mb-2">
+    <h4 className="text-xs font-bold text-navy uppercase tracking-wider border-b-2 border-navy pb-1 mb-3">
       {children}
     </h4>
+  )
+}
+
+/** Hardware box — one of the 4 boxes in the grid */
+function HardwareBox({
+  title,
+  manufacturer,
+  model,
+  offset,
+}: {
+  title: string
+  manufacturer?: string
+  model?: string
+  offset?: string
+}) {
+  const hasData = manufacturer || model
+  return (
+    <div className="bg-surface-secondary rounded-lg p-3">
+      <p className="text-xs font-bold text-navy uppercase tracking-wide mb-2">{title}</p>
+      {hasData ? (
+        <div className="space-y-1">
+          {manufacturer && (
+            <div className="flex justify-between">
+              <span className="text-xs text-text-muted">Mfr</span>
+              <span className="text-sm font-medium text-navy">{manufacturer}</span>
+            </div>
+          )}
+          {model && (
+            <div className="flex justify-between">
+              <span className="text-xs text-text-muted">Model</span>
+              <span className="text-sm font-medium text-navy">{model}</span>
+            </div>
+          )}
+          {offset && (
+            <div className="flex justify-between">
+              <span className="text-xs text-text-muted">Offset</span>
+              <span className="text-sm font-medium text-navy">{offset}</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-text-muted italic">Not specified</p>
+      )}
+    </div>
   )
 }
 
@@ -78,13 +121,19 @@ export function DoorSpecSheet({
   const isFreezer = specs.temperatureType === "FREEZER"
   const isSliding = specs.openingType === "SLIDE"
 
+  // Format dimension with " symbol
+  function dim(val?: string) {
+    if (!val) return "—"
+    return val.includes('"') ? val : `${val}"`
+  }
+
   return (
     <Card className="rounded-xl border-border-custom overflow-hidden print:shadow-none print:border print:rounded-none">
       {/* Header */}
       <div className="bg-navy text-white px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[12px] uppercase tracking-widest text-text-muted/60">
+            <p className="text-[11px] uppercase tracking-widest text-white/50">
               Refrigerated Structures of New England
             </p>
             <h3 className="text-base font-bold mt-0.5">
@@ -120,7 +169,7 @@ export function DoorSpecSheet({
         )}
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-5">
         {/* Identity */}
         {(specs.serialNumber || specs.quantity) && (
           <div className="flex gap-4">
@@ -143,18 +192,29 @@ export function DoorSpecSheet({
           </div>
         )}
 
-        {/* Dimensions */}
+        {/* Sizing — unified font sizes */}
         <div>
-          <SectionHeader>Dimensions</SectionHeader>
-          <div className="bg-surface-secondary rounded-lg p-3">
-            <div className="text-center mb-2">
-              <p className="text-2xl font-bold text-navy">{formatDoorSize(specs) || "---"}</p>
-              <p className="text-xs text-text-secondary">Size in Clear (W x H)</p>
+          <SectionHeader>Sizing</SectionHeader>
+          <div className="bg-surface-secondary rounded-lg p-4">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Width</p>
+                <p className="text-2xl font-bold text-navy tabular-nums">{dim(specs.widthInClear)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Height</p>
+                <p className="text-2xl font-bold text-navy tabular-nums">{dim(specs.heightInClear)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Jamb Depth</p>
+                <p className="text-2xl font-bold text-navy tabular-nums">{dim(specs.jambDepth)}</p>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <SpecRow label="Wall Thickness" value={specs.wallThickness} />
-              <SpecRow label="Jamb Depth" value={specs.jambDepth} />
-            </div>
+            {specs.wallThickness && (
+              <div className="mt-2 pt-2 border-t border-border-custom/40">
+                <SpecRow label="Wall Thickness" value={dim(specs.wallThickness)} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -185,49 +245,61 @@ export function DoorSpecSheet({
           )}
         </div>
 
-        {/* Panel & Insulation */}
+        {/* Insulation */}
         <div>
-          <SectionHeader>Panel &amp; Insulation</SectionHeader>
-          <CheckboxRow label="Door Panel RSNE Insulated" checked={specs.panelInsulated} />
-          <SpecRow label="Panel Thickness" value={specs.panelThickness} />
-          <SpecRow label="Insulation" value={specs.insulation} />
+          <SectionHeader>Insulation</SectionHeader>
+          {specs.insulationType && (
+            <SpecRow label="Type" value={specs.insulationType} />
+          )}
+          <SpecRow label="Thickness" value={specs.panelThickness ? dim(specs.panelThickness) : specs.insulation} />
+          {!specs.insulationType && specs.insulation && (
+            <SpecRow label="Material" value={specs.insulation} />
+          )}
         </div>
 
         {/* Finish */}
         <div>
-          <SectionHeader>Finish &amp; Skin</SectionHeader>
-          <SpecRow label="Finish" value={specs.finish} />
-          <SpecRow label="Skin Material" value={specs.skinMaterial} />
+          <SectionHeader>Finish</SectionHeader>
+          <div className="bg-surface-secondary rounded-lg p-3">
+            <p className="text-xl font-bold text-navy">{specs.finish || "—"}</p>
+            {specs.skinMaterial && (
+              <p className="text-sm text-text-secondary mt-1">{specs.skinMaterial}</p>
+            )}
+          </div>
         </div>
 
-        {/* Hardware */}
+        {/* Window */}
+        {specs.windowSize && (
+          <div>
+            <SectionHeader>Window</SectionHeader>
+            <SpecRow label="Size" value={specs.windowSize === "14x14" ? '14" x 14"' : '14" x 24"'} />
+            <SpecRow label="Heated" value={specs.windowHeated ? "Yes" : "No"} />
+          </div>
+        )}
+
+        {/* Hardware — 4-box grid */}
         <div>
           <SectionHeader>Hardware</SectionHeader>
-          <div className="space-y-1">
-            {(specs.hingeMfrName || specs.hingeModel) && (
-              <div className="bg-surface-secondary rounded-lg p-2">
-                <p className="text-xs text-text-secondary mb-1">Hinges</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <SpecRow label="Mfr" value={specs.hingeMfrName} />
-                  <SpecRow label="Model" value={specs.hingeModel} />
-                  {specs.hingeOffset && <SpecRow label="Offset" value={specs.hingeOffset} />}
-                </div>
-              </div>
-            )}
-            {(specs.latchMfrName || specs.latchModel) && (
-              <div className="bg-surface-secondary rounded-lg p-2">
-                <p className="text-xs text-text-secondary mb-1">Latch</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <SpecRow label="Mfr" value={specs.latchMfrName} />
-                  <SpecRow label="Model" value={specs.latchModel} />
-                  {specs.latchOffset && <SpecRow label="Offset" value={specs.latchOffset} />}
-                  {specs.insideRelease && <SpecRow label="Inside Release" value={specs.insideRelease} />}
-                </div>
-              </div>
-            )}
-            {specs.closerModel && (
-              <SpecRow label="Closer" value={specs.closerModel} />
-            )}
+          <div className="grid grid-cols-2 gap-2">
+            <HardwareBox
+              title="Hinges"
+              manufacturer={specs.hingeMfrName}
+              model={specs.hingeModel}
+              offset={specs.hingeOffset}
+            />
+            <HardwareBox
+              title="Latch"
+              manufacturer={specs.latchMfrName}
+              model={specs.latchModel}
+            />
+            <HardwareBox
+              title="Closer"
+              model={specs.closerModel}
+            />
+            <HardwareBox
+              title="Inside Release"
+              model={specs.insideRelease}
+            />
           </div>
         </div>
 
@@ -252,11 +324,37 @@ export function DoorSpecSheet({
         {/* Options */}
         <div>
           <SectionHeader>Options</SectionHeader>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <CheckboxRow label="Weather Shield" checked={specs.weatherShield} />
             <CheckboxRow label="Threshold Plate" checked={specs.thresholdPlate} />
           </div>
         </div>
+
+        {/* Cutouts */}
+        {specs.cutouts && specs.cutouts.length > 0 && (
+          <div>
+            <SectionHeader>Cutouts ({specs.cutouts.length})</SectionHeader>
+            {specs.cutouts.map((c, i) => (
+              <div key={i} className="bg-surface-secondary rounded-lg p-3 mb-2 last:mb-0">
+                <p className="text-xs font-bold text-navy mb-1">Cutout {i + 1}</p>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-text-muted">Floor→Bottom</p>
+                    <p className="text-sm font-semibold">{c.floorToBottom}&quot;</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted">Floor→Top</p>
+                    <p className="text-sm font-semibold">{c.floorToTop}&quot;</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted">Width</p>
+                    <p className="text-sm font-semibold">{c.frameWidth}&quot;</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Special Notes */}
         {specs.specialNotes && (

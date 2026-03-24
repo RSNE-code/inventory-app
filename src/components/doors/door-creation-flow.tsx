@@ -13,6 +13,7 @@ import { useCelebration } from "@/hooks/use-celebration"
 import { Hammer, LayoutTemplate } from "lucide-react"
 import type { DoorSpecs } from "@/lib/door-specs"
 import { getDefaultSpecs, getStandardHardware } from "@/lib/door-specs"
+import { matchDoorRecipe } from "@/lib/door-recipes"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
 
 type FlowPhase = "ENTRY" | "TEMPLATE_SELECT" | "BUILDER" | "CONFIRM"
@@ -54,9 +55,48 @@ export function DoorCreationFlow() {
     (t: Record<string, unknown>) => t.type === "DOOR"
   )
 
-  // Builder completes → go to CONFIRM
-  function handleBuilderComplete(builderSpecs: Partial<DoorSpecs>) {
-    setSpecs((prev) => ({ ...prev, ...builderSpecs }))
+  // Builder completes → auto-populate components from recipe → go to CONFIRM
+  async function handleBuilderComplete(builderSpecs: Partial<DoorSpecs>) {
+    const mergedSpecs = { ...specs, ...builderSpecs }
+    setSpecs(mergedSpecs)
+
+    // Match specs to a recipe and auto-populate components
+    const recipe = matchDoorRecipe(mergedSpecs)
+    if (recipe && recipe.components.length > 0) {
+      try {
+        const names = recipe.components.map((c) => c.name).join(",")
+        const res = await fetch(`/api/products/bulk-lookup?names=${encodeURIComponent(names)}`)
+        if (res.ok) {
+          const json = await res.json()
+          const lookupResults = json.data as Array<{
+            requestedName: string
+            product: { id: string; name: string; unitOfMeasure: string; currentQty: number } | null
+          }>
+
+          const autoComponents: ComponentItem[] = []
+          for (const recipeComp of recipe.components) {
+            const match = lookupResults.find((r) => r.requestedName === recipeComp.name)
+            if (match?.product) {
+              autoComponents.push({
+                productId: match.product.id,
+                productName: match.product.name,
+                unitOfMeasure: match.product.unitOfMeasure,
+                qtyUsed: recipeComp.qty,
+                currentQty: match.product.currentQty,
+              })
+            }
+          }
+
+          if (autoComponents.length > 0) {
+            setComponents(autoComponents)
+            toast.success(`Auto-added ${autoComponents.length} components from ${recipe.name}`)
+          }
+        }
+      } catch {
+        // Silent fail — user can still add components manually
+      }
+    }
+
     setPhase("CONFIRM")
   }
 
@@ -201,7 +241,16 @@ export function DoorCreationFlow() {
     <div className="space-y-4">
       {/* Step progress for ENTRY and TEMPLATE_SELECT only — Builder has its own */}
       {(phase === "ENTRY" || phase === "TEMPLATE_SELECT" || phase === "CONFIRM") && (
-        <StepProgress steps={FLOW_STEPS} currentStep={PHASE_INDEX[phase]} />
+        <StepProgress
+          steps={FLOW_STEPS}
+          currentStep={PHASE_INDEX[phase]}
+          onStepClick={(stepIndex) => {
+            if (stepIndex < PHASE_INDEX[phase]) {
+              if (stepIndex === 0) setPhase("ENTRY")
+              else if (stepIndex === 1) setPhase(entryPath === "BUILDER" ? "BUILDER" : "TEMPLATE_SELECT")
+            }
+          }}
+        />
       )}
 
       {/* ── ENTRY: Choose Path ── */}

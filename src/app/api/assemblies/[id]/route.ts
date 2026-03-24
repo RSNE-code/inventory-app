@@ -35,6 +35,7 @@ export async function GET(
         template: { select: { id: true, name: true, type: true, specs: true } },
         producedBy: { select: { id: true, name: true } },
         approvedBy: { select: { id: true, name: true } },
+        startedBy: { select: { id: true, name: true } },
         components: {
           include: {
             product: {
@@ -124,6 +125,7 @@ export async function PATCH(
 
       if (data.status === "IN_PRODUCTION") {
         updateData.startedAt = new Date()
+        updateData.startedBy = { connect: { id: user.id } }
 
         // Deduct raw materials from stock
         for (const comp of assembly.components) {
@@ -188,6 +190,7 @@ export async function PATCH(
         template: { select: { id: true, name: true, type: true } },
         producedBy: { select: { id: true, name: true } },
         approvedBy: { select: { id: true, name: true } },
+        startedBy: { select: { id: true, name: true } },
         components: {
           include: {
             product: {

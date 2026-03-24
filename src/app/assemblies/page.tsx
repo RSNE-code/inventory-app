@@ -108,8 +108,8 @@ export default function AssembliesPage() {
   )
 
   return (
-    <div>
-      <Header title="Assemblies" />
+    <div className="overscroll-fix">
+      <Header title="Assemblies" showBack />
 
       <div className="p-4 space-y-4">
         {/* Queue tabs with sliding indicator */}
@@ -213,7 +213,7 @@ export default function AssembliesPage() {
           <>
             {/* Not Started */}
             {notStarted.length > 0 && (
-              <div className="space-y-3 animate-fade-in-up stagger-1">
+              <div className="space-y-3 mt-2 animate-fade-in-up stagger-1">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-text-muted" />
                   <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
@@ -284,7 +284,9 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
     lineItemCount: number
   }>
 
-  const name = template?.name || `Custom ${typeLabels[assembly.type as string] || assembly.type}`
+  const name = assembly.jobName
+    ? String(assembly.jobName)
+    : template?.name || `Custom ${typeLabels[assembly.type as string] || assembly.type}`
   const status = assembly.status as string
 
   const [linkSheetOpen, setLinkSheetOpen] = useState(false)
@@ -344,9 +346,9 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   </div>
                 )
               })()}
-              {assembly.jobName ? (
+              {assembly.jobNumber ? (
                 <p className="text-xs text-brand-blue font-medium mt-1">
-                  Job: {String(assembly.jobName)}
+                  Job #{String(assembly.jobNumber)}
                 </p>
               ) : null}
               {/* BOM match badges — door assemblies only */}

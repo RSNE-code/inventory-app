@@ -60,8 +60,16 @@ const SPEC_SECTIONS = [
     ],
   },
   {
-    title: "Panel & Finish",
-    fields: ["panelThickness", "panelInsulated", "insulation", "finish", "skinMaterial"],
+    title: "Insulation",
+    fields: ["insulationType", "panelThickness", "panelInsulated", "insulation"],
+  },
+  {
+    title: "Finish",
+    fields: ["finish", "skinMaterial"],
+  },
+  {
+    title: "Window",
+    fields: ["windowSize", "windowHeated"],
   },
   {
     title: "Hardware",
@@ -178,7 +186,7 @@ export function DoorConfirmation({
   const isSlider = specs.doorCategory === "SLIDING"
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overscroll-fix">
       {/* Spec Sections */}
       {SPEC_SECTIONS.map((section) => {
         // Skip sliding section for hinged doors and vice versa
@@ -194,8 +202,8 @@ export function DoorConfirmation({
 
         return (
           <Card key={section.title} className="p-4 rounded-xl border-border-custom">
-            <h3 className="font-semibold text-navy text-sm mb-2">{section.title}</h3>
-            <div className="space-y-0.5">
+            <h3 className="font-semibold text-navy text-base mb-3">{section.title}</h3>
+            <div className="space-y-1">
               {fieldsWithValues.map((field) => {
                 const value = specs[field as keyof DoorSpecs]
                 const isBool = typeof value === "boolean"
@@ -204,7 +212,7 @@ export function DoorConfirmation({
                 if (editingField === field) {
                   return (
                     <div key={field} className="flex items-center gap-2 py-1.5">
-                      <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
+                      <span className="text-sm text-text-secondary w-32 shrink-0">{label}</span>
                       <Input
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
@@ -232,9 +240,9 @@ export function DoorConfirmation({
                       onClick={() => toggleBoolean(field)}
                       className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-surface-secondary transition-colors"
                     >
-                      <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
+                      <span className="text-sm text-text-secondary w-32 shrink-0">{label}</span>
                       <div className="flex items-center gap-2 flex-1 justify-end">
-                        <span className={cn("text-sm font-medium", value ? "text-status-green" : "text-text-muted")}>
+                        <span className={cn("text-base font-medium", value ? "text-status-green" : "text-text-muted")}>
                           {value ? "Yes" : "No"}
                         </span>
                         <div
@@ -256,11 +264,11 @@ export function DoorConfirmation({
                   <button
                     key={field}
                     onClick={() => startEdit(field, value)}
-                    className="flex items-center justify-between w-full py-1.5 px-1 -mx-1 rounded hover:bg-surface-secondary transition-colors text-left"
+                    className="flex items-center justify-between w-full py-2 px-1 -mx-1 rounded hover:bg-surface-secondary transition-colors text-left"
                   >
-                    <span className="text-xs text-text-muted w-28 shrink-0">{label}</span>
-                    <span className="text-sm font-medium text-navy flex-1">{formatValue(field, value)}</span>
-                    <Pencil className="h-3 w-3 text-text-muted/60 shrink-0 ml-2" />
+                    <span className="text-sm text-text-secondary w-32 shrink-0">{label}</span>
+                    <span className="text-base font-medium text-navy flex-1">{formatValue(field, value)}</span>
+                    <Pencil className="h-3.5 w-3.5 text-text-muted/60 shrink-0 ml-2" />
                   </button>
                 )
               })}
@@ -308,7 +316,7 @@ export function DoorConfirmation({
 
       {/* Job Assignment */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">Assignment</h3>
+        <h3 className="font-semibold text-navy text-base">Assignment</h3>
         <div>
           <Label className="text-xs">Job Name</Label>
           <Input
@@ -331,7 +339,7 @@ export function DoorConfirmation({
 
       {/* Components */}
       <Card className="p-4 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy">
+        <h3 className="font-semibold text-navy text-base">
           Components ({components.length})
         </h3>
         <div className="space-y-2">
@@ -401,7 +409,7 @@ export function DoorConfirmation({
         <Button
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-base rounded-xl"
+          className="w-full h-16 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold text-lg rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)]"
         >
           <Factory className="h-5 w-5 mr-2" />
           {isSubmitting ? "Creating..." : "Submit Door Sheet for Approval"}

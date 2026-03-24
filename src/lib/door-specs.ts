@@ -7,6 +7,9 @@ export type OpeningType = "HINGE" | "SLIDE"
 export type FrameType = "FULL_FRAME" | "FACE_FRAME" | "BALLY_TYPE"
 export type GasketType = "MAGNETIC" | "NEOPRENE"
 export type Side = "LEFT" | "RIGHT"
+export type InsulationType = "IMP" | "EPS" | "PIR"
+export type WindowSize = "14x14" | "14x24"
+export type FinishType = "WPG" | "SS" | "Gray"
 
 export interface Cutout {
   floorToBottom: string
@@ -47,14 +50,19 @@ export interface DoorSpecs {
   sillHeight?: string
   wiper: boolean
 
-  // Panel / Insulation
+  // Insulation
   panelThickness?: string
   panelInsulated: boolean
   insulation?: string
+  insulationType?: InsulationType
 
-  // Skin / Finish
+  // Finish
   finish: string
   skinMaterial?: string
+
+  // Window
+  windowSize?: WindowSize
+  windowHeated?: boolean
 
   // Hardware - Hinges
   hingeMfrName?: string
@@ -145,7 +153,33 @@ export const FIELD_METADATA: Record<string, FieldMeta> = {
     required: true,
     categories: ["HINGED_COOLER", "HINGED_FREEZER"],
   },
-  finish: { label: "Finish", type: "text", required: true, categories: "all" },
+  finish: {
+    label: "Finish",
+    type: "select",
+    options: ["WPG", "SS", "Gray"],
+    required: true,
+    categories: "all",
+  },
+  insulationType: {
+    label: "Insulation Type",
+    type: "select",
+    options: ["IMP", "EPS", "PIR"],
+    required: false,
+    categories: "all",
+  },
+  windowSize: {
+    label: "Window Size",
+    type: "select",
+    options: ["14x14", "14x24"],
+    required: false,
+    categories: "all",
+  },
+  windowHeated: {
+    label: "Heated Window",
+    type: "checkbox",
+    required: false,
+    categories: "all",
+  },
   gasketType: {
     label: "Gasket Type",
     type: "select",
