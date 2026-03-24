@@ -13,6 +13,7 @@ import { POBrowser } from "@/components/receiving/po-browser"
 import { usePoMatch, useCreateReceipt } from "@/hooks/use-receiving"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { useCelebration } from "@/hooks/use-celebration"
 import { StepProgress } from "@/components/layout/step-progress"
 import { cn } from "@/lib/utils"
 import type {
@@ -81,10 +82,11 @@ export function ReceivingFlow() {
 
   const poMatch = usePoMatch()
   const createReceipt = useCreateReceipt()
+  const { celebrate } = useCelebration()
 
   const handleParseComplete = useCallback(
     async (result: ParseResult | ReceivingParseResult) => {
-      setPendingMatches(result.items)
+      setPendingMatches((prev) => [...prev, ...result.items])
       setConfirmedItems([])
 
       // AI handles supplier matching
@@ -117,7 +119,7 @@ export function ReceivingFlow() {
             return
           }
         } catch {
-          // Fall through
+          toast.error("Failed to match purchase order")
         }
       } else if ("poNumber" in result && result.poNumber) {
         try {
@@ -139,7 +141,7 @@ export function ReceivingFlow() {
             return
           }
         } catch {
-          // PO match failed
+          toast.error("Failed to match purchase order")
         }
       }
 
@@ -299,6 +301,7 @@ export function ReceivingFlow() {
       toast.success(
         `Received ${catalogItems.length} item${catalogItems.length !== 1 ? "s" : ""} from ${supplierName}`
       )
+      celebrate()
 
       handleReset()
     } catch (err) {
@@ -580,6 +583,13 @@ export function ReceivingFlow() {
         onConfirm={handleSubmitReceipt}
         isSubmitting={createReceipt.isPending}
       />
+      <button
+        type="button"
+        onClick={handleReset}
+        className="w-full text-center text-sm font-semibold text-text-muted py-3 mt-2"
+      >
+        Start Over
+      </button>
     </div>
   )
 }

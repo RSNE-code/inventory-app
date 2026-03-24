@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Package,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -100,6 +101,19 @@ export function FinishedGoodsList() {
   }
 
   const isLoading = view === "ready" ? completedQuery.isLoading : shippedQuery.isLoading
+  const hasError = completedQuery.error || shippedQuery.error
+
+  if (hasError) {
+    return (
+      <div className="text-center py-12 animate-fade-in">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-status-red/10 mx-auto mb-3">
+          <AlertTriangle className="h-7 w-7 text-status-red" />
+        </div>
+        <p className="text-text-secondary font-medium mb-1">Failed to load shipping data</p>
+        <p className="text-text-muted text-sm">Check your connection and try again</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">

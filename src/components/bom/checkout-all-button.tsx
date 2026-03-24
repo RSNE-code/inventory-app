@@ -24,9 +24,10 @@ export function CheckoutAllButton({
   onCheckoutAll,
   isPending,
 }: CheckoutAllButtonProps) {
-  // Filter to items that haven't been fully checked out
+  // Filter to items that haven't been fully checked out (accounting for returns)
   const remainingItems = items.filter((item) => {
-    const remaining = item.qtyNeeded - item.qtyCheckedOut
+    const netCheckedOut = item.qtyCheckedOut - item.qtyReturned
+    const remaining = item.qtyNeeded - netCheckedOut
     return remaining > 0
   })
 
@@ -36,7 +37,7 @@ export function CheckoutAllButton({
     const checkoutItems = remainingItems.map((item) => ({
       bomLineItemId: item.id,
       type: "CHECKOUT" as const,
-      quantity: item.qtyNeeded - item.qtyCheckedOut,
+      quantity: item.qtyNeeded - (item.qtyCheckedOut - item.qtyReturned),
     }))
     onCheckoutAll(checkoutItems)
   }

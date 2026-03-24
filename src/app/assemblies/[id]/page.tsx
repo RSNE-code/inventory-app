@@ -118,7 +118,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   const canStartBuild = ["APPROVED", "PLANNED"].includes(status) &&
     assembly.approvalStatus !== "PENDING"
   const canComplete = status === "IN_PRODUCTION"
-  const canShip = status === "COMPLETED"
+  const canShip = status === "COMPLETED" || status === "ALLOCATED"
 
   async function handleApprove() {
     try {

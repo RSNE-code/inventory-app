@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { requireAuth, requireRole } from "@/lib/auth"
 
 /**
  * DEV-ONLY: Reset all receiving state for E2E tests.
@@ -15,6 +16,8 @@ export async function POST() {
   }
 
   try {
+    const user = await requireAuth()
+    requireRole(user.role, ["ADMIN"])
     // Delete all receipt-linked transactions
     await prisma.transaction.deleteMany({
       where: { receiptId: { not: null } },

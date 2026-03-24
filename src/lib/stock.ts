@@ -95,12 +95,16 @@ async function adjustStockInner(input: StockOperationInput, tx: PrismaTransactio
       },
     })
 
-    // Update product stock and cost
+    // Update product stock and cost — use atomic increment/decrement to avoid race conditions
     if (!skipStockUpdate || input.type === "RECEIVE") {
-      const updateData: Record<string, unknown> = {}
+      const updateData: Prisma.ProductUpdateInput = {}
 
       if (!skipStockUpdate) {
-        updateData.currentQty = new Prisma.Decimal(newQty)
+        if (STOCK_INCREASING_TYPES.includes(input.type)) {
+          updateData.currentQty = { increment: new Prisma.Decimal(qty) }
+        } else if (STOCK_DECREASING_TYPES.includes(input.type)) {
+          updateData.currentQty = { decrement: new Prisma.Decimal(qty) }
+        }
       }
 
       if (input.type === "RECEIVE" && input.unitCost !== undefined) {

@@ -25,7 +25,7 @@ export function InterviewStep({
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-gray-400 -ml-2"
+          className="text-text-muted -ml-2"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back
@@ -33,9 +33,9 @@ export function InterviewStep({
       )}
 
       <div className="text-center space-y-2 px-2">
-        <h2 className="text-xl font-bold text-navy">{question}</h2>
+        <h2 className="text-xl font-bold text-navy font-display">{question}</h2>
         {description && (
-          <p className="text-sm text-gray-500">{description}</p>
+          <p className="text-sm text-text-secondary">{description}</p>
         )}
       </div>
 
@@ -63,8 +63,8 @@ export function ChoiceButton({
       onClick={onClick}
       className={`w-full py-4 px-6 rounded-xl border-2 text-base font-semibold transition-all ${
         selected
-          ? "border-brand-blue bg-blue-50 text-brand-blue"
-          : "border-gray-200 bg-white text-navy hover:border-blue-300 hover:bg-blue-50/50"
+          ? "border-brand-blue bg-brand-blue/8 text-brand-blue"
+          : "border-border-custom bg-white text-navy hover:border-brand-blue/40 hover:bg-brand-blue/8/50"
       }`}
     >
       {label}
@@ -88,9 +88,12 @@ export function DimensionInput({
   unit?: string
   label?: string
 }) {
+  const numValue = parseFloat(value.trim())
+  const isValid = value.trim().length > 0 && !isNaN(numValue) && numValue > 0
+
   return (
     <div className="space-y-2">
-      {label && <label className="text-sm text-gray-500">{label}</label>}
+      {label && <label className="text-sm text-text-secondary">{label}</label>}
       <div className="flex items-center gap-2">
         <input
           type="text"
@@ -98,18 +101,18 @@ export function DimensionInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && value.trim()) onSubmit()
+            if (e.key === "Enter" && isValid) onSubmit()
           }}
           placeholder={placeholder || 'e.g. 36"'}
-          className="flex-1 h-14 text-center text-2xl font-bold rounded-xl border-2 border-gray-200 focus:border-brand-blue focus:outline-none transition-colors"
+          className="flex-1 h-14 text-center text-2xl font-bold rounded-xl border-2 border-border-custom focus:border-brand-blue focus:outline-none transition-colors"
         />
         {unit && (
-          <span className="text-lg text-gray-400 font-medium w-8">{unit}</span>
+          <span className="text-lg text-text-muted font-medium w-8">{unit}</span>
         )}
       </div>
       <Button
         onClick={onSubmit}
-        disabled={!value.trim()}
+        disabled={!isValid}
         className="w-full h-12 bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold rounded-xl mt-2"
       >
         Next

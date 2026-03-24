@@ -264,7 +264,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   if (isLoading) {
     return (
       <div>
-        <Header title="BOM Detail" showMenu />
+        <Header title="BOM Detail" showBack showMenu />
         <div className="p-4 space-y-3">
           <div className="h-20 rounded-xl skeleton-shimmer" />
           <div className="h-48 rounded-xl skeleton-shimmer stagger-1" />
@@ -277,7 +277,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   if (!bom) {
     return (
       <div>
-        <Header title="BOM Detail" showMenu />
+        <Header title="BOM Detail" showBack showMenu />
         <div className="text-center py-12 text-text-muted">BOM not found</div>
       </div>
     )
@@ -335,7 +335,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <div>
-      <Header title="BOM Detail" showMenu />
+      <Header title="BOM Detail" showBack showMenu />
 
       <div className="px-4 pt-2">
         <StepProgress steps={BOM_LIFECYCLE} currentStep={bomStepIndex} />
