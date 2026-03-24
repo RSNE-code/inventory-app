@@ -44,7 +44,7 @@ export function ActionItems({
     rows.push({
       label: `${lowStockCount} item${lowStockCount !== 1 ? "s" : ""} need reorder`,
       count: lowStockCount,
-      href: "/inventory?status=low",
+      href: "/reorder",
       severity: "warning",
       icon: AlertTriangle,
     })
