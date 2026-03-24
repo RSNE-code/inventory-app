@@ -47,8 +47,20 @@ export default function NewAssemblyPage() {
   const { data: templatesData, isLoading: templatesLoading } = useAssemblyTemplates()
   const createAssembly = useCreateAssembly()
 
-  const [step, setStep] = useState<"type" | "template" | "details" | "door-flow">("type")
-  const [assemblyType, setAssemblyType] = useState<AssemblyType | null>(null)
+  // Read type from URL params to skip type selection screen
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
+  const urlType = searchParams?.get("type")
+
+  const [step, setStep] = useState<"type" | "template" | "details" | "door-flow">(() => {
+    if (urlType === "DOOR") return "door-flow"
+    if (urlType === "PANEL") return "template"
+    return "type"
+  })
+  const [assemblyType, setAssemblyType] = useState<AssemblyType | null>(() => {
+    if (urlType === "DOOR") return "DOOR"
+    if (urlType === "PANEL") return "WALL_PANEL"
+    return null
+  })
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [jobName, setJobName] = useState("")
   const [batchSize, setBatchSize] = useState(1)
@@ -161,10 +173,9 @@ export default function NewAssemblyPage() {
 
   return (
     <div>
-      <Header title="New Assembly" />
+      <Header title={step === "door-flow" ? "New Door" : "New Assembly"} />
       <Breadcrumb items={[
-        { label: "Assemblies", href: "/assemblies" },
-        ...(step === "door-flow" ? [{ label: "Door Shop", href: "/assemblies?queue=DOOR_SHOP" }] : []),
+        { label: "Assemblies", href: step === "door-flow" ? "/assemblies?queue=DOOR_SHOP" : "/assemblies" },
         { label: step === "door-flow" ? "New Door" : "New Assembly" },
       ]} />
 
@@ -201,16 +212,7 @@ export default function NewAssemblyPage() {
 
         {/* Door: AI-first creation flow */}
         {step === "door-flow" && assemblyType === "DOOR" && (
-          <>
-            <DoorCreationFlow />
-            <Button
-              variant="ghost"
-              onClick={() => setStep("type")}
-              className="w-full text-text-muted"
-            >
-              Back to Type Selection
-            </Button>
-          </>
+          <DoorCreationFlow />
         )}
 
         {/* Panel/Floor: Template Selection */}
