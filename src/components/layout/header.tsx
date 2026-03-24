@@ -19,7 +19,8 @@ export function Header({ title, showBack, showMenu, action }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-white/8 bg-navy px-4">
+    <header className="sticky top-0 z-40 border-b border-white/8 bg-navy px-4 pt-[env(safe-area-inset-top)]">
+      <div className="flex h-14 items-center gap-3">
       {showBack && (
         <Button
           variant="ghost"
@@ -76,6 +77,7 @@ export function Header({ title, showBack, showMenu, action }: HeaderProps) {
           )}
         </div>
       )}
+      </div>
     </header>
   )
 }
