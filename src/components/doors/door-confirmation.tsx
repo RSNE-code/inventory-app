@@ -283,7 +283,7 @@ export function DoorConfirmation({
           <h3 className="font-semibold text-navy text-sm mb-2">Cutouts ({specs.cutouts.length})</h3>
           {specs.cutouts.map((c, i) => (
             <div key={i} className="text-sm py-1 border-b border-border-custom/40 last:border-0">
-              <span className="text-text-muted text-xs">Cutout {i + 1}:</span>{" "}
+              <span className="text-text-muted text-xs">Cutout {i + 1}{c.side ? ` (${c.side === "LEFT" ? "Left" : c.side === "RIGHT" ? "Right" : "Top"})` : ""}:</span>{" "}
               <span className="font-medium">
                 {c.floorToBottom} → {c.floorToTop}, Width: {c.frameWidth}
               </span>

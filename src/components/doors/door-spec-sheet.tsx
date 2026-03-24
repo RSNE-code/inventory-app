@@ -336,7 +336,7 @@ export function DoorSpecSheet({
             <SectionHeader>Cutouts ({specs.cutouts.length})</SectionHeader>
             {specs.cutouts.map((c, i) => (
               <div key={i} className="bg-surface-secondary rounded-lg p-3 mb-2 last:mb-0">
-                <p className="text-xs font-bold text-navy mb-1">Cutout {i + 1}</p>
+                <p className="text-xs font-bold text-navy mb-1">Cutout {i + 1}{c.side ? ` — ${c.side === "LEFT" ? "Left" : c.side === "RIGHT" ? "Right" : "Top"}` : ""}</p>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
                     <p className="text-[10px] text-text-muted">Floor→Bottom</p>

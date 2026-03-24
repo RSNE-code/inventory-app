@@ -323,7 +323,7 @@ function SwingJambDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
       >
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          style={{ width: "100%", maxWidth: 220, display: "block", margin: "0 auto" }}
+          style={{ width: "100%", maxWidth: 280, display: "block", margin: "0 auto" }}
         >
           {/* Blueprint grid */}
           <defs>
@@ -509,10 +509,10 @@ function SwingFrameDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
         style={TRANSITION}
       />
 
-      {/* Frame labels — "Top", "LHS", "RHS" */}
+      {/* Frame labels — "Top", "LHS", "RHS" with 6" standard width */}
       <text
         x={FRAME_X + FRAME_W / 2}
-        y={FRAME_Y + frameThick / 2 + 3}
+        y={FRAME_Y + frameThick / 2 + 1}
         textAnchor="middle"
         fontSize={8}
         fontWeight={600}
@@ -523,30 +523,68 @@ function SwingFrameDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
         Top
       </text>
       <text
+        x={FRAME_X + FRAME_W / 2}
+        y={FRAME_Y + frameThick / 2 + 10}
+        textAnchor="middle"
+        fontSize={7}
+        fontWeight={600}
+        fill="var(--color-brand-blue)"
+        fontFamily="var(--font-display)"
+        style={TRANSITION}
+      >
+        6&quot;
+      </text>
+      <text
         x={FRAME_X + frameThick / 2}
-        y={FRAME_Y + FRAME_H / 2}
+        y={FRAME_Y + FRAME_H / 2 - 5}
         textAnchor="middle"
         fontSize={8}
         fontWeight={600}
         fill="var(--color-text-muted)"
         fontFamily="var(--font-sans)"
-        transform={`rotate(-90 ${FRAME_X + frameThick / 2} ${FRAME_Y + FRAME_H / 2})`}
+        transform={`rotate(-90 ${FRAME_X + frameThick / 2} ${FRAME_Y + FRAME_H / 2 - 5})`}
         style={TRANSITION}
       >
         LHS
       </text>
       <text
+        x={FRAME_X + frameThick / 2}
+        y={FRAME_Y + FRAME_H / 2 + 10}
+        textAnchor="middle"
+        fontSize={7}
+        fontWeight={600}
+        fill="var(--color-brand-blue)"
+        fontFamily="var(--font-display)"
+        transform={`rotate(-90 ${FRAME_X + frameThick / 2} ${FRAME_Y + FRAME_H / 2 + 10})`}
+        style={TRANSITION}
+      >
+        6&quot;
+      </text>
+      <text
         x={FRAME_X + FRAME_W - frameThick / 2}
-        y={FRAME_Y + FRAME_H / 2}
+        y={FRAME_Y + FRAME_H / 2 - 5}
         textAnchor="middle"
         fontSize={8}
         fontWeight={600}
         fill="var(--color-text-muted)"
         fontFamily="var(--font-sans)"
-        transform={`rotate(90 ${FRAME_X + FRAME_W - frameThick / 2} ${FRAME_Y + FRAME_H / 2})`}
+        transform={`rotate(90 ${FRAME_X + FRAME_W - frameThick / 2} ${FRAME_Y + FRAME_H / 2 - 5})`}
         style={TRANSITION}
       >
         RHS
+      </text>
+      <text
+        x={FRAME_X + FRAME_W - frameThick / 2}
+        y={FRAME_Y + FRAME_H / 2 + 10}
+        textAnchor="middle"
+        fontSize={7}
+        fontWeight={600}
+        fill="var(--color-brand-blue)"
+        fontFamily="var(--font-display)"
+        transform={`rotate(90 ${FRAME_X + FRAME_W - frameThick / 2} ${FRAME_Y + FRAME_H / 2 + 10})`}
+        style={TRANSITION}
+      >
+        6&quot;
       </text>
 
       {/* Subtle dimension: frame width indicator on top bar */}
@@ -667,20 +705,67 @@ function SwingCutoutsDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
           const floorToBottom = parseInches(cutout.floorToBottom || "0")
           const floorToTop = parseInches(cutout.floorToTop || "0")
           const cutoutFrameWidth = parseInches(cutout.frameWidth || "0")
+          const side = cutout.side || "LEFT"
 
           // Convert to SVG Y (floor is at bottom, so we go upward)
           const svgBottomY = floorY - floorToBottom * scale
           const svgTopY = floorY - floorToTop * scale
           const cutoutH = svgBottomY - svgTopY
-          const cutoutW = Math.max(cutoutFrameWidth * scale * 0.5, 16) // Scale width, min 16px
+          const cutoutW = Math.max(cutoutFrameWidth * scale * 0.5, 16)
+
+          if (side === "TOP") {
+            // Top cutout — horizontal notch centered on top frame edge
+            const topW = Math.max(cutoutH, 20)
+            const topH = Math.min(Math.max(cutoutW, 16), frameThick + 20)
+            const topX = FRAME_X + FRAME_W / 2 - topW / 2
+            return (
+              <g key={`cutout-${i}`} style={TRANSITION}>
+                <rect
+                  x={topX} y={FRAME_Y}
+                  width={topW} height={topH}
+                  fill="var(--color-brand-blue)" opacity={0.15}
+                  stroke="var(--color-brand-blue)" strokeWidth={1} strokeDasharray="4 2"
+                  rx={1} style={TRANSITION}
+                />
+                {cutoutFrameWidth > 0 && (
+                  <>
+                    <HorizontalArrow x1={topX} x2={topX + topW} y={FRAME_Y - 8} barHeight={5} />
+                    <DimensionLabel x={topX + topW / 2} y={FRAME_Y - 16} text={`${cutout.frameWidth}"`} />
+                  </>
+                )}
+                {/* Side label */}
+                <text
+                  x={topX + topW / 2} y={FRAME_Y + topH + 10}
+                  textAnchor="middle" fontSize={7} fontWeight={600}
+                  fill="var(--color-brand-blue)" fontFamily="var(--font-sans)"
+                  opacity={0.7} style={TRANSITION}
+                >
+                  Top
+                </text>
+              </g>
+            )
+          }
+
+          // LEFT or RIGHT side cutout
+          const isRight = side === "RIGHT"
+          const frameEdgeX = isRight
+            ? FRAME_X + FRAME_W - frameThick
+            : frameLeftOuter
+          const clampedW = Math.min(cutoutW, frameThick + 20)
+
+          // Measurement arrow positions: put arrows on the outer side
+          const arrowLeftX = isRight ? FRAME_X - 14 : FRAME_X - 14
+          const arrowRightX = isRight ? FRAME_X + FRAME_W + 14 : FRAME_X + FRAME_W + 14
+          const labelLeftX = isRight ? FRAME_X - 28 : FRAME_X - 28
+          const labelRightX = isRight ? FRAME_X + FRAME_W + 28 : FRAME_X + FRAME_W + 28
 
           return (
             <g key={`cutout-${i}`} style={TRANSITION}>
-              {/* Cutout notch on the left frame edge */}
+              {/* Cutout notch */}
               <rect
-                x={frameLeftOuter}
+                x={frameEdgeX}
                 y={svgTopY}
-                width={Math.min(cutoutW, frameThick + 20)}
+                width={clampedW}
                 height={Math.max(cutoutH, 8)}
                 fill="var(--color-brand-blue)"
                 opacity={0.15}
@@ -692,28 +777,18 @@ function SwingCutoutsDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
               />
 
               {/* Vertical measurement: floor to bottom of cutout */}
-              <VerticalArrow
-                x={FRAME_X - 14}
-                y1={svgBottomY}
-                y2={floorY}
-                barWidth={6}
-              />
+              <VerticalArrow x={arrowLeftX} y1={svgBottomY} y2={floorY} barWidth={6} />
               <DimensionLabel
-                x={FRAME_X - 28}
+                x={labelLeftX}
                 y={(svgBottomY + floorY) / 2}
                 text={cutout.floorToBottom ? `${cutout.floorToBottom}"` : "?"}
                 rotate={-90}
               />
 
               {/* Vertical measurement: floor to top of cutout */}
-              <VerticalArrow
-                x={FRAME_X + FRAME_W + 14}
-                y1={svgTopY}
-                y2={floorY}
-                barWidth={6}
-              />
+              <VerticalArrow x={arrowRightX} y1={svgTopY} y2={floorY} barWidth={6} />
               <DimensionLabel
-                x={FRAME_X + FRAME_W + 28}
+                x={labelRightX}
                 y={(svgTopY + floorY) / 2}
                 text={cutout.floorToTop ? `${cutout.floorToTop}"` : "?"}
                 rotate={-90}
@@ -723,18 +798,29 @@ function SwingCutoutsDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
               {cutoutFrameWidth > 0 && (
                 <>
                   <HorizontalArrow
-                    x1={frameLeftOuter}
-                    x2={frameLeftOuter + Math.min(cutoutW, frameThick + 20)}
+                    x1={frameEdgeX}
+                    x2={frameEdgeX + clampedW}
                     y={svgTopY - 8}
                     barHeight={5}
                   />
                   <DimensionLabel
-                    x={frameLeftOuter + Math.min(cutoutW, frameThick + 20) / 2}
+                    x={frameEdgeX + clampedW / 2}
                     y={svgTopY - 16}
                     text={`${cutout.frameWidth}"`}
                   />
                 </>
               )}
+
+              {/* Side label */}
+              <text
+                x={frameEdgeX + clampedW / 2}
+                y={svgBottomY + 10}
+                textAnchor="middle" fontSize={7} fontWeight={600}
+                fill="var(--color-brand-blue)" fontFamily="var(--font-sans)"
+                opacity={0.7} style={TRANSITION}
+              >
+                {side === "RIGHT" ? "Right" : "Left"}
+              </text>
             </g>
           )
         })
@@ -965,7 +1051,7 @@ export function DoorDiagramContextual({
       <div className={className} style={GRID_BG}>
         <svg
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          style={{ width: "100%", maxWidth: 220, display: "block", margin: "0 auto" }}
+          style={{ width: "100%", maxWidth: 280, display: "block", margin: "0 auto" }}
         >
           {/* Blueprint grid background */}
           <defs>

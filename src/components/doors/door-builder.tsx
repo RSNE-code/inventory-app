@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { DoorSpecs, Cutout, DoorCategory, InsulationType, WindowSize, FinishType } from "@/lib/door-specs"
+import type { DoorSpecs, Cutout, CutoutSide, DoorCategory, InsulationType, WindowSize, FinishType } from "@/lib/door-specs"
 import { getStandardHardware, calculateHeaterCable } from "@/lib/door-specs"
 import { InterviewStep, ChoiceButton, DimensionInput } from "./interview-step"
 import { DoorPreview } from "./door-preview"
@@ -180,7 +180,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
       {/* Contextual door diagram — shows step-specific measurement visualization */}
       {step !== "TYPE" && (
         <div className="flex justify-center py-1 animate-fade-in">
-          <DoorDiagramContextual step={step} specs={specs} className="max-w-[220px] w-full" />
+          <DoorDiagramContextual step={step} specs={specs} className="max-w-[280px] w-full" />
         </div>
       )}
 
@@ -386,7 +386,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
             <ChoiceButton
               label="Yes — Add Cutouts"
               onClick={() => {
-                setCutouts([{ floorToBottom: "", floorToTop: "", frameWidth: "" }])
+                setCutouts([{ side: "LEFT", floorToBottom: "", floorToTop: "", frameWidth: "" }])
                 goTo("SWING_CUTOUT_DETAIL")
               }}
             />
@@ -416,6 +416,29 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                     </Button>
                   )}
                 </div>
+
+                {/* Side selector — segmented pills */}
+                <div className="flex gap-1 bg-white rounded-lg p-0.5 border border-border-custom">
+                  {(["LEFT", "RIGHT", "TOP"] as CutoutSide[]).map((side) => (
+                    <button
+                      key={side}
+                      type="button"
+                      onClick={() => {
+                        const updated = [...cutouts]
+                        updated[i] = { ...updated[i], side }
+                        setCutouts(updated)
+                      }}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${
+                        cutout.side === side
+                          ? "bg-brand-blue text-white shadow-sm"
+                          : "text-text-muted hover:text-navy"
+                      }`}
+                    >
+                      {side === "LEFT" ? "Left" : side === "RIGHT" ? "Right" : "Top"}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="text-[11px] text-text-secondary">Floor to Bottom</label>
@@ -463,7 +486,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
             <Button
               variant="outline"
               onClick={() =>
-                setCutouts((c) => [...c, { floorToBottom: "", floorToTop: "", frameWidth: "" }])
+                setCutouts((c) => [...c, { side: "LEFT", floorToBottom: "", floorToTop: "", frameWidth: "" }])
               }
               className="w-full rounded-xl border-dashed"
             >

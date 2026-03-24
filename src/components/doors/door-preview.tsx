@@ -90,7 +90,7 @@ export function DoorPreview({ specs, className, showHardware = true }: DoorPrevi
         padding: 4,
       }}
     >
-      <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: "100%", maxWidth: 200, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 ${svgW} ${svgH}`} style={{ width: "100%", maxWidth: 240, display: "block", margin: "0 auto" }}>
         {/* Frame outline */}
         <rect
           x={frameX} y={frameY} width={frameW} height={frameH}
@@ -230,27 +230,54 @@ export function DoorPreview({ specs, className, showHardware = true }: DoorPrevi
               />
             )}
 
-            {/* Cutouts — rendered as notches on the frame edges (not inside panel) */}
+            {/* Cutouts — rendered as notches on frame edges based on side */}
             {specs.cutouts?.map((cutout, i) => {
               const floorToBottom = parseFloat(cutout.floorToBottom) || 0
               const floorToTop = parseFloat(cutout.floorToTop) || 0
               const cutWidth = parseFloat(cutout.frameWidth) || 0
+              const side = cutout.side || "LEFT"
 
               // Convert inches to SVG pixels — floor is at frame bottom
               const frameBottom = frameY + frameH
               const cutBottomY = frameBottom - (floorToBottom * pxPerInch)
               const cutTopY = frameBottom - (floorToTop * pxPerInch)
               const cutH = cutBottomY - cutTopY
-              const cutW = Math.min(cutWidth * pxPerInch * 0.5, frameThick + 8) // Scale width
+              const cutW = Math.min(cutWidth * pxPerInch * 0.5, frameThick + 8)
 
-              // Position on the left frame edge
-              const cutX = frameX - 1
+              if (side === "TOP") {
+                // Top cutout — horizontal notch on top frame edge
+                const topCutW = cutH > 0 ? cutH : 20 // Reuse height calc as width
+                const topCutH = cutW > 0 ? cutW : frameThick + 4
+                const topCutX = panelX + panelW / 2 - topCutW / 2
+                return (
+                  <g key={`cutout-${i}`} style={ts}>
+                    <rect
+                      x={topCutX} y={frameY - 1}
+                      width={topCutW} height={Math.min(topCutH, frameThick + 8)}
+                      fill="var(--color-brand-blue)" opacity={0.12}
+                      stroke="var(--color-brand-blue)" strokeWidth={1.5} strokeDasharray="3 2"
+                      rx={1}
+                    />
+                  </g>
+                )
+              }
 
               if (cutH <= 0) return null
 
+              // Left or Right side cutout
+              const cutX = side === "RIGHT"
+                ? frameX + frameW - cutW + 1
+                : frameX - 1
+              const labelX = side === "RIGHT"
+                ? cutX + cutW + 10
+                : cutX - 10
+              const labelAnchor = side === "RIGHT" ? "start" : "end"
+              const lineX = side === "RIGHT"
+                ? cutX + cutW + 8
+                : cutX - 8
+
               return (
                 <g key={`cutout-${i}`} style={ts}>
-                  {/* Cutout notch — "bite" from the frame */}
                   <rect
                     x={cutX} y={cutTopY}
                     width={cutW} height={cutH}
@@ -260,13 +287,13 @@ export function DoorPreview({ specs, className, showHardware = true }: DoorPrevi
                   />
                   {/* Floor to bottom measurement */}
                   <line
-                    x1={cutX - 8} y1={frameBottom}
-                    x2={cutX - 8} y2={cutBottomY}
+                    x1={lineX} y1={frameBottom}
+                    x2={lineX} y2={cutBottomY}
                     stroke="var(--color-brand-blue)" strokeWidth={0.5} opacity={0.6}
                   />
                   <text
-                    x={cutX - 10} y={(frameBottom + cutBottomY) / 2}
-                    textAnchor="end" fontSize={7} fill="var(--color-brand-blue)" opacity={0.7}
+                    x={labelX} y={(frameBottom + cutBottomY) / 2}
+                    textAnchor={labelAnchor} fontSize={7} fill="var(--color-brand-blue)" opacity={0.7}
                   >
                     {cutout.floorToBottom}&quot;
                   </text>

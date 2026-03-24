@@ -11,7 +11,10 @@ export type InsulationType = "IMP" | "EPS" | "PIR"
 export type WindowSize = "14x14" | "14x24"
 export type FinishType = "WPG" | "SS" | "Gray"
 
+export type CutoutSide = "LEFT" | "RIGHT" | "TOP"
+
 export interface Cutout {
+  side: CutoutSide
   floorToBottom: string
   floorToTop: string
   frameWidth: string
