@@ -1,7 +1,7 @@
 # Plan: Finished Goods Shipping Workflow
 
 **Created:** 2026-03-23
-**Status:** Draft
+**Status:** Implemented
 **Request:** Give completed assemblies a path to jobs — finished goods view, ship-to-job flow, batch shipping
 
 ---

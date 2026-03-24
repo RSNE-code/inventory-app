@@ -12,61 +12,98 @@ import { InventoryTrendChart } from "@/components/dashboard/inventory-trend-char
 import { AlertCircle, Menu, Settings, ClipboardCheck, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useMe } from "@/hooks/use-me"
+import type { DashboardData } from "@/types"
+
+function getGreeting(): string {
+  const hour = new Date().getHours()
+  if (hour < 12) return "Good morning"
+  if (hour < 17) return "Good afternoon"
+  return "Good evening"
+}
+
+function getActionSummary(d: DashboardData): { text: string; urgent: boolean } {
+  const approvals = d.fabrication?.pendingApprovals || 0
+  if (approvals > 0) return { text: `${approvals} door${approvals !== 1 ? "s" : ""} awaiting approval`, urgent: true }
+  const review = d.bomStatusCounts?.PENDING_REVIEW || 0
+  if (review > 0) return { text: `${review} BOM${review !== 1 ? "s" : ""} need${review === 1 ? "s" : ""} review`, urgent: true }
+  const low = d.summary?.lowStockCount || 0
+  if (low > 0) return { text: `${low} item${low !== 1 ? "s" : ""} running low`, urgent: true }
+  return { text: "All clear — you're caught up", urgent: false }
+}
 
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useDashboard()
   const dashboard = data?.data
   const [menuOpen, setMenuOpen] = useState(false)
+  const { data: meData } = useMe()
+  const firstName = meData?.data?.name?.split(" ")[0] || ""
+  const greeting = getGreeting()
+  const action = dashboard ? getActionSummary(dashboard) : null
 
   return (
     <div>
-      {/* Compact Header — logo + title inline */}
+      {/* Branded Header — greeting + action summary */}
       <header className="relative bg-navy px-4 pt-[env(safe-area-inset-top)] z-50">
         <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy to-navy-light opacity-90" />
-        <div className="relative z-10 flex items-center justify-between pb-2">
-          <div className="flex items-center gap-3 animate-fade-in">
-            <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
-              <Image
-                src="/logo.jpg"
-                alt="RSNE"
-                width={100}
-                height={40}
-                className="h-7 w-auto"
-                priority
-              />
+        <div className="relative z-10 pb-3">
+          {/* Top row: logo + menu */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 animate-fade-in">
+              <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
+                <Image
+                  src="/logo.jpg"
+                  alt="RSNE"
+                  width={100}
+                  height={40}
+                  className="h-7 w-auto"
+                  priority
+                />
+              </div>
             </div>
-            <h1 className="text-white text-xl font-bold tracking-tight">Dashboard</h1>
+            {/* Menu button */}
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/15 transition-all duration-300"
+              >
+                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-brand-md border border-border-custom z-50 py-1 animate-fade-in">
+                    <Link
+                      href="/cycle-counts"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
+                    >
+                      <ClipboardCheck className="h-4 w-4 text-text-muted" />
+                      Cycle Counts
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
+                    >
+                      <Settings className="h-4 w-4 text-text-muted" />
+                      Settings
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          {/* Menu button */}
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/15 transition-all duration-300"
-            >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-brand-md border border-border-custom z-50 py-1 animate-fade-in">
-                  <Link
-                    href="/cycle-counts"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
-                  >
-                    <ClipboardCheck className="h-4 w-4 text-text-muted" />
-                    Cycle Counts
-                  </Link>
-                  <Link
-                    href="/settings"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-navy hover:bg-surface-secondary transition-colors"
-                  >
-                    <Settings className="h-4 w-4 text-text-muted" />
-                    Settings
-                  </Link>
-                </div>
-              </>
+          {/* Greeting + action summary */}
+          <div className="mt-1 animate-fade-in">
+            <h1 className="text-white text-xl font-bold tracking-tight font-display">
+              {greeting}{firstName ? `, ${firstName}` : ""}
+            </h1>
+            {action && (
+              <p className="text-sm text-white/60 mt-0.5 flex items-center gap-1.5">
+                <span className={`inline-block h-1.5 w-1.5 rounded-full shrink-0 ${action.urgent ? "bg-brand-orange" : "bg-status-green"}`} />
+                {action.text}
+              </p>
             )}
           </div>
         </div>
@@ -125,7 +162,7 @@ export default function DashboardPage() {
             {dashboard.recentTransactions.length > 0 && (
               <div className="animate-fade-in-up stagger-6">
                 <Card className="p-4 rounded-xl border-border-custom shadow-brand">
-                  <h3 className="font-semibold text-navy mb-3 text-base tracking-tight">Recent Activity</h3>
+                  <h3 className="font-semibold text-navy mb-3 text-base tracking-tight font-display">Recent Activity</h3>
                   <div className="space-y-0">
                     {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }, i: number) => (
                       <div key={t.id} className={`flex items-center justify-between py-3.5 border-b border-border-custom/60 last:border-0 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>

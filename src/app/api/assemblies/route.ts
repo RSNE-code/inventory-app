@@ -65,7 +65,76 @@ export async function GET(request: NextRequest) {
       orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
     })
 
-    return NextResponse.json({ data: assemblies })
+    // Match door assemblies to BOMs by jobName
+    const doorJobNames = assemblies
+      .filter((a) => a.type === "DOOR" && a.jobName)
+      .map((a) => a.jobName!.trim().toLowerCase())
+    const uniqueJobNames = [...new Set(doorJobNames)]
+
+    let bomsByJobName = new Map<string, Array<{ id: string; jobName: string; status: string; lineItemCount: number }>>()
+
+    if (uniqueJobNames.length > 0) {
+      const matchedBoms = await prisma.bom.findMany({
+        where: {
+          jobName: { in: uniqueJobNames, mode: "insensitive" },
+          status: { not: "CANCELLED" },
+        },
+        select: {
+          id: true,
+          jobName: true,
+          status: true,
+          _count: { select: { lineItems: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      })
+
+      for (const bom of matchedBoms) {
+        const key = bom.jobName.trim().toLowerCase()
+        const entry = {
+          id: bom.id,
+          jobName: bom.jobName,
+          status: bom.status,
+          lineItemCount: bom._count.lineItems,
+        }
+        const existing = bomsByJobName.get(key)
+        if (existing) {
+          existing.push(entry)
+        } else {
+          bomsByJobName.set(key, [entry])
+        }
+      }
+    }
+
+    // Attach matchedBoms to each door assembly
+    const assembliesWithBoms = assemblies.map((a) => {
+      if (a.type !== "DOOR" || !a.jobName) {
+        return { ...a, matchedBoms: [] }
+      }
+
+      // Check for manual links in specs.linkedBomIds first
+      const specs = a.specs as Record<string, unknown> | null
+      const linkedBomIds = (specs?.linkedBomIds as string[]) || []
+
+      const autoMatched = bomsByJobName.get(a.jobName.trim().toLowerCase()) || []
+
+      // If manual links exist, prioritize them but also include auto-matches
+      if (linkedBomIds.length > 0) {
+        // Manual links are already in the BOM query if they share jobName;
+        // for cross-job manual links, we'd need a separate query — but that's an edge case.
+        // For now, mark manual matches.
+        return {
+          ...a,
+          matchedBoms: autoMatched.map((b) => ({
+            ...b,
+            isManualLink: linkedBomIds.includes(b.id),
+          })),
+        }
+      }
+
+      return { ...a, matchedBoms: autoMatched }
+    })
+
+    return NextResponse.json({ data: assembliesWithBoms })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })

@@ -1,0 +1,18 @@
+name,reach,impact,confidence,effort,description
+Touch targets to 44px minimum,10000,high,high,s,All interactive elements below Apple 44px min - affects every user every session
+Left accent bars on cards,10000,high,high,s,Add border-l-4 status colors to BOM/product/assembly cards - Monday.com signature
+Status badge opacity increase,10000,medium,high,s,Increase badge backgrounds from /8 to /15 - currently invisible
+Text muted WCAG contrast fix,10000,medium,high,s,Darken text-muted from #8899AB to #6B7F96 for accessibility
+Card title text size upgrade,8000,medium,high,s,Upgrade card names from text-sm to text-base for mobile readability
+AI input listening state,5000,high,high,s,Increase border and background opacity when mic is active
+Dashboard visual hierarchy,8000,medium,medium,m,Feature inventory value card prominently - no visual entry point currently
+Quick actions grid layout,6000,medium,medium,s,Reduce from 5-col to 4-col with larger icons
+Badge styling standardization,8000,low,high,m,Unify 3 different badge CSS patterns to one standard
+Fade-in animations on lists,8000,medium,medium,m,Add animate-fade-in-up to list items on data load
+Filter pill affordance,6000,medium,medium,s,Unselected pills look disabled not interactive
+Off-brand color token cleanup,10000,low,high,l,Replace 127 raw Tailwind colors with design tokens
+Spacing standardization,8000,low,high,m,Standardize card spacing to space-y-3 and section spacing to space-y-4
+Breadcrumbs on sub-pages,5000,medium,medium,m,Add breadcrumb navigation to BOM Review and Assembly sub-pages
+Step progress mobile labels,4000,medium,medium,s,Show abbreviated step labels on small screens
+Active nav accent bars,8000,low,high,s,Add border-l-4 to active sidebar item and bg pill to active bottom tab
+Empty state visual refresh,3000,low,medium,m,Standardize icon opacity and dashed ring decoration

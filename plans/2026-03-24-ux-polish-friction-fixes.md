@@ -1,7 +1,7 @@
 # Plan: UX Polish & Friction Fixes — Final Cleanup Pass
 
 **Created:** 2026-03-24
-**Status:** Draft
+**Status:** Implemented
 **Request:** Systematic cleanup: off-brand tokens, loading/error/empty states, copy consistency, mobile edge cases
 
 ---

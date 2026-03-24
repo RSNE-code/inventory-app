@@ -1,7 +1,7 @@
 # Plan: Dashboard Overhaul — Actionable Command Center
 
 **Created:** 2026-03-23
-**Status:** Draft
+**Status:** Implemented
 **Request:** Transform dashboard from vanity metrics to actionable snapshot — "what do I need to deal with right now?"
 
 ---

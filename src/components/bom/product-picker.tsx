@@ -59,7 +59,7 @@ export function ProductPicker({ onSelect, onCustomAdd, placeholder = "Search pro
       setLoading(true)
       setSearchDone(false)
       try {
-        const res = await fetch(`/api/inventory?search=${encodeURIComponent(search)}&limit=10`, {
+        const res = await fetch(`/api/products/browse?search=${encodeURIComponent(search)}&limit=10`, {
           signal: controller.signal,
         })
         if (res.ok) {

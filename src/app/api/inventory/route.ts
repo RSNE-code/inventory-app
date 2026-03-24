@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
+import { normalizeSearchTokens } from "@/lib/search"
 
 const createProductSchema = z.object({
   name: z.string().min(1),
@@ -42,10 +43,19 @@ export async function GET(request: NextRequest) {
     const where: Prisma.ProductWhereInput = { isActive: true }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { sku: { contains: search, mode: "insensitive" } },
-      ]
+      const tokens = normalizeSearchTokens(search)
+      if (tokens.length > 0) {
+        const tokenConditions = tokens.map((token) => ({
+          OR: [
+            { name: { contains: token, mode: "insensitive" as const } },
+            { sku: { contains: token, mode: "insensitive" as const } },
+          ],
+        }))
+        // Merge with any existing AND conditions (e.g., stock status filters)
+        where.AND = where.AND
+          ? [...(Array.isArray(where.AND) ? where.AND : [where.AND]), ...tokenConditions]
+          : tokenConditions
+      }
     }
 
     if (category) {

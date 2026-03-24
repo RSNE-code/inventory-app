@@ -127,7 +127,7 @@ export default function BomsPage() {
                       sequenceLabel = `BOM ${jobNameSeq[jn]}`
                     }
                     return (
-                      <div key={bom.id as string} className={`animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
+                      <div key={bom.id as string} className={`animate-card-enter stagger-${Math.min(i + 1, 8)}`}>
                         <BomCard
                           id={bom.id as string}
                           jobName={jn}

@@ -1,7 +1,7 @@
 # Plan: Reorder List — Shopping List for the Office Manager
 
 **Created:** 2026-03-24
-**Status:** Draft
+**Status:** Implemented
 **Request:** Reference tool showing items needing reorder, grouped by supplier, with copy-to-clipboard for ordering
 
 ---

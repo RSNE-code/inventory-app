@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 import { Prisma } from "@prisma/client"
+import { normalizeSearchTokens } from "@/lib/search"
 
 /**
  * GET /api/products/browse?search=X&category=Y&limit=50
@@ -97,10 +98,15 @@ export async function GET(request: NextRequest) {
     const where: Prisma.ProductWhereInput = { isActive: true }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { sku: { contains: search, mode: "insensitive" } },
-      ]
+      const tokens = normalizeSearchTokens(search)
+      if (tokens.length > 0) {
+        where.AND = tokens.map((token) => ({
+          OR: [
+            { name: { contains: token, mode: "insensitive" as const } },
+            { sku: { contains: token, mode: "insensitive" as const } },
+          ],
+        }))
+      }
       // Exclude branded panel products from search — panels are added via
       // the generic PanelLineItemForm, brand is selected at checkout
       const panelTerms = ["panel", "imp", "insulated metal"]

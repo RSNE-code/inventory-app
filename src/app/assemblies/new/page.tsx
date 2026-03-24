@@ -14,6 +14,7 @@ import { StepProgress } from "@/components/layout/step-progress"
 import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
+import { useCelebration } from "@/hooks/use-celebration"
 import {
   DoorOpen,
   Layers,
@@ -42,6 +43,7 @@ const typeOptions: Array<{ value: AssemblyType; label: string; icon: typeof Door
 
 export default function NewAssemblyPage() {
   const router = useRouter()
+  const { celebrate } = useCelebration()
   const { data: templatesData, isLoading: templatesLoading } = useAssemblyTemplates()
   const createAssembly = useCreateAssembly()
 
@@ -150,6 +152,7 @@ export default function NewAssemblyPage() {
       })
 
       toast.success("Assembly added to fabrication queue")
+      celebrate()
       router.push(`/assemblies/${result.data.id}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create assembly")
