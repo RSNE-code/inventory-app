@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useCallback, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAssemblyTemplates, useCreateAssembly } from "@/hooks/use-assemblies"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
@@ -48,19 +48,25 @@ export default function NewAssemblyPage() {
   const createAssembly = useCreateAssembly()
 
   // Read type from URL params to skip type selection screen
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
-  const urlType = searchParams?.get("type")
+  const searchParams = useSearchParams()
+  const urlType = searchParams.get("type")
 
-  const [step, setStep] = useState<"type" | "template" | "details" | "door-flow">(() => {
-    if (urlType === "DOOR") return "door-flow"
-    if (urlType === "PANEL") return "template"
-    return "type"
-  })
-  const [assemblyType, setAssemblyType] = useState<AssemblyType | null>(() => {
-    if (urlType === "DOOR") return "DOOR"
-    if (urlType === "PANEL") return "WALL_PANEL"
-    return null
-  })
+  const [step, setStep] = useState<"type" | "template" | "details" | "door-flow">("type")
+  const [assemblyType, setAssemblyType] = useState<AssemblyType | null>(null)
+  const [initialized, setInitialized] = useState(false)
+
+  // Route based on URL param — runs once after hydration
+  useEffect(() => {
+    if (initialized) return
+    if (urlType === "DOOR") {
+      setStep("door-flow")
+      setAssemblyType("DOOR")
+    } else if (urlType === "PANEL") {
+      setStep("template")
+      setAssemblyType("WALL_PANEL")
+    }
+    setInitialized(true)
+  }, [urlType, initialized])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [jobName, setJobName] = useState("")
   const [batchSize, setBatchSize] = useState(1)
@@ -180,8 +186,15 @@ export default function NewAssemblyPage() {
       ]} />
 
       <div className="p-4 space-y-4">
+        {/* Wait for URL param routing before rendering content */}
+        {!initialized ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="h-6 w-6 border-2 border-brand-blue border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : null}
+
         {/* Step progress — only for panel/floor flow (door has its own inside DoorCreationFlow) */}
-        {step !== "door-flow" && (
+        {initialized && step !== "door-flow" && (
           <StepProgress
             steps={["Type", "Template", "Details"]}
             currentStep={step === "type" ? 0 : step === "template" ? 1 : 2}
@@ -189,7 +202,7 @@ export default function NewAssemblyPage() {
         )}
 
         {/* Step 1: Select Type */}
-        {step === "type" && (
+        {initialized && step === "type" && (
           <Card className="p-4 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">What are you building?</h3>
             <div className="grid grid-cols-1 gap-2">
@@ -211,12 +224,12 @@ export default function NewAssemblyPage() {
         )}
 
         {/* Door: AI-first creation flow */}
-        {step === "door-flow" && assemblyType === "DOOR" && (
+        {initialized && step === "door-flow" && assemblyType === "DOOR" && (
           <DoorCreationFlow />
         )}
 
         {/* Panel/Floor: Template Selection */}
-        {step === "template" && assemblyType && assemblyType !== "DOOR" && (
+        {initialized && step === "template" && assemblyType && assemblyType !== "DOOR" && (
           <Card className="p-4 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">Select Template</h3>
             <p className="text-sm text-text-secondary">
@@ -271,7 +284,7 @@ export default function NewAssemblyPage() {
         )}
 
         {/* Panel/Floor: Details */}
-        {step === "details" && assemblyType && assemblyType !== "DOOR" && (
+        {initialized && step === "details" && assemblyType && assemblyType !== "DOOR" && (
           <>
             {/* Job + Batch */}
             <Card className="p-4 rounded-xl border-border-custom space-y-3">
