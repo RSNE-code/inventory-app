@@ -40,6 +40,8 @@ export interface CatalogMatch {
     dimWidthUnit: string | null
   } | null
   matchConfidence: number // 0-1
+  /** Confidence tier for UI rendering: auto (green), suggested (blue), flagged (orange), none (gray) */
+  matchTier?: "auto" | "suggested" | "flagged" | "none"
   isNonCatalog: boolean
   alternativeMatches?: {
     id: string

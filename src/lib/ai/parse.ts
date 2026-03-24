@@ -195,11 +195,16 @@ You think like an experienced warehouse manager who knows the product catalog, r
 
 Industry context:
 - RSNE stocks: insulated metal panels (IMP), door hardware, metal trim/flashing, sealants/adhesives, gaskets, heater wire, FRP panels, plywood, fasteners, insulation
-- Common abbreviations: IMP = Insulated Metal Panel, W/W = White/White, FRP = Fiberglass Reinforced Panel, SS = Stainless Steel, Galv = Galvalume/Galvanized
+- Common abbreviations: IMP = Insulated Metal Panel, W/W = White/White, FRP = Fiberglass Reinforced Panel, SS = Stainless Steel, Galv = Galvalume/Galvanized, DP = Diamond Plate, HC = Heater Cable, PVC = PVC
+- Gauge/thickness shorthand: O63 = .063", O40 = .040", O90 = .090", O32 = .032". These are sheet metal gauges commonly used for diamond plate and metal stock.
+- Diamond plate: also called "DP", "checker plate", "tread plate". Gauge is part of the name (e.g., "Diamond Plate .063 4' x 8'")
 - TWS = Trim/Wall/Steel metal trim pieces cut from steel coil. Types: OC = Outside Corner, IC = Inside Corner, Cap, Screed, Base Cover Trim, Flat Batten
 - TWS dimensions: width x depth (e.g., "OC 2x3" = TWS Outside Corner 2" x 3", "IC 3x3" = TWS Inside Corner 3" x 3")
-- Foam kits like "FROTH-PAK" are common sealant/insulation items
+- Foam kits like "FROTH-PAK" are common sealant/insulation items (sizes: 200, 620)
 - Panel dimensions: thickness x width x length (e.g., "4in IMP W/W 3x20")
+- Dimension formats: Workers say "4x8" meaning 4' x 8' (feet). "7'6" or "7'6\"" = 7 feet 6 inches = 7.5 feet. "90 in" = 7.5 feet.
+- Color shorthand: WHT = White, BLK = Black, CLR = Clear
+- Fastener shorthand: TEK = TEK screws (self-drilling), SD = Self Drilling
 
 IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explanation.`
 
@@ -246,10 +251,13 @@ MATCHING GUIDANCE:
 - Warehouse workers use abbreviations and shorthand. "tek screws" = TEK screws, "drive pins" = Drive Pins, "OC 2x3" = Outside Corner 2"x3".
 - When an item is generic (e.g., "tek screws" without a size), pick the MOST COMMON variant as the best match and list other sizes in alternativeProductIds. Do NOT return null just because the user didn't specify a size.
 - When multiple catalog products match (e.g., several TEK screw sizes), pick the best one and include 2-3 alternatives. The user can easily switch — but having NO match forces them to search manually.
+- GAUGE NUMBERS: When you see "O63", ".063", or similar, these are metal gauges. Match to products with that gauge in the name (e.g., "O63 diamond plate" → "Diamond Plate .063 4' x 8'").
+- DIMENSION FORMAT: "4x8" = 4' x 8'. "7'6" = 7'6" = 7.5 feet. Always convert to feet when comparing to catalog products.
+- If the user says a size/gauge and only one catalog product matches that specification, it's a strong match even if the name is partial.
 
 CONFIDENCE CALIBRATION:
-- 0.95-1.0: Product name AND dimensions match exactly (e.g., "#12 TEK 5" → "#12 TEK 5")
-- 0.85-0.95: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
+- 0.90-1.0: Product name AND dimensions/gauge match exactly (e.g., "#12 TEK 5" → "#12 TEK 5", "O63 diamond plate 4x8" → "Diamond Plate .063 4' x 8'")
+- 0.85-0.90: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
 - 0.70-0.85: Likely match but some ambiguity (e.g., "tek screws" → "#12 TEK 5" — right product family, size unspecified)
 - 0.50-0.70: Plausible but uncertain (e.g., "drive pins" → "Hilti Drive Pins")
 - Below 0.50: Very weak match — still return the best guess with low confidence rather than null
