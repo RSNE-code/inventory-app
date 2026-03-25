@@ -19,6 +19,21 @@ interface CatalogProduct {
   dimWidthUnit: string | null
 }
 
+interface AssemblyTemplateRecord {
+  id: string
+  name: string
+  type: string
+  description: string | null
+}
+
+// Known door/panel supplier names — if these appear in the parsed text,
+// the item is a supplier product, not an RSNE assembly.
+const SUPPLIER_NAMES = [
+  "jamison", "kolpak", "bally", "chase", "nor-lake", "norlake",
+  "master-bilt", "masterbilt", "amerikooler", "walk-in", "hussmann",
+  "tyler", "zero zone", "hill phoenix",
+]
+
 // ─── Confidence tiers ───
 
 function getMatchTier(confidence: number): "auto" | "suggested" | "flagged" | "none" {
@@ -68,20 +83,26 @@ export async function matchItemsToCatalog(
   parsedItems: ParsedLineItem[],
   userId?: string
 ): Promise<CatalogMatch[]> {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    select: {
-      id: true, name: true, sku: true, unitOfMeasure: true,
-      currentQty: true, tier: true,
-      category: { select: { name: true } },
-      lastCost: true, avgCost: true, reorderPoint: true,
-      dimLength: true, dimLengthUnit: true,
-      dimWidth: true, dimWidthUnit: true,
-    },
-  })
+  const [products, assemblyTemplates] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true },
+      select: {
+        id: true, name: true, sku: true, unitOfMeasure: true,
+        currentQty: true, tier: true,
+        category: { select: { name: true } },
+        lastCost: true, avgCost: true, reorderPoint: true,
+        dimLength: true, dimLengthUnit: true,
+        dimWidth: true, dimWidthUnit: true,
+      },
+    }),
+    prisma.assemblyTemplate.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, type: true, description: true },
+    }),
+  ])
 
   return Promise.all(
-    parsedItems.map((item) => matchSingleItem(item, products, userId))
+    parsedItems.map((item) => matchSingleItem(item, products, assemblyTemplates, userId))
   )
 }
 
@@ -90,6 +111,7 @@ export async function matchItemsToCatalog(
 async function matchSingleItem(
   item: ParsedLineItem,
   products: CatalogProduct[],
+  assemblyTemplates: AssemblyTemplateRecord[],
   userId?: string
 ): Promise<CatalogMatch> {
   // 1. Check match history first — user corrections are the strongest signal
@@ -100,7 +122,24 @@ async function matchSingleItem(
     }
   }
 
-  // 2. Fuzzy match against catalog
+  // 2. Check if item mentions a known supplier — if so, skip assembly templates
+  const itemNameLower = item.name.toLowerCase()
+  const mentionsSupplier = SUPPLIER_NAMES.some((s) => itemNameLower.includes(s))
+
+  // 3. Score against assembly templates (unless supplier is mentioned)
+  let bestAssemblyMatch: { template: AssemblyTemplateRecord; score: number } | null = null
+  if (!mentionsSupplier && assemblyTemplates.length > 0) {
+    const assemblyScored = assemblyTemplates.map((template) => ({
+      template,
+      score: calculateAssemblyMatchScore(item, template),
+    }))
+    assemblyScored.sort((a, b) => b.score - a.score)
+    if (assemblyScored[0] && assemblyScored[0].score >= 0.50) {
+      bestAssemblyMatch = assemblyScored[0]
+    }
+  }
+
+  // 4. Fuzzy match against catalog products
   const scored = products.map((product) => ({
     product,
     score: calculateMatchScore(item, product),
@@ -108,11 +147,43 @@ async function matchSingleItem(
 
   scored.sort((a, b) => b.score - a.score)
 
-  const bestMatch = scored[0]
+  const bestProduct = scored[0]
   const FLOOR_THRESHOLD = 0.40
 
-  if (bestMatch && bestMatch.score >= FLOOR_THRESHOLD) {
-    const tier = getMatchTier(bestMatch.score)
+  // 5. Prefer assembly template if it scores higher than the best product match
+  // Assembly templates get a small boost since "cooler door 5x7" is almost
+  // certainly an RSNE fab item, not a random catalog product
+  if (bestAssemblyMatch && (!bestProduct || bestAssemblyMatch.score + 0.10 >= bestProduct.score)) {
+    const t = bestAssemblyMatch.template
+    const typeLabel = assemblyTypeLabel(t.type)
+    return {
+      // Override parsedItem name/category with template info so the BOM
+      // confirmation flow picks up the correct assembly name and type
+      parsedItem: {
+        ...item,
+        name: t.name,
+        category: typeLabel,
+        unitOfMeasure: "each",
+      },
+      matchedProduct: null,
+      matchConfidence: bestAssemblyMatch.score,
+      matchTier: getMatchTier(bestAssemblyMatch.score),
+      isNonCatalog: true,
+      assemblyTemplateId: t.id,
+      // Provide alternatives from product matches for user to override
+      alternativeMatches: scored
+        .slice(0, 3)
+        .filter((s) => s.score >= FLOOR_THRESHOLD)
+        .map((s) => ({
+          id: s.product.id,
+          name: s.product.name,
+          matchConfidence: s.score,
+        })),
+    }
+  }
+
+  if (bestProduct && bestProduct.score >= FLOOR_THRESHOLD) {
+    const tier = getMatchTier(bestProduct.score)
     const alternatives = scored
       .slice(1, 4)
       .filter((s) => s.score >= FLOOR_THRESHOLD)
@@ -122,16 +193,80 @@ async function matchSingleItem(
         matchConfidence: s.score,
       }))
 
-    return buildProductMatch(bestMatch.product, item, bestMatch.score, tier, alternatives)
+    return buildProductMatch(bestProduct.product, item, bestProduct.score, tier, alternatives)
   }
 
   return {
     parsedItem: item,
     matchedProduct: null,
-    matchConfidence: bestMatch?.score || 0,
+    matchConfidence: bestProduct?.score || 0,
     matchTier: "none",
     isNonCatalog: true,
   }
+}
+
+function assemblyTypeLabel(type: string): string {
+  switch (type) {
+    case "DOOR": return "Door"
+    case "FLOOR_PANEL": return "Floor Panel"
+    case "WALL_PANEL": return "Wall Panel"
+    case "RAMP": return "Ramp"
+    default: return "Assembly"
+  }
+}
+
+// ─── Assembly template scoring ───
+
+function calculateAssemblyMatchScore(
+  item: ParsedLineItem,
+  template: AssemblyTemplateRecord
+): number {
+  const itemName = normalize(item.name)
+  const templateName = normalize(template.name)
+
+  // Exact match
+  if (itemName === templateName) return 1.0
+
+  const itemTokens = expandTokens(tokenize(itemName))
+  const templateTokens = tokenize(templateName)
+
+  if (itemTokens.length === 0 || templateTokens.length === 0) return 0
+
+  // Count how many item tokens match template tokens
+  let matchedTokens = 0
+  for (const token of itemTokens) {
+    if (templateTokens.some((tt) => tt.includes(token) || token.includes(tt))) {
+      matchedTokens++
+    }
+  }
+
+  const coverageScore = matchedTokens / itemTokens.length
+
+  // Dimension matching boost: if the item has dimension-like tokens (numbers)
+  // that match the template's dimension tokens, boost confidence
+  const itemDimTokens = itemTokens.filter((t) => /^\d+$/.test(t))
+  const templateDimTokens = templateTokens.filter((t) => /^\d+$/.test(t))
+  let dimBoost = 0
+  if (itemDimTokens.length > 0 && templateDimTokens.length > 0) {
+    const dimMatches = itemDimTokens.filter((d) => templateDimTokens.includes(d)).length
+    dimBoost = dimMatches > 0 ? 0.15 * (dimMatches / itemDimTokens.length) : 0
+  }
+
+  // Type keyword boost: if the item mentions "door", "panel", "ramp", "slider"
+  // and the template type matches
+  let typeBoost = 0
+  const typeKeywords: Record<string, string[]> = {
+    DOOR: ["door", "swing", "slider", "sliding"],
+    FLOOR_PANEL: ["floor", "panel"],
+    WALL_PANEL: ["wall", "panel"],
+    RAMP: ["ramp"],
+  }
+  const keywords = typeKeywords[template.type] || []
+  if (keywords.some((kw) => itemTokens.includes(kw))) {
+    typeBoost = 0.10
+  }
+
+  return Math.min(1.0, coverageScore + dimBoost + typeBoost)
 }
 
 // ─── Match history lookup ───
