@@ -19,6 +19,9 @@ export interface FeedItem {
   isPanel: boolean
   confirmed: boolean // Pass 2 confirmed
   isNonCatalog: boolean
+  isAssemblyTemplate?: boolean
+  assemblyTemplateId?: string
+  nonCatalogCategory?: string
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
   // Unit conversion fields

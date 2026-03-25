@@ -37,6 +37,9 @@ interface FeedItem {
   isPanel: boolean
   confirmed: boolean
   isNonCatalog: boolean
+  isAssemblyTemplate?: boolean
+  assemblyTemplateId?: string
+  nonCatalogCategory?: string
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
   // Unit conversion fields
@@ -256,6 +259,7 @@ export function BomPhotoCapture() {
             const BULK_UNITS = ["case", "box", "pallet", "carton", "bag", "roll", "lb", "lbs", "pound", "pounds"]
             const isBulkUnit = BULK_UNITS.includes(aiUom?.toLowerCase().trim() || "")
             const uomMismatch = isBulkUnit && catalogUom && aiUom?.toLowerCase().trim() !== catalogUom.toLowerCase().trim()
+            const isAssemblyTemplate = !!match.assemblyTemplateId
             const feedItem: FeedItem = {
               id: `item-${parsed.index}-${Date.now()}`,
               rawText: match.parsedItem.rawText,
@@ -263,10 +267,13 @@ export function BomPhotoCapture() {
               productId: match.matchedProduct?.id || null,
               quantity: match.parsedItem.quantity,
               unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
-              confidence: match.matchConfidence,
+              confidence: isAssemblyTemplate ? Math.max(match.matchConfidence, 0.90) : match.matchConfidence,
               isPanel: !!match.panelSpecs,
-              confirmed: match.matchConfidence >= 0.95,
+              confirmed: match.matchConfidence >= 0.95 || isAssemblyTemplate,
               isNonCatalog: match.isNonCatalog,
+              isAssemblyTemplate,
+              assemblyTemplateId: match.assemblyTemplateId,
+              nonCatalogCategory: match.parsedItem.category || undefined,
               panelSpecs: match.panelSpecs || undefined,
               alternatives: match.alternativeMatches?.map((a) => ({
                 productId: a.id,
@@ -509,8 +516,10 @@ export function BomPhotoCapture() {
         qtyNeeded: item.quantity,
         isNonCatalog: item.isNonCatalog,
         nonCatalogName: item.isNonCatalog ? item.productName : null,
+        nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
         nonCatalogUom: item.isNonCatalog ? item.unitOfMeasure : null,
-        nonCatalogSpecs: item.panelSpecs || null,
+        nonCatalogSpecs: item.panelSpecs
+          || (item.assemblyTemplateId ? { type: "assembly", assemblyTemplateId: item.assemblyTemplateId } : null),
         matchConfidence: item.confidence,
         rawText: item.rawText,
         parsedUom: item.parsedUom || null,
