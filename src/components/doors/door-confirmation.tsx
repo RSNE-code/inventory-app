@@ -200,20 +200,24 @@ export function DoorConfirmation({
           wheels: [{ label: "Type", options: [{ label: "Magnetic", value: "MAGNETIC" }, { label: "Neoprene", value: "NEOPRENE" }] }],
           values: [specs.gasketType || "MAGNETIC"],
         }
-      case "windowSize":
+      case "windowSize": {
+        const curH = specs.windowSize ? specs.windowSize.split("x")[0] : ""
+        const curW = specs.windowSize ? specs.windowSize.split("x")[1] : ""
         return {
           label: "Window",
           wheels: [
-            { label: "Height", options: [{ label: "None", value: "" }, { label: '14"', value: "14" }] },
+            { label: "Height", options: [{ label: "None", value: "" }, { label: '14"', value: "14" }, { label: '24"', value: "24" }] },
             { label: "Width", options: [{ label: '14"', value: "14" }, { label: '24"', value: "24" }] },
             { label: "Heated", options: [{ label: "Non-Heated", value: "no" }, { label: "Heated", value: "yes" }] },
           ],
           values: [
-            specs.windowSize ? "14" : "",
-            specs.windowSize === "14x24" ? "24" : "14",
+            curH || "",
+            curW || "14",
             specs.windowHeated ? "yes" : "no",
           ],
+          allowOther: true,
         }
+      }
       // ── Swing hardware ──
       case "hinges": {
         const cat = hardwareToPickerOptions(SWING_HINGES)
@@ -364,7 +368,7 @@ export function DoorConfirmation({
           onSpecChange("windowSize", undefined)
           onSpecChange("windowHeated", undefined)
         } else {
-          const size = `${values[0]}x${values[1]}` as "14x14" | "14x24"
+          const size = `${values[0]}x${values[1]}`
           onSpecChange("windowSize", size)
           onSpecChange("windowHeated", values[2] === "yes")
         }
@@ -501,7 +505,7 @@ export function DoorConfirmation({
       <SectionCard title="Features & Options">
         <SpecRow
           label="Window"
-          value={specs.windowSize ? (specs.windowSize === "14x14" ? '14" × 14"' : '14" × 24"') : undefined}
+          value={specs.windowSize ? `${specs.windowSize.split("x")[0]}" × ${specs.windowSize.split("x")[1]}"` : undefined}
           onEdit={() => setActivePicker("windowSize")}
         />
         {specs.windowSize && (
