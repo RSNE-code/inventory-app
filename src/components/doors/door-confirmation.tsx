@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import type { DoorSpecs, DoorCategory, FrameType, GasketType, Side, Cutout } from "@/lib/door-specs"
 import { FIELD_METADATA, calculateHeaterCable } from "@/lib/door-specs"
+import { getDoorFieldLabel, formatDoorFieldValue } from "@/lib/door-field-labels"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -168,18 +169,11 @@ export function DoorConfirmation({
   }
 
   function getDisplayLabel(field: string): string {
-    const meta = FIELD_METADATA[field]
-    if (meta?.label) return meta.label
-    return field
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (s) => s.toUpperCase())
-      .trim()
+    return getDoorFieldLabel(field)
   }
 
   function formatValue(field: string, value: unknown): string {
-    if (typeof value === "boolean") return value ? "Yes" : "No"
-    if (Array.isArray(value)) return value.join(", ")
-    return String(value)
+    return formatDoorFieldValue(field, value)
   }
 
   // Filter sections to only show fields that have values or are relevant
@@ -294,7 +288,7 @@ export function DoorConfirmation({
               {
                 title: "Hinges",
                 rows: [
-                  { label: "Mfr", field: "hingeMfrName", value: specs.hingeMfrName },
+                  { label: "Manufacturer", field: "hingeMfrName", value: specs.hingeMfrName },
                   { label: "Model", field: "hingeModel", value: specs.hingeModel },
                   ...(specs.hingeOffset ? [{ label: "Offset", field: "hingeOffset", value: specs.hingeOffset }] : []),
                 ],
@@ -303,7 +297,7 @@ export function DoorConfirmation({
               {
                 title: "Latch",
                 rows: [
-                  { label: "Mfr", field: "latchMfrName", value: specs.latchMfrName },
+                  { label: "Manufacturer", field: "latchMfrName", value: specs.latchMfrName },
                   { label: "Model", field: "latchModel", value: specs.latchModel },
                 ],
                 show: !!(specs.latchMfrName || specs.latchModel),
@@ -388,13 +382,26 @@ export function DoorConfirmation({
       {/* Cutouts section */}
       {specs.cutouts && specs.cutouts.length > 0 && (
         <Card className="p-4 rounded-xl border-border-custom">
-          <h3 className="font-semibold text-navy text-sm mb-2">Cutouts ({specs.cutouts.length})</h3>
+          <h3 className="font-semibold text-navy text-base mb-3">Cutouts ({specs.cutouts.length})</h3>
           {specs.cutouts.map((c, i) => (
-            <div key={i} className="text-sm py-1 border-b border-border-custom/40 last:border-0">
-              <span className="text-text-muted text-xs">Cutout {i + 1}{c.side ? ` (${c.side === "LEFT" ? "Left" : c.side === "RIGHT" ? "Right" : "Top"})` : ""}:</span>{" "}
-              <span className="font-medium">
-                {c.floorToBottom} → {c.floorToTop}, Width: {c.frameWidth}
-              </span>
+            <div key={i} className="bg-surface-secondary rounded-xl p-3 mb-2 last:mb-0">
+              <p className="text-xs font-bold text-navy mb-1">
+                Cutout {i + 1}{c.side ? ` — ${c.side === "LEFT" ? "Left" : c.side === "RIGHT" ? "Right" : "Top"}` : ""}
+              </p>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <p className="text-[10px] text-text-muted">Floor→Bottom</p>
+                  <p className="text-sm font-semibold">{c.floorToBottom}&quot;</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-text-muted">Floor→Top</p>
+                  <p className="text-sm font-semibold">{c.floorToTop}&quot;</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-text-muted">Width</p>
+                  <p className="text-sm font-semibold">{c.frameWidth}&quot;</p>
+                </div>
+              </div>
             </div>
           ))}
         </Card>

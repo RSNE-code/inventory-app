@@ -88,7 +88,7 @@ function HardwareBox({
         <div className="space-y-1">
           {manufacturer && (
             <div className="flex justify-between">
-              <span className="text-xs text-text-muted">Mfr</span>
+              <span className="text-xs text-text-muted">Manufacturer</span>
               <span className="text-sm font-medium text-navy">{manufacturer}</span>
             </div>
           )}

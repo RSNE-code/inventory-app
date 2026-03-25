@@ -16,6 +16,7 @@ import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, 
 import Link from "next/link"
 import { toast } from "sonner"
 import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
+import { formatDoorFieldValue } from "@/lib/door-field-labels"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 
 type QueueTab = "DOOR_SHOP" | "FABRICATION" | "SHIPPING"
@@ -321,7 +322,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     {w && h && (
                       <span className="text-xs font-semibold text-navy/70 bg-surface-secondary px-1.5 py-0.5 rounded">
-                        {w} x {h}
+                        {w}&quot; × {h}&quot;
                       </span>
                     )}
                     {temp && (
@@ -340,7 +341,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                     )}
                     {frame && (
                       <span className="text-[12px] text-text-muted font-medium">
-                        {frame.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                        {formatDoorFieldValue("frameType", frame)}
                       </span>
                     )}
                   </div>

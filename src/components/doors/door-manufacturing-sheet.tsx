@@ -66,9 +66,11 @@ function MfgHardwareBox({
   return (
     <div className="bg-surface-secondary rounded-lg p-2.5">
       <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{title}</p>
-      <p className="text-sm font-semibold text-navy tabular-nums">
-        {partNumber || "\u00A0"}
-      </p>
+      {partNumber ? (
+        <p className="text-sm font-semibold text-navy tabular-nums">{partNumber}</p>
+      ) : (
+        <p className="text-xs text-text-muted italic">Not specified</p>
+      )}
       {offset && (
         <p className="text-xs text-text-secondary mt-0.5">
           Offset: {offset}

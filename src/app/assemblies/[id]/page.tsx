@@ -16,6 +16,7 @@ import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { Breadcrumb } from "@/components/layout/breadcrumb"
 import type { DoorSpecs } from "@/lib/door-specs"
+import { getDoorFieldLabel, formatDoorFieldValue } from "@/lib/door-field-labels"
 import {
   User,
   Calendar,
@@ -323,7 +324,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                   specs[field] ? (
                     <div key={field}>
                       <p className="text-xs text-text-secondary">
-                        {field === "doorType" ? "Type" : field.charAt(0).toUpperCase() + field.slice(1)}
+                        {getDoorFieldLabel(field)}
                       </p>
                       <p className="text-sm font-medium">{String(specs[field])}</p>
                     </div>
@@ -412,7 +413,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               return (
                 <div key={entry.id as string} className="text-xs py-1.5 border-b border-border-custom/40 last:border-0">
                   <p className="text-text-primary">
-                    <span className="font-medium">{String(entry.fieldName)}</span>:
+                    <span className="font-medium">{getDoorFieldLabel(String(entry.fieldName))}</span>:
                     {entry.oldValue ? <span className="text-status-red/70 line-through ml-1">{String(entry.oldValue)}</span> : null}
                     <span className="text-status-green ml-1">{String(entry.newValue)}</span>
                   </p>

@@ -197,7 +197,7 @@ function NewAssemblyContent() {
         { label: step === "door-flow" ? "New Door" : "New Assembly" },
       ]} />
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 pb-28 space-y-4 overscroll-fix">
         {/* Wait for URL param routing before rendering content */}
         {!initialized ? (
           <div className="flex items-center justify-center py-12">
