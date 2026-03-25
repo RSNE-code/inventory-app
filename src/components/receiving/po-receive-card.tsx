@@ -10,6 +10,7 @@ import {
   Briefcase,
   ArrowLeft,
   Clock,
+  CheckCircle,
   ChevronDown,
   Layers,
   Mic,
@@ -107,6 +108,11 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
       return quantities[i] > 0
     }).length
 
+  // Check if all items are already fully received
+  const allItemsFullyReceived = po.lineItems.every(
+    (li) => Number(li.qtyReceived) >= Number(li.qtyOrdered) && Number(li.qtyOrdered) > 0
+  )
+
   // Filter to only non-voided receipts with items
   const activeReceipts = (po.receipts ?? []).filter((r) => !r.isVoided && r.items.length > 0)
 
@@ -192,6 +198,32 @@ export function POReceiveCard({ po, onConfirm, onBack }: POReceiveCardProps) {
     }
 
     onConfirm(items)
+  }
+
+  // Show "all received" state instead of empty receive form
+  if (allItemsFullyReceived) {
+    return (
+      <div className="space-y-3 animate-fade-in-up">
+        <Card className="p-5 rounded-xl border-border-custom text-center space-y-3">
+          <div className="flex justify-center">
+            <div className="h-14 w-14 rounded-full bg-status-green/15 flex items-center justify-center">
+              <CheckCircle className="h-7 w-7 text-status-green" />
+            </div>
+          </div>
+          <h3 className="font-semibold text-navy text-base">All Items Received</h3>
+          <p className="text-sm text-text-secondary">
+            All {po.lineItems.length} item{po.lineItems.length !== 1 ? "s" : ""} on PO #{po.poNumber} have been fully received.
+          </p>
+        </Card>
+        <button
+          onClick={onBack}
+          className="w-full flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-navy font-medium py-2 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to PO selection
+        </button>
+      </div>
+    )
   }
 
   return (

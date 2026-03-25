@@ -15,6 +15,7 @@ const createReceiptSchema = z.object({
         productId: z.string().uuid().optional().nullable(),
         quantity: z.number().positive(),
         unitCost: z.number().min(0),
+        poLineItemId: z.string().uuid().optional().nullable(),
         // Auto-create panel product fields (when productId is null)
         autoCreatePanel: z
           .object({
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
         select: { id: true },
       })
 
-      const resolvedItems: Array<{ productId: string; quantity: number; unitCost: number }> = []
+      const resolvedItems: Array<{ productId: string; quantity: number; unitCost: number; poLineItemId?: string }> = []
 
       for (const item of data.items) {
         if (item.productId) {
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
             productId: item.productId,
             quantity: item.quantity,
             unitCost: item.unitCost,
+            poLineItemId: item.poLineItemId || undefined,
           })
         } else if (item.autoCreatePanel && panelCategory) {
           // Auto-create missing panel product (find-or-create pattern)
@@ -138,9 +140,15 @@ export async function POST(request: NextRequest) {
             productId: product.id,
             quantity: item.quantity,
             unitCost: item.unitCost,
+            poLineItemId: item.poLineItemId || undefined,
           })
         }
         // Items with no productId and no autoCreatePanel are skipped (shouldn't happen)
+      }
+
+      // Reject 0-item receipts
+      if (resolvedItems.length === 0) {
+        throw new Error("No items to receive")
       }
 
       for (const item of resolvedItems) {
@@ -151,6 +159,7 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           unitCost: item.unitCost,
           receiptId: receipt.id,
+          notes: item.poLineItemId ? `poLineItem:${item.poLineItemId}` : undefined,
           tx,
         })
       }

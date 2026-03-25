@@ -233,6 +233,11 @@ export function ReceivingFlow() {
   }
 
   async function handleSubmitReceipt() {
+    if (confirmedItems.length === 0) {
+      toast.error("No items to receive")
+      return
+    }
+
     // Include panel breakout items (even without productId — API will auto-create)
     const catalogItems = confirmedItems.filter(
       (i) => (!i.isNonCatalog && i.productId) || i.isPanelBreakout
@@ -283,6 +288,7 @@ export function ReceivingFlow() {
           productId: i.productId || undefined,
           quantity: i.quantity,
           unitCost: i.unitCost,
+          poLineItemId: i.poLineItemId || undefined,
           // Pass panel metadata for auto-creation when no productId
           ...(i.isPanelBreakout && !i.productId && i.panelBrand && i.panelHeight && i.panelWidth && i.panelThickness
             ? {
@@ -298,8 +304,9 @@ export function ReceivingFlow() {
         poLineItemUpdates: poLineItemUpdates.length > 0 ? poLineItemUpdates : undefined,
       })
 
+      const totalReceived = confirmedItems.length
       toast.success(
-        `Received ${catalogItems.length} item${catalogItems.length !== 1 ? "s" : ""} from ${supplierName}`
+        `Received ${totalReceived} item${totalReceived !== 1 ? "s" : ""} from ${supplierName}`
       )
       celebrate()
 

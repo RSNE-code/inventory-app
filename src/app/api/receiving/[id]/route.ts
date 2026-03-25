@@ -64,13 +64,23 @@ export async function DELETE(
         for (const txn of receiveTransactions) {
           const qtyToReverse = Number(txn.quantity)
 
-          // Match PO line item: try productId first, then fall back to finding
-          // any line item for this product that has received quantity
-          let matchingLineItem = receipt.purchaseOrder.lineItems.find(
-            (li) => li.productId === txn.productId
-          )
+          // Priority 1: Exact match via stored poLineItemId in transaction notes
+          let matchingLineItem: typeof receipt.purchaseOrder.lineItems[0] | undefined
+          if (txn.notes && txn.notes.startsWith("poLineItem:")) {
+            const storedId = txn.notes.replace("poLineItem:", "")
+            matchingLineItem = receipt.purchaseOrder.lineItems.find(
+              (li) => li.id === storedId
+            )
+          }
 
-          // If no match by productId, try matching by product name in description
+          // Priority 2: Match by productId
+          if (!matchingLineItem) {
+            matchingLineItem = receipt.purchaseOrder.lineItems.find(
+              (li) => li.productId === txn.productId
+            )
+          }
+
+          // Priority 3: Match by product name in description
           if (!matchingLineItem && txn.product) {
             matchingLineItem = receipt.purchaseOrder.lineItems.find(
               (li) =>
@@ -79,8 +89,7 @@ export async function DELETE(
             )
           }
 
-          // If still no match, find any line item with qtyReceived > 0
-          // that hasn't been fully reversed yet
+          // Priority 4: Any line item with qtyReceived > 0
           if (!matchingLineItem) {
             matchingLineItem = receipt.purchaseOrder.lineItems.find(
               (li) => Number(li.qtyReceived) > 0
