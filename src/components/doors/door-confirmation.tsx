@@ -198,10 +198,14 @@ export function DoorConfirmation({
 
       {/* ── SECTION 2: Configuration ── */}
       <SectionCard title="Configuration">
-        <SpecRow label="Temperature" value={formatDoorFieldValue("temperatureType", specs.temperatureType)} />
-        <SpecRow label="Opening Type" value={formatDoorFieldValue("openingType", specs.openingType)} />
+        <SpecRow label="Temperature" value={formatDoorFieldValue("temperatureType", specs.temperatureType)} onEdit={() => onSpecChange("temperatureType", specs.temperatureType === "COOLER" ? "FREEZER" : "COOLER")} />
+        <SpecRow label="Opening Type" value={formatDoorFieldValue("openingType", specs.openingType)} onEdit={() => onSpecChange("openingType", specs.openingType === "HINGE" ? "SLIDE" : "HINGE")} />
         {!isSlider && (
-          <SpecRow label="Frame Type" value={formatDoorFieldValue("frameType", specs.frameType)} />
+          <SpecRow label="Frame Type" value={formatDoorFieldValue("frameType", specs.frameType)} onEdit={() => {
+            const types = ["FULL_FRAME", "FACE_FRAME", "BALLY_TYPE"] as const
+            const idx = types.indexOf(specs.frameType as typeof types[number])
+            onSpecChange("frameType", types[(idx + 1) % types.length])
+          }} />
         )}
         {isSlider ? (
           <SpecRow
@@ -219,8 +223,10 @@ export function DoorConfirmation({
         {editingField === "finish" ? <EditRow field="finish" /> : (
           <SpecRow label="Finish" value={specs.finish} onEdit={() => startEdit("finish", specs.finish)} />
         )}
-        <SpecRow label="Insulation Type" value={specs.insulationType} />
-        <SpecRow label="Gasket Type" value={formatDoorFieldValue("gasketType", specs.gasketType)} />
+        {editingField === "insulationType" ? <EditRow field="insulationType" /> : (
+          <SpecRow label="Insulation Type" value={specs.insulationType} onEdit={() => startEdit("insulationType", specs.insulationType)} />
+        )}
+        <SpecRow label="Gasket Type" value={formatDoorFieldValue("gasketType", specs.gasketType)} onEdit={() => onSpecChange("gasketType", specs.gasketType === "MAGNETIC" ? "NEOPRENE" : "MAGNETIC")} />
         <BoolRow label="High Sill" value={specs.highSill} onToggle={() => toggleBoolean("highSill")} />
         <BoolRow label="Wiper" value={specs.wiper} onToggle={() => toggleBoolean("wiper")} />
         <BoolRow label="Exterior Door" value={specs.isExterior} onToggle={() => toggleBoolean("isExterior")} />
@@ -289,6 +295,11 @@ export function DoorConfirmation({
         <SpecRow
           label="Window"
           value={specs.windowSize ? (specs.windowSize === "14x14" ? '14" × 14"' : '14" × 24"') : undefined}
+          onEdit={() => {
+            if (!specs.windowSize) onSpecChange("windowSize", "14x14")
+            else if (specs.windowSize === "14x14") onSpecChange("windowSize", "14x24")
+            else { onSpecChange("windowSize", undefined); onSpecChange("windowHeated", undefined) }
+          }}
         />
         {specs.windowSize && (
           <BoolRow label="Heated Window" value={specs.windowHeated} onToggle={() => toggleBoolean("windowHeated")} />
@@ -296,8 +307,12 @@ export function DoorConfirmation({
         {/* Heater (freezer) */}
         {isFreezer && (
           <>
-            <SpecRow label="Heater Size" value={specs.heaterSize} />
-            <SpecRow label="Heater Location" value={specs.heaterCableLocation} />
+            {editingField === "heaterSize" ? <EditRow field="heaterSize" /> : (
+              <SpecRow label="Heater Size" value={specs.heaterSize} onEdit={() => startEdit("heaterSize", specs.heaterSize)} />
+            )}
+            {editingField === "heaterCableLocation" ? <EditRow field="heaterCableLocation" /> : (
+              <SpecRow label="Heater Location" value={specs.heaterCableLocation} onEdit={() => startEdit("heaterCableLocation", specs.heaterCableLocation)} />
+            )}
           </>
         )}
         {/* Options */}
