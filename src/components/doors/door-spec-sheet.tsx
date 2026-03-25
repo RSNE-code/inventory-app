@@ -68,7 +68,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Hardware box — one of the 4 boxes in the grid */
+/** Hardware box — one of the 4 boxes in the grid. Always shows Manufacturer + Model rows. */
 function HardwareBox({
   title,
   manufacturer,
@@ -80,34 +80,33 @@ function HardwareBox({
   model?: string
   offset?: string
 }) {
-  const hasData = manufacturer || model
   return (
     <div className="bg-surface-secondary rounded-lg p-3">
       <p className="text-xs font-bold text-navy uppercase tracking-wide mb-2">{title}</p>
-      {hasData ? (
-        <div className="space-y-1">
-          {manufacturer && (
-            <div className="flex justify-between">
-              <span className="text-xs text-text-muted">Manufacturer</span>
-              <span className="text-sm font-medium text-navy">{manufacturer}</span>
-            </div>
-          )}
-          {model && (
-            <div className="flex justify-between">
-              <span className="text-xs text-text-muted">Model</span>
-              <span className="text-sm font-medium text-navy">{model}</span>
-            </div>
-          )}
-          {offset && (
-            <div className="flex justify-between">
-              <span className="text-xs text-text-muted">Offset</span>
-              <span className="text-sm font-medium text-navy">{offset}</span>
-            </div>
+      <div className="space-y-1">
+        <div className="flex justify-between">
+          <span className="text-xs text-text-muted">Manufacturer</span>
+          {manufacturer ? (
+            <span className="text-sm font-medium text-navy">{manufacturer}</span>
+          ) : (
+            <span className="text-xs text-text-muted italic">Not specified</span>
           )}
         </div>
-      ) : (
-        <p className="text-xs text-text-muted italic">Not specified</p>
-      )}
+        <div className="flex justify-between">
+          <span className="text-xs text-text-muted">Model</span>
+          {model ? (
+            <span className="text-sm font-medium text-navy">{model}</span>
+          ) : (
+            <span className="text-xs text-text-muted italic">Not specified</span>
+          )}
+        </div>
+        {offset && (
+          <div className="flex justify-between">
+            <span className="text-xs text-text-muted">Offset</span>
+            <span className="text-sm font-medium text-navy">{offset}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -280,27 +279,39 @@ export function DoorSpecSheet({
         {/* Hardware — 4-box grid */}
         <div>
           <SectionHeader>Hardware</SectionHeader>
-          <div className="grid grid-cols-2 gap-2">
-            <HardwareBox
-              title="Hinges"
-              manufacturer={specs.hingeMfrName}
-              model={specs.hingeModel}
-              offset={specs.hingeOffset}
-            />
-            <HardwareBox
-              title="Latch"
-              manufacturer={specs.latchMfrName}
-              model={specs.latchModel}
-            />
-            <HardwareBox
-              title="Closer"
-              model={specs.closerModel}
-            />
-            <HardwareBox
-              title="Inside Release"
-              model={specs.insideRelease}
-            />
-          </div>
+          {(() => {
+            // Split closerModel "DENT D276" → mfr + model
+            const closerParts = specs.closerModel ? specs.closerModel.split(" ") : []
+            const closerMfr = closerParts.length > 1 ? closerParts[0] : undefined
+            const closerModel = closerParts.length > 1 ? closerParts.slice(1).join(" ") : specs.closerModel
+            // Inside release — K481 is Kason
+            const releaseMfr = specs.insideRelease?.startsWith("K4") ? "Kason" : undefined
+            return (
+              <div className="grid grid-cols-2 gap-2">
+                <HardwareBox
+                  title="Hinges"
+                  manufacturer={specs.hingeMfrName}
+                  model={specs.hingeModel}
+                  offset={specs.hingeOffset}
+                />
+                <HardwareBox
+                  title="Latch"
+                  manufacturer={specs.latchMfrName}
+                  model={specs.latchModel}
+                />
+                <HardwareBox
+                  title="Closer"
+                  manufacturer={closerMfr}
+                  model={closerModel}
+                />
+                <HardwareBox
+                  title="Inside Release"
+                  manufacturer={releaseMfr}
+                  model={specs.insideRelease}
+                />
+              </div>
+            )
+          })()}
         </div>
 
         {/* Heater (freezer only) */}

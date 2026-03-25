@@ -53,24 +53,39 @@ function MfgField({
   )
 }
 
-/** Hardware box for manufacturing sheet — compact with part # */
+/** Hardware box for manufacturing sheet — compact with Manufacturer + Model */
 function MfgHardwareBox({
   title,
-  partNumber,
+  manufacturer,
+  model,
   offset,
 }: {
   title: string
-  partNumber?: string
+  manufacturer?: string
+  model?: string
   offset?: string
 }) {
   return (
     <div className="bg-surface-secondary rounded-lg p-2.5">
       <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{title}</p>
-      {partNumber ? (
-        <p className="text-sm font-semibold text-navy tabular-nums">{partNumber}</p>
-      ) : (
-        <p className="text-xs text-text-muted italic">Not specified</p>
-      )}
+      <div className="space-y-0.5">
+        <div className="flex justify-between items-baseline">
+          <span className="text-[10px] text-text-muted uppercase">Mfr</span>
+          {manufacturer ? (
+            <span className="text-sm font-semibold text-navy">{manufacturer}</span>
+          ) : (
+            <span className="text-[10px] text-text-muted italic">—</span>
+          )}
+        </div>
+        <div className="flex justify-between items-baseline">
+          <span className="text-[10px] text-text-muted uppercase">Model</span>
+          {model ? (
+            <span className="text-sm font-semibold text-navy">{model}</span>
+          ) : (
+            <span className="text-[10px] text-text-muted italic">—</span>
+          )}
+        </div>
+      </div>
       {offset && (
         <p className="text-xs text-text-secondary mt-0.5">
           Offset: {offset}
@@ -230,25 +245,39 @@ export function DoorManufacturingSheet({
         {/* Hardware — 4-box grid */}
         <div className="py-3 border-b border-border-custom">
           <span className="text-sm font-bold uppercase block mb-2">HARDWARE</span>
-          <div className="grid grid-cols-2 gap-2">
-            <MfgHardwareBox
-              title="HINGE"
-              partNumber={[specs.hingeMfrName, specs.hingeModel].filter(Boolean).join(" ") || undefined}
-              offset={specs.hingeOffset}
-            />
-            <MfgHardwareBox
-              title="LATCH"
-              partNumber={[specs.latchMfrName, specs.latchModel].filter(Boolean).join(" ") || undefined}
-            />
-            <MfgHardwareBox
-              title="CLOSER"
-              partNumber={specs.closerModel}
-            />
-            <MfgHardwareBox
-              title="INSIDE RELEASE"
-              partNumber={specs.insideRelease}
-            />
-          </div>
+          {(() => {
+            // Split closerModel "DENT D276" → mfr + model
+            const closerParts = specs.closerModel ? specs.closerModel.split(" ") : []
+            const closerMfr = closerParts.length > 1 ? closerParts[0] : undefined
+            const closerModel = closerParts.length > 1 ? closerParts.slice(1).join(" ") : specs.closerModel
+            // Inside release — K481 is Kason
+            const releaseMfr = specs.insideRelease?.startsWith("K4") ? "Kason" : undefined
+            return (
+              <div className="grid grid-cols-2 gap-2">
+                <MfgHardwareBox
+                  title="HINGE"
+                  manufacturer={specs.hingeMfrName}
+                  model={specs.hingeModel}
+                  offset={specs.hingeOffset}
+                />
+                <MfgHardwareBox
+                  title="LATCH"
+                  manufacturer={specs.latchMfrName}
+                  model={specs.latchModel}
+                />
+                <MfgHardwareBox
+                  title="CLOSER"
+                  manufacturer={closerMfr}
+                  model={closerModel}
+                />
+                <MfgHardwareBox
+                  title="INSIDE RELEASE"
+                  manufacturer={releaseMfr}
+                  model={specs.insideRelease}
+                />
+              </div>
+            )
+          })()}
         </div>
 
         {/* Gasket Type */}

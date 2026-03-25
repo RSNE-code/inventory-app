@@ -279,105 +279,127 @@ export function DoorConfirmation({
         )
       })}
 
-      {/* Hardware — 2×2 grid: Item + Manufacturer in each box */}
-      {(specs.hingeMfrName || specs.hingeModel || specs.latchMfrName || specs.latchModel || specs.closerModel || specs.insideRelease) && (
-        <Card className="p-4 rounded-xl border-border-custom">
-          <h3 className="font-semibold text-navy text-base mb-3">Hardware</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {[
+      {/* Hardware — 2×2 grid: always show all 4 boxes with Manufacturer + Model */}
+      <Card className="p-4 rounded-xl border-border-custom">
+        <h3 className="font-semibold text-navy text-base mb-3">Hardware</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {(() => {
+            // Split closerModel "DENT D276" → mfr "DENT", model "D276"
+            const closerParts = specs.closerModel ? specs.closerModel.split(" ") : []
+            const closerMfr = closerParts.length > 1 ? closerParts[0] : undefined
+            const closerModelVal = closerParts.length > 1 ? closerParts.slice(1).join(" ") : specs.closerModel
+
+            // Split insideRelease — known manufacturers
+            const releaseMfrMap: Record<string, string> = { K481: "Kason", Glow: "" }
+            const releaseVal = specs.insideRelease || ""
+            const releaseFirstWord = releaseVal.split(" ")[0] || ""
+            const releaseMfr = releaseMfrMap[releaseFirstWord] !== undefined ? (releaseMfrMap[releaseFirstWord] || undefined) : undefined
+            const releaseModel = specs.insideRelease
+
+            const boxes = [
               {
                 title: "Hinges",
-                rows: [
-                  { label: "Manufacturer", field: "hingeMfrName", value: specs.hingeMfrName },
-                  { label: "Model", field: "hingeModel", value: specs.hingeModel },
-                  ...(specs.hingeOffset ? [{ label: "Offset", field: "hingeOffset", value: specs.hingeOffset }] : []),
-                ],
-                show: !!(specs.hingeMfrName || specs.hingeModel),
+                mfr: specs.hingeMfrName,
+                model: specs.hingeModel,
+                mfrField: "hingeMfrName",
+                modelField: "hingeModel",
+                extra: specs.hingeOffset ? { label: "Offset", field: "hingeOffset", value: specs.hingeOffset } : undefined,
               },
               {
                 title: "Latch",
-                rows: [
-                  { label: "Manufacturer", field: "latchMfrName", value: specs.latchMfrName },
-                  { label: "Model", field: "latchModel", value: specs.latchModel },
-                ],
-                show: !!(specs.latchMfrName || specs.latchModel),
+                mfr: specs.latchMfrName,
+                model: specs.latchModel,
+                mfrField: "latchMfrName",
+                modelField: "latchModel",
               },
               {
                 title: "Closer",
-                rows: [
-                  { label: "Model", field: "closerModel", value: specs.closerModel },
-                ],
-                show: !!specs.closerModel,
+                mfr: closerMfr,
+                model: closerModelVal,
+                mfrField: "closerModel", // edit the full field
+                modelField: "closerModel",
               },
               {
                 title: "Inside Release",
-                rows: [
-                  { label: "Model", field: "insideRelease", value: specs.insideRelease },
-                ],
-                show: !!specs.insideRelease,
+                mfr: releaseMfr,
+                model: releaseModel,
+                mfrField: "insideRelease",
+                modelField: "insideRelease",
               },
             ]
-              .filter((box) => box.show)
-              .map((box) => {
-                // Check if any field in this box is being edited
-                const editingRow = box.rows.find((r) => r.field === editingField)
 
-                return (
-                  <div key={box.title} className="p-3 bg-surface-secondary rounded-xl">
-                    <span className="text-[10px] font-bold uppercase text-text-muted tracking-wide block mb-1.5">
-                      {box.title}
-                    </span>
-                    <div className="space-y-1">
-                      {box.rows.map((row) => {
-                        if (!row.value && editingField !== row.field) return null
+            return boxes.map((box) => {
+              const isEditingMfr = editingField === box.mfrField
+              const isEditingModel = editingField === box.modelField && box.mfrField !== box.modelField
+              const isEditing = isEditingMfr || isEditingModel
 
-                        if (editingField === row.field) {
-                          return (
-                            <div key={row.field} className="space-y-1">
-                              <span className="text-[10px] text-text-muted uppercase">{row.label}</span>
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  className="h-7 text-xs flex-1"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") saveEdit()
-                                    if (e.key === "Escape") cancelEdit()
-                                  }}
-                                />
-                                <Button size="sm" onClick={saveEdit} className="h-7 w-7 p-0 bg-brand-blue text-white">
-                                  <Check className="h-3 w-3" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          )
-                        }
-
-                        return (
-                          <button
-                            key={row.field}
-                            onClick={() => startEdit(row.field, row.value)}
-                            className="flex items-center justify-between w-full hover:opacity-70 transition-opacity"
-                          >
-                            <span className="text-[10px] text-text-muted uppercase">{row.label}</span>
-                            <span className="text-sm font-semibold text-navy">{String(row.value)}</span>
-                          </button>
-                        )
-                      })}
+              return (
+                <div key={box.title} className="p-3 bg-surface-secondary rounded-xl">
+                  <span className="text-[10px] font-bold uppercase text-text-muted tracking-wide block mb-1.5">
+                    {box.title}
+                  </span>
+                  <div className="space-y-1">
+                    {/* Manufacturer row */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-text-muted uppercase">Manufacturer</span>
+                      {box.mfr ? (
+                        <span className="text-sm font-semibold text-navy">{box.mfr}</span>
+                      ) : (
+                        <span className="text-xs text-text-muted italic">Not specified</span>
+                      )}
                     </div>
-                    {!editingRow && (
-                      <Pencil className="h-3 w-3 text-text-muted/40 mt-1.5" />
+                    {/* Model row */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-text-muted uppercase">Model</span>
+                      {box.model ? (
+                        <span className="text-sm font-semibold text-navy">{box.model}</span>
+                      ) : (
+                        <span className="text-xs text-text-muted italic">Not specified</span>
+                      )}
+                    </div>
+                    {/* Optional offset row */}
+                    {box.extra && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-text-muted uppercase">{box.extra.label}</span>
+                        <span className="text-sm font-semibold text-navy">{String(box.extra.value)}</span>
+                      </div>
                     )}
                   </div>
-                )
-              })}
-          </div>
-        </Card>
-      )}
+                  {/* Edit inline — shown when editing this box's main field */}
+                  {isEditing ? (
+                    <div className="mt-2 flex items-center gap-1">
+                      <Input
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        className="h-7 text-xs flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEdit()
+                          if (e.key === "Escape") cancelEdit()
+                        }}
+                      />
+                      <Button size="sm" onClick={saveEdit} className="h-7 w-7 p-0 bg-brand-blue text-white">
+                        <Check className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0">
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => startEdit(box.modelField, box.model)}
+                      className="mt-1.5 hover:opacity-70 transition-opacity"
+                    >
+                      <Pencil className="h-3 w-3 text-text-muted/40" />
+                    </button>
+                  )}
+                </div>
+              )
+            })
+          })()}
+        </div>
+      </Card>
 
       {/* Cutouts section */}
       {specs.cutouts && specs.cutouts.length > 0 && (
