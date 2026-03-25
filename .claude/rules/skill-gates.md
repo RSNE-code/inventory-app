@@ -18,7 +18,7 @@ This applies to ALL changes — no matter how small. "It's just data," "it's one
 
 ### Gate: UI / Frontend
 **Trigger:** ANY file in `src/components/`, `src/app/` (pages), or ANY change that affects what users see — including data/config that populates UI (e.g., standard size lists, template definitions, display labels).
-**Action:** Invoke `frontend-design` skill FIRST.
+**Action:** Invoke `frontend-design` AND `design-inspiration` skills FIRST. Both are required — `frontend-design` for creative direction, `design-inspiration` for design system consistency (spacing, typography, tokens).
 
 ### Gate: API / Backend
 **Trigger:** ANY file in `src/app/api/`, `src/lib/` (business logic), or server-side functions.

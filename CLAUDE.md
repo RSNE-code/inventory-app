@@ -5,7 +5,7 @@
 Claude has access to installed skill plugins. **These are NOT optional. Skipping them will produce rejected work.**
 
 ### Every session, no exceptions
-- **`frontend-design`** — Before writing ANY frontend/UI code. Design first, code second.
+- **`frontend-design`** + **`design-inspiration`** — Before writing ANY frontend/UI code. Design first, then verify against design system tokens, code second.
 - **`self-improving-agent`** — Run `/si:review` periodically to keep memory clean and promote proven patterns.
 
 ### Skill Gates (enforced via `.claude/rules/skill-gates.md`)
@@ -14,7 +14,7 @@ Before writing ANY plan or code, STOP and check which gates apply:
 
 | If the work touches... | STOP and invoke FIRST | Then proceed |
 |------------------------|----------------------|--------------|
-| UI components or pages | `frontend-design` | Write UI code |
+| UI components or pages | `frontend-design` + `design-inspiration` | Write UI code |
 | API routes or backend logic | `engineering-skills` (backend) | Write API code |
 | Architecture or new modules | `engineering-skills` (architecture, fullstack) | Write system design |
 | Database schema or migrations | `engineering-advanced-skills` (database design) | Write schema changes |
