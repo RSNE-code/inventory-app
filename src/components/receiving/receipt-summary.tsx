@@ -79,7 +79,7 @@ export function ReceiptSummary({
 
   return (
     <div className="space-y-4">
-      <Card className="p-4 rounded-xl border-border-custom">
+      <Card className="p-5 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy mb-3">Receipt Summary</h3>
 
         {/* Supplier */}
@@ -201,7 +201,7 @@ export function ReceiptSummary({
       </Card>
 
       {/* Notes */}
-      <Card className="p-4 rounded-xl border-border-custom space-y-2">
+      <Card className="p-5 rounded-xl border-border-custom space-y-2">
         <label className="text-sm font-medium text-navy">Notes</label>
         <textarea
           value={notes}

@@ -11,7 +11,7 @@ export function LowStockList({ items }: { items: LowStockItem[] }) {
   if (items.length === 0) return null
 
   return (
-    <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+    <Card className="p-5 rounded-xl border-border-custom shadow-brand">
       <div className="flex items-center gap-2 mb-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-status-yellow/15">
           <AlertTriangle className="h-4 w-4 text-status-yellow" />

@@ -121,7 +121,7 @@ export default function CycleCountsPage() {
           <>
             {/* Active count in progress */}
             {activeCount && !showResult && (
-              <Card className="p-4 rounded-xl border-[#E8792B] border-2 space-y-3">
+              <Card className="p-5 rounded-xl border-brand-orange border-2 space-y-3">
                 <h3 className="font-semibold text-navy">{activeCount.productName}</h3>
                 {activeCount.location && (
                   <div className="flex items-center gap-1.5 text-sm text-text-muted">
@@ -172,7 +172,7 @@ export default function CycleCountsPage() {
 
             {/* Result after count */}
             {showResult && (
-              <Card className="p-4 rounded-xl border-border-custom space-y-3">
+              <Card className="p-5 rounded-xl border-border-custom space-y-3">
                 <h3 className="font-semibold text-navy">{activeCount?.productName}</h3>
                 <div className="flex items-center justify-center gap-4 py-3">
                   <div className="text-center">

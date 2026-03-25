@@ -301,7 +301,7 @@ export function DoorCreationFlow() {
       {phase === "JOB" && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <div className="text-center space-y-1 px-2">
-            <h2 className="text-xl font-bold text-navy font-display">Select Job</h2>
+            <h2 className="text-xl font-bold text-navy">Select Job</h2>
             <p className="text-sm text-text-secondary">Which job is this door for?</p>
           </div>
 
@@ -389,7 +389,7 @@ export function DoorCreationFlow() {
           </Button>
 
           <div className="text-center space-y-1 px-2">
-            <h2 className="text-xl font-bold text-navy font-display">Door Type</h2>
+            <h2 className="text-xl font-bold text-navy">Door Type</h2>
             <p className="text-sm text-text-secondary">
               {jobName && <span className="font-medium text-navy">{jobName}</span>}
             </p>
@@ -451,7 +451,7 @@ export function DoorCreationFlow() {
           </Button>
 
           <div className="text-center space-y-1 px-2">
-            <h2 className="text-xl font-bold text-navy font-display">Standard Size</h2>
+            <h2 className="text-xl font-bold text-navy">Standard Size</h2>
             <p className="text-sm text-text-secondary">
               {DOOR_TYPES.find((d) => d.key === selectedType)?.label}
               {jobName && <span className="text-text-muted"> · {jobName}</span>}
@@ -470,7 +470,7 @@ export function DoorCreationFlow() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-navy font-display">{config.label}</p>
+                    <p className="text-2xl font-bold text-navy">{config.label}</p>
                     <p className="text-xs text-text-muted mt-0.5">
                       {config.widthInClear}&quot; × {config.heightInClear}&quot; clear
                     </p>

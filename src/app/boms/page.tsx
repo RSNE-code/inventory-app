@@ -45,7 +45,7 @@ export default function BomsPage() {
           <button
             onClick={() => setActiveTab("create")}
             className={cn(
-              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+              "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
               activeTab === "create"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -56,7 +56,7 @@ export default function BomsPage() {
           <button
             onClick={() => setActiveTab("list")}
             className={cn(
-              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+              "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
               activeTab === "list"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -144,11 +144,11 @@ export default function BomsPage() {
                 })()}
                 {totalPages > 1 && (
                   <div className="flex justify-center gap-2 py-4">
-                    <Button variant="outline" size="sm" className="rounded-lg" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                    <Button variant="outline" size="sm" className="rounded-xl" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                       Previous
                     </Button>
                     <span className="flex items-center text-sm text-text-secondary font-medium tabular-nums">{page} / {totalPages}</span>
-                    <Button variant="outline" size="sm" className="rounded-lg" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                    <Button variant="outline" size="sm" className="rounded-xl" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
                       Next
                     </Button>
                   </div>

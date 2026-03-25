@@ -33,7 +33,7 @@ export function InterviewStep({
       )}
 
       <div className="text-center space-y-2 px-2">
-        <h2 className="text-xl font-bold text-navy font-display">{question}</h2>
+        <h2 className="text-xl font-bold text-navy">{question}</h2>
         {description && (
           <p className="text-sm text-text-secondary">{description}</p>
         )}

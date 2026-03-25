@@ -38,7 +38,7 @@ export function InventoryTrendChart() {
 
   if (isLoading) {
     return (
-      <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+      <Card className="p-5 rounded-xl border-border-custom shadow-brand">
         <div className="h-[220px] flex items-center justify-center">
           <div className="h-4 w-4 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin" />
         </div>
@@ -48,7 +48,7 @@ export function InventoryTrendChart() {
 
   if (!trend || trend.historical.length < 2) {
     return (
-      <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+      <Card className="p-5 rounded-xl border-border-custom shadow-brand">
         <h3 className="font-semibold text-navy text-sm tracking-tight mb-3">Inventory Value Trend</h3>
         <div className="text-center py-8 text-text-muted text-sm">
           <TrendingUp className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />

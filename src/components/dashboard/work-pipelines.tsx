@@ -32,7 +32,7 @@ export function WorkPipelines({ bomStatusCounts, fabrication, doorQueueCount }: 
     <div className="grid grid-cols-2 gap-3">
       {/* BOM Pipeline */}
       <Link href="/boms">
-        <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-blue overflow-hidden h-full">
+        <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-blue overflow-hidden h-full">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/12">
               <ClipboardList className="h-4 w-4 text-brand-blue" />
@@ -62,7 +62,7 @@ export function WorkPipelines({ bomStatusCounts, fabrication, doorQueueCount }: 
 
       {/* Fabrication Pipeline */}
       <Link href="/assemblies">
-        <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-orange overflow-hidden h-full">
+        <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-orange overflow-hidden h-full">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orange/12">
               <Factory className="h-4 w-4 text-brand-orange" />

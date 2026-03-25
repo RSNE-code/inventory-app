@@ -21,7 +21,7 @@ export default function ReceivingPage() {
           <button
             onClick={() => setActiveTab("receive")}
             className={cn(
-              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+              "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
               activeTab === "receive"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"
@@ -32,7 +32,7 @@ export default function ReceivingPage() {
           <button
             onClick={() => setActiveTab("history")}
             className={cn(
-              "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+              "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
               activeTab === "history"
                 ? "bg-white text-navy shadow-brand"
                 : "text-text-muted hover:text-text-secondary"

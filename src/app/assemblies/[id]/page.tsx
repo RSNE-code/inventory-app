@@ -203,7 +203,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
       <div className="p-4 space-y-4">
         {/* Status + Info */}
-        <Card className="p-4 rounded-xl border-border-custom space-y-3">
+        <Card className="p-5 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">
               {typeLabels[assembly.type] || assembly.type}
@@ -316,7 +316,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
         {/* Door Sheet — Old Format (backward compatibility) */}
         {isDoor && specs && !hasNewDoorSpecs && Object.keys(specs).length > 0 && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">Door Sheet Specifications</h3>
             <div className="grid grid-cols-2 gap-3">
               {(["width", "height", "doorType", "hardware", "insulation", "finish"] as const).map(
@@ -341,7 +341,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         )}
 
         {/* Components */}
-        <Card className="p-4 rounded-xl border-border-custom space-y-2">
+        <Card className="p-5 rounded-xl border-border-custom space-y-2">
           <h3 className="font-semibold text-navy">
             Components ({components.length})
           </h3>
@@ -403,7 +403,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
         {/* Change Log */}
         {changeLog.length > 0 && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-2">
+          <Card className="p-5 rounded-xl border-border-custom space-y-2">
             <div className="flex items-center gap-2">
               <History className="h-4 w-4 text-text-muted" />
               <h3 className="font-semibold text-navy text-sm">Change History</h3>
@@ -429,7 +429,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
 
         {/* Approval actions */}
         {canApprove && (
-          <Card className="p-4 rounded-xl border-yellow-300 border-2 space-y-3">
+          <Card className="p-5 rounded-xl border-yellow-300 border-2 space-y-3">
             <h3 className="font-semibold text-navy">Approval Required</h3>
             <Input
               value={approvalNotes}

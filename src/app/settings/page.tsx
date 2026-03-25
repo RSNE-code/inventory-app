@@ -24,7 +24,7 @@ export default function SettingsPage() {
 
       <div className="p-4 space-y-4">
         <Link href="/receiving">
-          <Card className="p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98]">
+          <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
@@ -40,7 +40,7 @@ export default function SettingsPage() {
           </Card>
         </Link>
 
-        <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+        <Card className="p-5 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
               <Users className="h-[18px] w-[18px] text-brand-blue" />
@@ -55,7 +55,7 @@ export default function SettingsPage() {
           </p>
         </Card>
 
-        <Card className="p-4 rounded-xl border-border-custom shadow-brand">
+        <Card className="p-5 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
               <Info className="h-[18px] w-[18px] text-brand-blue" />

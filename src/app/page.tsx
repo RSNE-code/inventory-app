@@ -96,7 +96,7 @@ export default function DashboardPage() {
           </div>
           {/* Greeting + action summary */}
           <div className="mt-1 animate-fade-in">
-            <h1 className="text-white text-xl font-bold tracking-tight font-display">
+            <h1 className="text-white text-xl font-bold tracking-tight">
               {greeting}{firstName ? `, ${firstName}` : ""}
             </h1>
             {action && (
@@ -161,8 +161,8 @@ export default function DashboardPage() {
             {/* Section 6: Recent Activity */}
             {dashboard.recentTransactions.length > 0 && (
               <div className="animate-fade-in-up stagger-6">
-                <Card className="p-4 rounded-xl border-border-custom shadow-brand">
-                  <h3 className="font-semibold text-navy mb-3 text-base tracking-tight font-display">Recent Activity</h3>
+                <Card className="p-5 rounded-xl border-border-custom shadow-brand">
+                  <h3 className="font-semibold text-navy mb-3 text-base tracking-tight">Recent Activity</h3>
                   <div className="space-y-0">
                     {dashboard.recentTransactions.slice(0, 5).map((t: { id: string; type: string; productName: string; quantity: number; userName: string }, i: number) => (
                       <div key={t.id} className={`flex items-center justify-between py-3.5 border-b border-border-custom/60 last:border-0 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>

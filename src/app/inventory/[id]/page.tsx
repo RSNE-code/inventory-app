@@ -108,7 +108,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Details */}
-        <Card className="p-4 rounded-xl border-border-custom space-y-3">
+        <Card className="p-5 rounded-xl border-border-custom space-y-3">
           <h3 className="font-semibold text-navy">Details</h3>
           <div className="grid grid-cols-2 gap-y-3 text-sm">
             <div>
@@ -192,7 +192,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Recent transactions */}
         {product.transactions && product.transactions.length > 0 && (
-          <Card className="p-4 rounded-xl border-border-custom">
+          <Card className="p-5 rounded-xl border-border-custom">
             <h3 className="font-semibold text-navy mb-3">Recent Activity</h3>
             <div className="space-y-2">
               {product.transactions.map((t: Record<string, unknown>) => (

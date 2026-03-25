@@ -225,7 +225,7 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
 
       <div className="p-4 space-y-4">
         {/* Template Info */}
-        <Card className="p-4 rounded-xl border-border-custom space-y-3">
+        <Card className="p-5 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">Template Details</h3>
             {mode === "view" && (
@@ -285,7 +285,7 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
         </Card>
 
         {/* Line Items */}
-        <Card className="p-4 rounded-xl border-border-custom">
+        <Card className="p-5 rounded-xl border-border-custom">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-navy">Items ({visibleItems.length})</h3>
           </div>

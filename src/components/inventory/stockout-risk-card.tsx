@@ -67,7 +67,7 @@ export function StockoutRiskCard({
 
   if (avgDaily === 0) {
     return (
-      <Card className="p-4 rounded-xl border-border-custom">
+      <Card className="p-5 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy text-sm mb-2">Stockout Risk</h3>
         <div className="text-center py-4 text-text-muted text-sm">
           <TrendingDown className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />
@@ -116,7 +116,7 @@ export function StockoutRiskCard({
   })
 
   return (
-    <Card className="p-4 rounded-xl border-border-custom space-y-4">
+    <Card className="p-5 rounded-xl border-border-custom space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-navy text-sm">Stockout Risk</h3>
         <Badge className={cn("text-xs font-semibold", riskBadgeColors[riskLevel])}>

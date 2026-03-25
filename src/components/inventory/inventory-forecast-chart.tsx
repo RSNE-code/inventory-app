@@ -35,7 +35,7 @@ export function InventoryForecastChart({
 
   if (sorted.length < 3) {
     return (
-      <Card className="p-4 rounded-xl border-border-custom">
+      <Card className="p-5 rounded-xl border-border-custom">
         <h3 className="font-semibold text-navy text-sm mb-2">Projected Inventory</h3>
         <div className="text-center py-6 text-text-muted text-sm">
           <TrendingUp className="h-8 w-8 mx-auto mb-2 text-text-muted/60" />
@@ -130,7 +130,7 @@ export function InventoryForecastChart({
   const reorderY = y(reorderPoint)
 
   return (
-    <Card className="p-4 rounded-xl border-border-custom">
+    <Card className="p-5 rounded-xl border-border-custom">
       <h3 className="font-semibold text-navy text-sm mb-3">Projected Inventory</h3>
 
       <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" preserveAspectRatio="xMidYMid meet">

@@ -173,7 +173,7 @@ export default function NewBomTemplatePage() {
       <div className="p-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Template Info */}
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">Template Info</h3>
             <div>
               <Label htmlFor="templateName">Template Name *</Label>
@@ -198,7 +198,7 @@ export default function NewBomTemplatePage() {
           </Card>
 
           {/* Line Items */}
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-navy">Items ({lineItems.length})</h3>
             </div>

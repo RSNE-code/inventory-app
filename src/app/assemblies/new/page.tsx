@@ -215,7 +215,7 @@ function NewAssemblyContent() {
 
         {/* Step 1: Select Type */}
         {initialized && step === "type" && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">What are you building?</h3>
             <div className="grid grid-cols-1 gap-2">
               {typeOptions.map(({ value, label, icon: Icon }) => (
@@ -242,7 +242,7 @@ function NewAssemblyContent() {
 
         {/* Panel/Floor: Template Selection */}
         {initialized && step === "template" && assemblyType && assemblyType !== "DOOR" && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <h3 className="font-semibold text-navy">Select Template</h3>
             <p className="text-sm text-text-secondary">
               Choose an existing template or build a custom assembly
@@ -299,7 +299,7 @@ function NewAssemblyContent() {
         {initialized && step === "details" && assemblyType && assemblyType !== "DOOR" && (
           <>
             {/* Job + Batch */}
-            <Card className="p-4 rounded-xl border-border-custom space-y-3">
+            <Card className="p-5 rounded-xl border-border-custom space-y-3">
               <h3 className="font-semibold text-navy">Assignment</h3>
               <div>
                 <Label className="text-xs">Job Name</Label>
@@ -323,7 +323,7 @@ function NewAssemblyContent() {
             </Card>
 
             {/* Components */}
-            <Card className="p-4 rounded-xl border-border-custom space-y-3">
+            <Card className="p-5 rounded-xl border-border-custom space-y-3">
               <h3 className="font-semibold text-navy">
                 Components ({components.length})
               </h3>
@@ -374,7 +374,7 @@ function NewAssemblyContent() {
                             onChange={(e) =>
                               handleComponentQtyChange(index, Number(e.target.value) || 0)
                             }
-                            className="w-16 rounded-lg border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-16 rounded-xl border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                           <span className="text-xs text-text-secondary w-8">{comp.unitOfMeasure}</span>
                           <Button
@@ -406,13 +406,13 @@ function NewAssemblyContent() {
             </Card>
 
             {/* Notes */}
-            <Card className="p-4 rounded-xl border-border-custom space-y-2">
+            <Card className="p-5 rounded-xl border-border-custom space-y-2">
               <Label className="text-xs">Notes</Label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Optional notes..."
-                className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
             </Card>
 

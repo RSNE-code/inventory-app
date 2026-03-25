@@ -491,7 +491,7 @@ export function ReceivingFlow() {
           </div>
         )}
 
-        <Card className="p-4 rounded-xl border-border-custom space-y-3">
+        <Card className="p-5 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-navy">Supplier</h3>
             {supplierAutoMatched && supplierName && (
@@ -505,7 +505,7 @@ export function ReceivingFlow() {
         </Card>
 
         {pendingMatches.length > 0 && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-3">
+          <Card className="p-5 rounded-xl border-border-custom space-y-3">
             <ReceivingConfirmationList
               matches={pendingMatches}
               onAccept={handleAcceptItem}
@@ -517,7 +517,7 @@ export function ReceivingFlow() {
         )}
 
         {confirmedItems.length > 0 && (
-          <Card className="p-4 rounded-xl border-border-custom space-y-2">
+          <Card className="p-5 rounded-xl border-border-custom space-y-2">
             <h3 className="font-semibold text-sm text-status-green">
               {confirmedItems.length} item{confirmedItems.length !== 1 ? "s" : ""} confirmed
             </h3>
@@ -542,7 +542,7 @@ export function ReceivingFlow() {
           </Card>
         )}
 
-        <Card className="p-4 rounded-xl border-border-custom space-y-2">
+        <Card className="p-5 rounded-xl border-border-custom space-y-2">
           <h3 className="text-sm font-medium text-text-secondary">Add more items</h3>
           <AIInput
             onParseComplete={(result) => {

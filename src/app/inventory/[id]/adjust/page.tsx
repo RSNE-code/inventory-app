@@ -98,7 +98,7 @@ export default function AdjustStockPage({ params }: { params: Promise<{ id: stri
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
         {/* Current stock */}
-        <Card className="p-4 rounded-xl border-border-custom text-center">
+        <Card className="p-5 rounded-xl border-border-custom text-center">
           <p className="text-text-muted text-sm">{product.name}</p>
           <div className="mt-1">
             <span className="text-3xl font-bold text-navy tabular-nums">

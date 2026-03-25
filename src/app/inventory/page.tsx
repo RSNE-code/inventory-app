@@ -118,7 +118,7 @@ function InventoryContent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-lg"
+                  className="rounded-xl"
                   disabled={page <= 1}
                   onClick={() => setPage(page - 1)}
                 >
@@ -130,7 +130,7 @@ function InventoryContent() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-lg"
+                  className="rounded-xl"
                   disabled={page >= totalPages}
                   onClick={() => setPage(page + 1)}
                 >

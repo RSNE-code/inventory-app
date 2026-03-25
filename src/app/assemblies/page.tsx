@@ -295,7 +295,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
   return (
     <>
       <Link href={`/assemblies/${assembly.id}`}>
-        <Card className={cn("p-4 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccentClass[status] || "card-accent-gray")}>
+        <Card className={cn("p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccentClass[status] || "card-accent-gray")}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

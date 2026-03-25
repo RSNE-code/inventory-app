@@ -328,7 +328,7 @@ export function DoorPreview({ specs, className, showHardware = true }: DoorPrevi
         <text
           x={panelX + panelW / 2} y={frameY - 16}
           textAnchor="middle" fontSize={10} fontWeight={600}
-          fill="var(--color-brand-blue)" fontFamily="var(--font-display)"
+          fill="var(--color-brand-blue)" fontFamily="var(--font-sans)"
         >
           {specs.widthInClear ? `${specs.widthInClear}"` : "W"}
         </text>
@@ -340,7 +340,7 @@ export function DoorPreview({ specs, className, showHardware = true }: DoorPrevi
         <text
           x={frameX - 18} y={panelY + panelH / 2}
           textAnchor="middle" fontSize={10} fontWeight={600}
-          fill="var(--color-brand-blue)" fontFamily="var(--font-display)"
+          fill="var(--color-brand-blue)" fontFamily="var(--font-sans)"
           transform={`rotate(-90 ${frameX - 18} ${panelY + panelH / 2})`}
         >
           {specs.heightInClear ? `${specs.heightInClear}"` : "H"}

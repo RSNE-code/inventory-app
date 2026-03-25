@@ -40,7 +40,7 @@ export function Header({ title, showBack, showMenu, action }: HeaderProps) {
           className="h-6 w-auto"
         />
       </div>
-      <h1 className="flex-1 text-lg font-bold text-white truncate tracking-tight font-display">
+      <h1 className="flex-1 text-lg font-bold text-white truncate tracking-tight">
         {title}
       </h1>
       {action}

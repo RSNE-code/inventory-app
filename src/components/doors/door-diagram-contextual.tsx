@@ -187,7 +187,7 @@ function DimensionLabel({
       fontSize={12}
       fontWeight={600}
       fill="var(--color-brand-blue)"
-      fontFamily="var(--font-display)"
+      fontFamily="var(--font-sans)"
       transform={rotate ? `rotate(${rotate} ${x} ${y})` : undefined}
       style={TRANSITION}
     >
@@ -529,7 +529,7 @@ function SwingFrameDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
         fontSize={7}
         fontWeight={600}
         fill="var(--color-brand-blue)"
-        fontFamily="var(--font-display)"
+        fontFamily="var(--font-sans)"
         style={TRANSITION}
       >
         6&quot;
@@ -554,7 +554,7 @@ function SwingFrameDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
         fontSize={7}
         fontWeight={600}
         fill="var(--color-brand-blue)"
-        fontFamily="var(--font-display)"
+        fontFamily="var(--font-sans)"
         transform={`rotate(-90 ${FRAME_X + frameThick / 2} ${FRAME_Y + FRAME_H / 2 + 10})`}
         style={TRANSITION}
       >
@@ -580,7 +580,7 @@ function SwingFrameDiagram({ specs }: { specs: Partial<DoorSpecs> }) {
         fontSize={7}
         fontWeight={600}
         fill="var(--color-brand-blue)"
-        fontFamily="var(--font-display)"
+        fontFamily="var(--font-sans)"
         transform={`rotate(90 ${FRAME_X + FRAME_W - frameThick / 2} ${FRAME_Y + FRAME_H / 2 + 10})`}
         style={TRANSITION}
       >
