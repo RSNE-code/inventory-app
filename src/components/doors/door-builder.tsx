@@ -4,6 +4,7 @@ import { useState } from "react"
 import type { DoorSpecs, Cutout, CutoutSide, DoorCategory, InsulationType, WindowSize, FinishType } from "@/lib/door-specs"
 import { getStandardHardware, calculateHeaterCable } from "@/lib/door-specs"
 import { InterviewStep, ChoiceButton, DimensionInput } from "./interview-step"
+import { TapeMeasureInput, TapeMeasureTrigger } from "./tape-measure-input"
 import { DoorPreview } from "./door-preview"
 import { DoorDiagramContextual } from "./door-diagram-contextual"
 import { StepProgress } from "@/components/layout/step-progress"
@@ -103,6 +104,9 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
   const [frameLHS, setFrameLHS] = useState("")
   const [frameRHS, setFrameRHS] = useState("")
   const [frameTop, setFrameTop] = useState("")
+
+  // Cutout tape measure picker state: { cutoutIndex, field }
+  const [cutoutPicker, setCutoutPicker] = useState<{ index: number; field: "floorToBottom" | "floorToTop" | "frameWidth" } | null>(null)
 
   // Hardware dropdown selections
   const [selectedHinge, setSelectedHinge] = useState("")
@@ -483,46 +487,57 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-[11px] text-text-secondary">Floor to Bottom</label>
-                    <Input
-                      value={cutout.floorToBottom}
-                      onChange={(e) => {
-                        const updated = [...cutouts]
-                        updated[i] = { ...updated[i], floorToBottom: e.target.value }
-                        setCutouts(updated)
-                      }}
-                      placeholder='24"'
-                      className="h-10 text-center text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-text-secondary">Floor to Top</label>
-                    <Input
-                      value={cutout.floorToTop}
-                      onChange={(e) => {
-                        const updated = [...cutouts]
-                        updated[i] = { ...updated[i], floorToTop: e.target.value }
-                        setCutouts(updated)
-                      }}
-                      placeholder='48"'
-                      className="h-10 text-center text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-text-secondary">Width from Edge</label>
-                    <Input
-                      value={cutout.frameWidth}
-                      onChange={(e) => {
-                        const updated = [...cutouts]
-                        updated[i] = { ...updated[i], frameWidth: e.target.value }
-                        setCutouts(updated)
-                      }}
-                      placeholder='18"'
-                      className="h-10 text-center text-sm"
-                    />
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCutoutPicker({ index: i, field: "floorToBottom" })}
+                    className="text-left p-2 rounded-xl border border-border-custom bg-white hover:border-brand-blue/50 transition-colors min-h-[52px]"
+                  >
+                    <p className="text-[10px] text-text-muted">Floor→Bottom</p>
+                    <p className="text-sm font-bold text-navy tabular-nums">
+                      {cutout.floorToBottom ? `${cutout.floorToBottom}"` : <span className="text-text-muted font-normal">Tap</span>}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCutoutPicker({ index: i, field: "floorToTop" })}
+                    className="text-left p-2 rounded-xl border border-border-custom bg-white hover:border-brand-blue/50 transition-colors min-h-[52px]"
+                  >
+                    <p className="text-[10px] text-text-muted">Floor→Top</p>
+                    <p className="text-sm font-bold text-navy tabular-nums">
+                      {cutout.floorToTop ? `${cutout.floorToTop}"` : <span className="text-text-muted font-normal">Tap</span>}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCutoutPicker({ index: i, field: "frameWidth" })}
+                    className="text-left p-2 rounded-xl border border-border-custom bg-white hover:border-brand-blue/50 transition-colors min-h-[52px]"
+                  >
+                    <p className="text-[10px] text-text-muted">Width</p>
+                    <p className="text-sm font-bold text-navy tabular-nums">
+                      {cutout.frameWidth ? `${cutout.frameWidth}"` : <span className="text-text-muted font-normal">Tap</span>}
+                    </p>
+                  </button>
                 </div>
+
+                {/* Cutout tape measure picker */}
+                {cutoutPicker && cutoutPicker.index === i && (
+                  <TapeMeasureInput
+                    key={`cutout-${i}-${cutoutPicker.field}`}
+                    value={cutout[cutoutPicker.field]}
+                    onChange={(v) => {
+                      const updated = [...cutouts]
+                      updated[i] = { ...updated[i], [cutoutPicker.field]: v }
+                      setCutouts(updated)
+                    }}
+                    label={
+                      cutoutPicker.field === "floorToBottom" ? "Floor to Bottom" :
+                      cutoutPicker.field === "floorToTop" ? "Floor to Top" : "Width from Edge"
+                    }
+                    max={96}
+                    open={true}
+                    onOpenChange={(open) => { if (!open) setCutoutPicker(null) }}
+                  />
+                )}
               </div>
             ))}
 

@@ -58,10 +58,12 @@ export function TapeMeasureInput({
       setSelectedInches(inches)
       setSelectedFraction(fractionIndex)
 
-      // Scroll wheels to position after render
+      // Double rAF to ensure DOM is painted before scrolling
       requestAnimationFrame(() => {
-        scrollToIndex(inchWheelRef.current, inches - min)
-        scrollToIndex(fracWheelRef.current, fractionIndex)
+        requestAnimationFrame(() => {
+          scrollToIndex(inchWheelRef.current, inches - min)
+          scrollToIndex(fracWheelRef.current, fractionIndex)
+        })
       })
     }
   }, [open, value, min])
@@ -70,8 +72,6 @@ export function TapeMeasureInput({
 
   function scrollToIndex(el: HTMLDivElement | null, index: number) {
     if (!el) return
-    const padding = (VISIBLE_ITEMS - 1) / 2 * ITEM_HEIGHT
-    el.scrollTop = index * ITEM_HEIGHT - padding + ITEM_HEIGHT / 2 + padding
     el.scrollTop = index * ITEM_HEIGHT
   }
 
@@ -119,14 +119,14 @@ export function TapeMeasureInput({
     return `${selectedInches}-${frac.label}"`
   })()
 
-  if (!open) return null
-
   // Generate inch range
   const inchRange: number[] = []
   for (let i = min; i <= max; i++) inchRange.push(i)
 
   // Padding items for scroll centering (empty items above and below)
   const padCount = Math.floor(VISIBLE_ITEMS / 2)
+
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">

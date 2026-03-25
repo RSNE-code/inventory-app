@@ -172,8 +172,9 @@ export function DoorConfirmation({
       </SectionCard>
 
       {/* Tape measure picker for dimensions */}
-      <TapeMeasureInput
-        value={measureField ? String(specs[measureField as keyof DoorSpecs] || "") : ""}
+      {measureField && <TapeMeasureInput
+        key={measureField}
+        value={String(specs[measureField as keyof DoorSpecs] || "")}
         onChange={(v) => {
           if (measureField) {
             onSpecChange(measureField, v || undefined)
@@ -191,9 +192,9 @@ export function DoorConfirmation({
           measureField === "jambDepth" ? "Jamb Depth" :
           measureField === "wallThickness" ? "Wall Thickness" : "Dimension"
         }
-        open={measureField !== null}
+        open={true}
         onOpenChange={(open) => { if (!open) setMeasureField(null) }}
-      />
+      />}
 
       {/* ── SECTION 2: Configuration ── */}
       <SectionCard title="Configuration">
