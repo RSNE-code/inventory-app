@@ -60,3 +60,4 @@ android/build/
 android/local.properties
 android/.idea/
 src-OLD*
+.env.vercel
