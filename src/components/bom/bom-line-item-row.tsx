@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Check, Wrench, Truck } from "lucide-react"
+import { Trash2, Check, Wrench, Truck, AlertTriangle } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 
 interface BomLineItemRowProps {
@@ -34,6 +34,7 @@ interface BomLineItemRowProps {
   onReturnQtyChange?: (qty: number) => void
   fabricationSource?: string | null
   onFabricationSourceChange?: (source: "RSNE_MADE" | "SUPPLIER") => void
+  missingFabOrder?: boolean
 }
 
 // Convert a dimension value to feet
@@ -68,6 +69,7 @@ export function BomLineItemRow({
   onReturnQtyChange,
   fabricationSource,
   onFabricationSourceChange,
+  missingFabOrder,
 }: BomLineItemRowProps) {
   const hasLength = dimLength && dimLength > 0
   const hasWidth = dimWidth && dimWidth > 0
@@ -206,6 +208,13 @@ export function BomLineItemRow({
           </div>
           {isNonCatalog && nonCatalogCategory && (
             <p className="text-xs text-text-muted">{nonCatalogCategory}</p>
+          )}
+          {/* Missing fab order warning */}
+          {missingFabOrder && (
+            <span className="inline-flex items-center gap-1 mt-1 px-2 py-1 rounded-lg text-[11px] font-semibold bg-status-yellow/15 text-yellow-700 border border-yellow-200">
+              <AlertTriangle className="h-3 w-3" />
+              No fab order
+            </span>
           )}
           {/* Fabrication source badge */}
           {fabricationSource && (

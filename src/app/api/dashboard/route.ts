@@ -18,6 +18,7 @@ export async function GET() {
       needsCountingCount,
       bomStatusGroups,
       doorQueueCount,
+      unfabricatedAssemblyItems,
     ] = await Promise.all([
       prisma.product.count({ where: { isActive: true, tier: "TIER_1" } }),
       prisma.product.count({ where: { isActive: true, tier: "TIER_1", currentQty: { lte: 0 } } }),
@@ -55,6 +56,20 @@ export async function GET() {
       }),
       prisma.assembly.count({
         where: { type: "DOOR", status: { in: ["PLANNED", "AWAITING_APPROVAL", "APPROVED"] } },
+      }),
+      // Count RSNE-fab assembly items on approved/in-progress BOMs
+      // that don't have a linked assembly (fab order not created yet).
+      // Only items from assembly templates get fabricationSource=RSNE_MADE,
+      // so supplier doors (e.g. Jamison) are not flagged.
+      prisma.bomLineItem.count({
+        where: {
+          isActive: true,
+          isNonCatalog: true,
+          assemblyId: null,
+          fabricationSource: "RSNE_MADE",
+          nonCatalogCategory: { in: ["Door", "Floor Panel", "Wall Panel", "Ramp"] },
+          bom: { status: { in: ["APPROVED", "IN_PROGRESS"] } },
+        },
       }),
     ])
 
@@ -174,6 +189,7 @@ export async function GET() {
         bomStatusCounts,
         doorQueueCount,
         alerts,
+        unfabricatedAssemblyCount: unfabricatedAssemblyItems,
         fabrication: {
           pendingApprovals,
           inProduction: inProductionCount,

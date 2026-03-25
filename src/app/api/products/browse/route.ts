@@ -11,9 +11,21 @@ import { normalizeSearchTokens } from "@/lib/search"
  * - No search + no category: returns user's favorites (most-used products)
  * - No search + category: returns all products in that category
  * - Search: returns matching products across all categories
+ *   Also searches AssemblyTemplate records so fabrication items
+ *   (doors, floor panels, wall panels, ramps) appear in results.
  *
  * Returns minimal fields for fast list rendering.
  */
+function assemblyTypeLabel(type: string): string {
+  switch (type) {
+    case "DOOR": return "Door"
+    case "FLOOR_PANEL": return "Floor Panel"
+    case "WALL_PANEL": return "Wall Panel"
+    case "RAMP": return "Ramp"
+    default: return "Assembly"
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth()
@@ -133,8 +145,63 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    // Also search assembly templates when user is searching
+    // so fabrication items (doors, floor panels, ramps) appear in results
+    let assemblyResults: Array<{
+      id: string
+      name: string
+      unitOfMeasure: string
+      tier: string
+      currentQty: number
+      category: { name: string }
+      isAssemblyTemplate: true
+      assemblyType: string
+      assemblyDescription: string | null
+    }> = []
+
+    if (search) {
+      const tokens = normalizeSearchTokens(search)
+      const templateWhere: Prisma.AssemblyTemplateWhereInput = { isActive: true }
+      if (tokens.length > 0) {
+        templateWhere.AND = tokens.map((token) => ({
+          OR: [
+            { name: { contains: token, mode: "insensitive" as const } },
+            { description: { contains: token, mode: "insensitive" as const } },
+          ],
+        }))
+      }
+
+      const templates = await prisma.assemblyTemplate.findMany({
+        where: templateWhere,
+        orderBy: { name: "asc" },
+        take: 10,
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          description: true,
+        },
+      })
+
+      assemblyResults = templates.map((t) => ({
+        id: `assembly-template:${t.id}`,
+        name: t.name,
+        unitOfMeasure: "each",
+        tier: "TIER_1",
+        currentQty: 0,
+        category: { name: assemblyTypeLabel(t.type) },
+        isAssemblyTemplate: true as const,
+        assemblyType: t.type,
+        assemblyDescription: t.description,
+      }))
+    }
+
+    // Merge: assembly templates first (they're the special results),
+    // then regular products
+    const merged = [...assemblyResults, ...products]
+
     return NextResponse.json({
-      data: products,
+      data: merged,
       source: search ? "search" : "category",
     })
   } catch (error) {

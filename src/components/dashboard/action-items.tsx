@@ -11,6 +11,7 @@ interface ActionItemsProps {
   lowStockCount: number
   outOfStockCount: number
   pendingApprovals: number
+  unfabricatedAssemblyCount: number
 }
 
 interface ActionRow {
@@ -27,6 +28,7 @@ export function ActionItems({
   lowStockCount,
   outOfStockCount,
   pendingApprovals,
+  unfabricatedAssemblyCount,
 }: ActionItemsProps) {
   const rows: ActionRow[] = []
 
@@ -47,6 +49,16 @@ export function ActionItems({
       href: "/reorder",
       severity: "warning",
       icon: AlertTriangle,
+    })
+  }
+
+  if (unfabricatedAssemblyCount > 0) {
+    rows.push({
+      label: `${unfabricatedAssemblyCount} assembly item${unfabricatedAssemblyCount !== 1 ? "s" : ""} missing fab order`,
+      count: unfabricatedAssemblyCount,
+      href: "/boms?status=APPROVED",
+      severity: "warning",
+      icon: Factory,
     })
   }
 

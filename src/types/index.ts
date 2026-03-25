@@ -40,6 +40,7 @@ export interface DashboardData {
   activeBomCount: number
   bomStatusCounts: Record<string, number>
   doorQueueCount: number
+  unfabricatedAssemblyCount: number
   alerts: DashboardAlert[]
   fabrication: FabricationSummary
 }

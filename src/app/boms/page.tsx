@@ -137,6 +137,7 @@ export default function BomsPage() {
                           createdByName={(bom.createdBy as Record<string, string>)?.name || ""}
                           createdAt={bom.createdAt as string}
                           sequenceLabel={sequenceLabel}
+                          unfabricatedAssemblyCount={(bom as Record<string, unknown>).unfabricatedAssemblyCount as number || 0}
                         />
                       </div>
                     )

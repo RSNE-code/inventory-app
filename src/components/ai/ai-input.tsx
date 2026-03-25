@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useImperativeHandle, forwardRef, useEffect, useCallback, useMemo } from "react"
-import { Mic, Send, Loader2, Search } from "lucide-react"
+import { Mic, Send, Loader2, Search, Wrench } from "lucide-react"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { useVoiceInput } from "@/hooks/use-voice-input"
@@ -24,6 +24,9 @@ export interface ProductResult {
   dimWidth?: number | null
   dimWidthUnit?: string | null
   category?: { name: string }
+  isAssemblyTemplate?: boolean
+  assemblyType?: string
+  assemblyDescription?: string | null
 }
 
 interface AIInputProps {
@@ -128,7 +131,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
     debounceRef.current = setTimeout(async () => {
       setSearchLoading(true)
       try {
-        const res = await fetch(`/api/inventory?search=${encodeURIComponent(text)}&limit=8`)
+        const res = await fetch(`/api/products/browse?search=${encodeURIComponent(text)}&limit=12`)
         if (res.ok) {
           const json = await res.json()
           const filtered = (json.data || []).filter(
@@ -466,24 +469,47 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                       onClick={() => handleSelectProduct(p)}
                       className={cn(
                         "search-result-row w-full text-left px-4 py-3 flex items-start justify-between gap-3",
-                        idx === highlightIdx ? "bg-brand-blue/[0.06]" : ""
+                        idx === highlightIdx ? "bg-brand-blue/[0.06]" : "",
+                        p.isAssemblyTemplate ? "bg-brand-blue/[0.04]" : ""
                       )}
                     >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[15px] font-semibold text-navy leading-snug break-words">{p.name}</p>
-                        <p className="text-xs text-text-muted mt-0.5">
-                          {p.sku || "No SKU"} · {p.unitOfMeasure}
-                          {p.category ? ` · ${p.category.name}` : ""}
-                        </p>
+                      <div className="min-w-0 flex-1 flex items-start gap-2.5">
+                        {p.isAssemblyTemplate && (
+                          <div className="h-7 w-7 rounded-lg bg-brand-blue/15 flex items-center justify-center shrink-0 mt-0.5">
+                            <Wrench className="h-3.5 w-3.5 text-brand-blue" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-[15px] font-semibold text-navy leading-snug break-words">{p.name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            {p.isAssemblyTemplate ? (
+                              <>
+                                <span className="inline-flex items-center text-[11px] font-semibold text-brand-blue bg-brand-blue/15 px-1.5 py-0.5 rounded">
+                                  RSNE Fab
+                                </span>
+                                {p.category && (
+                                  <span className="text-xs text-text-muted">{p.category.name}</span>
+                                )}
+                              </>
+                            ) : (
+                              <p className="text-xs text-text-muted">
+                                {p.sku || "No SKU"} · {p.unitOfMeasure}
+                                {p.category ? ` · ${p.category.name}` : ""}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0 pt-0.5">
-                        <span className="text-xs font-semibold text-brand-blue tabular-nums">
-                          {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)}` })()}
-                        </span>
-                        <p className="text-[10px] text-text-muted">
-                          {(() => { const d = getDisplayQty(p); return d.unit })()}
-                        </p>
-                      </div>
+                      {!p.isAssemblyTemplate && (
+                        <div className="text-right shrink-0 pt-0.5">
+                          <span className="text-xs font-semibold text-brand-blue tabular-nums">
+                            {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)}` })()}
+                          </span>
+                          <p className="text-[10px] text-text-muted">
+                            {(() => { const d = getDisplayQty(p); return d.unit })()}
+                          </p>
+                        </div>
+                      )}
                     </button>
                   ))}
                 </div>

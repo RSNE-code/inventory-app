@@ -517,6 +517,13 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 onReturnQtyChange={(qty) =>
                   setReturnQtys((prev) => ({ ...prev, [lineId]: qty }))
                 }
+                missingFabOrder={
+                  !!(item.isNonCatalog) &&
+                  !item.assemblyId &&
+                  item.fabricationSource === "RSNE_MADE" &&
+                  ["Door", "Floor Panel", "Wall Panel", "Ramp"].includes(item.nonCatalogCategory as string || "") &&
+                  ["APPROVED", "IN_PROGRESS"].includes(bom.status)
+                }
                 fabricationSource={item.fabricationSource as string | null}
                 onFabricationSourceChange={mode === "edit" ? async (source) => {
                   try {

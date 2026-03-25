@@ -79,8 +79,36 @@ export async function GET(request: NextRequest) {
       prisma.bom.count({ where }),
     ])
 
+    // Enrich with unfabricated assembly item counts for approved/in-progress BOMs
+    const assemblyCategories = ["Door", "Floor Panel", "Wall Panel", "Ramp"]
+    const bomIds = boms
+      .filter((b) => ["APPROVED", "IN_PROGRESS"].includes(b.status))
+      .map((b) => b.id)
+
+    let unfabCounts = new Map<string, number>()
+    if (bomIds.length > 0) {
+      const unfabItems = await prisma.bomLineItem.groupBy({
+        by: ["bomId"],
+        where: {
+          bomId: { in: bomIds },
+          isActive: true,
+          isNonCatalog: true,
+          assemblyId: null,
+          fabricationSource: "RSNE_MADE",
+          nonCatalogCategory: { in: assemblyCategories },
+        },
+        _count: true,
+      })
+      unfabCounts = new Map(unfabItems.map((u) => [u.bomId, u._count]))
+    }
+
+    const enriched = boms.map((bom) => ({
+      ...bom,
+      unfabricatedAssemblyCount: unfabCounts.get(bom.id) || 0,
+    }))
+
     return NextResponse.json({
-      data: boms,
+      data: enriched,
       total,
       page,
       limit,
@@ -148,9 +176,14 @@ export async function POST(request: NextRequest) {
             matchConfidence: item.matchConfidence ?? null,
             rawText: item.rawText || null,
             parsedUom: item.parsedUom || null,
-            // Auto-set fabrication source for products with recipes
-            fabricationSource: !item.isNonCatalog && item.productId && recipeLookup.has(item.productId)
-              ? "RSNE_MADE"
+            // Auto-set fabrication source:
+            // - Catalog products with fabrication recipes → RSNE_MADE
+            // - Non-catalog items from assembly templates → RSNE_MADE
+            fabricationSource:
+              (!item.isNonCatalog && item.productId && recipeLookup.has(item.productId))
+                ? "RSNE_MADE"
+              : (item.isNonCatalog && item.nonCatalogSpecs && typeof item.nonCatalogSpecs === "object" && "assemblyTemplateId" in item.nonCatalogSpecs)
+                ? "RSNE_MADE"
               : null,
           })),
         },

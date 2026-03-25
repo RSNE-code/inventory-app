@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { BomStatusBadge } from "./bom-status-badge"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface BomCardProps {
@@ -15,6 +15,7 @@ interface BomCardProps {
   createdByName: string
   createdAt: string
   sequenceLabel?: string | null
+  unfabricatedAssemblyCount?: number
 }
 
 const statusAccent: Record<string, string> = {
@@ -26,7 +27,7 @@ const statusAccent: Record<string, string> = {
   CANCELLED: "card-accent-red",
 }
 
-export function BomCard({ id, jobName, jobNumber, status, lineItemCount, createdByName, createdAt, sequenceLabel }: BomCardProps) {
+export function BomCard({ id, jobName, jobNumber, status, lineItemCount, createdByName, createdAt, sequenceLabel, unfabricatedAssemblyCount = 0 }: BomCardProps) {
   return (
     <Link href={`/boms/${id}`}>
       <Card className={cn("p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccent[status] || "card-accent-gray")}>
@@ -44,6 +45,14 @@ export function BomCard({ id, jobName, jobNumber, status, lineItemCount, created
           </div>
           <BomStatusBadge status={status} />
         </div>
+        {unfabricatedAssemblyCount > 0 && (
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold bg-status-yellow/15 text-yellow-700">
+              <AlertTriangle className="h-3 w-3" />
+              {unfabricatedAssemblyCount} missing fab order{unfabricatedAssemblyCount !== 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
         <div className="flex items-end justify-between mt-3">
           <div className="text-xs text-text-muted font-medium">
             <span>{lineItemCount} item{lineItemCount !== 1 ? "s" : ""}</span>

@@ -25,6 +25,8 @@ function getGreeting(): string {
 function getActionSummary(d: DashboardData): { text: string; urgent: boolean } {
   const approvals = d.fabrication?.pendingApprovals || 0
   if (approvals > 0) return { text: `${approvals} door${approvals !== 1 ? "s" : ""} awaiting approval`, urgent: true }
+  const unfab = d.unfabricatedAssemblyCount || 0
+  if (unfab > 0) return { text: `${unfab} assembly item${unfab !== 1 ? "s" : ""} need fab orders`, urgent: true }
   const review = d.bomStatusCounts?.PENDING_REVIEW || 0
   if (review > 0) return { text: `${review} BOM${review !== 1 ? "s" : ""} need${review === 1 ? "s" : ""} review`, urgent: true }
   const low = d.summary?.lowStockCount || 0
@@ -131,6 +133,7 @@ export default function DashboardPage() {
                 lowStockCount={dashboard.summary.lowStockCount}
                 outOfStockCount={dashboard.summary.outOfStockCount}
                 pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
+                unfabricatedAssemblyCount={dashboard.unfabricatedAssemblyCount || 0}
               />
             </div>
 

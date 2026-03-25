@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { Search, Plus, Sparkles } from "lucide-react"
+import { Search, Plus, Sparkles, Wrench } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 import { getDisplayQty } from "@/lib/units"
 
@@ -18,6 +18,9 @@ interface ProductResult {
   dimWidth?: number | null
   dimWidthUnit?: string | null
   category?: { name: string }
+  isAssemblyTemplate?: boolean
+  assemblyType?: string
+  assemblyDescription?: string | null
 }
 
 interface ProductPickerProps {
@@ -191,19 +194,44 @@ export function ProductPicker({ onSelect, onCustomAdd, placeholder = "Search pro
                   key={p.id}
                   type="button"
                   onClick={() => handleSelect(p)}
-                  className="w-full text-left px-4 py-3 hover:bg-surface-secondary border-b border-border-custom/40 last:border-0 transition-colors active:scale-[0.98]"
+                  className={`w-full text-left px-4 py-3 border-b border-border-custom/40 last:border-0 transition-colors active:scale-[0.98] ${
+                    p.isAssemblyTemplate
+                      ? "bg-brand-blue/[0.04] hover:bg-brand-blue/[0.10]"
+                      : "hover:bg-surface-secondary"
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-navy break-words">{p.name}</p>
-                      <p className="text-xs text-text-muted">
-                        {p.sku || "No SKU"} &middot; {p.unitOfMeasure}
-                        {p.category ? ` · ${p.category.name}` : ""}
-                      </p>
+                    <div className="min-w-0 flex items-start gap-2.5">
+                      {p.isAssemblyTemplate && (
+                        <div className="h-7 w-7 rounded-lg bg-brand-blue/15 flex items-center justify-center shrink-0 mt-0.5">
+                          <Wrench className="h-3.5 w-3.5 text-brand-blue" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-navy break-words">{p.name}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                          {p.isAssemblyTemplate ? (
+                            <span className="inline-flex items-center text-[11px] font-semibold text-brand-blue bg-brand-blue/15 px-1.5 py-0.5 rounded">
+                              RSNE Fab
+                            </span>
+                          ) : (
+                            <span className="text-xs text-text-muted">
+                              {p.sku || "No SKU"} &middot; {p.unitOfMeasure}
+                            </span>
+                          )}
+                          {p.category && (
+                            <span className="text-xs text-text-muted">
+                              {p.isAssemblyTemplate ? "" : " · "}{p.category.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-xs text-text-muted whitespace-nowrap">
-                      {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)} ${d.unit}` })()}
-                    </span>
+                    {!p.isAssemblyTemplate && (
+                      <span className="text-xs text-text-muted whitespace-nowrap">
+                        {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)} ${d.unit}` })()}
+                      </span>
+                    )}
                   </div>
                 </button>
               ))}

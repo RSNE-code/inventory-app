@@ -175,6 +175,51 @@ export function BomAIFlow() {
   }
 
   function handleAddProduct(product: ProductResult) {
+    // Assembly templates are added as non-catalog fabrication items
+    if (product.isAssemblyTemplate) {
+      const assemblyCategory = product.category?.name || "Assembly"
+      const existingIdx = confirmedItems.findIndex(
+        (c) => c.isNonCatalog && c.nonCatalogName === product.name
+      )
+      if (existingIdx >= 0) {
+        setConfirmedItems((prev) =>
+          prev.map((c, i) => i === existingIdx ? { ...c, qtyNeeded: c.qtyNeeded + 1 } : c)
+        )
+      } else {
+        setConfirmedItems((prev) => [
+          ...prev,
+          {
+            productId: null,
+            productName: product.name,
+            sku: null,
+            unitOfMeasure: "each",
+            tier: "TIER_1" as const,
+            qtyNeeded: 1,
+            isNonCatalog: true,
+            nonCatalogName: product.name,
+            nonCatalogCategory: assemblyCategory,
+            nonCatalogUom: "each",
+            nonCatalogEstCost: null,
+            currentQty: 0,
+            reorderPoint: 0,
+            dimLength: null,
+            dimLengthUnit: null,
+            dimWidth: null,
+            dimWidthUnit: null,
+            catalogMatch: {
+              parsedItem: { rawText: product.name, name: product.name, quantity: 1, unitOfMeasure: "each", confidence: 1 },
+              matchedProduct: null,
+              matchConfidence: 1,
+              isNonCatalog: true,
+              assemblyTemplateId: product.id.replace("assembly-template:", ""),
+            },
+          },
+        ])
+      }
+      setAddRowOpen(false)
+      return
+    }
+
     const existingIdx = confirmedItems.findIndex((c) => c.productId === product.id)
     if (existingIdx >= 0) {
       setConfirmedItems((prev) =>
@@ -284,7 +329,10 @@ export function BomAIFlow() {
           nonCatalogCategory: item.nonCatalogCategory,
           nonCatalogUom: item.nonCatalogUom,
           nonCatalogEstCost: item.nonCatalogEstCost,
-          nonCatalogSpecs: item.catalogMatch.panelSpecs ?? undefined,
+          nonCatalogSpecs: item.catalogMatch.panelSpecs
+            ?? (item.catalogMatch.assemblyTemplateId
+              ? { type: "assembly", assemblyTemplateId: item.catalogMatch.assemblyTemplateId }
+              : undefined),
         })),
       })
       setSubmitted(true)
