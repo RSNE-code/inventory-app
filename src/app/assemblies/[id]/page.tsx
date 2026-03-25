@@ -14,7 +14,6 @@ import { DoorManufacturingSheet } from "@/components/doors/door-manufacturing-sh
 import { StartBuildModal } from "@/components/shared/start-build-modal"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
-import { Breadcrumb } from "@/components/layout/breadcrumb"
 import type { DoorSpecs } from "@/lib/door-specs"
 import { getDoorFieldLabel, formatDoorFieldValue } from "@/lib/door-field-labels"
 import {
@@ -196,10 +195,6 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div className="overscroll-fix">
       <Header title={name as string} showBack />
-      <Breadcrumb items={[
-        { label: "Assemblies", href: "/assemblies" },
-        { label: name as string },
-      ]} />
 
       <div className="p-4 space-y-4">
         {/* Status + Info */}

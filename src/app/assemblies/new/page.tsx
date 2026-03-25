@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { AIInput } from "@/components/ai/ai-input"
 import { DoorCreationFlow } from "@/components/doors/door-creation-flow"
 import { StepProgress } from "@/components/layout/step-progress"
-import { Breadcrumb } from "@/components/layout/breadcrumb"
 import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { useCelebration } from "@/hooks/use-celebration"
@@ -192,10 +191,6 @@ function NewAssemblyContent() {
   return (
     <div>
       <Header title={step === "door-flow" ? "New Door" : "New Assembly"} />
-      <Breadcrumb items={[
-        { label: "Assemblies", href: step === "door-flow" ? "/assemblies?queue=DOOR_SHOP" : "/assemblies" },
-        { label: step === "door-flow" ? "New Door" : "New Assembly" },
-      ]} />
 
       <div className="p-4 pb-28 space-y-4 overscroll-fix">
         {/* Wait for URL param routing before rendering content */}
