@@ -255,6 +255,14 @@ MATCHING GUIDANCE:
 - DIMENSION FORMAT: "4x8" = 4' x 8'. "7'6" = 7'6" = 7.5 feet. Always convert to feet when comparing to catalog products.
 - If the user says a size/gauge and only one catalog product matches that specification, it's a strong match even if the name is partial.
 
+FABRICATION ITEMS (marked [FABRICATION] in catalog):
+- These are doors, sliders, floor panels, wall panels, and ramps that we build in-house.
+- ALWAYS prefer [FABRICATION] items over regular catalog products when the item is a door, slider, panel, or ramp WITHOUT a specific supplier/brand name.
+- "sliding door" = "slider", "swing door" = "cooler door" or "freezer door", "walk-in door" = cooler/freezer door.
+- Round dimensions UP to the nearest standard size: 6'6" height → match to 7' template, 5'10" → 6'.
+- Only match to a regular product instead of [FABRICATION] if a specific supplier/brand is mentioned (e.g., "Jamison door", "Kolpak slider").
+- Examples: "sliding door 5x7" → [FABRICATION] Cooler Slider 5' x 7', "3x7 cooler door" → [FABRICATION] Cooler Door 3' x 7', "freezer door 3x7" → [FABRICATION] Exterior Freezer Door 3' x 7'.
+
 CONFIDENCE CALIBRATION:
 - 0.90-1.0: Product name AND dimensions/gauge match exactly (e.g., "#12 TEK 5" → "#12 TEK 5", "O63 diamond plate 4x8" → "Diamond Plate .063 4' x 8'")
 - 0.85-0.90: Product name matches clearly, dimensions absent or compatible (e.g., "Froth Pak" → "FROTH-PAK 200")
@@ -722,11 +730,25 @@ function toCatalogMatch(
 
   if (isAssemblyTemplate) {
     // Assembly template match — return as non-catalog fabrication item
+    // Infer assembly type from the name for proper categorization
+    const nameLower = (item.name || "").toLowerCase()
+    const assemblyCategory = nameLower.includes("slider") || nameLower.includes("sliding")
+      ? "Door"
+      : nameLower.includes("door")
+        ? "Door"
+        : nameLower.includes("floor")
+          ? "Floor Panel"
+          : nameLower.includes("wall")
+            ? "Wall Panel"
+            : nameLower.includes("ramp")
+              ? "Ramp"
+              : "Door"
     return {
       parsedItem: {
         ...parsedItem,
         name: item.name || parsedItem.name,
-        category: "Fabrication",
+        unitOfMeasure: "each",
+        category: assemblyCategory,
       },
       matchedProduct: null,
       matchConfidence: item.matchConfidence ?? 0.8,
@@ -909,6 +931,14 @@ MATCHING GUIDANCE:
 - Warehouse workers use abbreviations and shorthand. "tek screws" = TEK screws, "drive pins" = Drive Pins, "OC 2x3" = Outside Corner 2"x3".
 - When an item is generic (e.g., "tek screws" without a size), pick the MOST COMMON variant as the best match and list other sizes in alternativeProductIds. Do NOT return null just because the user didn't specify a size.
 - When multiple catalog products could match (e.g., several TEK screw sizes), pick the best one and include 2-3 alternatives. The user can easily switch — but having NO match forces them to search manually.
+
+FABRICATION ITEMS (marked [FABRICATION] in catalog):
+- These are doors, sliders, floor panels, wall panels, and ramps that we build in-house.
+- ALWAYS prefer [FABRICATION] items over regular catalog products when the item is a door, slider, panel, or ramp WITHOUT a specific supplier/brand name.
+- "sliding door" = "slider", "swing door" = "cooler door" or "freezer door", "walk-in door" = cooler/freezer door.
+- Round dimensions UP to the nearest standard size: 6'6" height → match to 7' template, 5'10" → 6'.
+- Only match to a regular product instead of [FABRICATION] if a specific supplier/brand is mentioned (e.g., "Jamison door", "Kolpak slider").
+- Examples: "sliding door 5x7" → [FABRICATION] Cooler Slider 5' x 7', "3x7 cooler door" → [FABRICATION] Cooler Door 3' x 7', "freezer door 3x7" → [FABRICATION] Exterior Freezer Door 3' x 7'.
 
 CONFIDENCE CALIBRATION:
 - 0.95-1.0: Product name AND dimensions match exactly (e.g., "OC 2x3" → "TWS Outside Corner 2\\" x 3\\"")
