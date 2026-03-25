@@ -217,6 +217,38 @@ function assemblyTypeLabel(type: string): string {
 
 // ─── Assembly template scoring ───
 
+// Synonyms for assembly matching — words that mean the same thing
+// in RSNE door/panel context
+const ASSEMBLY_SYNONYMS: Record<string, string[]> = {
+  "slider": ["sliding", "slide"],
+  "sliding": ["slider", "slide"],
+  "door": ["dr"],
+  "cooler": ["clr", "walk-in", "walkin"],
+  "freezer": ["frzr", "frz"],
+  "exterior": ["ext", "outside"],
+  "panel": ["pnl"],
+  "floor": ["flr"],
+  "wall": ["wl"],
+  "ramp": ["loading"],
+}
+
+function assemblyTokenMatch(itemToken: string, templateToken: string): boolean {
+  // Direct substring match
+  if (templateToken.includes(itemToken) || itemToken.includes(templateToken)) return true
+  // Synonym match
+  const synonyms = ASSEMBLY_SYNONYMS[templateToken]
+  if (synonyms && synonyms.includes(itemToken)) return true
+  const itemSynonyms = ASSEMBLY_SYNONYMS[itemToken]
+  if (itemSynonyms && itemSynonyms.includes(templateToken)) return true
+  return false
+}
+
+// Convert dimension tokens to inches for approximate matching.
+// "6" in context of feet = 72", "7" = 84". 6'6" parsed as ["6","6"] = ~78"
+function parseDimInches(tokens: string[]): number[] {
+  return tokens.map((t) => parseInt(t, 10) * 12).filter((n) => !isNaN(n))
+}
+
 function calculateAssemblyMatchScore(
   item: ParsedLineItem,
   template: AssemblyTemplateRecord
@@ -232,38 +264,77 @@ function calculateAssemblyMatchScore(
 
   if (itemTokens.length === 0 || templateTokens.length === 0) return 0
 
-  // Count how many item tokens match template tokens
+  // Count how many item tokens match template tokens (with synonyms)
   let matchedTokens = 0
   for (const token of itemTokens) {
-    if (templateTokens.some((tt) => tt.includes(token) || token.includes(tt))) {
+    if (templateTokens.some((tt) => assemblyTokenMatch(token, tt))) {
       matchedTokens++
     }
   }
 
   const coverageScore = matchedTokens / itemTokens.length
 
-  // Dimension matching boost: if the item has dimension-like tokens (numbers)
-  // that match the template's dimension tokens, boost confidence
+  // Dimension proximity: allow approximate matches (6'6" ≈ 7')
+  // Extract dimension-like tokens (numbers) from both sides
   const itemDimTokens = itemTokens.filter((t) => /^\d+$/.test(t))
   const templateDimTokens = templateTokens.filter((t) => /^\d+$/.test(t))
   let dimBoost = 0
   if (itemDimTokens.length > 0 && templateDimTokens.length > 0) {
-    const dimMatches = itemDimTokens.filter((d) => templateDimTokens.includes(d)).length
-    dimBoost = dimMatches > 0 ? 0.15 * (dimMatches / itemDimTokens.length) : 0
+    // Check exact dimension matches first
+    const exactDimMatches = itemDimTokens.filter((d) => templateDimTokens.includes(d)).length
+    if (exactDimMatches > 0) {
+      dimBoost = 0.15 * (exactDimMatches / itemDimTokens.length)
+    }
+    // For non-exact matches, check nearby dimensions.
+    // Door/panel dimensions are typically WxH in feet. When the AI parses
+    // "5' x 6'-6"" the tokens are ["5","6","6"]. We need to check if any
+    // pair of item dimensions (treated as feet+inches) is close to a template dim.
+    // e.g., 6 feet + 6 inches = 78" ≈ 84" (7 feet) → close match
+    const itemNums = itemDimTokens.map((t) => parseInt(t, 10))
+    const templateNums = templateDimTokens.map((t) => parseInt(t, 10))
+    for (let i = 0; i < itemNums.length; i++) {
+      // Try this number as standalone feet
+      const standaloneFt = itemNums[i] * 12
+      for (const tNum of templateNums) {
+        const templateIn = tNum * 12
+        if (Math.abs(standaloneFt - templateIn) <= 12 && standaloneFt !== templateIn) {
+          dimBoost = Math.max(dimBoost, 0.10)
+        }
+      }
+      // Try combining with next number as feet+inches (e.g., 6,6 → 78")
+      if (i + 1 < itemNums.length && itemNums[i + 1] <= 11) {
+        const feetPlusInches = itemNums[i] * 12 + itemNums[i + 1]
+        for (const tNum of templateNums) {
+          const templateIn = tNum * 12
+          if (Math.abs(feetPlusInches - templateIn) <= 12) {
+            dimBoost = Math.max(dimBoost, 0.15)
+          }
+        }
+      }
+    }
   }
 
-  // Type keyword boost: if the item mentions "door", "panel", "ramp", "slider"
+  // Type keyword boost: if the item mentions door/panel/ramp-related words
   // and the template type matches
   let typeBoost = 0
   const typeKeywords: Record<string, string[]> = {
-    DOOR: ["door", "swing", "slider", "sliding"],
-    FLOOR_PANEL: ["floor", "panel"],
-    WALL_PANEL: ["wall", "panel"],
-    RAMP: ["ramp"],
+    DOOR: ["door", "swing", "slider", "sliding", "slide", "hinged", "hinge", "dr"],
+    FLOOR_PANEL: ["floor", "panel", "flr"],
+    WALL_PANEL: ["wall", "panel", "wl"],
+    RAMP: ["ramp", "loading"],
   }
   const keywords = typeKeywords[template.type] || []
   if (keywords.some((kw) => itemTokens.includes(kw))) {
     typeBoost = 0.10
+  }
+
+  // If the item is clearly a door/panel type (has type keywords) but coverage
+  // is low because template uses different terminology (e.g., "sliding door"
+  // vs "cooler slider"), give a bonus for the type match
+  if (typeBoost > 0 && coverageScore < 0.40) {
+    // The item is definitely talking about this type of assembly
+    // even if the exact words don't match well
+    typeBoost = 0.20
   }
 
   return Math.min(1.0, coverageScore + dimBoost + typeBoost)
