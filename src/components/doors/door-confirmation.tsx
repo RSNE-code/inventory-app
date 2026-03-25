@@ -5,6 +5,7 @@ import type { DoorSpecs } from "@/lib/door-specs"
 import { FIELD_METADATA, calculateHeaterCable } from "@/lib/door-specs"
 import { formatDoorFieldValue, splitHardwareValue } from "@/lib/door-field-labels"
 import { SectionCard, SpecRow, BoolRow } from "./spec-primitives"
+import { TapeMeasureInput } from "./tape-measure-input"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -59,6 +60,7 @@ export function DoorConfirmation({
 }: DoorConfirmationProps) {
   const [editingField, setEditingField] = useState<string | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [measureField, setMeasureField] = useState<string | null>(null)
 
   // ── Edit helpers ──
 
@@ -163,19 +165,35 @@ export function DoorConfirmation({
 
       {/* ── SECTION 1: Dimensions ── */}
       <SectionCard title="Dimensions">
-        {editingField === "widthInClear" ? <EditRow field="widthInClear" /> : (
-          <SpecRow label="Width (in clear)" value={specs.widthInClear} suffix='"' onEdit={() => startEdit("widthInClear", specs.widthInClear)} />
-        )}
-        {editingField === "heightInClear" ? <EditRow field="heightInClear" /> : (
-          <SpecRow label="Height (in clear)" value={specs.heightInClear} suffix='"' onEdit={() => startEdit("heightInClear", specs.heightInClear)} />
-        )}
-        {editingField === "jambDepth" ? <EditRow field="jambDepth" /> : (
-          <SpecRow label="Jamb Depth" value={specs.jambDepth} suffix='"' onEdit={() => startEdit("jambDepth", specs.jambDepth)} />
-        )}
-        {editingField === "wallThickness" ? <EditRow field="wallThickness" /> : (
-          <SpecRow label="Wall Thickness" value={specs.wallThickness} suffix='"' onEdit={() => startEdit("wallThickness", specs.wallThickness)} />
-        )}
+        <SpecRow label="Width (in clear)" value={specs.widthInClear} suffix='"' onEdit={() => setMeasureField("widthInClear")} />
+        <SpecRow label="Height (in clear)" value={specs.heightInClear} suffix='"' onEdit={() => setMeasureField("heightInClear")} />
+        <SpecRow label="Jamb Depth" value={specs.jambDepth} suffix='"' onEdit={() => setMeasureField("jambDepth")} />
+        <SpecRow label="Wall Thickness" value={specs.wallThickness} suffix='"' onEdit={() => setMeasureField("wallThickness")} />
       </SectionCard>
+
+      {/* Tape measure picker for dimensions */}
+      <TapeMeasureInput
+        value={measureField ? String(specs[measureField as keyof DoorSpecs] || "") : ""}
+        onChange={(v) => {
+          if (measureField) {
+            onSpecChange(measureField, v || undefined)
+            // Auto-recalculate heater cable when dimensions change
+            if (["widthInClear", "heightInClear"].includes(measureField) && isFreezer) {
+              const updated = { ...specs, [measureField]: v }
+              const cable = calculateHeaterCable(updated)
+              if (cable) onSpecChange("heaterSize", cable)
+            }
+          }
+        }}
+        label={
+          measureField === "widthInClear" ? "Width (in clear)" :
+          measureField === "heightInClear" ? "Height (in clear)" :
+          measureField === "jambDepth" ? "Jamb Depth" :
+          measureField === "wallThickness" ? "Wall Thickness" : "Dimension"
+        }
+        open={measureField !== null}
+        onOpenChange={(open) => { if (!open) setMeasureField(null) }}
+      />
 
       {/* ── SECTION 2: Configuration ── */}
       <SectionCard title="Configuration">

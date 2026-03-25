@@ -795,3 +795,100 @@
 .animate-ripple-blue {
   animation: ripple-blue 0.6s ease-out;
 }
+
+/* ── Tape Measure Picker ── */
+
+.tape-measure-bg {
+  background: linear-gradient(180deg, #FFD54F 0%, #FFC107 40%, #FFB300 100%);
+  position: relative;
+}
+
+.tape-measure-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      32deg,
+      transparent,
+      transparent 6px,
+      rgba(0,0,0,0.018) 6px,
+      rgba(0,0,0,0.018) 7px
+    ),
+    repeating-linear-gradient(
+      -25deg,
+      transparent,
+      transparent 11px,
+      rgba(0,0,0,0.012) 11px,
+      rgba(0,0,0,0.012) 12px
+    ),
+    repeating-linear-gradient(
+      78deg,
+      transparent,
+      transparent 18px,
+      rgba(0,0,0,0.008) 18px,
+      rgba(0,0,0,0.008) 19px
+    );
+  mix-blend-mode: multiply;
+}
+
+.tape-measure-worn-edge {
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.08),
+    inset 0 -2px 4px rgba(0,0,0,0.06);
+}
+
+.tape-tick {
+  background: #1a1a1a;
+  border-radius: 0.5px;
+}
+.tape-tick-inch { width: 20px; height: 2px; }
+.tape-tick-half { width: 16px; height: 1.5px; }
+.tape-tick-quarter { width: 12px; height: 1.5px; }
+.tape-tick-eighth { width: 8px; height: 1px; }
+.tape-tick-sixteenth { width: 5px; height: 1px; opacity: 0.7; }
+
+.tape-selection-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #E53935;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: 0 0 8px rgba(229,57,53,0.4), 0 0 2px rgba(229,57,53,0.6);
+  pointer-events: none;
+}
+
+.tape-scroll-wheel {
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tape-scroll-wheel::-webkit-scrollbar {
+  display: none;
+}
+
+.tape-scroll-item {
+  scroll-snap-align: center;
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+@keyframes tape-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes tape-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-tape-open {
+  animation: tape-slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.animate-tape-overlay {
+  animation: tape-fade-in 0.2s ease-out;
+}

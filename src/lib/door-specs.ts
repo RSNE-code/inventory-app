@@ -647,3 +647,114 @@ export function resolveGapAnswer(
       return { [field]: answer.trim() } as Partial<DoorSpecs>
   }
 }
+
+// ---------------------------------------------------------------------------
+// Fractional inch utilities — for tape measure picker
+// ---------------------------------------------------------------------------
+
+/** All 17 fraction options for the tape measure picker (0 through 15/16) */
+export const FRACTIONS: { label: string; decimal: number; numerator: number; denominator: number }[] = [
+  { label: "0", decimal: 0, numerator: 0, denominator: 1 },
+  { label: "1/16", decimal: 1 / 16, numerator: 1, denominator: 16 },
+  { label: "1/8", decimal: 1 / 8, numerator: 1, denominator: 8 },
+  { label: "3/16", decimal: 3 / 16, numerator: 3, denominator: 16 },
+  { label: "1/4", decimal: 1 / 4, numerator: 1, denominator: 4 },
+  { label: "5/16", decimal: 5 / 16, numerator: 5, denominator: 16 },
+  { label: "3/8", decimal: 3 / 8, numerator: 3, denominator: 8 },
+  { label: "7/16", decimal: 7 / 16, numerator: 7, denominator: 16 },
+  { label: "1/2", decimal: 1 / 2, numerator: 1, denominator: 2 },
+  { label: "9/16", decimal: 9 / 16, numerator: 9, denominator: 16 },
+  { label: "5/8", decimal: 5 / 8, numerator: 5, denominator: 8 },
+  { label: "11/16", decimal: 11 / 16, numerator: 11, denominator: 16 },
+  { label: "3/4", decimal: 3 / 4, numerator: 3, denominator: 4 },
+  { label: "13/16", decimal: 13 / 16, numerator: 13, denominator: 16 },
+  { label: "7/8", decimal: 7 / 8, numerator: 7, denominator: 8 },
+  { label: "15/16", decimal: 15 / 16, numerator: 15, denominator: 16 },
+]
+
+/**
+ * Tick mark height class for a fraction — mimics real tape measure graduation.
+ * Inch marks are tallest, 1/2 medium, 1/4 shorter, etc.
+ */
+export function fractionTickHeight(index: number): "inch" | "half" | "quarter" | "eighth" | "sixteenth" {
+  if (index === 0) return "inch"
+  if (index === 8) return "half"
+  if (index === 4 || index === 12) return "quarter"
+  if (index % 2 === 0) return "eighth"
+  return "sixteenth"
+}
+
+/**
+ * Format a decimal inch value to fractional string.
+ * 36.1875 → "36-3/16", 36 → "36", 36.5 → "36-1/2"
+ */
+export function formatFractionalInches(value: number | string): string {
+  const num = typeof value === "string" ? parseFloat(value) : value
+  if (isNaN(num) || num <= 0) return ""
+
+  const whole = Math.floor(num)
+  const remainder = num - whole
+
+  if (remainder < 0.001) return String(whole)
+
+  // Find the closest fraction in 16ths
+  const sixteenths = Math.round(remainder * 16)
+  if (sixteenths === 0) return String(whole)
+  if (sixteenths === 16) return String(whole + 1)
+
+  // Reduce the fraction
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+  const d = gcd(sixteenths, 16)
+  return `${whole}-${sixteenths / d}/${16 / d}`
+}
+
+/**
+ * Parse a fractional inch string to decimal.
+ * "36-3/16" → 36.1875, "36" → 36, "36.5" → 36.5
+ * Also handles existing decimal strings and bare fractions.
+ */
+export function parseFractionalInches(value: string): number {
+  if (!value) return 0
+  const s = value.replace(/["\s]/g, "").trim()
+
+  // Hyphenated fraction: "36-3/16"
+  const fracMatch = s.match(/^(\d+)-(\d+)\/(\d+)$/)
+  if (fracMatch) {
+    const whole = parseInt(fracMatch[1], 10)
+    const num = parseInt(fracMatch[2], 10)
+    const den = parseInt(fracMatch[3], 10)
+    return den !== 0 ? whole + num / den : whole
+  }
+
+  // Bare fraction: "3/16"
+  const bareFrac = s.match(/^(\d+)\/(\d+)$/)
+  if (bareFrac) {
+    const num = parseInt(bareFrac[1], 10)
+    const den = parseInt(bareFrac[2], 10)
+    return den !== 0 ? num / den : 0
+  }
+
+  // Plain number (integer or decimal)
+  const n = parseFloat(s)
+  return isNaN(n) ? 0 : n
+}
+
+/**
+ * Split a dimension string into inches + fraction index for the picker wheels.
+ * "36-3/16" → { inches: 36, fractionIndex: 3 }
+ * "36" → { inches: 36, fractionIndex: 0 }
+ */
+export function splitInchesAndFraction(value: string): { inches: number; fractionIndex: number } {
+  const decimal = parseFractionalInches(value)
+  if (decimal <= 0) return { inches: 0, fractionIndex: 0 }
+
+  const whole = Math.floor(decimal)
+  const remainder = decimal - whole
+  const sixteenths = Math.round(remainder * 16)
+
+  // Find the matching fraction index
+  const fractionIndex = sixteenths >= 16 ? 0 : sixteenths
+  const adjustedWhole = sixteenths >= 16 ? whole + 1 : whole
+
+  return { inches: adjustedWhole, fractionIndex }
+}
