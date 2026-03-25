@@ -134,7 +134,7 @@ export function ProductPicker({ onSelect, onCustomAdd, placeholder = "Search pro
     >
       <div className={
         compact
-          ? "h-8 w-8 rounded-lg bg-brand-orange/15 flex items-center justify-center shrink-0"
+          ? "h-8 w-8 rounded-xl bg-brand-orange/15 flex items-center justify-center shrink-0"
           : "h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0"
       }>
         {compact ? (
@@ -172,7 +172,7 @@ export function ProductPicker({ onSelect, onCustomAdd, placeholder = "Search pro
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg max-h-64 overflow-y-auto animate-dropdown-in">
+        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-brand-md max-h-64 overflow-y-auto animate-dropdown-in">
           {loading ? (
             <div className="p-4 flex items-center justify-center gap-2">
               <div className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-building-pulse" style={{ animationDelay: "0s" }} />

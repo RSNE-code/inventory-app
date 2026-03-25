@@ -13,7 +13,7 @@ export function LowStockList({ items }: { items: LowStockItem[] }) {
   return (
     <Card className="p-5 rounded-xl border-border-custom shadow-brand">
       <div className="flex items-center gap-2 mb-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-status-yellow/15">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-status-yellow/15">
           <AlertTriangle className="h-4 w-4 text-status-yellow" />
         </div>
         <h3 className="font-semibold text-navy text-base tracking-tight">Needs Attention</h3>
@@ -24,7 +24,7 @@ export function LowStockList({ items }: { items: LowStockItem[] }) {
           const reorder = getDisplayReorder({ ...item, reorderPoint: item.reorderPoint })
           return (
             <Link key={item.id} href={`/inventory/${item.id}`}>
-              <div className="flex items-center justify-between py-3.5 px-2.5 -mx-1 rounded-lg hover:bg-surface-secondary active:scale-[0.99] transition-all duration-300 group">
+              <div className="flex items-center justify-between py-3.5 px-2.5 -mx-1 rounded-xl hover:bg-surface-secondary active:scale-[0.99] transition-all duration-300 group">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-navy truncate">{item.name}</p>
                   <p className="text-xs text-text-muted mt-0.5">{item.categoryName}</p>

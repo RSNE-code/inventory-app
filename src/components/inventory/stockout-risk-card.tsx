@@ -187,22 +187,22 @@ export function StockoutRiskCard({
 
       {/* Breakdown grid */}
       <div className="grid grid-cols-3 gap-3 text-center">
-        <div className="bg-surface-secondary rounded-lg p-2.5">
+        <div className="bg-surface-secondary rounded-xl p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">{formatQuantity(available)}</p>
           <p className="text-[12px] text-text-muted uppercase tracking-wide">Available</p>
         </div>
-        <div className="bg-surface-secondary rounded-lg p-2.5">
+        <div className="bg-surface-secondary rounded-xl p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">0</p>
           <p className="text-[12px] text-text-muted uppercase tracking-wide">Allocated</p>
         </div>
-        <div className="bg-surface-secondary rounded-lg p-2.5">
+        <div className="bg-surface-secondary rounded-xl p-2.5">
           <p className="text-lg font-bold text-navy tabular-nums">{formatQuantity(safetyStock)}</p>
           <p className="text-[12px] text-text-muted uppercase tracking-wide">Safety Stock</p>
         </div>
       </div>
 
       {/* AI forecast callout */}
-      <div className={cn("rounded-lg border p-3", riskBgColors[riskLevel])}>
+      <div className={cn("rounded-xl border p-3", riskBgColors[riskLevel])}>
         <p className="text-xs leading-relaxed">
           <span className="font-semibold">Based on {daysCovered}-day consumption trend:</span>{" "}
           {avgDaily > 0 ? (

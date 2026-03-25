@@ -21,7 +21,7 @@ export const stockDotColor: Record<StockLevel, string> = {
   sufficient: "bg-green-500",
   low: "bg-yellow-500",
   out: "bg-red-500",
-  unknown: "bg-gray-300",
+  unknown: "bg-surface-secondary",
 }
 
 export const stockLabel: Record<StockLevel, string> = {

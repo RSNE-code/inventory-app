@@ -359,7 +359,7 @@ export function DoorCreationFlow() {
                 className="w-full p-4 rounded-xl border-2 border-border-custom bg-white text-left hover:border-brand-blue hover:bg-brand-blue/4 transition-all duration-200 active:scale-[0.98]"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy/8">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy/8">
                     <Briefcase className="h-5 w-5 text-navy" />
                   </div>
                   <div className="min-w-0 flex-1">

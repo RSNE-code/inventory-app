@@ -34,7 +34,7 @@ export function WorkPipelines({ bomStatusCounts, fabrication, doorQueueCount }: 
       <Link href="/boms">
         <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-blue overflow-hidden h-full">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/12">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-blue/12">
               <ClipboardList className="h-4 w-4 text-brand-blue" />
             </div>
             <h4 className="text-sm font-bold text-navy">BOMs</h4>
@@ -64,7 +64,7 @@ export function WorkPipelines({ bomStatusCounts, fabrication, doorQueueCount }: 
       <Link href="/assemblies">
         <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] card-accent-orange overflow-hidden h-full">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orange/12">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-orange/12">
               <Factory className="h-4 w-4 text-brand-orange" />
             </div>
             <h4 className="text-sm font-bold text-navy">Fabrication</h4>

@@ -117,13 +117,13 @@ export default function AssembliesPage() {
         <div ref={tabContainerRef} className="relative flex gap-1 bg-surface-secondary rounded-xl p-1">
           {/* Sliding pill indicator */}
           <div
-            className="absolute top-1 bottom-1 rounded-lg bg-white shadow-brand tab-indicator"
+            className="absolute top-1 bottom-1 rounded-xl bg-white shadow-brand tab-indicator"
             style={{ left: tabIndicator.left, width: tabIndicator.width }}
           />
           <button
             onClick={() => setQueueTab("DOOR_SHOP")}
             className={cn(
-              "relative z-10 flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
+              "relative z-10 flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
               queueTab === "DOOR_SHOP"
                 ? "text-navy"
                 : "text-text-muted hover:text-text-secondary"
@@ -135,7 +135,7 @@ export default function AssembliesPage() {
           <button
             onClick={() => setQueueTab("FABRICATION")}
             className={cn(
-              "relative z-10 flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
+              "relative z-10 flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
               queueTab === "FABRICATION"
                 ? "text-navy"
                 : "text-text-muted hover:text-text-secondary"
@@ -147,7 +147,7 @@ export default function AssembliesPage() {
           <button
             onClick={() => setQueueTab("SHIPPING")}
             className={cn(
-              "relative z-10 flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
+              "relative z-10 flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-colors duration-300 flex items-center justify-center gap-1.5",
               queueTab === "SHIPPING"
                 ? "text-navy"
                 : "text-text-muted hover:text-text-secondary"
@@ -365,7 +365,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                             e.stopPropagation()
                             window.location.href = `/boms/${bom.id}`
                           }}
-                          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-brand-blue/8 border border-brand-blue/15 text-xs font-medium text-brand-blue cursor-pointer hover:bg-brand-blue/15 active:scale-[0.97] transition-all"
+                          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-xl bg-brand-blue/8 border border-brand-blue/15 text-xs font-medium text-brand-blue cursor-pointer hover:bg-brand-blue/15 active:scale-[0.97] transition-all"
                         >
                           <Package className="h-3 w-3 shrink-0" />
                           <BomStatusBadge status={bom.status} />
@@ -381,7 +381,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                         e.stopPropagation()
                         setLinkSheetOpen(true)
                       }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] rounded-lg border border-dashed border-text-muted/30 text-xs font-medium text-text-muted hover:border-brand-blue/40 hover:text-brand-blue hover:bg-brand-blue/5 active:scale-[0.97] transition-all"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] rounded-xl border border-dashed border-text-muted/30 text-xs font-medium text-text-muted hover:border-brand-blue/40 hover:text-brand-blue hover:bg-brand-blue/5 active:scale-[0.97] transition-all"
                     >
                       <LinkIcon className="h-3 w-3" />
                       No BOM linked — tap to search

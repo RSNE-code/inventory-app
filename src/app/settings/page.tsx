@@ -27,7 +27,7 @@ export default function SettingsPage() {
           <Card className="p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md transition-all duration-300 active:scale-[0.98]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/8">
                   <PackageCheck className="h-[18px] w-[18px] text-brand-blue" />
                 </div>
                 <div>
@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
         <Card className="p-5 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/8">
               <Users className="h-[18px] w-[18px] text-brand-blue" />
             </div>
             <h3 className="font-semibold text-navy text-sm">User Management</h3>
@@ -57,7 +57,7 @@ export default function SettingsPage() {
 
         <Card className="p-5 rounded-xl border-border-custom shadow-brand">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-blue/8">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue/8">
               <Info className="h-[18px] w-[18px] text-brand-blue" />
             </div>
             <h3 className="font-semibold text-navy text-sm">About</h3>

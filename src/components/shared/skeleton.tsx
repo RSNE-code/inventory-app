@@ -6,7 +6,7 @@ interface SkeletonProps {
 
 export function Skeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn("rounded-lg skeleton-shimmer", className)} />
+    <div className={cn("rounded-xl skeleton-shimmer", className)} />
   )
 }
 

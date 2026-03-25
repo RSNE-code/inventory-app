@@ -602,7 +602,7 @@ export function BomPhotoCapture() {
             </>
           ) : (
             <>
-              <div className="h-20 w-20 rounded-2xl bg-brand-orange flex items-center justify-center shadow-lg shadow-brand-orange/20">
+              <div className="h-20 w-20 rounded-2xl bg-brand-orange flex items-center justify-center shadow-brand-md shadow-brand-orange/20">
                 <Camera className="h-10 w-10 text-white" />
               </div>
               <div className="text-center">
@@ -680,7 +680,7 @@ export function BomPhotoCapture() {
             <img
               src={photoThumbnail}
               alt="Material list"
-              className="h-10 w-10 rounded-lg object-cover border border-border-custom"
+              className="h-10 w-10 rounded-xl object-cover border border-border-custom"
             />
           )}
           <div className="flex-1 min-w-0">
@@ -699,7 +699,7 @@ export function BomPhotoCapture() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="h-10 w-10 flex items-center justify-center rounded-lg bg-surface-secondary text-text-muted"
+            className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-secondary text-text-muted"
           >
             <ImagePlus className="h-5 w-5" />
           </button>
@@ -773,7 +773,7 @@ export function BomPhotoCapture() {
             <button
               type="button"
               onClick={() => setCartExpanded(!cartExpanded)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-secondary"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-surface-secondary"
             >
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-brand-blue" />

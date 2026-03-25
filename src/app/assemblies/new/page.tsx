@@ -330,7 +330,7 @@ function NewAssemblyContent() {
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Mic className="h-4 w-4 text-[#E8792B]" />
+                  <Mic className="h-4 w-4 text-brand-orange" />
                   <p className="text-xs text-text-secondary">Add materials by voice or text</p>
                 </div>
                 <AIInput

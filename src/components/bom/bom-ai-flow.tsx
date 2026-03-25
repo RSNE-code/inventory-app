@@ -474,7 +474,7 @@ export function BomAIFlow() {
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-[10px] px-1.5 py-0 rounded-md shrink-0",
+                          "text-[10px] px-1.5 py-0 rounded-xl shrink-0",
                           item.tier === "TIER_1"
                             ? "bg-brand-blue/10 text-brand-blue border-brand-blue/30"
                             : "bg-purple-50 text-purple-700 border-purple-200"
@@ -483,7 +483,7 @@ export function BomAIFlow() {
                         {item.tier === "TIER_1" ? "T1" : "T2"}
                       </Badge>
                       {item.isNonCatalog && (
-                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 bg-orange-50 px-1.5 py-0 rounded-md shrink-0">
+                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 bg-orange-50 px-1.5 py-0 rounded-xl shrink-0">
                           Non-catalog
                         </Badge>
                       )}
@@ -514,13 +514,13 @@ export function BomAIFlow() {
                       step="any"
                       value={item.qtyNeeded}
                       onChange={(e) => handleQtyChange(index, Number(e.target.value) || 0)}
-                      className="w-14 rounded-lg border border-border-custom px-1.5 py-1.5 text-xs text-center font-bold text-navy tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-blue [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-14 rounded-xl border border-border-custom px-1.5 py-1.5 text-xs text-center font-bold text-navy tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-blue [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                     <span className="text-[10px] text-text-muted w-8">{item.unitOfMeasure}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveConfirmed(index)}
-                      className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted/30 hover:text-status-red hover:bg-status-red/10 transition-all"
+                      className="h-8 w-8 flex items-center justify-center rounded-xl text-text-muted/30 hover:text-status-red hover:bg-status-red/10 transition-all"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -549,7 +549,7 @@ export function BomAIFlow() {
             <button
               type="button"
               onClick={() => { setAddRowOpen(false); setNonCatalogOpen(false) }}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-navy hover:bg-surface-secondary transition-all"
+              className="h-8 w-8 flex items-center justify-center rounded-xl text-text-muted hover:text-navy hover:bg-surface-secondary transition-all"
             >
               <X className="h-4 w-4" />
             </button>

@@ -56,7 +56,7 @@ export function ReceivingConfirmationCard({
   return (
     <div
       className={cn(
-        "rounded-lg border p-4 space-y-3",
+        "rounded-xl border p-4 space-y-3",
         isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-border-custom bg-white"
       )}
     >
@@ -126,7 +126,7 @@ export function ReceivingConfirmationCard({
             step="any"
             value={quantity}
             onChange={(e) => handleQtyChange(Number(e.target.value) || 0)}
-            className="w-full rounded-lg border border-border-custom px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-xl border border-border-custom px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div className="text-xs text-text-muted pt-5">

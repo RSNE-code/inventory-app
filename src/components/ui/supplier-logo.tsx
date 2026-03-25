@@ -17,7 +17,7 @@ export function SupplierLogo({ logoUrl, name, size = 32, className = "", dark = 
   if (!logoUrl || failed) {
     return (
       <div
-        className={`flex items-center justify-center rounded-lg shrink-0 ${
+        className={`flex items-center justify-center rounded-xl shrink-0 ${
           dark ? "bg-white/10 text-white/60" : "bg-surface-secondary text-text-muted"
         } ${className}`}
         style={{ width: size, height: size }}
@@ -33,7 +33,7 @@ export function SupplierLogo({ logoUrl, name, size = 32, className = "", dark = 
       alt={`${name} logo`}
       width={size}
       height={size}
-      className={`rounded-lg object-contain bg-white shrink-0 ${className}`}
+      className={`rounded-xl object-contain bg-white shrink-0 ${className}`}
       onError={() => setFailed(true)}
     />
   )

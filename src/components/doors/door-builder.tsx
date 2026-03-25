@@ -461,7 +461,7 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                 </div>
 
                 {/* Side selector — segmented pills */}
-                <div className="flex gap-1 bg-white rounded-lg p-0.5 border border-border-custom">
+                <div className="flex gap-1 bg-white rounded-xl p-0.5 border border-border-custom">
                   {(["LEFT", "RIGHT", "TOP"] as CutoutSide[]).map((side) => (
                     <button
                       key={side}
@@ -471,9 +471,9 @@ export function DoorBuilder({ onComplete, onBack }: DoorBuilderProps) {
                         updated[i] = { ...updated[i], side }
                         setCutouts(updated)
                       }}
-                      className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200 ${
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 ${
                         cutout.side === side
-                          ? "bg-brand-blue text-white shadow-sm"
+                          ? "bg-brand-blue text-white shadow-brand"
                           : "text-text-muted hover:text-navy"
                       }`}
                     >

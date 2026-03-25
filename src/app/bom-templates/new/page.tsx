@@ -192,7 +192,7 @@ export default function NewBomTemplatePage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Optional description of this template..."
-                className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue mt-1"
+                className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue mt-1"
               />
             </div>
           </Card>
@@ -277,7 +277,7 @@ export default function NewBomTemplatePage() {
 
             {/* Non-catalog item form */}
             {showNonCatalog ? (
-              <div className="space-y-2 p-3 bg-surface-secondary rounded-lg">
+              <div className="space-y-2 p-3 bg-surface-secondary rounded-xl">
                 <p className="text-sm font-medium text-navy">Non-Catalog Item</p>
                 <Input
                   value={ncName}

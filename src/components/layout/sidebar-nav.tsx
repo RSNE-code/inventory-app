@@ -33,7 +33,7 @@ export function SidebarNav() {
     <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-60 bg-navy z-50">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
-        <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
+        <div className="rounded-xl bg-white px-2 py-1 shrink-0 shadow-brand">
           <Image
             src="/logo.jpg"
             alt="RSNE"

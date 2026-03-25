@@ -31,7 +31,7 @@ export function Header({ title, showBack, showMenu, action }: HeaderProps) {
           <ArrowLeft className="h-5 w-5" />
         </Button>
       )}
-      <div className="rounded-lg bg-white px-1.5 py-0.5 shrink-0">
+      <div className="rounded-xl bg-white px-1.5 py-0.5 shrink-0">
         <Image
           src="/logo.jpg"
           alt="RSNE"

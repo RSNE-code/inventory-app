@@ -248,7 +248,7 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
 
               {/* Void confirmation */}
               {showVoidConfirm ? (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-status-red/10 border border-red-100 animate-fade-in">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-status-red/10 border border-red-100 animate-fade-in">
                   <AlertTriangle className="h-4 w-4 text-status-red shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm font-bold text-status-red">
@@ -261,14 +261,14 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptData; index: number })
                   <div className="flex gap-1.5 shrink-0">
                     <button
                       onClick={() => setShowVoidConfirm(false)}
-                      className="px-3 py-1.5 text-sm font-bold text-text-muted rounded-lg hover:bg-white transition-colors"
+                      className="px-3 py-1.5 text-sm font-bold text-text-muted rounded-xl hover:bg-white transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleVoid}
                       disabled={voidReceipt.isPending}
-                      className="px-3 py-1.5 text-sm font-bold text-white bg-status-red rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 text-sm font-bold text-white bg-status-red rounded-xl hover:bg-red-600 disabled:opacity-50 transition-colors"
                     >
                       {voidReceipt.isPending ? "Undoing..." : "Confirm"}
                     </button>

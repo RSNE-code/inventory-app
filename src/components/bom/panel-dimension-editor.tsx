@@ -92,7 +92,7 @@ export function PanelDimensionEditor({
             onClick={() => updateThickness(-1)}
             disabled={thickness <= 2}
             className={cn(
-              "h-10 w-10 flex items-center justify-center rounded-lg",
+              "h-10 w-10 flex items-center justify-center rounded-xl",
               "bg-white border border-border-custom",
               "disabled:opacity-30 ios-press transition-all shrink-0"
             )}
@@ -105,7 +105,7 @@ export function PanelDimensionEditor({
             onClick={() => updateThickness(1)}
             disabled={thickness >= 8}
             className={cn(
-              "h-10 w-10 flex items-center justify-center rounded-lg",
+              "h-10 w-10 flex items-center justify-center rounded-xl",
               "bg-white border border-border-custom",
               "disabled:opacity-30 ios-press transition-all shrink-0"
             )}
@@ -128,7 +128,7 @@ export function PanelDimensionEditor({
               max={50}
               className={cn(
                 "h-10 w-12 text-center text-base font-bold text-navy",
-                "border border-border-custom rounded-lg bg-white tabular-nums",
+                "border border-border-custom rounded-xl bg-white tabular-nums",
                 "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               )}
             />
@@ -139,7 +139,7 @@ export function PanelDimensionEditor({
               type="button"
               onClick={() => updateLengthIn(-1)}
               className={cn(
-                "h-10 w-10 flex items-center justify-center rounded-lg",
+                "h-10 w-10 flex items-center justify-center rounded-xl",
                 "bg-white border border-border-custom ios-press transition-all shrink-0"
               )}
             >
@@ -150,7 +150,7 @@ export function PanelDimensionEditor({
               type="button"
               onClick={() => updateLengthIn(1)}
               className={cn(
-                "h-10 w-10 flex items-center justify-center rounded-lg",
+                "h-10 w-10 flex items-center justify-center rounded-xl",
                 "bg-white border border-border-custom ios-press transition-all shrink-0"
               )}
             >

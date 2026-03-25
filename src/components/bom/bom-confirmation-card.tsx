@@ -144,13 +144,13 @@ export function BomConfirmationCard({
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             {match.matchedProduct && (
               <>
-                <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-lg">
+                <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
                   {match.matchedProduct.categoryName}
                 </Badge>
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-[11px] px-2 py-0.5 rounded-lg",
+                    "text-[11px] px-2 py-0.5 rounded-xl",
                     match.matchedProduct.tier === "TIER_1"
                       ? "text-blue-700 border-blue-200 bg-blue-50"
                       : "text-purple-700 border-purple-200 bg-purple-50"
@@ -162,7 +162,7 @@ export function BomConfirmationCard({
             )}
 
             {match.isNonCatalog && (
-              <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-lg text-orange-600 border-orange-300 bg-orange-50">
+              <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-orange-600 border-orange-300 bg-orange-50">
                 Non-catalog
               </Badge>
             )}
@@ -341,7 +341,7 @@ export function BomConfirmationList({
             className={cn(
               "flex items-center gap-1.5 h-11 px-5 rounded-xl",
               "bg-green-600 text-white font-semibold text-sm",
-              "active:bg-green-700 active:scale-95 ios-press transition-all shadow-sm"
+              "active:bg-green-700 active:scale-95 ios-press transition-all shadow-brand"
             )}
           >
             <Check className="h-4 w-4" />

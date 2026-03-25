@@ -255,7 +255,7 @@ function CartBar({
                 <button
                   type="button"
                   onClick={() => onSetQty(item.productId, item.qtyNeeded - 1)}
-                  className="h-10 w-10 flex items-center justify-center rounded-lg border border-border-custom text-navy"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl border border-border-custom text-navy"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
@@ -263,14 +263,14 @@ function CartBar({
                   type="number"
                   value={item.qtyNeeded}
                   onChange={(e) => onSetQty(item.productId, Number(e.target.value) || 0)}
-                  className="w-14 h-10 text-center text-sm font-bold rounded-lg border border-border-custom"
+                  className="w-14 h-10 text-center text-sm font-bold rounded-xl border border-border-custom"
                   min={0}
                   step="any"
                 />
                 <button
                   type="button"
                   onClick={() => onSetQty(item.productId, item.qtyNeeded + 1)}
-                  className="h-10 w-10 flex items-center justify-center rounded-lg border border-border-custom text-navy"
+                  className="h-10 w-10 flex items-center justify-center rounded-xl border border-border-custom text-navy"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -292,7 +292,7 @@ function CartBar({
         <button
           type="button"
           onClick={onToggleExpand}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-secondary"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-surface-secondary"
         >
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-brand-blue" />
@@ -522,7 +522,7 @@ export function BomQuickPick() {
             className={cn(
               "h-11 px-4 rounded-xl text-sm font-bold whitespace-nowrap transition-all shrink-0",
               activeCategory === cat
-                ? "bg-brand-blue text-white shadow-sm"
+                ? "bg-brand-blue text-white shadow-brand"
                 : "bg-surface-secondary text-navy active:bg-border-custom"
             )}
           >

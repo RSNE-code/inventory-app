@@ -334,7 +334,7 @@ export function DoorConfirmation({
         {specs.specialNotes && (
           <div className="px-4 py-3">
             <p className="text-xs font-bold text-navy uppercase tracking-wide mb-1">Special Notes</p>
-            <p className="text-sm text-text-primary bg-status-yellow/10 p-2.5 rounded-lg border border-status-yellow/30">
+            <p className="text-sm text-text-primary bg-status-yellow/10 p-2.5 rounded-xl border border-status-yellow/30">
               {specs.specialNotes}
             </p>
           </div>
@@ -351,7 +351,7 @@ export function DoorConfirmation({
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             placeholder="Optional notes for the shop..."
-            className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </div>
       </Card>
@@ -400,7 +400,7 @@ export function DoorConfirmation({
                       step="any"
                       value={comp.qtyUsed}
                       onChange={(e) => onComponentChange(index, Number(e.target.value) || 0)}
-                      className="w-16 rounded-lg border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                      className="w-16 rounded-xl border border-border-custom px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-blue"
                     />
                     <span className="text-xs text-text-secondary w-8">{comp.unitOfMeasure}</span>
                     <Button

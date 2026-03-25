@@ -122,7 +122,7 @@ export function FinishedGoodsList() {
         <button
           onClick={() => setView("ready")}
           className={cn(
-            "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+            "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
             view === "ready"
               ? "bg-white text-navy shadow-brand"
               : "text-text-muted hover:text-text-secondary"
@@ -133,7 +133,7 @@ export function FinishedGoodsList() {
         <button
           onClick={() => setView("shipped")}
           className={cn(
-            "flex-1 py-3 min-h-[44px] rounded-lg text-sm font-semibold transition-all duration-300",
+            "flex-1 py-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all duration-300",
             view === "shipped"
               ? "bg-white text-navy shadow-brand"
               : "text-text-muted hover:text-text-secondary"
@@ -191,7 +191,7 @@ export function FinishedGoodsList() {
                             i < items.length - 1 && "border-b border-border-custom/40"
                           )}
                         >
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-status-green/10">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-status-green/10">
                             <Icon className="h-4 w-4 text-status-green" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export function FinishedGoodsList() {
                 <Link key={item.id as string} href={`/assemblies/${item.id}`}>
                   <Card className={`px-4 py-3 rounded-xl border-border-custom shadow-brand card-accent-gray overflow-hidden hover:shadow-brand-md transition-all duration-300 animate-fade-in-up stagger-${Math.min(i + 1, 12)}`}>
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-secondary">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-secondary">
                         <Icon className="h-4 w-4 text-text-muted" />
                       </div>
                       <div className="flex-1 min-w-0">

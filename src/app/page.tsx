@@ -50,7 +50,7 @@ export default function DashboardPage() {
           {/* Top row: logo + menu */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 animate-fade-in">
-              <div className="rounded-lg bg-white px-2 py-1 shrink-0 shadow-brand">
+              <div className="rounded-xl bg-white px-2 py-1 shrink-0 shadow-brand">
                 <Image
                   src="/logo.jpg"
                   alt="RSNE"

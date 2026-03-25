@@ -343,7 +343,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
       {mode !== "view" && (
         <div className={cn(
-          "mx-4 mt-1 px-3 py-1.5 rounded-lg text-sm font-medium",
+          "mx-4 mt-1 px-3 py-1.5 rounded-xl text-sm font-medium",
           mode === "edit" && "bg-brand-blue/10 text-brand-blue",
           mode === "add-material" && "bg-brand-orange/10 text-brand-orange",
           mode === "return" && "bg-status-green/10 text-status-green",
@@ -370,7 +370,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <BomStatusBadge status={bom.status} />
           </div>
           {bom.notes && (
-            <p className="text-xs text-text-secondary bg-surface-secondary px-2.5 py-2 rounded-lg mt-2">{bom.notes}</p>
+            <p className="text-xs text-text-secondary bg-surface-secondary px-2.5 py-2 rounded-xl mt-2">{bom.notes}</p>
           )}
         </Card>
 
@@ -395,7 +395,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
           {/* Return mode instructions */}
           {mode === "return" && (
-            <p className="text-xs text-text-muted mb-3 bg-surface-secondary p-2.5 rounded-lg">
+            <p className="text-xs text-text-muted mb-3 bg-surface-secondary p-2.5 rounded-xl">
               Enter the quantity being returned for each item. Only items with outstanding material are shown.
             </p>
           )}
@@ -543,9 +543,9 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               {/* Panel specs summary (view mode) */}
               {isPanelItem && mode === "view" && specs && (
                 <div className="flex items-center gap-1.5 flex-wrap px-4 py-2 -mt-1 text-xs">
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.widthIn as number) ?? 44}&quot; wide</span>
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.profile as string) ?? "Mesa"}</span>
-                  <span className="px-2 py-0.5 rounded-md bg-brand-blue/10 text-brand-blue font-medium">{(specs.color as string) ?? "Igloo White"}</span>
+                  <span className="px-2 py-0.5 rounded-xl bg-brand-blue/10 text-brand-blue font-medium">{(specs.widthIn as number) ?? 44}&quot; wide</span>
+                  <span className="px-2 py-0.5 rounded-xl bg-brand-blue/10 text-brand-blue font-medium">{(specs.profile as string) ?? "Mesa"}</span>
+                  <span className="px-2 py-0.5 rounded-xl bg-brand-blue/10 text-brand-blue font-medium">{(specs.color as string) ?? "Igloo White"}</span>
                 </div>
               )}
               {/* Panel spec editor (edit mode) */}
@@ -673,7 +673,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     {updateBom.isPending ? "Approving..." : "Approve BOM"}
                   </Button>
                 ) : (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/20">
                     <Info className="h-4 w-4 text-brand-blue shrink-0 mt-0.5" />
                     <p className="text-sm text-brand-blue">This BOM needs approval from an Admin or Office Manager.</p>
                   </div>
@@ -711,7 +711,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
             {/* Approved — role-based message for non-checkout users */}
             {bom.status === "APPROVED" && !canCheckout && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-brand-blue/5 border border-brand-blue/20">
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/20">
                 <Info className="h-4 w-4 text-brand-blue shrink-0 mt-0.5" />
                 <p className="text-sm text-brand-blue">This BOM is approved and ready for checkout by a Shop Foreman or Admin.</p>
               </div>

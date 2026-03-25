@@ -68,7 +68,7 @@ export function SupplierPicker({ onSelect, selectedName, selectedLogoUrl }: Supp
       </div>
 
       {isOpen && suppliers.length > 0 && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-brand-md max-h-64 overflow-y-auto">
           {suppliers.map((s: { id: string; name: string; logoUrl?: string | null }) => (
             <button
               key={s.id}

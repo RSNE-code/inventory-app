@@ -82,7 +82,7 @@ export function ActionItems({
     return (
       <Card className="px-4 py-5 rounded-xl border-border-custom shadow-brand card-accent-green overflow-hidden">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-green/15">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-status-green/15">
             <CheckCircle className="h-5 w-5 text-status-green" />
           </div>
           <div>

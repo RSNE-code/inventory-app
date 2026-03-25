@@ -215,7 +215,7 @@ export function PanelCheckoutSheet({
                     className={cn(
                       "h-12 px-5 rounded-xl text-[15px] font-semibold ios-press transition-all",
                       selectedBrand === brand
-                        ? "bg-brand-blue text-white shadow-sm"
+                        ? "bg-brand-blue text-white shadow-brand"
                         : "bg-white border border-border-custom text-navy active:border-brand-blue/40"
                     )}
                   >

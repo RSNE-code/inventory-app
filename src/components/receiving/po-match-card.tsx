@@ -339,7 +339,7 @@ function POSearchView({
         </div>
 
         {/* Results */}
-        <div className="max-h-[300px] overflow-y-auto rounded-lg">
+        <div className="max-h-[300px] overflow-y-auto rounded-xl">
           {isLoading ? (
             <div className="py-6 text-center">
               <div className="h-5 w-5 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin mx-auto" />
@@ -356,13 +356,13 @@ function POSearchView({
                   key={po.id}
                   onClick={() => onSelect(po)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-brand-blue/5 transition-all text-left group animate-fade-in",
+                    "w-full flex items-center justify-between px-3 py-3 rounded-xl hover:bg-brand-blue/5 transition-all text-left group animate-fade-in",
                     "active:scale-[0.99] active:bg-brand-blue/8"
                   )}
                   style={{ animationDelay: `${i * 30}ms` }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy text-white">
                       <span className="text-[11px] font-extrabold tabular-nums">
                         {po.poNumber}
                       </span>
@@ -397,7 +397,7 @@ function POSearchView({
         <div className="pt-1 border-t border-border-custom/40">
           <button
             onClick={onSkip}
-            className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-3 rounded-lg hover:bg-surface-secondary transition-colors"
+            className="w-full text-center text-sm text-text-muted hover:text-navy font-medium py-3 rounded-xl hover:bg-surface-secondary transition-colors"
           >
             No PO — ad hoc purchase
           </button>

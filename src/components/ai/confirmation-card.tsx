@@ -34,7 +34,7 @@ export function ConfirmationCard({
   return (
     <div
       className={cn(
-        "rounded-lg border p-4 space-y-3",
+        "rounded-xl border p-4 space-y-3",
         isLowConfidence ? "border-yellow-300 bg-yellow-50" : "border-border-custom bg-white"
       )}
     >

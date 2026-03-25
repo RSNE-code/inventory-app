@@ -223,7 +223,7 @@ export function LiveItemFeed({
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}
                   {item.isNonCatalog && !item.isPanel && (
-                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
+                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
                   )}
                   {isFlagged && !item.isPanel && (
                     <button

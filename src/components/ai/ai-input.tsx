@@ -437,7 +437,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                 onClick={() => { setSearchOpen(false); handleTextSubmit() }}
                 disabled={disabled || !text.trim()}
                 className={cn(
-                  "absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-lg transition-all",
+                  "absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center justify-center h-8 w-8 rounded-xl transition-all",
                   text.trim()
                     ? "bg-brand-orange text-white hover:bg-brand-orange-hover active:scale-95"
                     : "text-text-muted/30"

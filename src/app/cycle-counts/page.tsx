@@ -100,8 +100,8 @@ export default function CycleCountsPage() {
           <button
             onClick={() => setTab("count")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
-              tab === "count" ? "bg-white text-navy shadow-sm" : "text-text-muted"
+              "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all",
+              tab === "count" ? "bg-white text-navy shadow-brand" : "text-text-muted"
             )}
           >
             Count
@@ -109,8 +109,8 @@ export default function CycleCountsPage() {
           <button
             onClick={() => setTab("history")}
             className={cn(
-              "flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all",
-              tab === "history" ? "bg-white text-navy shadow-sm" : "text-text-muted"
+              "flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all",
+              tab === "history" ? "bg-white text-navy shadow-brand" : "text-text-muted"
             )}
           >
             History
@@ -192,7 +192,7 @@ export default function CycleCountsPage() {
 
                 {showResult.variance !== 0 ? (
                   <div className={cn(
-                    "text-center p-3 rounded-lg",
+                    "text-center p-3 rounded-xl",
                     showResult.variance > 0 ? "bg-status-green/10" : "bg-status-red/10"
                   )}>
                     <p className={cn(
@@ -204,7 +204,7 @@ export default function CycleCountsPage() {
                     <p className="text-xs text-text-secondary mt-1">Stock adjusted automatically</p>
                   </div>
                 ) : (
-                  <div className="text-center p-3 bg-status-green/10 rounded-lg">
+                  <div className="text-center p-3 bg-status-green/10 rounded-xl">
                     <p className="text-lg font-bold text-status-green">No variance</p>
                     <p className="text-xs text-text-secondary">Count matches system</p>
                   </div>

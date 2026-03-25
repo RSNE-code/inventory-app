@@ -40,7 +40,7 @@ export function JobPicker({ onSelect, selectedName, selectedNumber }: JobPickerP
   if (selectedName) {
     return (
       <div className="flex items-center gap-3 p-3 rounded-xl bg-surface-secondary border border-border-custom">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/10">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10">
           <Briefcase className="h-4 w-4 text-brand-blue" />
         </div>
         <div className="flex-1 min-w-0">
@@ -80,7 +80,7 @@ export function JobPicker({ onSelect, selectedName, selectedNumber }: JobPickerP
       </div>
 
       {isOpen && jobs.length > 0 && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-brand-md max-h-64 overflow-y-auto">
           {jobs.map((job) => (
             <button
               key={job.id}
@@ -92,7 +92,7 @@ export function JobPicker({ onSelect, selectedName, selectedNumber }: JobPickerP
               }}
               className="w-full flex items-center gap-3 text-left px-4 py-3 hover:bg-surface-secondary border-b border-border-custom/40 last:border-0 transition-colors"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-blue/10">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10">
                 <Briefcase className="h-3.5 w-3.5 text-brand-blue" />
               </div>
               <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ export function JobPicker({ onSelect, selectedName, selectedNumber }: JobPickerP
       )}
 
       {isOpen && search.length >= 1 && jobs.length === 0 && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-lg px-4 py-3">
+        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-border-custom rounded-xl shadow-brand-md px-4 py-3">
           <p className="text-sm text-text-muted">No matching jobs found</p>
         </div>
       )}

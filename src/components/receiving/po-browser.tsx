@@ -30,7 +30,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
     <Card className="rounded-xl border-border-custom shadow-brand-md overflow-hidden">
       {/* Header */}
       <div className="bg-navy px-4 py-3 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10">
           <Package className="h-4 w-4 text-white/80" />
         </div>
         <div>
@@ -65,7 +65,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
         </div>
 
         {/* Results */}
-        <div className="max-h-[420px] overflow-y-auto rounded-lg">
+        <div className="max-h-[420px] overflow-y-auto rounded-xl">
           {isLoading ? (
             <div className="py-8 text-center">
               <div className="h-5 w-5 border-2 border-brand-blue/30 border-t-brand-blue rounded-full animate-spin mx-auto" />
@@ -101,7 +101,7 @@ export function POBrowser({ onSelect, onBack }: POBrowserProps) {
         <div className="pt-1 border-t border-border-custom/40">
           <button
             onClick={onBack}
-            className="w-full flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-navy font-medium py-3 rounded-lg hover:bg-surface-secondary transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 text-sm text-text-muted hover:text-navy font-medium py-3 rounded-xl hover:bg-surface-secondary transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back
@@ -296,7 +296,7 @@ function ExpandablePORow({
                     onSelect()
                   }}
                   className={cn(
-                    "px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all",
+                    "px-4 py-1.5 rounded-xl text-[13px] font-bold transition-all",
                     "bg-brand-orange text-white hover:bg-brand-orange-hover",
                     "shadow-[0_2px_8px_rgba(232,121,43,0.25)]",
                     "active:scale-[0.96]"

@@ -50,7 +50,7 @@ export function FlaggedItemResolver({
           <button
             type="button"
             onClick={() => onSelect(primaryMatch.productId, primaryMatch.productName)}
-            className="w-full text-left p-3 rounded-lg bg-blue-50 border-2 border-brand-blue/30 hover:border-brand-blue/60 active:scale-[0.99] transition-all"
+            className="w-full text-left p-3 rounded-xl bg-blue-50 border-2 border-brand-blue/30 hover:border-brand-blue/60 active:scale-[0.99] transition-all"
           >
             <div className="flex items-center gap-1.5">
               <Star className="h-3.5 w-3.5 text-brand-blue shrink-0" />
@@ -70,7 +70,7 @@ export function FlaggedItemResolver({
             key={alt.productId}
             type="button"
             onClick={() => onSelect(alt.productId, alt.productName)}
-            className="w-full text-left p-3 rounded-lg bg-white border border-border-custom hover:border-brand-blue/40 hover:bg-blue-50 active:scale-[0.99] transition-all"
+            className="w-full text-left p-3 rounded-xl bg-white border border-border-custom hover:border-brand-blue/40 hover:bg-blue-50 active:scale-[0.99] transition-all"
           >
             <p className="text-sm font-semibold text-navy">{alt.productName}</p>
             <p className="text-xs text-text-muted mt-0.5">

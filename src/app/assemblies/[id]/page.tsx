@@ -255,12 +255,12 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
           </div>
 
           {assembly.notes && (
-            <p className="text-sm text-text-secondary bg-surface-secondary p-3 rounded-lg">
+            <p className="text-sm text-text-secondary bg-surface-secondary p-3 rounded-xl">
               {assembly.notes}
             </p>
           )}
           {assembly.approvalNotes && (
-            <p className="text-sm text-text-secondary bg-status-yellow/10 p-3 rounded-lg border border-status-yellow/30">
+            <p className="text-sm text-text-secondary bg-status-yellow/10 p-3 rounded-xl border border-status-yellow/30">
               Approval note: {assembly.approvalNotes}
             </p>
           )}
@@ -274,9 +274,9 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               <button
                 onClick={() => setSheetView("manufacturing")}
                 className={cn(
-                  "flex-1 py-2 min-h-[44px] rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
+                  "flex-1 py-2 min-h-[44px] rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
                   sheetView === "manufacturing"
-                    ? "bg-white text-navy shadow-sm"
+                    ? "bg-white text-navy shadow-brand"
                     : "text-text-muted"
                 )}
               >
@@ -286,9 +286,9 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
               <button
                 onClick={() => setSheetView("spec")}
                 className={cn(
-                  "flex-1 py-2 min-h-[44px] rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
+                  "flex-1 py-2 min-h-[44px] rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
                   sheetView === "spec"
-                    ? "bg-white text-navy shadow-sm"
+                    ? "bg-white text-navy shadow-brand"
                     : "text-text-muted"
                 )}
               >

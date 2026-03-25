@@ -82,7 +82,7 @@ function HardwareBox({
   offset?: string
 }) {
   return (
-    <div className="bg-surface-secondary rounded-lg p-3">
+    <div className="bg-surface-secondary rounded-xl p-3">
       <p className="text-xs font-bold text-navy uppercase tracking-wide mb-2">{title}</p>
       <div className="space-y-1">
         <div className="flex justify-between">
@@ -195,7 +195,7 @@ export function DoorSpecSheet({
         {/* Sizing — unified font sizes */}
         <div>
           <SectionHeader>Sizing</SectionHeader>
-          <div className="bg-surface-secondary rounded-lg p-4">
+          <div className="bg-surface-secondary rounded-xl p-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-xs text-text-muted uppercase tracking-wide mb-1">Width</p>
@@ -260,7 +260,7 @@ export function DoorSpecSheet({
         {/* Finish */}
         <div>
           <SectionHeader>Finish</SectionHeader>
-          <div className="bg-surface-secondary rounded-lg p-3">
+          <div className="bg-surface-secondary rounded-xl p-3">
             <p className="text-xl font-bold text-navy">{specs.finish || "—"}</p>
             {specs.skinMaterial && (
               <p className="text-sm text-text-secondary mt-1">{specs.skinMaterial}</p>
@@ -343,7 +343,7 @@ export function DoorSpecSheet({
           <div>
             <SectionHeader>Cutouts ({specs.cutouts.length})</SectionHeader>
             {specs.cutouts.map((c, i) => (
-              <div key={i} className="bg-surface-secondary rounded-lg p-3 mb-2 last:mb-0">
+              <div key={i} className="bg-surface-secondary rounded-xl p-3 mb-2 last:mb-0">
                 <p className="text-xs font-bold text-navy mb-1">Cutout {i + 1}{c.side ? ` — ${c.side === "LEFT" ? "Left" : c.side === "RIGHT" ? "Right" : "Top"}` : ""}</p>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
@@ -368,7 +368,7 @@ export function DoorSpecSheet({
         {specs.specialNotes && (
           <div>
             <SectionHeader>Special Notes</SectionHeader>
-            <p className="text-sm text-text-primary bg-status-yellow/10 p-3 rounded-lg border border-status-yellow/30">
+            <p className="text-sm text-text-primary bg-status-yellow/10 p-3 rounded-xl border border-status-yellow/30">
               {specs.specialNotes}
             </p>
           </div>

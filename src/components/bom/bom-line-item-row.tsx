@@ -279,7 +279,7 @@ export function BomLineItemRow({
             </div>
             {piecesNeeded !== null && (
               <div className="w-16">
-                <div className="h-8 rounded-md border border-border-custom bg-surface-secondary flex items-center justify-center">
+                <div className="h-8 rounded-xl border border-border-custom bg-surface-secondary flex items-center justify-center">
                   <span className="text-sm font-semibold text-navy">{piecesNeeded}</span>
                 </div>
                 <label className="text-[10px] text-text-muted font-medium uppercase block text-center h-5 leading-5">

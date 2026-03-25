@@ -145,7 +145,7 @@ export function ReorderList() {
           {/* Supplier header */}
           <div className="px-4 pt-4 pb-2 flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-orange/12">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-orange/12">
                 <Package className="h-4 w-4 text-brand-orange" />
               </div>
               <div className="min-w-0">

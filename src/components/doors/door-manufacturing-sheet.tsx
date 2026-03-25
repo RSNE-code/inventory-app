@@ -67,7 +67,7 @@ function MfgHardwareBox({
   offset?: string
 }) {
   return (
-    <div className="bg-surface-secondary rounded-lg p-2.5">
+    <div className="bg-surface-secondary rounded-xl p-2.5">
       <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{title}</p>
       <div className="space-y-0.5">
         <div className="flex justify-between items-baseline">

@@ -421,7 +421,7 @@ function PanelLineRow({
 
         <button
           onClick={onEdit}
-          className="px-3 py-1.5 rounded-lg text-xs font-bold text-brand-blue hover:bg-brand-blue/5 transition-colors"
+          className="px-3 py-1.5 rounded-xl text-xs font-bold text-brand-blue hover:bg-brand-blue/5 transition-colors"
         >
           Edit
         </button>
@@ -504,7 +504,7 @@ function ReceiptHistoryPanel({ receipts }: { receipts: POReceiptHistoryItem[] })
           "bg-amber-50/60 hover:bg-amber-50"
         )}
       >
-        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-orange/10">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-brand-orange/10">
           <Clock className="h-3.5 w-3.5 text-brand-orange" />
         </div>
         <div className="flex-1 min-w-0">

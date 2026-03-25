@@ -126,9 +126,9 @@ export function PanelLineItemForm({ onAdd, onCancel }: PanelLineItemFormProps) {
               type="button"
               onClick={() => setThickness(t)}
               className={cn(
-                "h-9 px-4 rounded-lg text-sm font-semibold transition-all",
+                "h-9 px-4 rounded-xl text-sm font-semibold transition-all",
                 thickness === t
-                  ? "bg-brand-blue text-white shadow-sm"
+                  ? "bg-brand-blue text-white shadow-brand"
                   : "bg-white border border-border-custom text-navy hover:border-brand-blue/40"
               )}
             >

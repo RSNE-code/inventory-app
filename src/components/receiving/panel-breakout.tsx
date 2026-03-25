@@ -263,7 +263,7 @@ export function PanelBreakout({
       {/* ─── Context Header ─── */}
       <div className="bg-navy px-4 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
             <Layers className="h-4.5 w-4.5 text-white/80" />
           </div>
           <div className="flex-1 min-w-0">
@@ -401,7 +401,7 @@ export function PanelBreakout({
                   onThicknessChange?.(t)
                 }}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-bold transition-all",
+                  "px-3 py-1.5 rounded-xl text-sm font-bold transition-all",
                   t === selectedThickness
                     ? "bg-brand-blue text-white"
                     : "bg-white/10 text-white/70 hover:bg-white/20"
@@ -425,7 +425,7 @@ export function PanelBreakout({
                   setShowWidthPicker(false)
                 }}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-bold transition-all",
+                  "px-3 py-1.5 rounded-xl text-sm font-bold transition-all",
                   w === selectedWidth
                     ? "bg-brand-blue text-white"
                     : "bg-white/10 text-white/70 hover:bg-white/20"
@@ -449,7 +449,7 @@ export function PanelBreakout({
                   setShowProfilePicker(false)
                 }}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-bold transition-all",
+                  "px-3 py-1.5 rounded-xl text-sm font-bold transition-all",
                   p === selectedProfile
                     ? "bg-brand-blue text-white"
                     : "bg-white/10 text-white/70 hover:bg-white/20"
@@ -473,7 +473,7 @@ export function PanelBreakout({
                   setShowColorPicker(false)
                 }}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-bold transition-all",
+                  "px-3 py-1.5 rounded-xl text-sm font-bold transition-all",
                   c === selectedColor
                     ? "bg-brand-blue text-white"
                     : "bg-white/10 text-white/70 hover:bg-white/20"
@@ -506,13 +506,13 @@ export function PanelBreakout({
                   isUsed
                     ? "bg-surface-secondary text-text-muted/30 cursor-not-allowed"
                     : hasProduct
-                      ? "bg-white border-2 border-brand-blue/20 text-navy hover:border-brand-blue/40 hover:bg-brand-blue/5 shadow-sm"
+                      ? "bg-white border-2 border-brand-blue/20 text-navy hover:border-brand-blue/40 hover:bg-brand-blue/5 shadow-brand"
                       : "bg-white border-2 border-dashed border-border-custom text-text-muted hover:border-brand-orange/40"
                 )}
               >
                 {h}&apos;
                 {isUsed && (
-                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-status-green flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-status-green flex items-center justify-center shadow-brand">
                     <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -862,7 +862,7 @@ function SizeRowInput({
                 }
                 onToggleWarning(!showWarning)
               }}
-              className="h-7 w-7 flex items-center justify-center rounded-md text-status-red hover:bg-status-red/10 transition-colors shrink-0"
+              className="h-7 w-7 flex items-center justify-center rounded-xl text-status-red hover:bg-status-red/10 transition-colors shrink-0"
             >
               <AlertTriangle className="h-3.5 w-3.5" />
             </button>

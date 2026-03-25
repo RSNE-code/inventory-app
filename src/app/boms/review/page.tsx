@@ -179,21 +179,21 @@ export default function ReviewQueuePage() {
                                       type="button"
                                       onClick={() => handleConfirmItem(bomId, liId)}
                                       disabled={reviewMutation.isPending}
-                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-green/10 text-status-green hover:bg-status-green/20 active:scale-95"
+                                      className="h-10 w-10 flex items-center justify-center rounded-xl bg-status-green/10 text-status-green hover:bg-status-green/20 active:scale-95"
                                     >
                                       <Check className="h-4 w-4" />
                                     </button>
                                     <button
                                       type="button"
                                       onClick={() => setFixingItemId(isFixing ? null : liId)}
-                                      className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-red/10 text-status-red hover:bg-status-red/20 active:scale-95"
+                                      className="h-10 w-10 flex items-center justify-center rounded-xl bg-status-red/10 text-status-red hover:bg-status-red/20 active:scale-95"
                                     >
                                       <X className="h-4 w-4" />
                                     </button>
                                   </>
                                 )}
                                 {isConfirmed && (
-                                  <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-status-green/15">
+                                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-status-green/15">
                                     <Check className="h-4 w-4 text-status-green" />
                                   </div>
                                 )}

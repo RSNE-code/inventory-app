@@ -261,14 +261,14 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Optional description..."
-                  className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue mt-1"
+                  className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue mt-1"
                 />
               </div>
             </div>
           ) : (
             <div className="space-y-2 text-sm">
               {template.description && (
-                <p className="text-text-secondary bg-surface-secondary p-3 rounded-lg">
+                <p className="text-text-secondary bg-surface-secondary p-3 rounded-xl">
                   {template.description}
                 </p>
               )}
@@ -392,7 +392,7 @@ export default function BomTemplateDetailPage({ params }: { params: Promise<{ id
           {mode === "edit" && (
             <>
               {showNonCatalog ? (
-                <div className="space-y-2 p-3 bg-surface-secondary rounded-lg mt-3">
+                <div className="space-y-2 p-3 bg-surface-secondary rounded-xl mt-3">
                   <p className="text-sm font-medium text-navy">Non-Catalog Item</p>
                   <Input
                     value={ncName}

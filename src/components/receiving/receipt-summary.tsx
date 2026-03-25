@@ -101,7 +101,7 @@ export function ReceiptSummary({
             <div key={gi} className="mt-3">
               {/* Group header */}
               <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-blue/10">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-brand-blue/10">
                   <Layers className="h-3.5 w-3.5 text-brand-blue" />
                 </div>
                 <span className="text-sm font-bold text-navy">
@@ -207,7 +207,7 @@ export function ReceiptSummary({
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
           placeholder="Optional delivery notes..."
-          className="w-full rounded-lg border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          className="w-full rounded-xl border border-border-custom p-3 text-sm min-h-[60px] resize-none focus:outline-none focus:ring-2 focus:ring-brand-blue"
         />
       </Card>
 
