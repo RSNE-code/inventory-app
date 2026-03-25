@@ -444,8 +444,17 @@ export function FabCreationFlow() {
           <div className="text-center space-y-1 px-2">
             <h2 className="text-xl font-bold text-navy">Select Template</h2>
             <p className="text-sm text-text-secondary">{typeLabel}</p>
-            {jobName && <p className="text-xs text-text-muted">{jobName}</p>}
           </div>
+
+          {/* Job badge — matches door workflow pattern */}
+          {(jobName || jobNumber) && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-navy/8 rounded-xl">
+              <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">Job</span>
+              {jobNumber && <span className="text-sm font-bold text-navy">#{jobNumber}</span>}
+              {jobNumber && jobName && <span className="text-text-muted">·</span>}
+              {jobName && <span className="text-sm font-medium text-navy">{jobName}</span>}
+            </div>
+          )}
 
           {templatesLoading ? (
             <div className="text-sm text-text-muted text-center py-8">Loading templates...</div>
@@ -501,8 +510,17 @@ export function FabCreationFlow() {
 
           <div className="text-center space-y-1 px-2">
             <h2 className="text-xl font-bold text-navy">{typeLabel} Specs</h2>
-            {jobName && <p className="text-sm text-text-muted">{jobName}</p>}
           </div>
+
+          {/* Job badge — matches door workflow pattern */}
+          {(jobName || jobNumber) && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-navy/8 rounded-xl">
+              <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">Job</span>
+              {jobNumber && <span className="text-sm font-bold text-navy">#{jobNumber}</span>}
+              {jobNumber && jobName && <span className="text-text-muted">·</span>}
+              {jobName && <span className="text-sm font-medium text-navy">{jobName}</span>}
+            </div>
+          )}
 
           {/* Quantity */}
           <Card className="p-5 rounded-xl border-border-custom">
@@ -563,13 +581,17 @@ export function FabCreationFlow() {
 
           <div className="text-center space-y-1 px-2">
             <h2 className="text-xl font-bold text-navy">Review {typeLabel}</h2>
-            {jobName && (
-              <p className="text-sm font-medium text-navy">{jobName}</p>
-            )}
-            {jobNumber && (
-              <p className="text-xs text-brand-blue">Job #{jobNumber}</p>
-            )}
           </div>
+
+          {/* Job badge — matches door workflow pattern */}
+          {(jobName || jobNumber) && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-navy/8 rounded-xl">
+              <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">Job</span>
+              {jobNumber && <span className="text-sm font-bold text-navy">#{jobNumber}</span>}
+              {jobNumber && jobName && <span className="text-text-muted">·</span>}
+              {jobName && <span className="text-sm font-medium text-navy">{jobName}</span>}
+            </div>
+          )}
 
           {/* Specs summary */}
           <Card className="p-5 rounded-xl border-border-custom space-y-2">
