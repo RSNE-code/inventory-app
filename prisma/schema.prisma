@@ -57,6 +57,7 @@ enum AssemblyType {
   DOOR
   FLOOR_PANEL
   WALL_PANEL
+  RAMP
 }
 
 enum AssemblyStatus {

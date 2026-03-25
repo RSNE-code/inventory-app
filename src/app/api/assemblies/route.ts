@@ -11,7 +11,7 @@ const componentSchema = z.object({
 
 const createAssemblySchema = z.object({
   templateId: z.string().uuid().optional().nullable(),
-  type: z.enum(["DOOR", "FLOOR_PANEL", "WALL_PANEL"]),
+  type: z.enum(["DOOR", "FLOOR_PANEL", "WALL_PANEL", "RAMP"]),
   specs: z.record(z.string(), z.unknown()).optional().nullable(),
   batchSize: z.number().int().positive().default(1),
   jobName: z.string().optional().nullable(),

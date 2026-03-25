@@ -60,7 +60,7 @@ export function useCreateAssembly() {
   return useMutation({
     mutationFn: async (data: {
       templateId?: string | null
-      type: "DOOR" | "FLOOR_PANEL" | "WALL_PANEL"
+      type: "DOOR" | "FLOOR_PANEL" | "WALL_PANEL" | "RAMP"
       specs?: Record<string, unknown> | null
       batchSize?: number
       jobName?: string | null

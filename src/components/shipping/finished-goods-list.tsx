@@ -25,12 +25,14 @@ const typeIcons: Record<string, typeof DoorOpen> = {
   DOOR: DoorOpen,
   FLOOR_PANEL: Layers,
   WALL_PANEL: Layers,
+  RAMP: Layers,
 }
 
 const typeLabels: Record<string, string> = {
   DOOR: "Door",
   FLOOR_PANEL: "Floor Panel",
   WALL_PANEL: "Wall Panel",
+  RAMP: "Ramp",
 }
 
 function getSpecsSummary(type: string, specs: Record<string, unknown> | null): string {

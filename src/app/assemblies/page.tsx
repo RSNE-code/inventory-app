@@ -66,6 +66,7 @@ const typeLabels: Record<string, string> = {
   DOOR: "Door",
   FLOOR_PANEL: "Floor Panel",
   WALL_PANEL: "Wall Panel",
+  RAMP: "Ramp",
 }
 
 export default function AssembliesPage() {
@@ -191,7 +192,7 @@ export default function AssembliesPage() {
         <Link href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}>
           <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all">
             <Plus className="h-5 w-5 mr-2" />
-            {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor"}
+            {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor / Ramp"}
           </Button>
         </Link>
 
@@ -305,21 +306,33 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   {statusLabels[status] || status}
                 </Badge>
               </div>
+              {/* Job # sub-header — directly beneath job name */}
+              {!!assembly.jobNumber && (
+                <p className="text-xs text-brand-blue font-medium mt-0.5">
+                  Job #{String(assembly.jobNumber)}
+                </p>
+              )}
               <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium">
                 <span>{typeLabels[assembly.type as string]}</span>
                 {Number(assembly.batchSize) > 1 && (
-                  <span>Batch: {assembly.batchSize as number}</span>
+                  <span>Qty: {assembly.batchSize as number}</span>
                 )}
               </div>
-              {/* Door-specific specs */}
+              {/* Door-specific specs + job # pill */}
               {assembly.type === "DOOR" && specs && (() => {
                 const ds = specs as Record<string, unknown>
                 const w = ds.widthInClear ? String(ds.widthInClear) : null
                 const h = ds.heightInClear ? String(ds.heightInClear) : null
                 const temp = ds.temperatureType ? String(ds.temperatureType) : null
                 const frame = ds.frameType ? String(ds.frameType) : null
+                const jn = assembly.jobNumber ? String(assembly.jobNumber) : null
                 return (
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    {jn && (
+                      <span className="text-xs font-semibold text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded">
+                        #{jn}
+                      </span>
+                    )}
                     {w && h && (
                       <span className="text-xs font-semibold text-navy/70 bg-surface-secondary px-1.5 py-0.5 rounded">
                         {w}&quot; × {h}&quot;
@@ -347,11 +360,6 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   </div>
                 )
               })()}
-              {assembly.jobNumber ? (
-                <p className="text-xs text-brand-blue font-medium mt-1">
-                  Job #{String(assembly.jobNumber)}
-                </p>
-              ) : null}
               {/* BOM match badges — door assemblies only */}
               {assembly.type === "DOOR" && (
                 <div className="mt-2">

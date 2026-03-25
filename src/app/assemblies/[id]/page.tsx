@@ -16,6 +16,8 @@ import { cn, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import type { DoorSpecs } from "@/lib/door-specs"
 import { getDoorFieldLabel, formatDoorFieldValue } from "@/lib/door-field-labels"
+import { StepProgress } from "@/components/layout/step-progress"
+import { SwipeToDelete } from "@/components/ui/swipe-to-delete"
 import {
   User,
   Calendar,
@@ -28,6 +30,9 @@ import {
   FileText,
   ClipboardList,
   Hammer,
+  Layers,
+  Triangle,
+  DoorOpen,
 } from "lucide-react"
 
 const statusColors: Record<string, string> = {
@@ -54,6 +59,34 @@ const typeLabels: Record<string, string> = {
   DOOR: "Door",
   FLOOR_PANEL: "Floor Panel",
   WALL_PANEL: "Wall Panel",
+  RAMP: "Ramp",
+}
+
+const typeIcons: Record<string, typeof DoorOpen> = {
+  DOOR: DoorOpen,
+  FLOOR_PANEL: Layers,
+  WALL_PANEL: Layers,
+  RAMP: Triangle,
+}
+
+// Lifecycle tracker steps and status mapping
+const LIFECYCLE_STEPS = ["Created", "Building", "Complete", "Shipped"]
+function getLifecycleStep(status: string): number {
+  switch (status) {
+    case "PLANNED":
+    case "AWAITING_APPROVAL":
+    case "APPROVED":
+      return 0
+    case "IN_PRODUCTION":
+      return 1
+    case "COMPLETED":
+    case "ALLOCATED":
+      return 2
+    case "SHIPPED":
+      return 3
+    default:
+      return 0
+  }
 }
 
 // Roles that default to manufacturing sheet view
@@ -200,13 +233,33 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         {/* Status + Info */}
         <Card className="p-5 rounded-xl border-border-custom space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-navy">
-              {typeLabels[assembly.type] || assembly.type}
-            </h3>
+            <div className="flex items-center gap-2">
+              {(() => {
+                const TypeIcon = typeIcons[assembly.type] || Layers
+                return (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-blue/10">
+                    <TypeIcon className="h-4 w-4 text-brand-blue" />
+                  </div>
+                )
+              })()}
+              <h3 className="font-semibold text-navy">
+                {typeLabels[assembly.type] || assembly.type}
+              </h3>
+            </div>
             <Badge className={cn("text-xs px-2 py-0.5", statusColors[status])}>
               {statusLabels[status] || status}
             </Badge>
           </div>
+
+          {/* Job info — prominent display */}
+          {assembly.jobName && (
+            <div>
+              <p className="text-base font-bold text-navy">{assembly.jobName}</p>
+              {assembly.jobNumber && (
+                <p className="text-xs text-brand-blue font-medium">Job #{String(assembly.jobNumber)}</p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2 text-text-secondary">
@@ -241,11 +294,8 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                 <span>Completed on {new Date(assembly.completedAt).toLocaleDateString()}</span>
               </div>
             )}
-            {assembly.jobName && (
-              <p className="text-brand-blue font-medium">Job: {assembly.jobName}</p>
-            )}
             {Number(assembly.batchSize) > 1 && (
-              <p className="text-text-secondary">Batch size: {assembly.batchSize}</p>
+              <p className="text-text-secondary">Quantity: {assembly.batchSize}</p>
             )}
           </div>
 
@@ -260,6 +310,43 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             </p>
           )}
         </Card>
+
+        {/* Lifecycle Tracker */}
+        <StepProgress
+          steps={LIFECYCLE_STEPS}
+          currentStep={getLifecycleStep(status)}
+        />
+
+        {/* Panel/Ramp Specs (non-door assemblies with specs) */}
+        {!isDoor && specs && Object.keys(specs).length > 0 && (() => {
+          const s = (key: string) => specs[key] ? String(specs[key]) : ""
+          const specRows: [string, string][] = [
+            ["Width", s("width") ? formatSpecDim(s("width")) : ""],
+            ["Length", s("length") ? formatSpecDim(s("length")) : ""],
+            ["Height", s("height") ? `${s("height")}"` : ""],
+            ["Bottom Lip", s("bottomLip") ? `${s("bottomLip")}"` : ""],
+            ["Top Lip", s("topLip") ? `${s("topLip")}"` : ""],
+            ["Insulation", s("insulation")],
+            ["Thickness", s("insulationThickness") ? `${s("insulationThickness")}"` : ""],
+            ["Side 1", s("side1Material") !== "None" ? s("side1Material") : ""],
+            ["Side 2", s("side2Material") !== "None" ? s("side2Material") : ""],
+            ["Diamond Plate", s("diamondPlateThickness") ? `${s("diamondPlateThickness")}"` : ""],
+          ].filter(([, val]) => !!val) as [string, string][]
+
+          return (
+            <Card className="p-5 rounded-xl border-border-custom space-y-2">
+              <h3 className="font-semibold text-navy text-sm">Specifications</h3>
+              <div className="space-y-1.5 text-sm">
+                {specRows.map(([label, value], i) => (
+                  <div key={label} className={cn("flex items-center justify-between py-1", i < specRows.length - 1 && "border-b border-border-custom/30")}>
+                    <span className="text-text-secondary">{label}</span>
+                    <span className="font-semibold text-navy">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )
+        })()}
 
         {/* Door Sheet — New Format (Spec Sheet / Manufacturing Sheet toggle) */}
         {isDoor && hasNewDoorSpecs && (
@@ -346,11 +433,12 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
             const qtyUsed = Number(comp.qtyUsed)
             const currentQty = Number(product.currentQty)
             const hasEnough = currentQty >= qtyUsed
+            const isEditable = ["PLANNED", "APPROVED"].includes(status)
 
-            return (
+            const row = (
               <div
                 key={comp.id as string}
-                className="py-2 border-b border-border-custom/40 last:border-0"
+                className="py-2 border-b border-border-custom/40 last:border-0 bg-white"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
@@ -366,7 +454,7 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                           <span
                             className={cn(
                               "h-1.5 w-1.5 rounded-full",
-                              hasEnough ? "bg-green-500" : "bg-red-500"
+                              hasEnough ? "bg-status-green" : "bg-status-red"
                             )}
                           />
                           <span className={cn("text-xs", hasEnough ? "text-status-green" : "text-status-red")}>
@@ -384,6 +472,14 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
                   </div>
                 </div>
               </div>
+            )
+
+            return isEditable ? (
+              <SwipeToDelete key={comp.id as string} onDelete={() => { /* TODO: delete component API */ }}>
+                {row}
+              </SwipeToDelete>
+            ) : (
+              <div key={comp.id as string}>{row}</div>
             )
           })}
           {assembly.cost && (
@@ -506,4 +602,15 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
       />
     </div>
   )
+}
+
+// Format inches to feet'inches" for panel spec display
+function formatSpecDim(inches: string): string {
+  const val = parseFloat(inches)
+  if (!val) return `${inches}"`
+  const ft = Math.floor(val / 12)
+  const rem = val % 12
+  if (ft === 0) return `${rem}"`
+  if (rem === 0) return `${ft}'`
+  return `${ft}'${rem}"`
 }
