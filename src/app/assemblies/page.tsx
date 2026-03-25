@@ -233,7 +233,7 @@ export default function AssembliesPage() {
 
             {/* In Progress */}
             {inProgress.length > 0 && (
-              <div className="space-y-3 animate-fade-in-up stagger-3">
+              <div className="space-y-3 mt-2 animate-fade-in-up stagger-3">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-brand-orange animate-pulse" />
                   <h3 className="text-xs font-bold text-brand-orange uppercase tracking-wider">
@@ -251,7 +251,7 @@ export default function AssembliesPage() {
 
             {/* Completed */}
             {completed.length > 0 && (
-              <div className="space-y-3 animate-fade-in-up stagger-5">
+              <div className="space-y-3 mt-2 animate-fade-in-up stagger-5">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-status-green" />
                   <h3 className="text-xs font-bold text-status-green uppercase tracking-wider">
