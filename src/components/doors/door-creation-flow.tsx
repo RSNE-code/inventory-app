@@ -538,6 +538,7 @@ export function DoorCreationFlow() {
           onRemoveComponent={handleRemoveComponent}
           onAddComponents={handleAIAddComponents}
           jobName={jobName}
+          jobNumber={jobNumber}
           onJobNameChange={setJobName}
           notes={notes}
           onNotesChange={setNotes}
