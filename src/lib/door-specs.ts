@@ -500,6 +500,15 @@ export interface StandardDoorConfig {
   specs: Partial<DoorSpecs>
 }
 
+interface BuildConfigOpts {
+  isExterior?: boolean
+  highSill?: boolean
+  /** Plug doors have no frame */
+  isPlug?: boolean
+  /** Override description suffix (appended after hardware) */
+  descSuffix?: string
+}
+
 function buildConfig(
   id: string,
   label: string,
@@ -508,8 +517,10 @@ function buildConfig(
   category: DoorCategory,
   temp: TemperatureType,
   opening: OpeningType,
+  opts: BuildConfigOpts = {},
 ): StandardDoorConfig {
-  const hw = getStandardHardware(category, widthIn, false)
+  const { isExterior = false, highSill = false, isPlug = false } = opts
+  const hw = getStandardHardware(category, widthIn, isExterior)
   const baseSpecs: Partial<DoorSpecs> = {
     ...getDefaultSpecs(),
     doorCategory: category,
@@ -519,9 +530,10 @@ function buildConfig(
     heightInClear: heightIn,
     finish: "WPG",
     panelInsulated: true,
-    wiper: true,
-    highSill: false,
-    ...(opening === "HINGE" ? { frameType: "FULL_FRAME" as FrameType } : {}),
+    wiper: !highSill, // high sill doors don't use wiper gasket
+    highSill,
+    isExterior,
+    ...(opening === "HINGE" && !isPlug ? { frameType: "FULL_FRAME" as FrameType } : {}),
     ...(hw.hingeMfrName ? { hingeMfrName: hw.hingeMfrName } : {}),
     ...(hw.hingeModel ? { hingeModel: hw.hingeModel } : {}),
     ...(hw.latchMfrName ? { latchMfrName: hw.latchMfrName } : {}),
@@ -529,6 +541,7 @@ function buildConfig(
     ...(hw.closerModel ? { closerModel: hw.closerModel } : {}),
     ...(hw.gasketType ? { gasketType: hw.gasketType } : {}),
     ...(temp === "FREEZER" ? { insulationType: "PIR" as InsulationType } : { insulationType: "EPS" as InsulationType }),
+    ...(isExterior ? { insideRelease: "K481 Safety Glow" } : {}),
   }
 
   // Auto-calculate heater cable for freezers
@@ -548,6 +561,10 @@ function buildConfig(
     if (hw.closerModel) hwParts.push(hw.closerModel.replace("DENT ", ""))
     if (hw.gasketType) hwParts.push(hw.gasketType === "MAGNETIC" ? "Magnetic" : "Neoprene")
   }
+  if (highSill) hwParts.push("High Sill")
+  if (isExterior) hwParts.push("Lockable")
+  if (isPlug) hwParts.push("No Frame")
+  if (opts.descSuffix) hwParts.push(opts.descSuffix)
   const description = hwParts.join(" · ") || "Standard hardware"
 
   return { id, label, description, widthInClear: widthIn, heightInClear: heightIn, specs: baseSpecs }
@@ -555,14 +572,28 @@ function buildConfig(
 
 export const STANDARD_DOOR_CONFIGS: Record<DoorTypeKey, StandardDoorConfig[]> = {
   COOLER_SWING: [
+    // Standard sizes
     buildConfig("cooler-swing-3x7", "3' × 7'", "36", "84", "HINGED_COOLER", "COOLER", "HINGE"),
     buildConfig("cooler-swing-4x7", "4' × 7'", "48", "84", "HINGED_COOLER", "COOLER", "HINGE"),
     buildConfig("cooler-swing-5x7", "5' × 7'", "60", "84", "HINGED_COOLER", "COOLER", "HINGE"),
+    // High sill
+    buildConfig("cooler-swing-3x7-hs", "3' × 7' High Sill", "36", "84", "HINGED_COOLER", "COOLER", "HINGE", { highSill: true }),
+    // Exterior
+    buildConfig("cooler-swing-3x7-ext", "3' × 7' Exterior", "36", "84", "HINGED_COOLER", "COOLER", "HINGE", { isExterior: true }),
   ],
   FREEZER_SWING: [
+    // Standard sizes
     buildConfig("freezer-swing-3x7", "3' × 7'", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
     buildConfig("freezer-swing-4x7", "4' × 7'", "48", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
     buildConfig("freezer-swing-5x7", "5' × 7'", "60", "84", "HINGED_FREEZER", "FREEZER", "HINGE"),
+    // High sill
+    buildConfig("freezer-swing-3x7-hs", "3' × 7' High Sill", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE", { highSill: true }),
+    // Exterior
+    buildConfig("freezer-swing-3x7-ext", "3' × 7' Exterior", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE", { isExterior: true }),
+    // Exterior high sill
+    buildConfig("freezer-swing-3x7-ext-hs", "3' × 7' Exterior High Sill", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE", { isExterior: true, highSill: true }),
+    // Plug (no frame)
+    buildConfig("freezer-swing-3x7-plug", "3' × 7' Plug", "36", "84", "HINGED_FREEZER", "FREEZER", "HINGE", { isPlug: true }),
   ],
   COOLER_SLIDER: [
     buildConfig("cooler-slider-4x7", "4' × 7'", "48", "84", "SLIDING", "COOLER", "SLIDE"),

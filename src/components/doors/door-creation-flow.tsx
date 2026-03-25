@@ -29,7 +29,7 @@ import {
   type DoorTypeKey,
   type StandardDoorConfig,
 } from "@/lib/door-specs"
-import { matchDoorRecipe } from "@/lib/door-recipes"
+import { matchDoorRecipe, matchPlugDoorRecipe } from "@/lib/door-recipes"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
 
 type FlowPhase = "JOB" | "TYPE" | "SIZE" | "CONFIRM" | "CUSTOM_BUILDER"
@@ -124,7 +124,11 @@ export function DoorCreationFlow() {
   // ── Recipe loading (shared between size select and custom builder) ──
 
   async function loadRecipeComponents(doorSpecs: Partial<DoorSpecs>): Promise<ComponentItem[]> {
-    const recipe = matchDoorRecipe(doorSpecs)
+    // Try standard recipe first, then plug recipe for frameless freezer doors
+    let recipe = matchDoorRecipe(doorSpecs)
+    if (!recipe && !doorSpecs.frameType && doorSpecs.temperatureType === "FREEZER") {
+      recipe = matchPlugDoorRecipe(doorSpecs)
+    }
     if (!recipe || recipe.components.length === 0) return []
 
     try {

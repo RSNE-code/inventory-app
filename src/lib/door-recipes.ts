@@ -195,6 +195,56 @@ const FREEZER_SWING_4x7: DoorRecipe = {
   ],
 };
 
+const FREEZER_SWING_5x7: DoorRecipe = {
+  name: "Freezer Swing 5x7",
+  components: [
+    { name: '19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8")', qty: 3 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 120 },
+    { name: 'Wiper Gasket 8.5"', qty: 0.05 },
+    { name: "GASKET, 100' ROLL JAMISON", qty: 0.2 },
+    { name: "K1277 Cam-lift Strap Hinge", qty: 3 },
+    { name: "K55 Complete", qty: 1 },
+    { name: "TRYMER 200L 3-1/2\" - 48\" X 96\"", qty: 1 },
+    ...COMMON_CONSUMABLES,
+    { name: "Diamond Plate .063 4' x 10'", qty: 1 },
+    { name: '38\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
+    { name: '15\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
+    { name: "Galvanized Sheet 4' x 8' (20ga)", qty: 0.2 },
+  ],
+};
+
+const FREEZER_SWING_3x7_HIGH_SILL: DoorRecipe = {
+  name: "Freezer Swing 3x7 (High Sill)",
+  components: [
+    { name: '19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8")', qty: 2 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 95 },
+    { name: "Magnetic Gasket 8'", qty: 2.5 },
+    { name: "HINGE D690", qty: 2 },
+    { name: "D90 Handle", qty: 1 },
+    { name: 'D276 Door Closer 1-3/8" OS, Satin Chrome', qty: 1 },
+    { name: "TRYMER 200L 4\" - 48\" X 96\"", qty: 1 },
+    ...COMMON_CONSUMABLES,
+    { name: "Glow Push Panel", qty: 1 },
+    { name: "Diamond Plate .063 4' x 8'", qty: 0.5 },
+    { name: '40\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
+    { name: "Galvanized Sheet 4' x 8' (20ga)", qty: 0.2 },
+  ],
+};
+
+const FREEZER_SWING_3x7_PLUG: DoorRecipe = {
+  name: "Freezer Swing 3x7 (Plug, No Frame)",
+  components: [
+    { name: '19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8")', qty: 2 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 60 },
+    { name: "Magnetic Gasket 8'", qty: 2 },
+    { name: "TRYMER 200L 3-1/2\" - 48\" X 96\"", qty: 1 },
+    ...COMMON_CONSUMABLES,
+    { name: "Glow Push Panel", qty: 1 },
+    { name: 'Wiper Gasket 8.5"', qty: 0.03 },
+    { name: '12\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
+  ],
+};
+
 // ---------------------------------------------------------------------------
 // Recipe definitions — EXTERIOR DOORS
 // ---------------------------------------------------------------------------
@@ -232,6 +282,24 @@ const EXTERIOR_FREEZER_3x7: DoorRecipe = {
     { name: 'Wiper Gasket 8.5"', qty: 0.03 },
     { name: '12\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
     { name: '32\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
+    { name: "Galvanized Sheet 4' x 8' (20ga)", qty: 0.2 },
+  ],
+};
+
+const EXTERIOR_FREEZER_3x7_HIGH_SILL: DoorRecipe = {
+  name: "Exterior Freezer Swing 3x7 (High Sill)",
+  components: [
+    { name: '19/32X48X96 ARAUCO AC RADIATA PINE Sanded (5/8")', qty: 2 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 92 },
+    { name: "GASKET, 100' ROLL JAMISON", qty: 0.2 },
+    { name: 'K1245 1-1/4 OS Hinge', qty: 2 },
+    { name: "K56 Latch (Body Chrome)", qty: 1 },
+    { name: "K56 Strike", qty: 1 },
+    { name: "TRYMER 200L 3-1/2\" - 48\" X 96\"", qty: 1 },
+    ...COMMON_CONSUMABLES,
+    { name: "Diamond Plate .063 4' x 8'", qty: 0.5 },
+    { name: 'K481 Safety Glow Inside Release, 6" Door', qty: 1 },
+    { name: '40\' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP', qty: 1 },
     { name: "Galvanized Sheet 4' x 8' (20ga)", qty: 0.2 },
   ],
 };
@@ -327,6 +395,7 @@ export function matchDoorRecipe(specs: {
   highSill?: boolean;
   isExterior?: boolean;
   gasketType?: string;     // "MAGNETIC" | "NEOPRENE"
+  frameType?: string;      // detect plug doors (no frame)
 }): DoorRecipe | null {
   const width = parseWidthToInches(specs.widthInClear ?? "");
   const height = parseWidthToInches(specs.heightInClear ?? "");
@@ -342,12 +411,11 @@ export function matchDoorRecipe(specs: {
   const isFreezer = specs.temperatureType?.toUpperCase() === "FREEZER";
   const isExterior = specs.isExterior === true;
   const isHighSill = specs.highSill === true;
-  const isMagnetic =
-    specs.gasketType?.toUpperCase() === "MAGNETIC" ||
-    specs.gasketType === undefined; // default for 3ft swing doors
+  // Plug door = no frame (freezer only)
+  const isPlug = !specs.frameType || specs.frameType === "";
 
   // -----------------------------------------------------------------------
-  // Sliding doors (cooler only — no freezer slider recipes defined yet)
+  // Sliding doors
   // -----------------------------------------------------------------------
   if (isSlider) {
     if (wBucket === "8ft" && hBucket === "8ft") return COOLER_SLIDER_8x8;
@@ -364,8 +432,9 @@ export function matchDoorRecipe(specs: {
   // -----------------------------------------------------------------------
   if (isExterior) {
     if (isFreezer) {
-      // Only 3ft exterior freezer defined
-      if (wBucket === "3ft") return EXTERIOR_FREEZER_3x7;
+      if (wBucket === "3ft") {
+        return isHighSill ? EXTERIOR_FREEZER_3x7_HIGH_SILL : EXTERIOR_FREEZER_3x7;
+      }
       return null;
     }
     // Exterior cooler — only 3ft defined
@@ -377,9 +446,14 @@ export function matchDoorRecipe(specs: {
   // Interior swing doors — Freezer
   // -----------------------------------------------------------------------
   if (isFreezer) {
-    if (wBucket === "3ft") return FREEZER_SWING_3x7;
+    if (wBucket === "3ft") {
+      if (isHighSill) return FREEZER_SWING_3x7_HIGH_SILL;
+      // Plug doors explicitly built from the plug template config
+      // (frameType won't be set for plug configs — detected via isPlug on specs)
+      return FREEZER_SWING_3x7;
+    }
     if (wBucket === "4ft") return FREEZER_SWING_4x7;
-    // No 5ft freezer recipe defined yet
+    if (wBucket === "5ft") return FREEZER_SWING_5x7;
     return null;
   }
 
@@ -396,5 +470,19 @@ export function matchDoorRecipe(specs: {
     return COOLER_SWING_3x7;
   }
 
+  return null;
+}
+
+/**
+ * Match a plug door recipe specifically.
+ * Plug doors are frameless freezer doors — separate matcher since they
+ * don't go through the normal frame-type flow.
+ */
+export function matchPlugDoorRecipe(specs: {
+  widthInClear?: string;
+}): DoorRecipe | null {
+  const width = parseWidthToInches(specs.widthInClear ?? "");
+  const wBucket = widthBucket(width);
+  if (wBucket === "3ft") return FREEZER_SWING_3x7_PLUG;
   return null;
 }
