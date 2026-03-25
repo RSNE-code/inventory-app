@@ -320,20 +320,26 @@ export function BomAIFlow() {
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
         notes: notes.trim() || null,
-        lineItems: confirmedItems.map((item) => ({
-          productId: item.productId,
-          tier: item.tier,
-          qtyNeeded: item.qtyNeeded,
-          isNonCatalog: item.isNonCatalog,
-          nonCatalogName: item.nonCatalogName,
-          nonCatalogCategory: item.nonCatalogCategory,
-          nonCatalogUom: item.nonCatalogUom,
-          nonCatalogEstCost: item.nonCatalogEstCost,
-          nonCatalogSpecs: item.catalogMatch.panelSpecs
-            ?? (item.catalogMatch.assemblyTemplateId
-              ? { type: "assembly", assemblyTemplateId: item.catalogMatch.assemblyTemplateId }
-              : undefined),
-        })),
+        lineItems: confirmedItems.map((item) => {
+          const isAT = !!item.catalogMatch.matchedProduct?.isAssemblyTemplate
+          const atId = item.catalogMatch.matchedProduct?.assemblyTemplateId
+            || item.catalogMatch.assemblyTemplateId
+          return {
+            // Assembly templates submit as non-catalog with assemblyTemplateId in specs
+            productId: isAT ? null : item.productId,
+            tier: item.tier,
+            qtyNeeded: item.qtyNeeded,
+            isNonCatalog: isAT || item.isNonCatalog,
+            nonCatalogName: isAT ? item.productName : item.nonCatalogName,
+            nonCatalogCategory: isAT
+              ? (item.catalogMatch.matchedProduct?.categoryName || null)
+              : item.nonCatalogCategory,
+            nonCatalogUom: isAT ? "each" : item.nonCatalogUom,
+            nonCatalogEstCost: item.nonCatalogEstCost,
+            nonCatalogSpecs: item.catalogMatch.panelSpecs
+              ?? (atId ? { type: "assembly", assemblyTemplateId: atId } : undefined),
+          }
+        }),
       })
       setSubmitted(true)
       setShowSuccessOverlay(true)

@@ -33,7 +33,7 @@ export function BomConfirmationCard({
   }
 
   const stockLevel = getMatchStockLevel(match, quantity)
-  const isAssemblyTemplate = !!match.assemblyTemplateId
+  const isAssemblyTemplate = !!match.matchedProduct?.isAssemblyTemplate
   const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog && !isAssemblyTemplate
 
   function buildConfirmedItem(overrideProductId?: string): ConfirmedBomItem {
@@ -143,7 +143,17 @@ export function BomConfirmationCard({
           </p>
 
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {match.matchedProduct && (
+            {isAssemblyTemplate ? (
+              <>
+                <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-1">
+                  <Wrench className="h-3 w-3" />
+                  RSNE Fab
+                </Badge>
+                <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
+                  {match.matchedProduct?.categoryName || "Assembly"}
+                </Badge>
+              </>
+            ) : match.matchedProduct ? (
               <>
                 <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
                   {match.matchedProduct.categoryName}
@@ -160,26 +170,11 @@ export function BomConfirmationCard({
                   {match.matchedProduct.tier === "TIER_1" ? "Tracked" : "Expensed"}
                 </Badge>
               </>
-            )}
-
-            {isAssemblyTemplate && (
-              <>
-                <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-1">
-                  <Wrench className="h-3 w-3" />
-                  RSNE Fab
-                </Badge>
-                {match.parsedItem.category && (
-                  <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
-                    {match.parsedItem.category}
-                  </Badge>
-                )}
-              </>
-            )}
-            {match.isNonCatalog && !isAssemblyTemplate && (
+            ) : match.isNonCatalog ? (
               <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-orange-600 border-orange-300 bg-orange-50">
                 Non-catalog
               </Badge>
-            )}
+            ) : null}
           </div>
 
           {/* Stock status */}

@@ -259,7 +259,6 @@ export function BomPhotoCapture() {
             const BULK_UNITS = ["case", "box", "pallet", "carton", "bag", "roll", "lb", "lbs", "pound", "pounds"]
             const isBulkUnit = BULK_UNITS.includes(aiUom?.toLowerCase().trim() || "")
             const uomMismatch = isBulkUnit && catalogUom && aiUom?.toLowerCase().trim() !== catalogUom.toLowerCase().trim()
-            const isAssemblyTemplate = !!match.assemblyTemplateId
             const feedItem: FeedItem = {
               id: `item-${parsed.index}-${Date.now()}`,
               rawText: match.parsedItem.rawText,
@@ -267,13 +266,13 @@ export function BomPhotoCapture() {
               productId: match.matchedProduct?.id || null,
               quantity: match.parsedItem.quantity,
               unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
-              confidence: isAssemblyTemplate ? Math.max(match.matchConfidence, 0.90) : match.matchConfidence,
+              confidence: match.matchConfidence,
               isPanel: !!match.panelSpecs,
-              confirmed: match.matchConfidence >= 0.95 || isAssemblyTemplate,
+              confirmed: match.matchConfidence >= 0.95,
               isNonCatalog: match.isNonCatalog,
-              isAssemblyTemplate,
-              assemblyTemplateId: match.assemblyTemplateId,
-              nonCatalogCategory: match.parsedItem.category || undefined,
+              isAssemblyTemplate: !!match.matchedProduct?.isAssemblyTemplate,
+              assemblyTemplateId: match.matchedProduct?.assemblyTemplateId || match.assemblyTemplateId,
+              nonCatalogCategory: match.matchedProduct?.categoryName || match.parsedItem.category || undefined,
               panelSpecs: match.panelSpecs || undefined,
               alternatives: match.alternativeMatches?.map((a) => ({
                 productId: a.id,
@@ -410,10 +409,22 @@ export function BomPhotoCapture() {
   }
 
   function resolveItem(id: string, productId: string, productName: string) {
+    // Check if the selected match is an assembly template (AT: prefix from alternatives)
+    const isAT = productId.startsWith("AT:")
+    const resolvedProductId = isAT ? productId.slice(3) : productId
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
-          ? { ...i, productId, productName, confidence: 0.99, confirmed: true, isNonCatalog: false }
+          ? {
+              ...i,
+              productId: resolvedProductId,
+              productName,
+              confidence: 0.99,
+              confirmed: true,
+              isNonCatalog: false,
+              isAssemblyTemplate: isAT,
+              assemblyTemplateId: isAT ? resolvedProductId : undefined,
+            }
           : i
       )
     )
@@ -511,13 +522,16 @@ export function BomPhotoCapture() {
 
     try {
       const lineItems = validItems.map((item) => ({
-        productId: item.isNonCatalog ? null : item.productId,
+        // Assembly templates matched as products need to be submitted as non-catalog items
+        productId: (item.isNonCatalog || item.isAssemblyTemplate) ? null : item.productId,
         tier: "TIER_1" as const,
         qtyNeeded: item.quantity,
-        isNonCatalog: item.isNonCatalog,
-        nonCatalogName: item.isNonCatalog ? item.productName : null,
-        nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
-        nonCatalogUom: item.isNonCatalog ? item.unitOfMeasure : null,
+        isNonCatalog: item.isNonCatalog || item.isAssemblyTemplate,
+        nonCatalogName: (item.isNonCatalog || item.isAssemblyTemplate) ? item.productName : null,
+        nonCatalogCategory: item.isAssemblyTemplate
+          ? (item.nonCatalogCategory || null)
+          : item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
+        nonCatalogUom: (item.isNonCatalog || item.isAssemblyTemplate) ? item.unitOfMeasure : null,
         nonCatalogSpecs: item.panelSpecs
           || (item.assemblyTemplateId ? { type: "assembly", assemblyTemplateId: item.assemblyTemplateId } : null),
         matchConfidence: item.confidence,

@@ -173,6 +173,37 @@ async function loadProductMap(): Promise<Map<string, ProductData>> {
   return map
 }
 
+// ─── Assembly template lookup for enriching AI results ───
+
+interface AssemblyTemplateData {
+  id: string
+  name: string
+  type: string
+  description: string | null
+}
+
+async function loadAssemblyTemplateMap(): Promise<Map<string, AssemblyTemplateData>> {
+  const templates = await prisma.assemblyTemplate.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, type: true, description: true },
+  })
+  const map = new Map<string, AssemblyTemplateData>()
+  for (const t of templates) {
+    map.set(t.id, t)
+  }
+  return map
+}
+
+function assemblyTypeLabel(type: string): string {
+  switch (type) {
+    case "DOOR": return "Door"
+    case "FLOOR_PANEL": return "Floor Panel"
+    case "WALL_PANEL": return "Wall Panel"
+    case "RAMP": return "Ramp"
+    default: return "Assembly"
+  }
+}
+
 // ─── JSON extraction helper ───
 
 function extractJSON(text: string): unknown {
@@ -211,9 +242,10 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown, no code fences, no explana
 // ─── Text input (used for BOM builder, quick adds) ───
 
 export async function parseTextInput(text: string): Promise<CatalogMatch[]> {
-  const [catalog, productMap] = await Promise.all([
+  const [catalog, productMap, assemblyTemplateMap] = await Promise.all([
     loadIndexedCatalog(),
     loadProductMap(),
+    loadAssemblyTemplateMap(),
   ])
 
   const { text: response } = await generateText({
@@ -291,17 +323,18 @@ Rules:
       .filter((id): id is string => id !== null),
   }))
 
-  return resolved.map((item) => toCatalogMatch(item, productMap))
+  return resolved.map((item) => toCatalogMatch(item, productMap, assemblyTemplateMap))
 }
 
 // ─── Text input with receiving context (extracts supplier/PO info) ───
 
 export async function parseReceivingTextInput(text: string): Promise<ImageParseResult> {
-  const [catalog, suppliers, poContext, productMap] = await Promise.all([
+  const [catalog, suppliers, poContext, productMap, assemblyTemplateMap] = await Promise.all([
     loadIndexedCatalog(),
     loadIndexedSuppliers(),
     loadPOContext(),
     loadProductMap(),
+    loadAssemblyTemplateMap(),
   ])
 
   const { text: response } = await generateText({
@@ -380,7 +413,7 @@ Rules:
   }))
 
   return {
-    items: resolvedItems.map((item) => toCatalogMatch(item, productMap)),
+    items: resolvedItems.map((item) => toCatalogMatch(item, productMap, assemblyTemplateMap)),
     supplier: parsed.supplier || undefined,
     supplierId: resolveProductId(parsed.supplierId ?? null, suppliers.indexToId) || undefined,
     poNumber: parsed.poNumber || undefined,
@@ -462,11 +495,12 @@ export async function parseImageInput(
   imageBase64: string | string[],
   mimeType: string | string[]
 ): Promise<ImageParseResult> {
-  const [catalog, suppliers, poContext, productMap] = await Promise.all([
+  const [catalog, suppliers, poContext, productMap, assemblyTemplateMap] = await Promise.all([
     loadIndexedCatalog(),
     loadIndexedSuppliers(),
     loadPOContext(),
     loadProductMap(),
+    loadAssemblyTemplateMap(),
   ])
 
   // Support single or multiple images
@@ -574,7 +608,7 @@ Think step by step:
   }))
 
   return {
-    items: resolvedItems.map((item) => toCatalogMatch(item, productMap)),
+    items: resolvedItems.map((item) => toCatalogMatch(item, productMap, assemblyTemplateMap)),
     supplier: parsed.supplier,
     supplierId: resolveProductId(parsed.supplierId ?? null, suppliers.indexToId) || undefined,
     poNumber: parsed.poNumber,
@@ -708,7 +742,8 @@ function extractPanelSpecs(item: AIMatchedItem, matchedProduct?: ProductData): {
 
 function toCatalogMatch(
   item: AIMatchedItem,
-  productMap: Map<string, ProductData>
+  productMap: Map<string, ProductData>,
+  assemblyTemplateMap?: Map<string, AssemblyTemplateData>
 ): CatalogMatch {
   const parsedItem: ParsedLineItem = {
     rawText: item.rawText || item.name || "",
@@ -725,35 +760,72 @@ function toCatalogMatch(
   }
 
   // Check if this is an assembly template match (prefixed with "AT:")
-  const isAssemblyTemplate = item.matchedProductId?.startsWith("AT:")
-  const assemblyTemplateId = isAssemblyTemplate ? item.matchedProductId!.slice(3) : null
+  const isAssemblyTemplateMatch = item.matchedProductId?.startsWith("AT:")
+  const assemblyTemplateId = isAssemblyTemplateMatch ? item.matchedProductId!.slice(3) : null
 
-  if (isAssemblyTemplate) {
-    // Assembly template match — return as non-catalog fabrication item
-    // Infer assembly type from the name for proper categorization
-    const nameLower = (item.name || "").toLowerCase()
-    const assemblyCategory = nameLower.includes("slider") || nameLower.includes("sliding")
-      ? "Door"
-      : nameLower.includes("door")
-        ? "Door"
-        : nameLower.includes("floor")
-          ? "Floor Panel"
-          : nameLower.includes("wall")
-            ? "Wall Panel"
-            : nameLower.includes("ramp")
-              ? "Ramp"
-              : "Door"
+  if (isAssemblyTemplateMatch && assemblyTemplateId) {
+    // Look up the template to get its real name and type
+    const template = assemblyTemplateMap?.get(assemblyTemplateId)
+    const templateName = template?.name || item.name || parsedItem.name
+    const templateType = template?.type || "DOOR"
+    const categoryName = assemblyTypeLabel(templateType)
+
+    // Build alternative matches from other assembly templates of the same type
+    const altTemplates: { id: string; name: string; matchConfidence: number }[] = []
+    if (assemblyTemplateMap) {
+      for (const [altId, altTemplate] of assemblyTemplateMap) {
+        if (altId !== assemblyTemplateId && altTemplate.type === templateType) {
+          altTemplates.push({
+            id: `AT:${altId}`,
+            name: altTemplate.name,
+            matchConfidence: Math.max(0.40, (item.matchConfidence ?? 0.8) - 0.15),
+          })
+        }
+      }
+      // Sort by name similarity to parsed item and limit to 5
+      altTemplates.sort((a, b) => a.name.localeCompare(b.name))
+      altTemplates.splice(5)
+    }
+
+    // Also include any product alternatives the LLM suggested
+    const productAlts = (item.alternativeProductIds || [])
+      .filter((id) => !id.startsWith("AT:"))
+      .map((id) => productMap.get(id))
+      .filter((p): p is ProductData => !!p)
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        matchConfidence: Math.max(0.30, (item.matchConfidence ?? 0.5) - 0.2),
+      }))
+
+    const allAlternatives = [...altTemplates, ...productAlts]
+
+    // Assembly templates populate matchedProduct just like regular products
     return {
-      parsedItem: {
-        ...parsedItem,
-        name: item.name || parsedItem.name,
+      parsedItem,
+      matchedProduct: {
+        id: assemblyTemplateId,
+        name: templateName,
+        sku: null,
         unitOfMeasure: "each",
-        category: assemblyCategory,
+        currentQty: 0,
+        tier: "TIER_1",
+        categoryName,
+        lastCost: 0,
+        avgCost: 0,
+        reorderPoint: 0,
+        dimLength: null,
+        dimLengthUnit: null,
+        dimWidth: null,
+        dimWidthUnit: null,
+        isAssemblyTemplate: true,
+        assemblyTemplateId,
+        assemblyType: templateType,
       },
-      matchedProduct: null,
       matchConfidence: item.matchConfidence ?? 0.8,
-      isNonCatalog: true,
-      assemblyTemplateId: assemblyTemplateId ?? undefined,
+      isNonCatalog: false,
+      assemblyTemplateId,
+      alternativeMatches: allAlternatives.length > 0 ? allAlternatives : undefined,
     }
   }
 
@@ -983,7 +1055,8 @@ Rules:
  */
 export function toBomCatalogMatch(
   item: BomStreamItem,
-  productMap: Map<string, ProductData>
+  productMap: Map<string, ProductData>,
+  assemblyTemplateMap?: Map<string, AssemblyTemplateData>
 ): CatalogMatch {
   return toCatalogMatch(
     {
@@ -1001,9 +1074,11 @@ export function toBomCatalogMatch(
       lengthIn: item.lengthIn,
       thicknessIn: item.thicknessIn,
     },
-    productMap
+    productMap,
+    assemblyTemplateMap
   )
 }
 
-// Re-export loadProductMap for use by the streaming API route
-export { loadProductMap }
+// Re-export for use by the streaming API route
+export { loadProductMap, loadAssemblyTemplateMap }
+export type { AssemblyTemplateData }
