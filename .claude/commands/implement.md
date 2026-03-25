@@ -53,7 +53,7 @@ plan_path: $ARGUMENTS (path to the plan file, e.g., `plans/2026-01-28-add-guest-
 
 If ANY step in the plan touched UI components (`.tsx` files in `src/components/` or `src/app/`):
 
-1. **Read `reference/ux-checklist.md`** and run through every checkbox on the changed files.
+1. **Read `reference/docs/ux-checklist.md`** and run through every checkbox on the changed files.
 
 2. **Run token audit on changed files:**
    Run `npx tsx scripts/token-audit.ts` (if the script exists). Otherwise, manually check each changed `.tsx` file for off-brand tokens: `text-gray-*`, `bg-gray-*`, `border-gray-*`, `shadow-sm/md/lg`, `rounded-md/lg` on cards.

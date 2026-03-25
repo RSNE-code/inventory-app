@@ -54,23 +54,34 @@ Claude is the **sole developer**. Gabe is the owner/product director — he has 
 │       ├── create-plan.md  # /create-plan — create implementation plans
 │       ├── implement.md   # /implement — execute plans
 │       └── qa.md          # /qa — full app quality audit
-├── context/               # Background context about the user and project
-│                          # (User should populate with role, goals, strategies)
-├── plans/                 # Implementation plans created by /create-plan
-├── outputs/               # Work products and deliverables
-├── reference/             # Templates, examples, reusable patterns
-└── scripts/               # Automation scripts (if applicable)
+├── context/               # Background context — project goals, PRD, strategy, tech stack
+├── plans/
+│   ├── active/            # Draft or in-progress plans
+│   └── completed/         # Implemented plans (historical reference)
+├── outputs/
+│   ├── qa-reports/        # QA audit reports by date
+│   ├── audits/            # UX/design audit reports
+│   ├── data/              # Extracted data, CSVs, JSONs
+│   └── images/            # Generated images, photos
+├── reference/
+│   ├── docs/              # Technical docs — API, schema, design system, UX checklist
+│   ├── data/              # Source data — Excel exports, catalogs, PO data
+│   └── images/            # Door drawings, UI samples, team photos
+└── scripts/               # Automation — UX lint, token audit, test generation
 ```
 
 **Key directories:**
 
-| Directory    | Purpose                                                                             |
-| ------------ | ----------------------------------------------------------------------------------- |
-| `context/`   | Who the user is, their role, current priorities, strategies. Read by `/prime`.      |
-| `plans/`     | Detailed implementation plans. Created by `/create-plan`, executed by `/implement`. |
-| `outputs/`   | Deliverables, analyses, reports, and work products.                                 |
-| `reference/` | Helpful docs, templates and patterns to assist in various workflows.                |
-| `scripts/`   | Any automation or tooling scripts.                                                  |
+| Directory              | Purpose                                                                    |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `context/`             | Who the user is, PRD, project goals, strategy, tech stack. Read by `/prime`. |
+| `plans/active/`        | Plans being drafted or executed. Created by `/create-plan`.                |
+| `plans/completed/`     | Implemented plans — historical reference only.                             |
+| `outputs/qa-reports/`  | QA audit reports by date.                                                  |
+| `outputs/audits/`      | UX and design audit reports.                                               |
+| `reference/docs/`      | Technical docs — API, schema, design system, UX checklist, business logic. |
+| `reference/data/`      | Source data — Excel catalogs, PO exports, supplier lists.                  |
+| `scripts/`             | UX lint, token audit, accessibility check, test generation.                |
 
 ---
 
