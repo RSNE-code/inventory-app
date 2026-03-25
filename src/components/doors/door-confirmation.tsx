@@ -204,9 +204,17 @@ export function DoorConfirmation({
           <SpecRow label="Frame Type" value={formatDoorFieldValue("frameType", specs.frameType)} />
         )}
         {isSlider ? (
-          <SpecRow label="Slide Side" value={formatDoorFieldValue("slideSide", specs.slideSide)} />
+          <SpecRow
+            label="Slide Side"
+            value={formatDoorFieldValue("slideSide", specs.slideSide)}
+            onEdit={() => onSpecChange("slideSide", specs.slideSide === "LEFT" ? "RIGHT" : "LEFT")}
+          />
         ) : (
-          <SpecRow label="Hinge Side" value={formatDoorFieldValue("hingeSide", specs.hingeSide)} />
+          <SpecRow
+            label="Hinge Side"
+            value={formatDoorFieldValue("hingeSide", specs.hingeSide)}
+            onEdit={() => onSpecChange("hingeSide", specs.hingeSide === "LEFT" ? "RIGHT" : "LEFT")}
+          />
         )}
         {editingField === "finish" ? <EditRow field="finish" /> : (
           <SpecRow label="Finish" value={specs.finish} onEdit={() => startEdit("finish", specs.finish)} />
