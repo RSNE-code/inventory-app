@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { FRACTIONS, fractionTickHeight, formatFractionalInches, splitInchesAndFraction } from "@/lib/door-specs"
 import { cn } from "@/lib/utils"
@@ -126,9 +127,9 @@ export function TapeMeasureInput({
   // Padding items for scroll centering (empty items above and below)
   const padCount = Math.floor(VISIBLE_ITEMS / 2)
 
-  if (!open) return null
+  if (!open || typeof document === "undefined") return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       {/* Overlay */}
       <div
@@ -273,7 +274,8 @@ export function TapeMeasureInput({
         {/* Safe area padding for iOS */}
         <div className="pb-safe" />
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
