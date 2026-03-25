@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { formatDoorSize } from "@/lib/door-specs"
 import type { DoorSpecs } from "@/lib/door-specs"
+import { splitHardwareValue } from "@/lib/door-field-labels"
 
 interface DoorManufacturingSheetProps {
   specs: Partial<DoorSpecs>
@@ -246,12 +247,8 @@ export function DoorManufacturingSheet({
         <div className="py-3 border-b border-border-custom">
           <span className="text-sm font-bold uppercase block mb-2">HARDWARE</span>
           {(() => {
-            // Split closerModel "DENT D276" → mfr + model
-            const closerParts = specs.closerModel ? specs.closerModel.split(" ") : []
-            const closerMfr = closerParts.length > 1 ? closerParts[0] : undefined
-            const closerModel = closerParts.length > 1 ? closerParts.slice(1).join(" ") : specs.closerModel
-            // Inside release — K481 is Kason
-            const releaseMfr = specs.insideRelease?.startsWith("K4") ? "Kason" : undefined
+            const closerHw = splitHardwareValue(specs.closerModel)
+            const releaseHw = splitHardwareValue(specs.insideRelease)
             return (
               <div className="grid grid-cols-2 gap-2">
                 <MfgHardwareBox
@@ -267,13 +264,13 @@ export function DoorManufacturingSheet({
                 />
                 <MfgHardwareBox
                   title="CLOSER"
-                  manufacturer={closerMfr}
-                  model={closerModel}
+                  manufacturer={closerHw.manufacturer}
+                  model={closerHw.model}
                 />
                 <MfgHardwareBox
                   title="INSIDE RELEASE"
-                  manufacturer={releaseMfr}
-                  model={specs.insideRelease}
+                  manufacturer={releaseHw.manufacturer}
+                  model={releaseHw.model}
                 />
               </div>
             )

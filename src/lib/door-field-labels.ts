@@ -178,3 +178,55 @@ export function formatDoorFieldValue(field: string, value: unknown): string {
 
   return str
 }
+
+// ---------------------------------------------------------------------------
+// Hardware value splitting — "DENT D276" → { manufacturer: "DENT", model: "D276" }
+// ---------------------------------------------------------------------------
+
+/** Known manufacturer prefixes for hardware items that don't store mfr separately */
+const KNOWN_HARDWARE_MFRS: Record<string, string> = {
+  K481: "Kason",
+  K1094: "Kason",
+  K55: "Kason",
+  K56: "Kason",
+  K1245: "Kason",
+  K1248: "Kason",
+  K1277: "Kason",
+  DENT: "DENT",
+  D276: "DENT",
+  D690: "DENT",
+  D90: "DENT",
+}
+
+/**
+ * Split a combined hardware value like "DENT D276" into manufacturer + model.
+ * Handles: "DENT D276" → { manufacturer: "DENT", model: "D276" }
+ *          "Kason K1094" → { manufacturer: "Kason", model: "K1094" }
+ *          "K481 Safety Glow" → { manufacturer: "Kason", model: "K481 Safety Glow" }
+ *          "Glow Push Panel" → { model: "Glow Push Panel" }
+ */
+export function splitHardwareValue(value?: string): { manufacturer?: string; model?: string } {
+  if (!value) return {}
+
+  const parts = value.trim().split(" ")
+  const firstWord = parts[0]
+
+  // Check if the first word is a known manufacturer name
+  if (firstWord === "DENT" || firstWord === "Kason") {
+    return {
+      manufacturer: firstWord,
+      model: parts.slice(1).join(" ") || firstWord,
+    }
+  }
+
+  // Check if the first word is a known model prefix → look up manufacturer
+  if (KNOWN_HARDWARE_MFRS[firstWord]) {
+    return {
+      manufacturer: KNOWN_HARDWARE_MFRS[firstWord],
+      model: value,
+    }
+  }
+
+  // No manufacturer detected
+  return { model: value }
+}

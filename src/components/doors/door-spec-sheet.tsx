@@ -8,6 +8,7 @@ import {
   getFrameTypeLabel,
 } from "@/lib/door-specs"
 import type { DoorSpecs } from "@/lib/door-specs"
+import { splitHardwareValue } from "@/lib/door-field-labels"
 import { CheckCircle, Snowflake, Thermometer } from "lucide-react"
 
 interface DoorSpecSheetProps {
@@ -280,12 +281,8 @@ export function DoorSpecSheet({
         <div>
           <SectionHeader>Hardware</SectionHeader>
           {(() => {
-            // Split closerModel "DENT D276" → mfr + model
-            const closerParts = specs.closerModel ? specs.closerModel.split(" ") : []
-            const closerMfr = closerParts.length > 1 ? closerParts[0] : undefined
-            const closerModel = closerParts.length > 1 ? closerParts.slice(1).join(" ") : specs.closerModel
-            // Inside release — K481 is Kason
-            const releaseMfr = specs.insideRelease?.startsWith("K4") ? "Kason" : undefined
+            const closerHw = splitHardwareValue(specs.closerModel)
+            const releaseHw = splitHardwareValue(specs.insideRelease)
             return (
               <div className="grid grid-cols-2 gap-2">
                 <HardwareBox
@@ -301,13 +298,13 @@ export function DoorSpecSheet({
                 />
                 <HardwareBox
                   title="Closer"
-                  manufacturer={closerMfr}
-                  model={closerModel}
+                  manufacturer={closerHw.manufacturer}
+                  model={closerHw.model}
                 />
                 <HardwareBox
                   title="Inside Release"
-                  manufacturer={releaseMfr}
-                  model={specs.insideRelease}
+                  manufacturer={releaseHw.manufacturer}
+                  model={releaseHw.model}
                 />
               </div>
             )
