@@ -67,8 +67,8 @@ const DOOR_TYPES: {
     subtitle: "Hinged cooler door",
     icon1: Thermometer,
     icon2: DoorOpen,
-    bgClass: "bg-brand-blue/8",
-    iconClass: "text-brand-blue",
+    bgClass: "bg-surface-secondary",
+    iconClass: "text-text-secondary",
   },
   {
     key: "FREEZER_SWING",
@@ -76,8 +76,8 @@ const DOOR_TYPES: {
     subtitle: "Hinged freezer door",
     icon1: Snowflake,
     icon2: DoorOpen,
-    bgClass: "bg-navy/8",
-    iconClass: "text-navy",
+    bgClass: "bg-brand-blue/10",
+    iconClass: "text-brand-blue",
   },
   {
     key: "COOLER_SLIDER",
@@ -85,8 +85,8 @@ const DOOR_TYPES: {
     subtitle: "Sliding cooler door",
     icon1: Thermometer,
     icon2: ArrowLeftRight,
-    bgClass: "bg-brand-blue/8",
-    iconClass: "text-brand-blue",
+    bgClass: "bg-surface-secondary",
+    iconClass: "text-text-secondary",
   },
   {
     key: "FREEZER_SLIDER",
@@ -94,8 +94,8 @@ const DOOR_TYPES: {
     subtitle: "Sliding freezer door",
     icon1: Snowflake,
     icon2: ArrowLeftRight,
-    bgClass: "bg-navy/8",
-    iconClass: "text-navy",
+    bgClass: "bg-brand-blue/10",
+    iconClass: "text-brand-blue",
   },
 ]
 
