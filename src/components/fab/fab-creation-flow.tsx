@@ -21,6 +21,8 @@ import {
   Layers,
   Triangle,
   Factory,
+  Minus,
+  Plus,
 } from "lucide-react"
 import {
   getDefaultPanelSpecs,
@@ -506,13 +508,26 @@ export function FabCreationFlow() {
           <Card className="p-5 rounded-xl border-border-custom">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-navy">Quantity</span>
-              <input
-                type="number"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-                className="w-20 rounded-xl border border-border-custom px-3 py-2 text-sm text-center font-semibold focus:outline-none focus:ring-2 focus:ring-brand-blue"
-              />
+              <div className="flex items-center gap-0 rounded-xl border border-border-custom overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1}
+                  className="h-11 w-11 flex items-center justify-center bg-white text-navy active:bg-surface-secondary disabled:opacity-30 transition-colors"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <div className="h-11 w-12 flex items-center justify-center border-x border-border-custom bg-white">
+                  <span className="text-[15px] font-bold text-navy tabular-nums">{quantity}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="h-11 w-11 flex items-center justify-center bg-white text-navy active:bg-surface-secondary transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </Card>
 

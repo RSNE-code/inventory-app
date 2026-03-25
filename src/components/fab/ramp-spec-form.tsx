@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { TapeMeasureInput, TapeMeasureTrigger } from "@/components/doors/tape-measure-input"
+import { TapeMeasureInput } from "@/components/doors/tape-measure-input"
 import { OptionPicker } from "@/components/doors/option-picker"
 import { Card } from "@/components/ui/card"
+import { Ruler } from "lucide-react"
 import {
   INSULATION_OPTIONS,
   DIAMOND_PLATE_OPTIONS,
@@ -25,6 +26,14 @@ type ActivePicker =
   | "insulation"
   | "diamondPlate"
 
+const RAMP_DIMS: { key: keyof RampSpecs; label: string; max: number }[] = [
+  { key: "width", label: "Width", max: 120 },
+  { key: "length", label: "Length", max: 240 },
+  { key: "height", label: "Height (highest point)", max: 48 },
+  { key: "bottomLip", label: "Bottom Lip", max: 12 },
+  { key: "topLip", label: "Top Lip", max: 12 },
+]
+
 export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
   const [activePicker, setActivePicker] = useState<ActivePicker>(null)
 
@@ -35,27 +44,23 @@ export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
   return (
     <div className="space-y-4">
       {/* Dimensions */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Dimensions</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Dimensions</h3>
 
-        {([
-          { key: "width" as const, label: "Width", max: 120 },
-          { key: "length" as const, label: "Length", max: 240 },
-          { key: "height" as const, label: "Height (highest point)", max: 48 },
-          { key: "bottomLip" as const, label: "Bottom Lip", max: 12 },
-          { key: "topLip" as const, label: "Top Lip", max: 12 },
-        ]).map((dim) => (
+        {RAMP_DIMS.map((dim) => (
           <div key={dim.key}>
-            <TapeMeasureTrigger
-              value={specs[dim.key] ? `${specs[dim.key]}` : ""}
+            <DimTrigger
               label={dim.label}
-              placeholder={`Tap to set ${dim.label.toLowerCase()}`}
-              onOpen={() => setActivePicker(dim.key)}
+              value={specs[dim.key] ? `${specs[dim.key]}"` : "Not set"}
+              onOpen={() => setActivePicker(dim.key as ActivePicker)}
             />
             <TapeMeasureInput
               key={dim.key}
               value={specs[dim.key] || ""}
-              onChange={(v) => update(dim.key, v.split("-")[0])}
+              onChange={(v) => {
+                const whole = parseInt(v.split("-")[0]) || 0
+                update(dim.key, String(whole))
+              }}
               label={`${dim.label} (inches)`}
               min={1}
               max={dim.max}
@@ -67,8 +72,8 @@ export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
       </Card>
 
       {/* Insulation */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Insulation</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Insulation</h3>
 
         <SpecTrigger
           label="Insulation Type"
@@ -92,8 +97,8 @@ export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
       </Card>
 
       {/* Finish */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Finish</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Finish</h3>
 
         <SpecTrigger
           label="Diamond Plate Thickness"
@@ -116,6 +121,22 @@ export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
         />
       </Card>
     </div>
+  )
+}
+
+function DimTrigger({ label, value, onOpen }: { label: string; value: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full flex items-center justify-between py-2.5 min-h-[44px] border-b border-border-custom/40 last:border-0 active:bg-surface-secondary/50 transition-colors"
+    >
+      <div className="flex items-center gap-2">
+        <Ruler className="h-4 w-4 text-brand-orange" />
+        <span className="text-sm text-text-secondary">{label}</span>
+      </div>
+      <span className="text-sm font-semibold text-navy">{value}</span>
+    </button>
   )
 }
 

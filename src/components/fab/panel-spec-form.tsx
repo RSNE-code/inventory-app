@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { TapeMeasureInput, TapeMeasureTrigger } from "@/components/doors/tape-measure-input"
+import { TapeMeasureInput } from "@/components/doors/tape-measure-input"
 import { OptionPicker } from "@/components/doors/option-picker"
 import { Card } from "@/components/ui/card"
+import { Ruler } from "lucide-react"
 import {
   INSULATION_OPTIONS,
   INSULATION_THICKNESS_OPTIONS,
@@ -36,36 +37,36 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
     onChange({ ...specs, [field]: value })
   }
 
-  // Format dimension for display (inches → feet'inches")
+  // Format inches → feet'inches" for display
   function formatDim(inches: string): string {
     const val = parseFloat(inches)
-    if (!val) return ""
+    if (!val) return "Not set"
     const ft = Math.floor(val / 12)
-    const rem = val % 12
+    const rem = Math.round(val % 12)
     if (ft === 0) return `${rem}"`
     if (rem === 0) return `${ft}'`
-    return `${ft}'${rem}"`
+    return `${ft}' ${rem}"`
   }
 
   return (
     <div className="space-y-4">
       {/* Dimensions */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Dimensions</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Dimensions</h3>
 
-        <TapeMeasureTrigger
-          value={formatDim(specs.width)}
+        <DimTrigger
           label="Width"
-          placeholder="Tap to set width"
+          value={formatDim(specs.width)}
           onOpen={() => setActivePicker("width")}
         />
         <TapeMeasureInput
           key="width"
-          value={specs.width ? `${specs.width}` : ""}
+          value={specs.width || ""}
           onChange={(v) => {
-            // TapeMeasureInput returns fractional string like "48" or "36-3/16"
-            // Parse to get total inches
-            update("width", v.split("-")[0])
+            // TapeMeasureInput returns fractional like "48" or "36-3/16"
+            // For panels we only need whole inches
+            const whole = parseInt(v.split("-")[0]) || 0
+            update("width", String(whole))
           }}
           label="Width (Max 4')"
           min={1}
@@ -74,17 +75,17 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
           onOpenChange={(open) => { if (!open) setActivePicker(null) }}
         />
 
-        <TapeMeasureTrigger
-          value={formatDim(specs.length)}
+        <DimTrigger
           label="Length"
-          placeholder="Tap to set length"
+          value={formatDim(specs.length)}
           onOpen={() => setActivePicker("length")}
         />
         <TapeMeasureInput
           key="length"
-          value={specs.length ? `${specs.length}` : ""}
+          value={specs.length || ""}
           onChange={(v) => {
-            update("length", v.split("-")[0])
+            const whole = parseInt(v.split("-")[0]) || 0
+            update("length", String(whole))
           }}
           label="Length (Max 20')"
           min={1}
@@ -95,8 +96,8 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
       </Card>
 
       {/* Insulation */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Insulation</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Insulation</h3>
 
         <SpecTrigger
           label="Insulation Type"
@@ -140,8 +141,8 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
       </Card>
 
       {/* Materials */}
-      <Card className="p-5 rounded-xl border-border-custom space-y-3">
-        <h3 className="font-semibold text-navy text-sm">Materials</h3>
+      <Card className="p-5 rounded-xl border-border-custom space-y-1">
+        <h3 className="font-semibold text-navy text-sm mb-2">Materials</h3>
 
         <SpecTrigger
           label="Side 1 Material"
@@ -186,6 +187,24 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
         />
       </Card>
     </div>
+  )
+}
+
+// ── Dimension trigger — tap to open tape measure ──
+
+function DimTrigger({ label, value, onOpen }: { label: string; value: string; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full flex items-center justify-between py-2.5 min-h-[44px] border-b border-border-custom/40 last:border-0 active:bg-surface-secondary/50 transition-colors"
+    >
+      <div className="flex items-center gap-2">
+        <Ruler className="h-4 w-4 text-brand-orange" />
+        <span className="text-sm text-text-secondary">{label}</span>
+      </div>
+      <span className="text-sm font-semibold text-navy">{value}</span>
+    </button>
   )
 }
 

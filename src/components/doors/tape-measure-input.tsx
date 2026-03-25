@@ -86,7 +86,13 @@ export function TapeMeasureInput({
     if (inchScrollTimer.current) clearTimeout(inchScrollTimer.current)
     inchScrollTimer.current = setTimeout(() => {
       const idx = getSelectedIndex(inchWheelRef.current)
-      setSelectedInches(Math.max(min, Math.min(max, idx + min)))
+      const clamped = Math.max(min, Math.min(max, idx + min))
+      setSelectedInches(clamped)
+      // Snap scroll back if user scrolled past min/max
+      const clampedIdx = clamped - min
+      if (idx !== clampedIdx) {
+        scrollToIndex(inchWheelRef.current, clampedIdx)
+      }
     }, 80)
   }, [min, max])
 
