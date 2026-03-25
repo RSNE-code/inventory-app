@@ -9,8 +9,6 @@ import {
   INSULATION_OPTIONS,
   INSULATION_THICKNESS_OPTIONS,
   PANEL_MATERIAL_OPTIONS,
-  PANEL_MAX_WIDTH_INCHES,
-  PANEL_MAX_LENGTH_INCHES,
   type PanelSpecs,
 } from "@/lib/panel-specs"
 
@@ -62,15 +60,11 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
         <TapeMeasureInput
           key="width"
           value={specs.width || ""}
-          onChange={(v) => {
-            // TapeMeasureInput returns fractional like "48" or "36-3/16"
-            // For panels we only need whole inches
-            const whole = parseInt(v.split("-")[0]) || 0
-            update("width", String(whole))
-          }}
-          label="Width (Max 4')"
+          onChange={(v) => update("width", v)}
+          label={isFloor ? "Width (Max 4')" : "Width (Max 20')"}
+          mode="feet-inches"
           min={1}
-          max={PANEL_MAX_WIDTH_INCHES}
+          max={isFloor ? 4 : 20}
           open={activePicker === "width"}
           onOpenChange={(open) => { if (!open) setActivePicker(null) }}
         />
@@ -83,13 +77,11 @@ export function PanelSpecForm({ specs, onChange, type }: PanelSpecFormProps) {
         <TapeMeasureInput
           key="length"
           value={specs.length || ""}
-          onChange={(v) => {
-            const whole = parseInt(v.split("-")[0]) || 0
-            update("length", String(whole))
-          }}
-          label="Length (Max 20')"
+          onChange={(v) => update("length", v)}
+          label={isFloor ? "Length (Max 4')" : "Length (Max 20')"}
+          mode="feet-inches"
           min={1}
-          max={PANEL_MAX_LENGTH_INCHES}
+          max={isFloor ? 4 : 20}
           open={activePicker === "length"}
           onOpenChange={(open) => { if (!open) setActivePicker(null) }}
         />

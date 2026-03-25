@@ -9,16 +9,24 @@ import { Ruler, X } from "lucide-react"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+type PickerMode = "inches-fractions" | "feet-inches"
+
 interface TapeMeasureInputProps {
-  /** Current value like "36-3/16" or "36" */
+  /** Current value — always total inches as string (e.g. "144" for 12') */
   value: string
-  /** Called with formatted fractional string */
+  /** Called with total inches as string */
   onChange: (value: string) => void
   /** Field label shown in the sheet header */
   label?: string
-  /** Minimum inches (default 0) */
+  /**
+   * Mode determines wheel content:
+   * - "inches-fractions" (default): Left=inches, Right=fractions (doors, ramps)
+   * - "feet-inches": Left=feet, Right=0-11 inches (wall/floor panels)
+   */
+  mode?: PickerMode
+  /** Minimum value — inches for "inches-fractions", feet for "feet-inches" */
   min?: number
-  /** Maximum inches (default 120) */
+  /** Maximum value — inches for "inches-fractions", feet for "feet-inches" */
   max?: number
   /** Controlled open state */
   open: boolean
@@ -28,9 +36,9 @@ interface TapeMeasureInputProps {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const ITEM_HEIGHT = 48 // px — each scroll item, above 44px touch target
-const VISIBLE_ITEMS = 5 // items visible in the wheel at once
-const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS // 240px
+const ITEM_HEIGHT = 48
+const VISIBLE_ITEMS = 5
+const WHEEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -38,36 +46,59 @@ export function TapeMeasureInput({
   value,
   onChange,
   label = "Dimension",
+  mode = "inches-fractions",
   min = 0,
   max = 120,
   open,
   onOpenChange,
 }: TapeMeasureInputProps) {
-  const { inches: initInches, fractionIndex: initFrac } = splitInchesAndFraction(value)
-  const [selectedInches, setSelectedInches] = useState(initInches)
-  const [selectedFraction, setSelectedFraction] = useState(initFrac)
+  // ── Parse initial value based on mode ──
+  const parseValue = useCallback((val: string) => {
+    if (mode === "feet-inches") {
+      const totalInches = parseInt(val) || 0
+      return { left: Math.floor(totalInches / 12), right: totalInches % 12 }
+    }
+    const { inches, fractionIndex } = splitInchesAndFraction(val)
+    return { left: inches, right: fractionIndex }
+  }, [mode])
 
-  const inchWheelRef = useRef<HTMLDivElement>(null)
-  const fracWheelRef = useRef<HTMLDivElement>(null)
-  const inchScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const fracScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const init = parseValue(value)
+  const [selectedLeft, setSelectedLeft] = useState(init.left)
+  const [selectedRight, setSelectedRight] = useState(init.right)
 
-  // Reset state when opened with a new value
+  const leftWheelRef = useRef<HTMLDivElement>(null)
+  const rightWheelRef = useRef<HTMLDivElement>(null)
+  const leftScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const rightScrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Range generation ──
+  const leftMin = min
+  const leftMax = max
+  const rightMin = 0
+  const rightMax = mode === "feet-inches" ? 11 : FRACTIONS.length - 1
+
+  const leftRange: number[] = []
+  for (let i = leftMin; i <= leftMax; i++) leftRange.push(i)
+
+  const rightRange: number[] = mode === "feet-inches"
+    ? Array.from({ length: 12 }, (_, i) => i) // 0-11 inches
+    : [] // fractions handled separately
+
+  // Reset state when opened
   useEffect(() => {
     if (open) {
-      const { inches, fractionIndex } = splitInchesAndFraction(value)
-      setSelectedInches(inches)
-      setSelectedFraction(fractionIndex)
+      const parsed = parseValue(value)
+      setSelectedLeft(parsed.left)
+      setSelectedRight(parsed.right)
 
-      // Double rAF to ensure DOM is painted before scrolling
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          scrollToIndex(inchWheelRef.current, inches - min)
-          scrollToIndex(fracWheelRef.current, fractionIndex)
+          scrollToIndex(leftWheelRef.current, parsed.left - leftMin)
+          scrollToIndex(rightWheelRef.current, parsed.right - rightMin)
         })
       })
     }
-  }, [open, value, min])
+  }, [open, value, leftMin, rightMin, parseValue])
 
   // ── Scroll helpers ──
 
@@ -78,38 +109,45 @@ export function TapeMeasureInput({
 
   function getSelectedIndex(el: HTMLDivElement | null): number {
     if (!el) return 0
-    const scrollPos = el.scrollTop
-    return Math.round(scrollPos / ITEM_HEIGHT)
+    return Math.round(el.scrollTop / ITEM_HEIGHT)
   }
 
-  const handleInchScroll = useCallback(() => {
-    if (inchScrollTimer.current) clearTimeout(inchScrollTimer.current)
-    inchScrollTimer.current = setTimeout(() => {
-      const idx = getSelectedIndex(inchWheelRef.current)
-      const clamped = Math.max(min, Math.min(max, idx + min))
-      setSelectedInches(clamped)
-      // Snap scroll back if user scrolled past min/max
-      const clampedIdx = clamped - min
+  const handleLeftScroll = useCallback(() => {
+    if (leftScrollTimer.current) clearTimeout(leftScrollTimer.current)
+    leftScrollTimer.current = setTimeout(() => {
+      const idx = getSelectedIndex(leftWheelRef.current)
+      const clamped = Math.max(leftMin, Math.min(leftMax, idx + leftMin))
+      setSelectedLeft(clamped)
+      const clampedIdx = clamped - leftMin
       if (idx !== clampedIdx) {
-        scrollToIndex(inchWheelRef.current, clampedIdx)
+        scrollToIndex(leftWheelRef.current, clampedIdx)
       }
     }, 80)
-  }, [min, max])
+  }, [leftMin, leftMax])
 
-  const handleFracScroll = useCallback(() => {
-    if (fracScrollTimer.current) clearTimeout(fracScrollTimer.current)
-    fracScrollTimer.current = setTimeout(() => {
-      const idx = getSelectedIndex(fracWheelRef.current)
-      setSelectedFraction(Math.max(0, Math.min(FRACTIONS.length - 1, idx)))
+  const handleRightScroll = useCallback(() => {
+    if (rightScrollTimer.current) clearTimeout(rightScrollTimer.current)
+    rightScrollTimer.current = setTimeout(() => {
+      const idx = getSelectedIndex(rightWheelRef.current)
+      const clamped = Math.max(rightMin, Math.min(rightMax, idx))
+      setSelectedRight(clamped)
+      if (idx !== clamped) {
+        scrollToIndex(rightWheelRef.current, clamped)
+      }
     }, 80)
-  }, [])
+  }, [rightMin, rightMax])
 
   // ── Actions ──
 
   function handleDone() {
-    const decimal = selectedInches + FRACTIONS[selectedFraction].decimal
-    const formatted = formatFractionalInches(decimal)
-    onChange(formatted || String(selectedInches))
+    if (mode === "feet-inches") {
+      const totalInches = selectedLeft * 12 + selectedRight
+      onChange(String(totalInches))
+    } else {
+      const decimal = selectedLeft + FRACTIONS[selectedRight].decimal
+      const formatted = formatFractionalInches(decimal)
+      onChange(formatted || String(selectedLeft))
+    }
     onOpenChange(false)
   }
 
@@ -118,19 +156,21 @@ export function TapeMeasureInput({
     onOpenChange(false)
   }
 
-  // ── Current display value ──
+  // ── Display value ──
 
   const displayValue = (() => {
-    const frac = FRACTIONS[selectedFraction]
-    if (frac.numerator === 0) return `${selectedInches}"`
-    return `${selectedInches}-${frac.label}"`
+    if (mode === "feet-inches") {
+      if (selectedLeft === 0 && selectedRight === 0) return "0"
+      if (selectedRight === 0) return `${selectedLeft}'`
+      if (selectedLeft === 0) return `${selectedRight}"`
+      return `${selectedLeft}' ${selectedRight}"`
+    }
+    const frac = FRACTIONS[selectedRight]
+    if (frac.numerator === 0) return `${selectedLeft}"`
+    return `${selectedLeft}-${frac.label}"`
   })()
 
-  // Generate inch range
-  const inchRange: number[] = []
-  for (let i = min; i <= max; i++) inchRange.push(i)
-
-  // Padding items for scroll centering (empty items above and below)
+  // Padding items for scroll centering
   const padCount = Math.floor(VISIBLE_ITEMS / 2)
 
   if (!open || typeof document === "undefined") return null
@@ -169,23 +209,22 @@ export function TapeMeasureInput({
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#FFB300] to-transparent z-[5] pointer-events-none rounded-b-xl" />
 
           <div className="flex h-full">
-            {/* ── Inches Wheel ── */}
+            {/* ── Left Wheel (Inches or Feet) ── */}
             <div className="flex-1 relative">
               <div
-                ref={inchWheelRef}
+                ref={leftWheelRef}
                 className="tape-scroll-wheel h-full overflow-y-auto"
-                onScroll={handleInchScroll}
+                onScroll={handleLeftScroll}
               >
-                {/* Top padding */}
                 {Array.from({ length: padCount }).map((_, i) => (
                   <div key={`pad-t-${i}`} className="tape-scroll-item" style={{ height: ITEM_HEIGHT }} />
                 ))}
 
-                {inchRange.map((inch) => {
-                  const isSelected = inch === selectedInches
+                {leftRange.map((val) => {
+                  const isSelected = val === selectedLeft
                   return (
                     <div
-                      key={inch}
+                      key={val}
                       className="tape-scroll-item justify-end pr-3 gap-2"
                       style={{ height: ITEM_HEIGHT }}
                     >
@@ -197,14 +236,13 @@ export function TapeMeasureInput({
                             : "text-sm font-medium text-[#1a1a1a]/40"
                         )}
                       >
-                        {inch}
+                        {val}{mode === "feet-inches" ? "'" : ""}
                       </span>
                       <div className="tape-tick tape-tick-inch shrink-0" />
                     </div>
                   )
                 })}
 
-                {/* Bottom padding */}
                 {Array.from({ length: padCount }).map((_, i) => (
                   <div key={`pad-b-${i}`} className="tape-scroll-item" style={{ height: ITEM_HEIGHT }} />
                 ))}
@@ -214,43 +252,68 @@ export function TapeMeasureInput({
             {/* ── Divider ── */}
             <div className="w-px bg-black/10 my-4" />
 
-            {/* ── Fractions Wheel ── */}
+            {/* ── Right Wheel (Fractions or Inches) ── */}
             <div className="flex-1 relative">
               <div
-                ref={fracWheelRef}
+                ref={rightWheelRef}
                 className="tape-scroll-wheel h-full overflow-y-auto"
-                onScroll={handleFracScroll}
+                onScroll={handleRightScroll}
               >
-                {/* Top padding */}
                 {Array.from({ length: padCount }).map((_, i) => (
                   <div key={`pad-t-${i}`} className="tape-scroll-item" style={{ height: ITEM_HEIGHT }} />
                 ))}
 
-                {FRACTIONS.map((frac, idx) => {
-                  const isSelected = idx === selectedFraction
-                  const tickType = fractionTickHeight(idx)
-                  return (
-                    <div
-                      key={idx}
-                      className="tape-scroll-item pl-3 gap-2"
-                      style={{ height: ITEM_HEIGHT }}
-                    >
-                      <div className={`tape-tick tape-tick-${tickType} shrink-0`} />
-                      <span
-                        className={cn(
-                          "tabular-nums transition-all duration-150 select-none",
-                          isSelected
-                            ? "text-base font-bold text-[#1a1a1a]"
-                            : "text-sm font-medium text-[#1a1a1a]/40"
-                        )}
+                {mode === "feet-inches" ? (
+                  /* Inches 0-11 */
+                  rightRange.map((val) => {
+                    const isSelected = val === selectedRight
+                    return (
+                      <div
+                        key={val}
+                        className="tape-scroll-item pl-3 gap-2"
+                        style={{ height: ITEM_HEIGHT }}
                       >
-                        {frac.label === "0" ? "0" : frac.label}
-                      </span>
-                    </div>
-                  )
-                })}
+                        <div className="tape-tick tape-tick-inch shrink-0" />
+                        <span
+                          className={cn(
+                            "tabular-nums transition-all duration-150 select-none",
+                            isSelected
+                              ? "text-base font-bold text-[#1a1a1a]"
+                              : "text-sm font-medium text-[#1a1a1a]/40"
+                          )}
+                        >
+                          {val}&quot;
+                        </span>
+                      </div>
+                    )
+                  })
+                ) : (
+                  /* Fractions */
+                  FRACTIONS.map((frac, idx) => {
+                    const isSelected = idx === selectedRight
+                    const tickType = fractionTickHeight(idx)
+                    return (
+                      <div
+                        key={idx}
+                        className="tape-scroll-item pl-3 gap-2"
+                        style={{ height: ITEM_HEIGHT }}
+                      >
+                        <div className={`tape-tick tape-tick-${tickType} shrink-0`} />
+                        <span
+                          className={cn(
+                            "tabular-nums transition-all duration-150 select-none",
+                            isSelected
+                              ? "text-base font-bold text-[#1a1a1a]"
+                              : "text-sm font-medium text-[#1a1a1a]/40"
+                          )}
+                        >
+                          {frac.label === "0" ? "0" : frac.label}
+                        </span>
+                      </div>
+                    )
+                  })
+                )}
 
-                {/* Bottom padding */}
                 {Array.from({ length: padCount }).map((_, i) => (
                   <div key={`pad-b-${i}`} className="tape-scroll-item" style={{ height: ITEM_HEIGHT }} />
                 ))}

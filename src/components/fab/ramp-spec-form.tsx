@@ -57,11 +57,9 @@ export function RampSpecForm({ specs, onChange }: RampSpecFormProps) {
             <TapeMeasureInput
               key={dim.key}
               value={specs[dim.key] || ""}
-              onChange={(v) => {
-                const whole = parseInt(v.split("-")[0]) || 0
-                update(dim.key, String(whole))
-              }}
+              onChange={(v) => update(dim.key, v)}
               label={`${dim.label} (inches)`}
+              mode="inches-fractions"
               min={1}
               max={dim.max}
               open={activePicker === dim.key}
