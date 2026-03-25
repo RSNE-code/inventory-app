@@ -104,6 +104,7 @@ export function useUpdateBom() {
         nonCatalogCategory?: string | null
         nonCatalogUom?: string | null
         nonCatalogEstCost?: number | null
+        nonCatalogSpecs?: Record<string, unknown>
       }>
       removeLineItemIds?: string[]
       updateLineItems?: Array<{ id: string; qtyNeeded: number }>

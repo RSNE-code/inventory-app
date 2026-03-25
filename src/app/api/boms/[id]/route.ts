@@ -194,6 +194,12 @@ export async function PUT(
             },
           })
         } else {
+          // Auto-set fabricationSource for assembly template items
+          const isAssemblyTemplate = item.isNonCatalog &&
+            item.nonCatalogSpecs &&
+            typeof item.nonCatalogSpecs === "object" &&
+            "assemblyTemplateId" in item.nonCatalogSpecs
+
           await prisma.bomLineItem.create({
             data: {
               bomId: id,
@@ -208,6 +214,7 @@ export async function PUT(
                 ? new Prisma.Decimal(item.nonCatalogEstCost)
                 : null,
               nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
+              fabricationSource: isAssemblyTemplate ? "RSNE_MADE" : null,
             },
           })
         }
