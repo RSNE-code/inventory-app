@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, PenLine, ClipboardList, Trash2, Plus, X, Check } from "lucide-react"
+import { Camera, PenLine, ClipboardList, Trash2, Plus, X, Check, Wrench } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -525,21 +525,30 @@ export function BomAIFlow() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-1.5 flex-wrap">
                       <p className="text-[13px] font-semibold text-navy break-words">{item.productName}</p>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-[10px] px-1.5 py-0 rounded-xl shrink-0",
-                          item.tier === "TIER_1"
-                            ? "bg-brand-blue/10 text-brand-blue border-brand-blue/30"
-                            : "bg-purple-50 text-purple-700 border-purple-200"
-                        )}
-                      >
-                        {item.tier === "TIER_1" ? "T1" : "T2"}
-                      </Badge>
-                      {item.isNonCatalog && (
-                        <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 bg-orange-50 px-1.5 py-0 rounded-xl shrink-0">
-                          Non-catalog
+                      {item.catalogMatch.matchedProduct?.isAssemblyTemplate ? (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 rounded-xl shrink-0 text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-0.5">
+                          <Wrench className="h-2.5 w-2.5" />
+                          In-house
                         </Badge>
+                      ) : (
+                        <>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[10px] px-1.5 py-0 rounded-xl shrink-0",
+                              item.tier === "TIER_1"
+                                ? "bg-brand-blue/10 text-brand-blue border-brand-blue/30"
+                                : "bg-purple-50 text-purple-700 border-purple-200"
+                            )}
+                          >
+                            {item.tier === "TIER_1" ? "T1" : "T2"}
+                          </Badge>
+                          {item.isNonCatalog && (
+                            <Badge variant="outline" className="text-[10px] text-orange-600 border-orange-300 bg-orange-50 px-1.5 py-0 rounded-xl shrink-0">
+                              Non-catalog
+                            </Badge>
+                          )}
+                        </>
                       )}
                     </div>
 
