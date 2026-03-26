@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Check, AlertCircle, Minus, Plus, X } from "lucide-react"
+import { Check, AlertCircle, Minus, Plus, X, Wrench } from "lucide-react"
 import { SwipeableRow } from "./swipeable-row"
 import { PanelDimensionEditor } from "./panel-dimension-editor"
 import { UnitConversionPrompt } from "./unit-conversion-prompt"
@@ -225,7 +225,13 @@ export function LiveItemFeed({
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}
-                  {item.isNonCatalog && !item.isPanel && (
+                  {item.isAssemblyTemplate && (
+                    <span className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-blue-50 text-brand-blue">
+                      <Wrench className="h-2.5 w-2.5" />
+                      In-house
+                    </span>
+                  )}
+                  {item.isNonCatalog && !item.isPanel && !item.isAssemblyTemplate && (
                     <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
                   )}
                   {isFlagged && !item.isPanel && (
