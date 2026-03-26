@@ -17,13 +17,8 @@ interface CatalogProduct {
   dimLengthUnit: string | null
   dimWidth: number | { toString(): string } | null
   dimWidthUnit: string | null
-}
-
-interface AssemblyTemplateRecord {
-  id: string
-  name: string
-  type: string
-  description: string | null
+  isAssembly: boolean
+  assemblyTemplateId: string | null
 }
 
 // Known door/panel supplier names — if these appear in the parsed text,
@@ -33,6 +28,21 @@ const SUPPLIER_NAMES = [
   "master-bilt", "masterbilt", "amerikooler", "walk-in", "hussmann",
   "tyler", "zero zone", "hill phoenix",
 ]
+
+// Synonyms for assembly matching — words that mean the same thing
+// in RSNE door/panel context
+const ASSEMBLY_SYNONYMS: Record<string, string[]> = {
+  "slider": ["sliding", "slide"],
+  "sliding": ["slider", "slide"],
+  "door": ["dr"],
+  "cooler": ["clr", "walk-in", "walkin"],
+  "freezer": ["frzr", "frz"],
+  "exterior": ["ext", "outside"],
+  "panel": ["pnl"],
+  "floor": ["flr"],
+  "wall": ["wl"],
+  "ramp": ["loading"],
+}
 
 // ─── Confidence tiers ───
 
@@ -69,6 +79,7 @@ function buildProductMatch(
       dimLengthUnit: product.dimLengthUnit,
       dimWidth: product.dimWidth ? Number(product.dimWidth) : null,
       dimWidthUnit: product.dimWidthUnit,
+      isAssembly: product.isAssembly,
     },
     matchConfidence: confidence,
     matchTier: tier,
@@ -83,26 +94,22 @@ export async function matchItemsToCatalog(
   parsedItems: ParsedLineItem[],
   userId?: string
 ): Promise<CatalogMatch[]> {
-  const [products, assemblyTemplates] = await Promise.all([
-    prisma.product.findMany({
-      where: { isActive: true },
-      select: {
-        id: true, name: true, sku: true, unitOfMeasure: true,
-        currentQty: true, tier: true,
-        category: { select: { name: true } },
-        lastCost: true, avgCost: true, reorderPoint: true,
-        dimLength: true, dimLengthUnit: true,
-        dimWidth: true, dimWidthUnit: true,
-      },
-    }),
-    prisma.assemblyTemplate.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, type: true, description: true },
-    }),
-  ])
+  // Assembly products are now real Product records — single query gets everything
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: {
+      id: true, name: true, sku: true, unitOfMeasure: true,
+      currentQty: true, tier: true,
+      category: { select: { name: true } },
+      lastCost: true, avgCost: true, reorderPoint: true,
+      dimLength: true, dimLengthUnit: true,
+      dimWidth: true, dimWidthUnit: true,
+      isAssembly: true, assemblyTemplateId: true,
+    },
+  })
 
   return Promise.all(
-    parsedItems.map((item) => matchSingleItem(item, products, assemblyTemplates, userId))
+    parsedItems.map((item) => matchSingleItem(item, products, userId))
   )
 }
 
@@ -111,7 +118,6 @@ export async function matchItemsToCatalog(
 async function matchSingleItem(
   item: ParsedLineItem,
   products: CatalogProduct[],
-  assemblyTemplates: AssemblyTemplateRecord[],
   userId?: string
 ): Promise<CatalogMatch> {
   // 1. Check match history first — user corrections are the strongest signal
@@ -122,82 +128,26 @@ async function matchSingleItem(
     }
   }
 
-  // 2. Check if item mentions a known supplier — if so, skip assembly templates
+  // 2. Check if item mentions a known supplier — suppress assembly product matches
   const itemNameLower = item.name.toLowerCase()
   const mentionsSupplier = SUPPLIER_NAMES.some((s) => itemNameLower.includes(s))
 
-  // 3. Score against assembly templates (unless supplier is mentioned)
-  let bestAssemblyMatch: { template: AssemblyTemplateRecord; score: number } | null = null
-  if (!mentionsSupplier && assemblyTemplates.length > 0) {
-    const assemblyScored = assemblyTemplates.map((template) => ({
-      template,
-      score: calculateAssemblyMatchScore(item, template),
+  // 3. Score all products (assembly products get synonym/dimension boosts)
+  const scored = products
+    .filter((product) => {
+      // Skip assembly products when a supplier name is mentioned
+      if (mentionsSupplier && product.isAssembly) return false
+      return true
+    })
+    .map((product) => ({
+      product,
+      score: calculateMatchScore(item, product),
     }))
-    assemblyScored.sort((a, b) => b.score - a.score)
-    if (assemblyScored[0] && assemblyScored[0].score >= 0.50) {
-      bestAssemblyMatch = assemblyScored[0]
-    }
-  }
-
-  // 4. Fuzzy match against catalog products
-  const scored = products.map((product) => ({
-    product,
-    score: calculateMatchScore(item, product),
-  }))
 
   scored.sort((a, b) => b.score - a.score)
 
   const bestProduct = scored[0]
   const FLOOR_THRESHOLD = 0.40
-
-  // 5. Prefer assembly template if it scores higher than the best product match
-  // Assembly templates are first-class catalog items — they match and render
-  // identically to products (same confidence tiers, same card treatment)
-  // with an "In-house" badge to distinguish them.
-  if (bestAssemblyMatch && (!bestProduct || bestAssemblyMatch.score + 0.10 >= bestProduct.score)) {
-    const t = bestAssemblyMatch.template
-    const typeLabel = assemblyTypeLabel(t.type)
-    const confidence = bestAssemblyMatch.score
-    return {
-      parsedItem: {
-        ...item,
-        name: t.name,
-        category: typeLabel,
-        unitOfMeasure: "each",
-      },
-      matchedProduct: {
-        id: t.id,
-        name: t.name,
-        sku: null,
-        unitOfMeasure: "each",
-        currentQty: 0,
-        tier: "TIER_1",
-        categoryName: typeLabel,
-        lastCost: 0,
-        avgCost: 0,
-        reorderPoint: 0,
-        dimLength: null,
-        dimLengthUnit: null,
-        dimWidth: null,
-        dimWidthUnit: null,
-        isAssemblyTemplate: true,
-        assemblyTemplateId: t.id,
-        assemblyType: t.type,
-      },
-      matchConfidence: confidence,
-      matchTier: getMatchTier(confidence),
-      isNonCatalog: false,
-      assemblyTemplateId: t.id,
-      alternativeMatches: scored
-        .slice(0, 3)
-        .filter((s) => s.score >= FLOOR_THRESHOLD)
-        .map((s) => ({
-          id: s.product.id,
-          name: s.product.name,
-          matchConfidence: s.score,
-        })),
-    }
-  }
 
   if (bestProduct && bestProduct.score >= FLOOR_THRESHOLD) {
     const tier = getMatchTier(bestProduct.score)
@@ -220,141 +170,6 @@ async function matchSingleItem(
     matchTier: "none",
     isNonCatalog: true,
   }
-}
-
-function assemblyTypeLabel(type: string): string {
-  switch (type) {
-    case "DOOR": return "Door"
-    case "FLOOR_PANEL": return "Floor Panel"
-    case "WALL_PANEL": return "Wall Panel"
-    case "RAMP": return "Ramp"
-    default: return "Assembly"
-  }
-}
-
-// ─── Assembly template scoring ───
-
-// Synonyms for assembly matching — words that mean the same thing
-// in RSNE door/panel context
-const ASSEMBLY_SYNONYMS: Record<string, string[]> = {
-  "slider": ["sliding", "slide"],
-  "sliding": ["slider", "slide"],
-  "door": ["dr"],
-  "cooler": ["clr", "walk-in", "walkin"],
-  "freezer": ["frzr", "frz"],
-  "exterior": ["ext", "outside"],
-  "panel": ["pnl"],
-  "floor": ["flr"],
-  "wall": ["wl"],
-  "ramp": ["loading"],
-}
-
-function assemblyTokenMatch(itemToken: string, templateToken: string): boolean {
-  // Direct substring match
-  if (templateToken.includes(itemToken) || itemToken.includes(templateToken)) return true
-  // Synonym match
-  const synonyms = ASSEMBLY_SYNONYMS[templateToken]
-  if (synonyms && synonyms.includes(itemToken)) return true
-  const itemSynonyms = ASSEMBLY_SYNONYMS[itemToken]
-  if (itemSynonyms && itemSynonyms.includes(templateToken)) return true
-  return false
-}
-
-// Convert dimension tokens to inches for approximate matching.
-// "6" in context of feet = 72", "7" = 84". 6'6" parsed as ["6","6"] = ~78"
-function parseDimInches(tokens: string[]): number[] {
-  return tokens.map((t) => parseInt(t, 10) * 12).filter((n) => !isNaN(n))
-}
-
-function calculateAssemblyMatchScore(
-  item: ParsedLineItem,
-  template: AssemblyTemplateRecord
-): number {
-  const itemName = normalize(item.name)
-  const templateName = normalize(template.name)
-
-  // Exact match
-  if (itemName === templateName) return 1.0
-
-  const itemTokens = expandTokens(tokenize(itemName))
-  const templateTokens = tokenize(templateName)
-
-  if (itemTokens.length === 0 || templateTokens.length === 0) return 0
-
-  // Count how many item tokens match template tokens (with synonyms)
-  let matchedTokens = 0
-  for (const token of itemTokens) {
-    if (templateTokens.some((tt) => assemblyTokenMatch(token, tt))) {
-      matchedTokens++
-    }
-  }
-
-  const coverageScore = matchedTokens / itemTokens.length
-
-  // Dimension proximity: allow approximate matches (6'6" ≈ 7')
-  // Extract dimension-like tokens (numbers) from both sides
-  const itemDimTokens = itemTokens.filter((t) => /^\d+$/.test(t))
-  const templateDimTokens = templateTokens.filter((t) => /^\d+$/.test(t))
-  let dimBoost = 0
-  if (itemDimTokens.length > 0 && templateDimTokens.length > 0) {
-    // Check exact dimension matches first
-    const exactDimMatches = itemDimTokens.filter((d) => templateDimTokens.includes(d)).length
-    if (exactDimMatches > 0) {
-      dimBoost = 0.15 * (exactDimMatches / itemDimTokens.length)
-    }
-    // For non-exact matches, check nearby dimensions.
-    // Door/panel dimensions are typically WxH in feet. When the AI parses
-    // "5' x 6'-6"" the tokens are ["5","6","6"]. We need to check if any
-    // pair of item dimensions (treated as feet+inches) is close to a template dim.
-    // e.g., 6 feet + 6 inches = 78" ≈ 84" (7 feet) → close match
-    const itemNums = itemDimTokens.map((t) => parseInt(t, 10))
-    const templateNums = templateDimTokens.map((t) => parseInt(t, 10))
-    for (let i = 0; i < itemNums.length; i++) {
-      // Try this number as standalone feet
-      const standaloneFt = itemNums[i] * 12
-      for (const tNum of templateNums) {
-        const templateIn = tNum * 12
-        if (Math.abs(standaloneFt - templateIn) <= 12 && standaloneFt !== templateIn) {
-          dimBoost = Math.max(dimBoost, 0.10)
-        }
-      }
-      // Try combining with next number as feet+inches (e.g., 6,6 → 78")
-      if (i + 1 < itemNums.length && itemNums[i + 1] <= 11) {
-        const feetPlusInches = itemNums[i] * 12 + itemNums[i + 1]
-        for (const tNum of templateNums) {
-          const templateIn = tNum * 12
-          if (Math.abs(feetPlusInches - templateIn) <= 12) {
-            dimBoost = Math.max(dimBoost, 0.15)
-          }
-        }
-      }
-    }
-  }
-
-  // Type keyword boost: if the item mentions door/panel/ramp-related words
-  // and the template type matches
-  let typeBoost = 0
-  const typeKeywords: Record<string, string[]> = {
-    DOOR: ["door", "swing", "slider", "sliding", "slide", "hinged", "hinge", "dr"],
-    FLOOR_PANEL: ["floor", "panel", "flr"],
-    WALL_PANEL: ["wall", "panel", "wl"],
-    RAMP: ["ramp", "loading"],
-  }
-  const keywords = typeKeywords[template.type] || []
-  if (keywords.some((kw) => itemTokens.includes(kw))) {
-    typeBoost = 0.10
-  }
-
-  // If the item is clearly a door/panel type (has type keywords) but coverage
-  // is low because template uses different terminology (e.g., "sliding door"
-  // vs "cooler slider"), give a bonus for the type match
-  if (typeBoost > 0 && coverageScore < 0.40) {
-    // The item is definitely talking about this type of assembly
-    // even if the exact words don't match well
-    typeBoost = 0.20
-  }
-
-  return Math.min(1.0, coverageScore + dimBoost + typeBoost)
 }
 
 // ─── Match history lookup ───
@@ -412,8 +227,15 @@ function calculateMatchScore(
   // Count how many ITEM tokens match something in the product
   let matchedTokens = 0
   for (const token of itemTokens) {
-    if (productTokens.some((pt) => pt.includes(token) || token.includes(pt))) {
-      matchedTokens++
+    if (product.isAssembly) {
+      // Assembly products get synonym-aware matching
+      if (productTokens.some((pt) => assemblyTokenMatch(token, pt))) {
+        matchedTokens++
+      }
+    } else {
+      if (productTokens.some((pt) => pt.includes(token) || token.includes(pt))) {
+        matchedTokens++
+      }
     }
   }
 
@@ -442,7 +264,70 @@ function calculateMatchScore(
     if (skuMatchCount > 0) skuBoost = 0.05 * skuMatchCount
   }
 
-  return Math.min(1.0, tokenScore + categoryBoost + skuBoost)
+  // Assembly-specific boosts (dimension proximity + type keywords)
+  let assemblyBoost = 0
+  if (product.isAssembly) {
+    assemblyBoost = calculateAssemblyBoost(itemTokens, productTokens)
+  }
+
+  return Math.min(1.0, tokenScore + categoryBoost + skuBoost + assemblyBoost)
+}
+
+// ─── Assembly-specific scoring boosts ───
+
+function assemblyTokenMatch(itemToken: string, productToken: string): boolean {
+  // Direct substring match
+  if (productToken.includes(itemToken) || itemToken.includes(productToken)) return true
+  // Synonym match
+  const synonyms = ASSEMBLY_SYNONYMS[productToken]
+  if (synonyms && synonyms.includes(itemToken)) return true
+  const itemSynonyms = ASSEMBLY_SYNONYMS[itemToken]
+  if (itemSynonyms && itemSynonyms.includes(productToken)) return true
+  return false
+}
+
+function calculateAssemblyBoost(itemTokens: string[], productTokens: string[]): number {
+  let boost = 0
+
+  // Dimension proximity: allow approximate matches (6'6" ≈ 7')
+  const itemDimTokens = itemTokens.filter((t) => /^\d+$/.test(t))
+  const productDimTokens = productTokens.filter((t) => /^\d+$/.test(t))
+
+  if (itemDimTokens.length > 0 && productDimTokens.length > 0) {
+    const exactDimMatches = itemDimTokens.filter((d) => productDimTokens.includes(d)).length
+    if (exactDimMatches > 0) {
+      boost = 0.15 * (exactDimMatches / itemDimTokens.length)
+    }
+    const itemNums = itemDimTokens.map((t) => parseInt(t, 10))
+    const productNums = productDimTokens.map((t) => parseInt(t, 10))
+    for (let i = 0; i < itemNums.length; i++) {
+      const standaloneFt = itemNums[i] * 12
+      for (const pNum of productNums) {
+        const productIn = pNum * 12
+        if (Math.abs(standaloneFt - productIn) <= 12 && standaloneFt !== productIn) {
+          boost = Math.max(boost, 0.10)
+        }
+      }
+      if (i + 1 < itemNums.length && itemNums[i + 1] <= 11) {
+        const feetPlusInches = itemNums[i] * 12 + itemNums[i + 1]
+        for (const pNum of productNums) {
+          const productIn = pNum * 12
+          if (Math.abs(feetPlusInches - productIn) <= 12) {
+            boost = Math.max(boost, 0.15)
+          }
+        }
+      }
+    }
+  }
+
+  // Type keyword boost
+  const typeKeywords = ["door", "swing", "slider", "sliding", "slide", "hinged", "hinge", "dr",
+    "floor", "panel", "flr", "wall", "wl", "ramp", "loading"]
+  if (typeKeywords.some((kw) => itemTokens.includes(kw))) {
+    boost += 0.10
+  }
+
+  return boost
 }
 
 // ─── Text utilities ───

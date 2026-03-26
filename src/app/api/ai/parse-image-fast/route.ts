@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { parseBomImageStream, toBomCatalogMatch, loadProductMap, loadAssemblyTemplateMap, resolveProductId } from "@/lib/ai/parse"
+import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
 
 /**
@@ -108,10 +108,9 @@ export async function POST(request: NextRequest) {
       mimeTypes.push(file.type)
     }
 
-    // Load product map + assembly templates + match history in parallel with starting the stream
-    const [productMap, assemblyTemplateMap, matchHistory] = await Promise.all([
+    // Load product map + match history in parallel with starting the stream
+    const [productMap, matchHistory] = await Promise.all([
       loadProductMap(),
-      loadAssemblyTemplateMap(),
       prisma.matchHistory.findMany({
         where: { userId: user.id, confirmed: true },
         orderBy: { usageCount: "desc" },
@@ -151,11 +150,11 @@ export async function POST(request: NextRequest) {
               matchedProductId: resolvedId,
               alternativeProductIds: resolvedAlts,
             }
-            let catalogMatch = toBomCatalogMatch(resolvedItem, productMap, assemblyTemplateMap)
+            let catalogMatch = toBomCatalogMatch(resolvedItem, productMap)
 
             // Post-AI dimension verification — reject matches where dimensions conflict
-            // Skip for assembly templates — their dimensions are in the name, not product fields
-            if (catalogMatch.matchedProduct && !catalogMatch.panelSpecs && !catalogMatch.matchedProduct.isAssemblyTemplate) {
+            // Skip for assembly products — their dimensions are in the name, not product fields
+            if (catalogMatch.matchedProduct && !catalogMatch.panelSpecs && !catalogMatch.matchedProduct.isAssembly) {
               const parsedText = `${item.rawText} ${item.name}`
               const productName = catalogMatch.matchedProduct.name
               if (hasDimensionConflict(parsedText, productName)) {

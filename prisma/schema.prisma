@@ -158,11 +158,16 @@ model Product {
   lastCost      Decimal       @default(0) @db.Decimal(12, 4)
   location      String?
   isActive      Boolean       @default(true)
+  isAssembly    Boolean       @default(false)
   notes         String?
   leadTimeDays  Int?
   lastCountedAt DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  // Assembly link — populated only when isAssembly is true
+  assemblyTemplate   AssemblyTemplate? @relation(fields: [assemblyTemplateId], references: [id])
+  assemblyTemplateId String?           @unique
 
   transactions               Transaction[]
   bomLineItems               BomLineItem[]
@@ -366,6 +371,7 @@ model AssemblyTemplate {
 
   components AssemblyTemplateComponent[]
   assemblies Assembly[]
+  product    Product?
 }
 
 model AssemblyTemplateComponent {

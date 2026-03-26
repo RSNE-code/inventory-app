@@ -37,8 +37,7 @@ interface FeedItem {
   isPanel: boolean
   confirmed: boolean
   isNonCatalog: boolean
-  isAssemblyTemplate?: boolean
-  assemblyTemplateId?: string
+  isAssembly?: boolean
   nonCatalogCategory?: string
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
@@ -270,8 +269,7 @@ export function BomPhotoCapture() {
               isPanel: !!match.panelSpecs,
               confirmed: match.matchConfidence >= 0.95,
               isNonCatalog: match.isNonCatalog,
-              isAssemblyTemplate: !!match.matchedProduct?.isAssemblyTemplate,
-              assemblyTemplateId: match.matchedProduct?.assemblyTemplateId || match.assemblyTemplateId,
+              isAssembly: !!match.matchedProduct?.isAssembly,
               nonCatalogCategory: match.matchedProduct?.categoryName || match.parsedItem.category || undefined,
               panelSpecs: match.panelSpecs || undefined,
               alternatives: match.alternativeMatches?.map((a) => ({
@@ -409,21 +407,16 @@ export function BomPhotoCapture() {
   }
 
   function resolveItem(id: string, productId: string, productName: string) {
-    // Check if the selected match is an assembly template (AT: prefix from alternatives)
-    const isAT = productId.startsWith("AT:")
-    const resolvedProductId = isAT ? productId.slice(3) : productId
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
           ? {
               ...i,
-              productId: resolvedProductId,
+              productId,
               productName,
               confidence: 0.99,
               confirmed: true,
               isNonCatalog: false,
-              isAssemblyTemplate: isAT,
-              assemblyTemplateId: isAT ? resolvedProductId : undefined,
             }
           : i
       )
@@ -522,18 +515,15 @@ export function BomPhotoCapture() {
 
     try {
       const lineItems = validItems.map((item) => ({
-        // Assembly templates matched as products need to be submitted as non-catalog items
-        productId: (item.isNonCatalog || item.isAssemblyTemplate) ? null : item.productId,
+        // Assembly products are real catalog items — no more non-catalog hack
+        productId: item.isNonCatalog ? null : item.productId,
         tier: "TIER_1" as const,
         qtyNeeded: item.quantity,
-        isNonCatalog: item.isNonCatalog || item.isAssemblyTemplate,
-        nonCatalogName: (item.isNonCatalog || item.isAssemblyTemplate) ? item.productName : null,
-        nonCatalogCategory: item.isAssemblyTemplate
-          ? (item.nonCatalogCategory || null)
-          : item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
-        nonCatalogUom: (item.isNonCatalog || item.isAssemblyTemplate) ? item.unitOfMeasure : null,
-        nonCatalogSpecs: item.panelSpecs
-          || (item.assemblyTemplateId ? { type: "assembly", assemblyTemplateId: item.assemblyTemplateId } : null),
+        isNonCatalog: item.isNonCatalog,
+        nonCatalogName: item.isNonCatalog ? item.productName : null,
+        nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
+        nonCatalogUom: item.isNonCatalog ? item.unitOfMeasure : null,
+        nonCatalogSpecs: item.panelSpecs || null,
         matchConfidence: item.confidence,
         rawText: item.rawText,
         parsedUom: item.parsedUom || null,

@@ -33,8 +33,8 @@ export function BomConfirmationCard({
   }
 
   const stockLevel = getMatchStockLevel(match, quantity)
-  const isAssemblyTemplate = !!match.matchedProduct?.isAssemblyTemplate
-  const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog && !isAssemblyTemplate
+  const isAssembly = !!match.matchedProduct?.isAssembly
+  const isLowConfidence = match.matchConfidence < 0.5 && !match.isNonCatalog && !isAssembly
 
   function buildConfirmedItem(overrideProductId?: string): ConfirmedBomItem {
     const product = match.matchedProduct
@@ -113,7 +113,7 @@ export function BomConfirmationCard({
         "rounded-2xl border p-4 space-y-3 animate-item-enter",
         isLowConfidence
           ? "bom-card-flagged"
-          : (match.isNonCatalog && !isAssemblyTemplate)
+          : (match.isNonCatalog && !isAssembly)
             ? "bom-card-flagged"
             : "border-border-custom/60 bg-white shadow-brand"
       )}
@@ -128,11 +128,11 @@ export function BomConfirmationCard({
         >
           <div className={cn(
             "circle-checkbox",
-            isLowConfidence || (match.isNonCatalog && !isAssemblyTemplate) ? "flagged" : "likely"
+            isLowConfidence || (match.isNonCatalog && !isAssembly) ? "flagged" : "likely"
           )}>
             <Check className={cn(
               "h-3.5 w-3.5",
-              isLowConfidence || (match.isNonCatalog && !isAssemblyTemplate) ? "text-brand-orange" : "text-brand-blue"
+              isLowConfidence || (match.isNonCatalog && !isAssembly) ? "text-brand-orange" : "text-brand-blue"
             )} />
           </div>
         </button>
@@ -143,7 +143,7 @@ export function BomConfirmationCard({
           </p>
 
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            {isAssemblyTemplate ? (
+            {isAssembly ? (
               <>
                 <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
                   {match.matchedProduct?.categoryName || "Assembly"}
@@ -195,7 +195,7 @@ export function BomConfirmationCard({
           )}
 
           {/* Non-catalog structured fields (not shown for assembly templates) */}
-          {match.isNonCatalog && !isAssemblyTemplate && (
+          {match.isNonCatalog && !isAssembly && (
             <div className="text-xs text-text-muted mt-1.5 space-y-0.5">
               {match.parsedItem.category && <p>Category: {match.parsedItem.category}</p>}
               {match.parsedItem.material && <p>Material: {match.parsedItem.material}</p>}

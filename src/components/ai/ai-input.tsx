@@ -24,9 +24,8 @@ export interface ProductResult {
   dimWidth?: number | null
   dimWidthUnit?: string | null
   category?: { name: string }
-  isAssemblyTemplate?: boolean
-  assemblyType?: string
-  assemblyDescription?: string | null
+  isAssembly?: boolean
+  assemblyTemplate?: { type: string } | null
 }
 
 interface AIInputProps {
@@ -470,11 +469,11 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                       className={cn(
                         "search-result-row w-full text-left px-4 py-3 flex items-start justify-between gap-3",
                         idx === highlightIdx ? "bg-brand-blue/[0.06]" : "",
-                        p.isAssemblyTemplate ? "bg-brand-blue/[0.04]" : ""
+                        p.isAssembly ? "bg-brand-blue/[0.04]" : ""
                       )}
                     >
                       <div className="min-w-0 flex-1 flex items-start gap-2.5">
-                        {p.isAssemblyTemplate && (
+                        {p.isAssembly && (
                           <div className="h-7 w-7 rounded-lg bg-brand-blue/15 flex items-center justify-center shrink-0 mt-0.5">
                             <Wrench className="h-3.5 w-3.5 text-brand-blue" />
                           </div>
@@ -482,7 +481,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                         <div className="min-w-0">
                           <p className="text-[15px] font-semibold text-navy leading-snug break-words">{p.name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            {p.isAssemblyTemplate ? (
+                            {p.isAssembly ? (
                               <>
                                 <span className="inline-flex items-center text-[11px] font-semibold text-brand-blue bg-brand-blue/15 px-1.5 py-0.5 rounded">
                                   In-house
@@ -500,7 +499,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                           </div>
                         </div>
                       </div>
-                      {!p.isAssemblyTemplate && (
+                      {!p.isAssembly && (
                         <div className="text-right shrink-0 pt-0.5">
                           <span className="text-xs font-semibold text-brand-blue tabular-nums">
                             {(() => { const d = getDisplayQty(p); return `${formatQuantity(d.qty)}` })()}

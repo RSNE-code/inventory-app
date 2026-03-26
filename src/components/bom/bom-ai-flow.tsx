@@ -175,51 +175,7 @@ export function BomAIFlow() {
   }
 
   function handleAddProduct(product: ProductResult) {
-    // Assembly templates are added as non-catalog fabrication items
-    if (product.isAssemblyTemplate) {
-      const assemblyCategory = product.category?.name || "Assembly"
-      const existingIdx = confirmedItems.findIndex(
-        (c) => c.isNonCatalog && c.nonCatalogName === product.name
-      )
-      if (existingIdx >= 0) {
-        setConfirmedItems((prev) =>
-          prev.map((c, i) => i === existingIdx ? { ...c, qtyNeeded: c.qtyNeeded + 1 } : c)
-        )
-      } else {
-        setConfirmedItems((prev) => [
-          ...prev,
-          {
-            productId: null,
-            productName: product.name,
-            sku: null,
-            unitOfMeasure: "each",
-            tier: "TIER_1" as const,
-            qtyNeeded: 1,
-            isNonCatalog: true,
-            nonCatalogName: product.name,
-            nonCatalogCategory: assemblyCategory,
-            nonCatalogUom: "each",
-            nonCatalogEstCost: null,
-            currentQty: 0,
-            reorderPoint: 0,
-            dimLength: null,
-            dimLengthUnit: null,
-            dimWidth: null,
-            dimWidthUnit: null,
-            catalogMatch: {
-              parsedItem: { rawText: product.name, name: product.name, quantity: 1, unitOfMeasure: "each", confidence: 1 },
-              matchedProduct: null,
-              matchConfidence: 1,
-              isNonCatalog: true,
-              assemblyTemplateId: product.id.replace("assembly-template:", ""),
-            },
-          },
-        ])
-      }
-      setAddRowOpen(false)
-      return
-    }
-
+    // All products (including assembly items) are added the same way
     const existingIdx = confirmedItems.findIndex((c) => c.productId === product.id)
     if (existingIdx >= 0) {
       setConfirmedItems((prev) =>
@@ -320,26 +276,17 @@ export function BomAIFlow() {
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
         notes: notes.trim() || null,
-        lineItems: confirmedItems.map((item) => {
-          const isAT = !!item.catalogMatch.matchedProduct?.isAssemblyTemplate
-          const atId = item.catalogMatch.matchedProduct?.assemblyTemplateId
-            || item.catalogMatch.assemblyTemplateId
-          return {
-            // Assembly templates submit as non-catalog with assemblyTemplateId in specs
-            productId: isAT ? null : item.productId,
-            tier: item.tier,
-            qtyNeeded: item.qtyNeeded,
-            isNonCatalog: isAT || item.isNonCatalog,
-            nonCatalogName: isAT ? item.productName : item.nonCatalogName,
-            nonCatalogCategory: isAT
-              ? (item.catalogMatch.matchedProduct?.categoryName || null)
-              : item.nonCatalogCategory,
-            nonCatalogUom: isAT ? "each" : item.nonCatalogUom,
-            nonCatalogEstCost: item.nonCatalogEstCost,
-            nonCatalogSpecs: item.catalogMatch.panelSpecs
-              ?? (atId ? { type: "assembly", assemblyTemplateId: atId } : undefined),
-          }
-        }),
+        lineItems: confirmedItems.map((item) => ({
+          productId: item.productId,
+          tier: item.tier,
+          qtyNeeded: item.qtyNeeded,
+          isNonCatalog: item.isNonCatalog,
+          nonCatalogName: item.nonCatalogName,
+          nonCatalogCategory: item.nonCatalogCategory,
+          nonCatalogUom: item.nonCatalogUom,
+          nonCatalogEstCost: item.nonCatalogEstCost,
+          nonCatalogSpecs: item.catalogMatch.panelSpecs ?? undefined,
+        })),
       })
       setSubmitted(true)
       setShowSuccessOverlay(true)
@@ -525,7 +472,7 @@ export function BomAIFlow() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-1.5 flex-wrap">
                       <p className="text-[13px] font-semibold text-navy break-words">{item.productName}</p>
-                      {item.catalogMatch.matchedProduct?.isAssemblyTemplate ? (
+                      {item.catalogMatch.matchedProduct?.isAssembly ? (
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 rounded-xl shrink-0 text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-0.5">
                           <Wrench className="h-2.5 w-2.5" />
                           In-house

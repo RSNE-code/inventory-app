@@ -113,33 +113,17 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     }
   }
 
-  async function handleAddProduct(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; dimLength?: number | null; dimLengthUnit?: string | null; dimWidth?: number | null; dimWidthUnit?: string | null; isAssemblyTemplate?: boolean; assemblyType?: string; category?: { name: string } }) {
+  async function handleAddProduct(product: { id: string; name: string; sku: string | null; unitOfMeasure: string; currentQty: number; dimLength?: number | null; dimLengthUnit?: string | null; dimWidth?: number | null; dimWidthUnit?: string | null; isAssembly?: boolean; category?: { name: string } }) {
     try {
-      // Assembly templates are added as non-catalog fabrication items
-      if (product.isAssemblyTemplate) {
-        const assemblyCategory = product.category?.name || "Assembly"
-        await updateBom.mutateAsync({
-          id,
-          addLineItems: [{
-            tier: "TIER_1",
-            qtyNeeded: 1,
-            isNonCatalog: true,
-            nonCatalogName: product.name,
-            nonCatalogCategory: assemblyCategory,
-            nonCatalogUom: "each",
-            nonCatalogSpecs: { type: "assembly", assemblyTemplateId: product.id.replace("assembly-template:", "") },
-          }],
-        })
-      } else {
-        await updateBom.mutateAsync({
-          id,
-          addLineItems: [{
-            productId: product.id,
-            tier: "TIER_1",
-            qtyNeeded: 1,
-          }],
-        })
-      }
+      // All products (including assembly items) are added the same way
+      await updateBom.mutateAsync({
+        id,
+        addLineItems: [{
+          productId: product.id,
+          tier: "TIER_1",
+          qtyNeeded: 1,
+        }],
+      })
       toast.success(`Added ${product.name}`)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to add item")

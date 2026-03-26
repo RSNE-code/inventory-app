@@ -80,7 +80,6 @@ export async function GET(request: NextRequest) {
     ])
 
     // Enrich with unfabricated assembly item counts for approved/in-progress BOMs
-    const assemblyCategories = ["Door", "Floor Panel", "Wall Panel", "Ramp"]
     const bomIds = boms
       .filter((b) => ["APPROVED", "IN_PROGRESS"].includes(b.status))
       .map((b) => b.id)
@@ -92,10 +91,8 @@ export async function GET(request: NextRequest) {
         where: {
           bomId: { in: bomIds },
           isActive: true,
-          isNonCatalog: true,
           assemblyId: null,
-          fabricationSource: "RSNE_MADE",
-          nonCatalogCategory: { in: assemblyCategories },
+          product: { isAssembly: true },
         },
         _count: true,
       })
@@ -129,24 +126,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = createBomSchema.parse(body)
 
-    // Collect product IDs to check for fabrication recipes
+    // Collect product IDs to check for assembly status and fabrication recipes
     const catalogProductIds = data.lineItems
       .filter((item) => !item.isNonCatalog && item.productId)
       .map((item) => item.productId!)
 
-    // Look up which products have fabrication recipes
+    // Look up which products are assemblies or have fabrication recipes
+    const assemblyLookup = new Set<string>()
     const recipeLookup = new Map<string, boolean>()
     if (catalogProductIds.length > 0) {
-      const recipes = await prisma.fabricationRecipe.findMany({
-        where: {
-          finishedProductId: { in: catalogProductIds },
-          isActive: true,
-        },
-        select: { finishedProductId: true },
-      })
-      for (const r of recipes) {
-        recipeLookup.set(r.finishedProductId, true)
-      }
+      const [assemblyProducts, recipes] = await Promise.all([
+        prisma.product.findMany({
+          where: { id: { in: catalogProductIds }, isAssembly: true },
+          select: { id: true },
+        }),
+        prisma.fabricationRecipe.findMany({
+          where: { finishedProductId: { in: catalogProductIds }, isActive: true },
+          select: { finishedProductId: true },
+        }),
+      ])
+      for (const p of assemblyProducts) assemblyLookup.add(p.id)
+      for (const r of recipes) recipeLookup.set(r.finishedProductId, true)
     }
 
     // Photo-created BOMs go to PENDING_REVIEW, manual to DRAFT
@@ -177,12 +177,10 @@ export async function POST(request: NextRequest) {
             rawText: item.rawText || null,
             parsedUom: item.parsedUom || null,
             // Auto-set fabrication source:
+            // - Assembly products → RSNE_MADE
             // - Catalog products with fabrication recipes → RSNE_MADE
-            // - Non-catalog items from assembly templates → RSNE_MADE
             fabricationSource:
-              (!item.isNonCatalog && item.productId && recipeLookup.has(item.productId))
-                ? "RSNE_MADE"
-              : (item.isNonCatalog && item.nonCatalogSpecs && typeof item.nonCatalogSpecs === "object" && "assemblyTemplateId" in item.nonCatalogSpecs)
+              (!item.isNonCatalog && item.productId && (assemblyLookup.has(item.productId) || recipeLookup.has(item.productId)))
                 ? "RSNE_MADE"
               : null,
           })),
@@ -193,7 +191,7 @@ export async function POST(request: NextRequest) {
         lineItems: {
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true, isAssembly: true },
             },
           },
         },

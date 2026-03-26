@@ -789,6 +789,15 @@ function matchScore(a: string, b: string): number {
 async function main() {
   console.log("Seeding assembly templates...")
 
+  // Ensure "Assemblies" category exists for assembly Product records
+  let assemblyCategory = await prisma.category.findUnique({ where: { name: "Assemblies" } })
+  if (!assemblyCategory) {
+    assemblyCategory = await prisma.category.create({
+      data: { name: "Assemblies", color: "#3B82F6", sortOrder: 99 },
+    })
+  }
+  const assemblyCategoryId = assemblyCategory.id
+
   // Load all products
   const products = await prisma.product.findMany({
     where: { isActive: true },
@@ -865,7 +874,7 @@ async function main() {
       continue
     }
 
-    await prisma.assemblyTemplate.create({
+    const template = await prisma.assemblyTemplate.create({
       data: {
         name: tmpl.name,
         type: tmpl.type,
@@ -881,6 +890,23 @@ async function main() {
             notes: c.notes,
           })),
         },
+      },
+    })
+
+    // Create corresponding Product record (first-class catalog item)
+    await prisma.product.create({
+      data: {
+        name: tmpl.name,
+        categoryId: assemblyCategoryId,
+        tier: "TIER_1",
+        unitOfMeasure: "each",
+        currentQty: new Prisma.Decimal(0),
+        reorderPoint: new Prisma.Decimal(0),
+        avgCost: new Prisma.Decimal(0),
+        lastCost: new Prisma.Decimal(0),
+        isAssembly: true,
+        assemblyTemplateId: template.id,
+        notes: tmpl.description,
       },
     })
 

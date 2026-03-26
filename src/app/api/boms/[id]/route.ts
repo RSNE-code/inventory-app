@@ -21,7 +21,7 @@ export async function GET(
           where: { isActive: true },
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true, isAssembly: true },
             },
           },
           orderBy: { createdAt: "asc" },
@@ -194,11 +194,15 @@ export async function PUT(
             },
           })
         } else {
-          // Auto-set fabricationSource for assembly template items
-          const isAssemblyTemplate = item.isNonCatalog &&
-            item.nonCatalogSpecs &&
-            typeof item.nonCatalogSpecs === "object" &&
-            "assemblyTemplateId" in item.nonCatalogSpecs
+          // Auto-set fabricationSource for assembly products
+          let fabricationSource: "RSNE_MADE" | null = null
+          if (!item.isNonCatalog && item.productId) {
+            const product = await prisma.product.findUnique({
+              where: { id: item.productId },
+              select: { isAssembly: true },
+            })
+            if (product?.isAssembly) fabricationSource = "RSNE_MADE"
+          }
 
           await prisma.bomLineItem.create({
             data: {
@@ -214,7 +218,7 @@ export async function PUT(
                 ? new Prisma.Decimal(item.nonCatalogEstCost)
                 : null,
               nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
-              fabricationSource: isAssemblyTemplate ? "RSNE_MADE" : null,
+              fabricationSource,
             },
           })
         }
@@ -247,7 +251,7 @@ export async function PUT(
           where: { isActive: true },
           include: {
             product: {
-              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true },
+              select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true, isAssembly: true },
             },
           },
           orderBy: { createdAt: "asc" },

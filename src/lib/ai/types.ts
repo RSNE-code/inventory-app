@@ -38,12 +38,8 @@ export interface CatalogMatch {
     dimLengthUnit: string | null
     dimWidth: number | null
     dimWidthUnit: string | null
-    /** True if this "product" is actually an assembly template (door, panel, ramp) */
-    isAssemblyTemplate?: boolean
-    /** The assembly template UUID when isAssemblyTemplate is true */
-    assemblyTemplateId?: string
-    /** Assembly type: DOOR, FLOOR_PANEL, WALL_PANEL, RAMP */
-    assemblyType?: string
+    /** True if this product is an in-house assembly (door, panel, ramp) */
+    isAssembly?: boolean
   } | null
   matchConfidence: number // 0-1
   /** Confidence tier for UI rendering: auto (green), suggested (blue), flagged (orange), none (gray) */
@@ -54,8 +50,6 @@ export interface CatalogMatch {
     name: string
     matchConfidence: number
   }[]
-  /** Assembly template ID if matched to a fabrication item (door, slider, floor, etc.) */
-  assemblyTemplateId?: string
   /** Panel specs extracted from AI parse — brand-agnostic, decided at checkout */
   panelSpecs?: {
     type: "panel"
