@@ -145,12 +145,12 @@ export function BomConfirmationCard({
           <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
             {isAssemblyTemplate ? (
               <>
-                <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-1">
-                  <Wrench className="h-3 w-3" />
-                  RSNE Fab
-                </Badge>
                 <Badge variant="secondary" className="text-[11px] px-2 py-0.5 rounded-xl">
                   {match.matchedProduct?.categoryName || "Assembly"}
+                </Badge>
+                <Badge variant="outline" className="text-[11px] px-2 py-0.5 rounded-xl text-brand-blue border-blue-200 bg-blue-50 flex items-center gap-1">
+                  <Wrench className="h-3 w-3" />
+                  In-house
                 </Badge>
               </>
             ) : match.matchedProduct ? (

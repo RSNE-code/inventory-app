@@ -485,7 +485,7 @@ export const AIInput = forwardRef<AIInputHandle, AIInputProps>(function AIInput(
                             {p.isAssemblyTemplate ? (
                               <>
                                 <span className="inline-flex items-center text-[11px] font-semibold text-brand-blue bg-brand-blue/15 px-1.5 py-0.5 rounded">
-                                  RSNE Fab
+                                  In-house
                                 </span>
                                 {p.category && (
                                   <span className="text-xs text-text-muted">{p.category.name}</span>

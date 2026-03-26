@@ -151,26 +151,43 @@ async function matchSingleItem(
   const FLOOR_THRESHOLD = 0.40
 
   // 5. Prefer assembly template if it scores higher than the best product match
-  // Assembly templates get a small boost since "cooler door 5x7" is almost
-  // certainly an RSNE fab item, not a random catalog product
+  // Assembly templates are first-class catalog items — they match and render
+  // identically to products (same confidence tiers, same card treatment)
+  // with an "In-house" badge to distinguish them.
   if (bestAssemblyMatch && (!bestProduct || bestAssemblyMatch.score + 0.10 >= bestProduct.score)) {
     const t = bestAssemblyMatch.template
     const typeLabel = assemblyTypeLabel(t.type)
+    const confidence = bestAssemblyMatch.score
     return {
-      // Override parsedItem name/category with template info so the BOM
-      // confirmation flow picks up the correct assembly name and type
       parsedItem: {
         ...item,
         name: t.name,
         category: typeLabel,
         unitOfMeasure: "each",
       },
-      matchedProduct: null,
-      matchConfidence: bestAssemblyMatch.score,
-      matchTier: getMatchTier(bestAssemblyMatch.score),
-      isNonCatalog: true,
+      matchedProduct: {
+        id: t.id,
+        name: t.name,
+        sku: null,
+        unitOfMeasure: "each",
+        currentQty: 0,
+        tier: "TIER_1",
+        categoryName: typeLabel,
+        lastCost: 0,
+        avgCost: 0,
+        reorderPoint: 0,
+        dimLength: null,
+        dimLengthUnit: null,
+        dimWidth: null,
+        dimWidthUnit: null,
+        isAssemblyTemplate: true,
+        assemblyTemplateId: t.id,
+        assemblyType: t.type,
+      },
+      matchConfidence: confidence,
+      matchTier: getMatchTier(confidence),
+      isNonCatalog: false,
       assemblyTemplateId: t.id,
-      // Provide alternatives from product matches for user to override
       alternativeMatches: scored
         .slice(0, 3)
         .filter((s) => s.score >= FLOOR_THRESHOLD)
@@ -435,6 +452,7 @@ function normalize(text: string | undefined | null): string {
   return text
     .toLowerCase()
     .replace(/[''′`"″"]/g, "") // remove all quote/apostrophe variants
+    .replace(/(\d)\s*x\s*(\d)/g, "$1 $2") // split dimension patterns: "5x7" → "5 7"
     .replace(/\s+/g, " ")
     .trim()
 }

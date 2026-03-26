@@ -212,7 +212,7 @@ export function ProductPicker({ onSelect, onCustomAdd, placeholder = "Search pro
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           {p.isAssemblyTemplate ? (
                             <span className="inline-flex items-center text-[11px] font-semibold text-brand-blue bg-brand-blue/15 px-1.5 py-0.5 rounded">
-                              RSNE Fab
+                              In-house
                             </span>
                           ) : (
                             <span className="text-xs text-text-muted">
