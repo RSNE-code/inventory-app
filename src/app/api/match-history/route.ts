@@ -4,7 +4,14 @@ import { requireAuth } from "@/lib/auth"
 import { z } from "zod"
 
 function normalizeText(text: string): string {
-  return text.toLowerCase().trim().replace(/\s+/g, " ").replace(/['"]/g, "")
+  return stripQtyPrefix(text.toLowerCase().trim().replace(/\s+/g, " ").replace(/['"]/g, ""))
+}
+
+/** Strip leading quantity + unit from raw text so "2 case butyl" → "butyl" */
+function stripQtyPrefix(text: string): string {
+  // Remove leading number (int or decimal) + optional unit word
+  const units = /^[\d.,/]+\s*(?:ea|each|pcs?|pieces?|lbs?|pounds?|lf|lineal\s*f(?:ee)?t|sf|sq\s*f(?:ee)?t|ft|feet|foot|in|inches?|box(?:es)?|roll[s]?|bag[s]?|tube[s]?|gal(?:lon)?s?|case[s]?|bundle[s]?|sheet[s]?|stick[s]?|pair[s]?|set[s]?|pack[s]?|ct|count)?\s*/i
+  return text.replace(units, "").trim() || text
 }
 
 const confirmSchema = z.object({

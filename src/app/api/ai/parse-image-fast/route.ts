@@ -2,6 +2,12 @@ import { NextRequest } from "next/server"
 import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
 
+/** Strip leading quantity + unit from raw text so "2 case butyl" → "butyl" */
+function stripQtyPrefix(text: string): string {
+  const units = /^[\d.,/]+\s*(?:ea|each|pcs?|pieces?|lbs?|pounds?|lf|lineal\s*f(?:ee)?t|sf|sq\s*f(?:ee)?t|ft|feet|foot|in|inches?|box(?:es)?|roll[s]?|bag[s]?|tube[s]?|gal(?:lon)?s?|case[s]?|bundle[s]?|sheet[s]?|stick[s]?|pair[s]?|set[s]?|pack[s]?|ct|count)?\s*/i
+  return text.replace(units, "").trim() || text
+}
+
 /**
  * Extract dimension numbers from text (e.g., "10x10" → [10, 10], "2\" x 3\"" → [2, 3])
  * Returns sorted array of unique dimension numbers found.
@@ -171,7 +177,7 @@ export async function POST(request: NextRequest) {
             diagnostics.push(`${item.rawText}|aiId=${item.matchedProductId}|conf=${item.matchConfidence}|matched=${catalogMatch.matchedProduct?.name ?? "NONE"}|panel=${!!catalogMatch.panelSpecs}`)
 
             // Apply match history boosting (catalog + custom items)
-            const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ").replace(/['"]/g, "")
+            const normalized = stripQtyPrefix(item.rawText.toLowerCase().trim().replace(/\s+/g, " ").replace(/['"]/g, ""))
             const histMatch = historyMap.get(normalized)
 
             let boostedMatch = catalogMatch
