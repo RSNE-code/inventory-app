@@ -86,25 +86,25 @@ function HardwareBox({
       <p className="text-xs font-bold text-navy uppercase tracking-wide mb-2">{title}</p>
       <div className="space-y-1">
         <div className="flex justify-between">
-          <span className="text-xs text-text-muted">Manufacturer</span>
+          <span className="text-xs text-text-muted shrink-0">Manufacturer</span>
           {manufacturer ? (
-            <span className="text-sm font-medium text-navy">{manufacturer}</span>
+            <span className="text-sm font-medium text-navy text-right">{manufacturer}</span>
           ) : (
-            <span className="text-xs text-text-muted italic">Not specified</span>
+            <span className="text-xs text-text-muted italic text-right">Not specified</span>
           )}
         </div>
         <div className="flex justify-between">
-          <span className="text-xs text-text-muted">Model</span>
+          <span className="text-xs text-text-muted shrink-0">Model</span>
           {model ? (
-            <span className="text-sm font-medium text-navy">{model}</span>
+            <span className="text-sm font-medium text-navy text-right">{model}</span>
           ) : (
-            <span className="text-xs text-text-muted italic">Not specified</span>
+            <span className="text-xs text-text-muted italic text-right">Not specified</span>
           )}
         </div>
         {offset && (
           <div className="flex justify-between">
-            <span className="text-xs text-text-muted">Offset</span>
-            <span className="text-sm font-medium text-navy">{offset}</span>
+            <span className="text-xs text-text-muted shrink-0">Offset</span>
+            <span className="text-sm font-medium text-navy text-right">{offset}</span>
           </div>
         )}
       </div>

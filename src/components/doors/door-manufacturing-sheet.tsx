@@ -71,19 +71,19 @@ function MfgHardwareBox({
       <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">{title}</p>
       <div className="space-y-0.5">
         <div className="flex justify-between items-baseline">
-          <span className="text-[10px] text-text-muted uppercase">Mfr</span>
+          <span className="text-[10px] text-text-muted uppercase shrink-0">Mfr</span>
           {manufacturer ? (
-            <span className="text-sm font-semibold text-navy">{manufacturer}</span>
+            <span className="text-sm font-semibold text-navy text-right">{manufacturer}</span>
           ) : (
-            <span className="text-[10px] text-text-muted italic">—</span>
+            <span className="text-[10px] text-text-muted italic text-right">—</span>
           )}
         </div>
         <div className="flex justify-between items-baseline">
-          <span className="text-[10px] text-text-muted uppercase">Model</span>
+          <span className="text-[10px] text-text-muted uppercase shrink-0">Model</span>
           {model ? (
-            <span className="text-sm font-semibold text-navy">{model}</span>
+            <span className="text-sm font-semibold text-navy text-right">{model}</span>
           ) : (
-            <span className="text-[10px] text-text-muted italic">—</span>
+            <span className="text-[10px] text-text-muted italic text-right">—</span>
           )}
         </div>
       </div>
