@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth"
 import { adjustStock } from "@/lib/stock"
-import { buildPanelProductName, panelSqFt } from "@/lib/panels"
+import { buildPanelProductName, panelSqFt, cutsPerStockPanel } from "@/lib/panels"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
 
@@ -63,15 +63,19 @@ export async function POST(
         throw new Error("Panel thickness and width are required")
       }
 
-      // Per-panel validation: each BOM panel requires one stock panel of equal or greater height
+      // Yield-aware validation: each stock panel can produce multiple BOM cuts
+      // e.g. 16' stock ÷ 8' cut = 2 cuts per stock panel
       const totalBreakoutPanels = data.breakout.reduce((sum, r) => sum + r.quantity, 0)
+      const totalFulfilledPanels = data.breakout.reduce((sum, r) => {
+        return sum + r.quantity * cutsPerStockPanel(r.height, bomCutLengthFt)
+      }, 0)
       const alreadyCheckedOut = Number(lineItem.qtyCheckedOut)
       const needed = Number(lineItem.qtyNeeded)
       const remaining = needed - alreadyCheckedOut
 
-      if (totalBreakoutPanels > remaining + 0.0001) {
+      if (totalFulfilledPanels > remaining + 0.0001) {
         throw new Error(
-          `Breakout total (${totalBreakoutPanels}) exceeds remaining panels (${remaining})`
+          `Cuts produced (${totalFulfilledPanels}) exceeds remaining panels (${remaining})`
         )
       }
 
@@ -124,13 +128,14 @@ export async function POST(
           })
         }
 
-        // Per-panel math: each stock panel is consumed whole, regardless of cut length
-        // 10 BOM panels at 8' from 10' stock = 10 stock panels consumed (not sq ft equivalence)
+        // Each stock panel is consumed whole (full sq ft deducted from inventory)
         const sqFtPerStockPanel = panelSqFt(row.height, width)
         const totalStockSqFt = sqFtPerStockPanel * row.quantity
 
-        // Calculate waste: the drop from cutting stock panels to BOM cut length
-        const wasteFtPerPanel = row.height - bomCutLengthFt
+        // Yield-aware waste: only the leftover after extracting all possible cuts
+        const cuts = cutsPerStockPanel(row.height, bomCutLengthFt)
+        const usedFt = cuts * bomCutLengthFt
+        const wasteFtPerPanel = row.height - usedFt
         const wasteSqFtPerPanel = wasteFtPerPanel * (width / 12)
         const wasteForRow = wasteSqFtPerPanel * row.quantity
         totalWasteSqFt += wasteForRow
@@ -153,9 +158,7 @@ export async function POST(
           jobName: bom.jobName,
           bomId: bom.id,
           bomLineItemId: lineItem.id,
-          notes: wasteFtPerPanel > 0
-            ? `${row.quantity}× ${row.height}' stock → ${bomCutLengthFt}' cut (${wasteFtPerPanel}' drop per panel)`
-            : undefined,
+          notes: `${row.quantity}× ${row.height}' stock → ${row.quantity * cuts}× ${bomCutLengthFt}' cuts${wasteFtPerPanel > 0 ? ` (${wasteFtPerPanel}' drop per panel)` : " (no waste)"}`,
           tx,
         })
 
@@ -172,17 +175,17 @@ export async function POST(
             jobName: bom.jobName,
             bomId: bom.id,
             bomLineItemId: lineItem.id,
-            notes: `Panel drop: cut ${row.height}' to ${bomCutLengthFt}', ${wasteFtPerPanel}' waste × ${row.quantity} panels = ${wasteForRow.toFixed(1)} sq ft`,
+            notes: `Panel drop: ${row.quantity}× ${row.height}' stock, ${cuts} cuts of ${bomCutLengthFt}' each, ${wasteFtPerPanel}' waste per panel = ${wasteForRow.toFixed(1)} sq ft`,
             tx,
           })
         }
       }
 
-      // Update bomLineItem.qtyCheckedOut (in panels, 1:1 with stock panels)
+      // Update bomLineItem.qtyCheckedOut (yield-aware: counts fulfilled BOM cuts, not stock panels)
       await tx.bomLineItem.update({
         where: { id: lineItem.id },
         data: {
-          qtyCheckedOut: new Prisma.Decimal(alreadyCheckedOut + totalBreakoutPanels),
+          qtyCheckedOut: new Prisma.Decimal(alreadyCheckedOut + totalFulfilledPanels),
         },
       })
 

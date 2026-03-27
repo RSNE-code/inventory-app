@@ -231,6 +231,15 @@ export function bundleToPanels(bundles: number, thickness: number): number {
 }
 
 /**
+ * How many BOM-cut-length panels can be extracted from one stock panel.
+ * e.g. 16' stock ÷ 8' cut = 2 cuts per panel.
+ */
+export function cutsPerStockPanel(stockHeightFt: number, cutLengthFt: number): number {
+  if (cutLengthFt <= 0) return 0
+  return Math.floor(stockHeightFt / cutLengthFt)
+}
+
+/**
  * Calculate square footage of a single panel
  * height in feet, width in inches
  */

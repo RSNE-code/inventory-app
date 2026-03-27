@@ -10,6 +10,7 @@ import {
   COMMON_HEIGHTS,
   PANEL_HEIGHTS,
   panelSqFt,
+  cutsPerStockPanel,
 } from "@/lib/panels"
 import { usePanelCheckout } from "@/hooks/use-boms"
 import { useHaptic } from "@/hooks/use-haptic"
@@ -133,7 +134,13 @@ export function PanelCheckoutSheet({
     setRows(prev => prev.filter(r => r.id !== id))
   }
 
-  const totalPanels = rows.reduce((sum, r) => sum + (r.height ? r.quantity : 0), 0)
+  // Physical stock panels selected
+  const totalStockPanels = rows.reduce((sum, r) => sum + (r.height ? r.quantity : 0), 0)
+  // Yield-aware: how many BOM cut-length panels these stock panels produce
+  const totalCutPanels = rows.reduce((sum, r) => {
+    if (!r.height) return sum
+    return sum + r.quantity * cutsPerStockPanel(r.height, panelSpecs.cutLengthFt)
+  }, 0)
   // Minimum stock height that can cover the cut length
   const minHeight = Math.ceil(panelSpecs.cutLengthFt)
 
@@ -147,7 +154,7 @@ export function PanelCheckoutSheet({
       toast.error("Select a brand")
       return
     }
-    if (rows.length === 0 || totalPanels === 0) {
+    if (rows.length === 0 || totalStockPanels === 0) {
       toast.error("Add at least one height row")
       return
     }
@@ -175,7 +182,7 @@ export function PanelCheckoutSheet({
         toast.warning(`Low stock: ${result.data.warnings.insufficientStock.join(", ")}`)
       } else {
         haptic.success()
-        toast.success(`Checked out ${totalPanels} panels`)
+        toast.success(`Checked out ${totalStockPanels} panel${totalStockPanels !== 1 ? "s" : ""} (${totalCutPanels} cuts)`)
       }
       onOpenChange(false)
     } catch (err) {
@@ -355,25 +362,33 @@ export function PanelCheckoutSheet({
 
                 {/* Running total */}
                 {rows.length > 0 && (() => {
+                  // Yield-aware waste: only the leftover after extracting all possible cuts
                   const totalWasteSqFt = rows.reduce((sum, r) => {
                     if (!r.height) return sum
-                    const wasteFt = r.height - panelSpecs.cutLengthFt
-                    return sum + (wasteFt * (panelSpecs.widthIn / 12) * r.quantity)
+                    const cuts = cutsPerStockPanel(r.height, panelSpecs.cutLengthFt)
+                    const usedFt = cuts * panelSpecs.cutLengthFt
+                    const wasteFtPerPanel = r.height - usedFt
+                    return sum + (wasteFtPerPanel * (panelSpecs.widthIn / 12) * r.quantity)
                   }, 0)
                   const hasWaste = totalWasteSqFt > 0
-                  const excessiveWaste = rows.some(r => r.height && r.height > panelSpecs.cutLengthFt + 4)
+                  const excessiveWaste = rows.some(r => {
+                    if (!r.height) return false
+                    const cuts = cutsPerStockPanel(r.height, panelSpecs.cutLengthFt)
+                    const wasteFt = r.height - cuts * panelSpecs.cutLengthFt
+                    return wasteFt > 4
+                  })
 
                   return (
                     <div className="mt-4 p-4 rounded-xl bg-navy/5 border border-navy/10 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-navy">Panels</span>
+                        <span className="text-sm font-medium text-navy">Cuts</span>
                         <div className="text-right">
                           <span className={cn(
                             "text-xl font-bold tabular-nums",
-                            totalPanels === remaining ? "text-status-green" :
-                            totalPanels > remaining ? "text-status-red" : "text-navy"
+                            totalCutPanels === remaining ? "text-status-green" :
+                            totalCutPanels > remaining ? "text-status-red" : "text-navy"
                           )}>
-                            {totalPanels}
+                            {totalCutPanels}
                           </span>
                           <span className="text-sm text-text-muted ml-1">
                             of {remaining} needed
@@ -381,18 +396,22 @@ export function PanelCheckoutSheet({
                         </div>
                       </div>
 
-                      {/* Per-panel breakdown */}
+                      {/* Per-row yield breakdown */}
                       {rows.filter(r => r.height && r.quantity > 0).map(r => {
-                        const wasteFt = r.height! - panelSpecs.cutLengthFt
-                        const isSameHeight = wasteFt === 0
+                        const cuts = cutsPerStockPanel(r.height!, panelSpecs.cutLengthFt)
+                        const totalCuts = r.quantity * cuts
+                        const wasteFt = r.height! - cuts * panelSpecs.cutLengthFt
+                        const isExactFit = wasteFt === 0
                         return (
                           <div key={r.id} className="flex items-center gap-2 text-xs text-text-muted">
-                            {isSameHeight ? (
-                              <span>{r.quantity}× {r.height}&prime; stock → {panelSpecs.cutLengthFt}&prime; panels (exact fit)</span>
+                            {isExactFit ? (
+                              <span>
+                                {r.quantity}× {r.height}&prime; stock → {totalCuts}× {panelSpecs.cutLengthFt}&prime; cuts (no waste)
+                              </span>
                             ) : (
                               <span className="flex items-center gap-1">
                                 <Scissors className="h-3 w-3" />
-                                {r.quantity}× {r.height}&prime; stock → {panelSpecs.cutLengthFt}&prime; cut ({wasteFt}&prime; drop each)
+                                {r.quantity}× {r.height}&prime; stock → {totalCuts}× {panelSpecs.cutLengthFt}&prime; cuts ({wasteFt}&prime; drop each)
                               </span>
                             )}
                           </div>
@@ -413,9 +432,9 @@ export function PanelCheckoutSheet({
                         </div>
                       )}
 
-                      {totalPanels > remaining && (
+                      {totalCutPanels > remaining && (
                         <p className="text-xs text-status-red font-medium">
-                          Exceeds remaining by {totalPanels - remaining} panels
+                          Exceeds remaining by {totalCutPanels - remaining} cuts
                         </p>
                       )}
                     </div>
@@ -443,15 +462,15 @@ export function PanelCheckoutSheet({
               disabled={
                 panelCheckout.isPending ||
                 !selectedBrand ||
-                totalPanels === 0 ||
-                totalPanels > remaining
+                totalStockPanels === 0 ||
+                totalCutPanels > remaining
               }
               className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-[15px] rounded-xl ios-press transition-all"
             >
               <PackageCheck className="h-5 w-5 mr-2" />
               {panelCheckout.isPending
                 ? "Processing..."
-                : `Check Out ${totalPanels} Panel${totalPanels !== 1 ? "s" : ""}`}
+                : `Check Out ${totalStockPanels} Panel${totalStockPanels !== 1 ? "s" : ""}`}
             </Button>
           </div>
         </div>
