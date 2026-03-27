@@ -22,6 +22,8 @@ export default function NewAssemblyPage() {
 function NewAssemblyContent() {
   const searchParams = useSearchParams()
   const urlType = searchParams.get("type")
+  const fromBom = searchParams.get("fromBom")
+  const jobNameParam = searchParams.get("jobName")
 
   const [flow, setFlow] = useState<"choose" | "door" | "fab">("choose")
   const [initialized, setInitialized] = useState(false)
@@ -91,7 +93,12 @@ function NewAssemblyContent() {
         )}
 
         {/* Door creation flow */}
-        {initialized && flow === "door" && <DoorCreationFlow />}
+        {initialized && flow === "door" && (
+          <DoorCreationFlow
+            prefillJobName={jobNameParam || undefined}
+            fromBomId={fromBom || undefined}
+          />
+        )}
 
         {/* Fab creation flow (panels, floors, ramps) */}
         {initialized && flow === "fab" && <FabCreationFlow />}

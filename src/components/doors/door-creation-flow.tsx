@@ -99,19 +99,26 @@ const DOOR_TYPES: {
   },
 ]
 
-export function DoorCreationFlow() {
+interface DoorCreationFlowProps {
+  /** Pre-fill job name (from BOM context) */
+  prefillJobName?: string
+  /** BOM ID to redirect back to after creation */
+  fromBomId?: string
+}
+
+export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlowProps = {}) {
   const router = useRouter()
   const { celebrate } = useCelebration()
   const createAssembly = useCreateAssembly()
 
-  // Flow state
-  const [phase, setPhase] = useState<FlowPhase>("JOB")
+  // Flow state — skip JOB phase if pre-filled
+  const [phase, setPhase] = useState<FlowPhase>(prefillJobName ? "TYPE" : "JOB")
   const [specs, setSpecs] = useState<Partial<DoorSpecs>>(getDefaultSpecs())
   const [selectedType, setSelectedType] = useState<DoorTypeKey | null>(null)
 
-  // Job
+  // Job — pre-fill if provided
   const [jobSearch, setJobSearch] = useState("")
-  const [jobName, setJobName] = useState("")
+  const [jobName, setJobName] = useState(prefillJobName || "")
   const [jobNumber, setJobNumber] = useState("")
   const { data: jobsData, isLoading: jobsLoading } = useJobs(jobSearch || undefined)
   const jobs = (jobsData?.data || []) as Array<{ id: string; name: string; number?: string; client?: string }>
@@ -259,7 +266,12 @@ export function DoorCreationFlow() {
       })
       toast.success("Door sheet submitted for approval")
       celebrate()
-      router.push(`/assemblies/${result.data.id}`)
+      // Redirect back to BOM if launched from fab gate, otherwise to door detail
+      if (fromBomId) {
+        router.push(`/boms/${fromBomId}`)
+      } else {
+        router.push(`/assemblies/${result.data.id}`)
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create door")
     }

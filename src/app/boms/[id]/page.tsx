@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useState, useCallback } from "react"
 import { useBom, useUpdateBom, useCheckoutBom } from "@/hooks/use-boms"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
@@ -15,6 +15,7 @@ import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
 import { PanelDimensionEditor } from "@/components/bom/panel-dimension-editor"
+import { FabGateSection } from "@/components/bom/fab-gate-section"
 import { SwipeToDelete } from "@/components/ui/swipe-to-delete"
 import { Pencil, Plus, Undo2, Mic, Info, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -61,12 +62,28 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [returnQtys, setReturnQtys] = useState<Record<string, number>>({})
   const [undoAction, setUndoAction] = useState<{ type: string; previousStatus: string } | null>(null)
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
+  const [fabGateResolved, setFabGateResolved] = useState(true)
 
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom && ["DRAFT", "PENDING_REVIEW", "APPROVED"].includes(bom.status)
   const canCheckout = bom && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && me &&
     ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SHOP_FOREMAN"].includes(me.role)
   const canApprove = me && ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER"].includes(me.role)
+
+  // Detect if BOM may contain door items (assembly products or non-catalog "Door" items)
+  const bomLineItems = bom?.lineItems
+  const hasPotentialDoors = bomLineItems?.some((li: Record<string, unknown>) => {
+    const product = li.product as Record<string, unknown> | null
+    if (product?.isAssembly) return true
+    if (li.isNonCatalog && typeof li.nonCatalogCategory === "string" &&
+        (li.nonCatalogCategory as string).toLowerCase().includes("door")) return true
+    return false
+  }) ?? false
+  const showFabGate = hasPotentialDoors && bom && ["DRAFT", "PENDING_REVIEW"].includes(bom.status)
+
+  const handleFabResolved = useCallback((resolved: boolean) => {
+    setFabGateResolved(resolved)
+  }, [])
 
   function resetMode() {
     setMode("view")
@@ -678,13 +695,21 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             {/* Draft / Pending Review actions */}
             {(bom.status === "DRAFT" || bom.status === "PENDING_REVIEW") && (
               <>
+                {/* Fabrication gate — shows door resolution status above approve */}
+                {showFabGate && (
+                  <FabGateSection
+                    bomId={id}
+                    jobName={bom.jobName}
+                    onResolved={handleFabResolved}
+                  />
+                )}
                 {canApprove ? (
                   <Button
                     onClick={() => handleStatusChange("APPROVED")}
-                    disabled={updateBom.isPending}
+                    disabled={updateBom.isPending || (showFabGate && !fabGateResolved)}
                     className="w-full h-14 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold text-base"
                   >
-                    {updateBom.isPending ? "Approving..." : "Approve BOM"}
+                    {updateBom.isPending ? "Approving..." : showFabGate && !fabGateResolved ? "Resolve Doors to Approve" : "Approve BOM"}
                   </Button>
                 ) : (
                   <div className="flex items-start gap-2 p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/20">

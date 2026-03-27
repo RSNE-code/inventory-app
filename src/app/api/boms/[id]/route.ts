@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth"
+import { checkBomDoors } from "./fab-check/route"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
 
@@ -120,6 +121,29 @@ export async function PUT(
       // Approval requires specific role
       if (data.status === "APPROVED") {
         requireRole(user.role, ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER"])
+
+        // Fabrication gate: check all door items are resolved before approval
+        const fabCheck = await checkBomDoors(id)
+        if (fabCheck.doorItems.length > 0 && !fabCheck.allResolved) {
+          const unresolved = fabCheck.doorItems.filter((d) => d.status === "unresolved")
+          return NextResponse.json(
+            {
+              error: "This BOM has door items that need to be created in the Door Shop Queue first",
+              unresolvedDoors: unresolved.map((d) => d.productName),
+            },
+            { status: 400 }
+          )
+        }
+
+        // Auto-link matched doors to BOM line items
+        for (const item of fabCheck.doorItems) {
+          if (item.status === "matched" && item.assembly) {
+            await prisma.bomLineItem.update({
+              where: { id: item.lineItemId },
+              data: { assemblyId: item.assembly.id },
+            })
+          }
+        }
       }
     }
 
