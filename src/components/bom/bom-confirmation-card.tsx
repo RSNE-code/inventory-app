@@ -3,10 +3,26 @@
 import { useState } from "react"
 import { Check, X, ChevronDown, ChevronUp, AlertTriangle, Wrench } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { OptionPicker } from "@/components/doors/option-picker"
 import { cn } from "@/lib/utils"
 import { useHaptic } from "@/hooks/use-haptic"
 import type { CatalogMatch, ConfirmedBomItem } from "@/lib/ai/types"
 import { getMatchStockLevel, stockDotColor, stockLabel } from "@/lib/bom-utils"
+
+const STANDARD_UNITS = [
+  { label: "ea", value: "ea" },
+  { label: "lbs", value: "lbs" },
+  { label: "lf", value: "lf" },
+  { label: "sf", value: "sf" },
+  { label: "in", value: "in" },
+  { label: "ft", value: "ft" },
+  { label: "box", value: "box" },
+  { label: "roll", value: "roll" },
+  { label: "bag", value: "bag" },
+  { label: "tube", value: "tube" },
+  { label: "gal", value: "gal" },
+  { label: "case", value: "case" },
+]
 
 interface BomConfirmationCardProps {
   match: CatalogMatch
@@ -23,9 +39,30 @@ export function BomConfirmationCard({
 }: BomConfirmationCardProps) {
   const [showAlternatives, setShowAlternatives] = useState(false)
   const [quantity, setQuantity] = useState(match.parsedItem.quantity)
+  const [selectedUnit, setSelectedUnit] = useState(
+    match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure
+  )
+  const [unitPickerOpen, setUnitPickerOpen] = useState(false)
   const [isAccepted, setIsAccepted] = useState(false)
   const [isRejected, setIsRejected] = useState(false)
   const haptic = useHaptic()
+
+  // Build picker options: current unit first, then standard units (deduped)
+  const pickerOptions = (() => {
+    const seen = new Set<string>()
+    const opts: { label: string; value: string }[] = []
+    if (selectedUnit && !seen.has(selectedUnit)) {
+      opts.push({ label: selectedUnit, value: selectedUnit })
+      seen.add(selectedUnit)
+    }
+    for (const u of STANDARD_UNITS) {
+      if (!seen.has(u.value)) {
+        opts.push(u)
+        seen.add(u.value)
+      }
+    }
+    return opts
+  })()
 
   function handleQtyChange(val: number) {
     setQuantity(val)
@@ -56,6 +93,7 @@ export function BomConfirmationCard({
       dimLengthUnit: product?.dimLengthUnit ?? null,
       dimWidth: product?.dimWidth ?? null,
       dimWidthUnit: product?.dimWidthUnit ?? null,
+      selectedUnit,
       catalogMatch: match,
     }
   }
@@ -266,9 +304,23 @@ export function BomConfirmationCard({
             <span className="text-lg font-medium">+</span>
           </button>
         </div>
-        <span className="inline-flex items-center justify-center h-8 min-w-[36px] px-2.5 text-xs font-semibold text-brand-blue bg-brand-blue/10 rounded-xl">
-          {match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure}
-        </span>
+        <button
+          type="button"
+          onClick={() => setUnitPickerOpen(true)}
+          className="h-11 min-w-[44px] px-3 text-sm font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
+        >
+          {selectedUnit}
+        </button>
+        <OptionPicker
+          open={unitPickerOpen}
+          onOpenChange={setUnitPickerOpen}
+          label="Unit of Measure"
+          wheels={[{ label: "Unit", options: pickerOptions }]}
+          selectedValues={[selectedUnit]}
+          onDone={([unit]) => {
+            if (unit) setSelectedUnit(unit)
+          }}
+        />
       </div>
 
       {/* Alternative matches */}

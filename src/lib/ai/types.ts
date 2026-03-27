@@ -94,6 +94,7 @@ export interface ConfirmedBomItem {
   dimLengthUnit: string | null
   dimWidth: number | null
   dimWidthUnit: string | null
+  selectedUnit?: string
   catalogMatch: CatalogMatch
 }
 

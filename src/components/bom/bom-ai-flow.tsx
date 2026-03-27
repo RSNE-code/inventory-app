@@ -157,6 +157,7 @@ export function BomAIFlow() {
         dimLengthUnit: product?.dimLengthUnit ?? null,
         dimWidth: product?.dimWidth ?? null,
         dimWidthUnit: product?.dimWidthUnit ?? null,
+        selectedUnit: product?.unitOfMeasure ?? match.parsedItem.unitOfMeasure,
         catalogMatch: match,
       }
     })
@@ -289,7 +290,7 @@ export function BomAIFlow() {
           matchConfidence: item.catalogMatch.matchConfidence ?? null,
           rawText: item.catalogMatch.parsedItem.rawText || null,
           parsedUom: item.catalogMatch.parsedItem.unitOfMeasure || null,
-          inputUnit: item.catalogMatch.parsedItem.unitOfMeasure || null,
+          inputUnit: item.selectedUnit || item.catalogMatch.parsedItem.unitOfMeasure || null,
         })),
       })
       setSubmitted(true)
