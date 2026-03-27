@@ -560,16 +560,7 @@ export function DoorConfirmation({
         <BoolRow label="Weather Shield" value={specs.weatherShield} onToggle={() => toggleBoolean("weatherShield")} />
         <BoolRow label="Threshold Plate" value={specs.thresholdPlate} onToggle={() => toggleBoolean("thresholdPlate")} />
         <BoolRow label="Label" value={specs.label} onToggle={() => toggleBoolean("label")} />
-        {isSlider && (
-          <>
-            {editingField === "doorPull" ? <EditRow field="doorPull" /> : (
-              <SpecRow label="Door Pull" value={specs.doorPull} onEdit={() => startEdit("doorPull", specs.doorPull)} />
-            )}
-            {editingField === "trackType" ? <EditRow field="trackType" /> : (
-              <SpecRow label="Track Type" value={specs.trackType} onEdit={() => startEdit("trackType", specs.trackType)} />
-            )}
-          </>
-        )}
+        {/* Door Pull and Track now in Hardware section for sliders */}
         {specs.cutouts && specs.cutouts.length > 0 && (
           <div className="px-4 py-3">
             <p className="text-xs font-bold text-navy uppercase tracking-wide mb-2">Cutouts ({specs.cutouts.length})</p>
