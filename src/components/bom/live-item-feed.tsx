@@ -87,7 +87,7 @@ function UnitPillPicker({ unit, onChange }: { unit: string; onChange: (unit: str
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="h-10 min-w-[44px] px-2.5 text-xs font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
+        className="h-10 w-[52px] text-center text-xs font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
       >
         {unit}
       </button>

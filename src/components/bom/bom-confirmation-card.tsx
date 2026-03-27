@@ -307,7 +307,7 @@ export function BomConfirmationCard({
         <button
           type="button"
           onClick={() => setUnitPickerOpen(true)}
-          className="h-11 min-w-[44px] px-3 text-sm font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
+          className="h-11 w-[52px] text-center text-sm font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
         >
           {selectedUnit}
         </button>
