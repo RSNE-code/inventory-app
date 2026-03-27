@@ -262,7 +262,7 @@ export function BomPhotoCapture() {
               productName: match.matchedProduct?.name || match.parsedItem.name,
               productId: match.matchedProduct?.id || null,
               quantity: match.parsedItem.quantity,
-              unitOfMeasure: match.matchedProduct?.unitOfMeasure || match.parsedItem.unitOfMeasure,
+              unitOfMeasure: aiUom || match.parsedItem.unitOfMeasure,
               confidence: match.matchConfidence,
               isPanel: !!match.panelSpecs,
               confirmed: match.matchConfidence >= 0.95,
