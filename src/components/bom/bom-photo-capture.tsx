@@ -427,11 +427,17 @@ export function BomPhotoCapture() {
     // Panels can never become custom items — button is hidden, but guard defensively
     const item = items.find((i) => i.id === id)
     if (item?.isPanel) return
-    // Use rawText as the custom item name — strip leading quantity + unit abbreviation
-    // e.g., "5s TWS Cover Plate" → "TWS Cover Plate", "2 pcs Hinge" → "Hinge"
-    const customName = item?.rawText
-      ? item.rawText.replace(/^\d+\s*(pc|pcs|ea|each|x|s|sheets?|boxes?|tubes?|rolls?|cases?|bundles?|panels?|ft|lf|sf|sqft|lbs?|pounds?|pallets?|cartons?|bags?|ct|count)?\s*/i, "").trim() || item.rawText
-      : item?.productName || "Custom item"
+    // Use rawText as the custom item name — strip leading quantity + unit
+    // e.g., "1 Box Drive Pins" → "Drive Pins", "3 lbs TEK screws" → "TEK screws"
+    const rawName = item?.rawText || item?.productName || "Custom item"
+    let customName = rawName
+      // Strip number + optional unit word
+      .replace(/^[\d.,/]+\s*(?:ea|each|pcs?|pieces?|pc|lbs?|pounds?|lf|sf|ft|feet|in|inches?|box|boxes|rolls?|bags?|tubes?|gal(?:lon)?s?|cases?|bundles?|sheets?|panels?|pairs?|sets?|packs?|ct|count)?\s*/i, "")
+      .trim()
+    // If still starts with a unit word (no number prefix), strip that too
+    customName = customName
+      .replace(/^(ea|each|pcs?|pieces?|pc|lbs?|pounds?|box|boxes|rolls?|bags?|tubes?|cases?|bundles?|sheets?|panels?|pairs?|sets?|packs?)\s+/i, "")
+      .trim() || rawName
     setItems((prev) =>
       prev.map((i) =>
         i.id === id
