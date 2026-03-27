@@ -253,11 +253,9 @@ export function BomPhotoCapture() {
             }
 
             const match: CatalogMatch = parsed.item
+            // Use the AI-parsed unit as-is — don't convert to catalog unit.
+            // The unit pill lets the user change it if needed.
             const aiUom = match.parsedItem.unitOfMeasure
-            const catalogUom = match.matchedProduct?.unitOfMeasure
-            const BULK_UNITS = ["case", "box", "pallet", "carton", "bag", "roll", "lb", "lbs", "pound", "pounds"]
-            const isBulkUnit = BULK_UNITS.includes(aiUom?.toLowerCase().trim() || "")
-            const uomMismatch = isBulkUnit && catalogUom && aiUom?.toLowerCase().trim() !== catalogUom.toLowerCase().trim()
             const feedItem: FeedItem = {
               id: `item-${parsed.index}-${Date.now()}`,
               rawText: match.parsedItem.rawText,
@@ -277,11 +275,7 @@ export function BomPhotoCapture() {
                 productName: a.name,
                 confidence: a.matchConfidence,
               })),
-              // Unit conversion tracking
-              needsConversion: !!uomMismatch,
-              parsedUom: isBulkUnit ? aiUom : undefined,
-              parsedQty: isBulkUnit ? match.parsedItem.quantity : undefined,
-              catalogUom: uomMismatch ? catalogUom : undefined,
+              parsedUom: aiUom || undefined,
             }
 
             allFeedItems.push(feedItem)
