@@ -807,8 +807,8 @@ function toCatalogMatch(
 const bomItemSchema = z.object({
   rawText: z.string().describe("Original text from the document for this line"),
   name: z.string().describe("Best description of the item"),
-  quantity: z.number().describe("Quantity"),
-  unitOfMeasure: z.string().describe("Unit: each, linear ft, sq ft, sheet, tube, box, case, roll, etc"),
+  quantity: z.number().describe("Quantity exactly as written — do NOT convert units (e.g., if '1 box' is written, return 1, not the number of items in a box)"),
+  unitOfMeasure: z.string().describe("Unit exactly as written — lbs, box, roll, case, ea, ct, each, linear ft, sq ft, sheet, tube, gal, bag, etc. Preserve the original unit, do NOT convert to 'each'"),
   category: z.string().nullable().describe("Category guess or null"),
   estimatedCost: z.number().nullable().describe("Per-unit cost if visible, or null"),
   confidence: z.number().describe("How confident you are in reading this line (0.0-1.0)"),
@@ -930,6 +930,14 @@ DIMENSION EXTRACTION (for panels and items with length):
   - "4\\"" walls or "4\\" IMP" → thicknessIn: 4
   - Not a panel or no thickness visible → thicknessIn: null
 - Do NOT confuse thickness with length. "4\\" walls x 7'-6\\"" means thicknessIn: 4, lengthFt: 7, lengthIn: 6.
+
+UNIT PRESERVATION (CRITICAL):
+- NEVER convert units. Return quantity and unitOfMeasure exactly as written on the paper.
+- "1 box drive pins" → quantity: 1, unitOfMeasure: "box" — NOT quantity: 100, unitOfMeasure: "each"
+- "3 lbs tek screws" → quantity: 3, unitOfMeasure: "lbs" — NOT a converted count
+- "500 ct galv tek" → quantity: 500, unitOfMeasure: "ct"
+- The unit should reflect what was WRITTEN, not what the catalog product uses.
+- Common units to look for: ea, each, lbs, lb, box, roll, case, bag, tube, gal, ct, count, pcs, sheet, bundle.
 
 Rules:
 - ALWAYS try to match. A missing match forces the user to manually search the catalog. A wrong match is one tap to fix.
