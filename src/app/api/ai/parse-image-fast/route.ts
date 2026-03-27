@@ -2,10 +2,19 @@ import { NextRequest } from "next/server"
 import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
 
-/** Strip leading quantity + unit from raw text so "2 case butyl" → "butyl" */
+/** Strip leading quantity + unit from raw text so "2 case butyl" → "butyl", "Box Drive Pins" → "Drive Pins" */
 function stripQtyPrefix(text: string): string {
-  const units = /^[\d.,/]+\s*(?:ea|each|pcs?|pieces?|lbs?|pounds?|lf|lineal\s*f(?:ee)?t|sf|sq\s*f(?:ee)?t|ft|feet|foot|in|inches?|box(?:es)?|roll[s]?|bag[s]?|tube[s]?|gal(?:lon)?s?|case[s]?|bundle[s]?|sheet[s]?|stick[s]?|pair[s]?|set[s]?|pack[s]?|ct|count)?\s*/i
-  return text.replace(units, "").trim() || text
+  // Pattern 1: number + optional unit word (e.g., "2 case butyl", "500 ct galv tek")
+  const withNumber = /^[\d.,/]+\s*(?:ea|each|pcs?|pieces?|lbs?|pounds?|lf|lineal\s*f(?:ee)?t|sf|sq\s*f(?:ee)?t|ft|feet|foot|in|inches?|box(?:es)?|roll[s]?|bag[s]?|tube[s]?|gal(?:lon)?s?|case[s]?|bundle[s]?|sheet[s]?|stick[s]?|pair[s]?|set[s]?|pack[s]?|ct|count)?\s*/i
+  const result1 = text.replace(withNumber, "").trim()
+  if (result1 && result1 !== text) return result1
+
+  // Pattern 2: just a unit word at the start, no number (e.g., "Box Drive Pins")
+  const unitOnly = /^(ea|each|pcs?|pieces?|lbs?|pounds?|box(?:es)?|rolls?|bags?|tubes?|cases?|bundles?|sheets?|panels?|pairs?|sets?|packs?)\s+/i
+  const result2 = text.replace(unitOnly, "").trim()
+  if (result2 && result2 !== text) return result2
+
+  return text
 }
 
 /**
