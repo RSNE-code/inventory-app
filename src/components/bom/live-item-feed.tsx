@@ -2,11 +2,27 @@
 
 import { useEffect, useState } from "react"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Check, AlertCircle, Minus, Plus, X, Wrench } from "lucide-react"
+import { Check, AlertCircle, Minus, Plus, Wrench } from "lucide-react"
 import { SwipeableRow } from "./swipeable-row"
 import { PanelDimensionEditor } from "./panel-dimension-editor"
 import { UnitConversionPrompt } from "./unit-conversion-prompt"
 import { FlaggedItemResolver } from "./flagged-item-resolver"
+import { OptionPicker } from "@/components/doors/option-picker"
+
+const STANDARD_UNITS = [
+  { label: "ea", value: "ea" },
+  { label: "lbs", value: "lbs" },
+  { label: "lf", value: "lf" },
+  { label: "sf", value: "sf" },
+  { label: "in", value: "in" },
+  { label: "ft", value: "ft" },
+  { label: "box", value: "box" },
+  { label: "roll", value: "roll" },
+  { label: "bag", value: "bag" },
+  { label: "tube", value: "tube" },
+  { label: "gal", value: "gal" },
+  { label: "case", value: "case" },
+]
 
 export interface FeedItem {
   id: string
@@ -35,6 +51,7 @@ interface LiveItemFeedProps {
   items: FeedItem[]
   phase: "loading" | "pass1" | "pass2" | "done"
   onUpdateQty: (id: string, qty: number) => void
+  onUpdateUnit?: (id: string, unit: string) => void
   onDelete: (id: string) => void
   onResolveFlagged: (id: string) => void
   onEditDimensions?: (id: string, thickness: number, lengthFt: number, lengthIn: number) => void
@@ -45,10 +62,54 @@ interface LiveItemFeedProps {
   onResolveKeepAsCustom?: (id: string) => void
 }
 
+/** Tappable unit pill that opens OptionPicker scroll wheel */
+function UnitPillPicker({ unit, onChange }: { unit: string; onChange: (unit: string) => void }) {
+  const [open, setOpen] = useState(false)
+
+  const options = (() => {
+    const seen = new Set<string>()
+    const opts: { label: string; value: string }[] = []
+    if (unit && !seen.has(unit)) {
+      opts.push({ label: unit, value: unit })
+      seen.add(unit)
+    }
+    for (const u of STANDARD_UNITS) {
+      if (!seen.has(u.value)) {
+        opts.push(u)
+        seen.add(u.value)
+      }
+    }
+    return opts
+  })()
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="h-10 min-w-[44px] px-2.5 text-xs font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
+      >
+        {unit}
+      </button>
+      <OptionPicker
+        open={open}
+        onOpenChange={setOpen}
+        label="Unit of Measure"
+        wheels={[{ label: "Unit", options }]}
+        selectedValues={[unit]}
+        onDone={([val]) => {
+          if (val && val !== unit) onChange(val)
+        }}
+      />
+    </>
+  )
+}
+
 export function LiveItemFeed({
   items,
   phase,
   onUpdateQty,
+  onUpdateUnit,
   onDelete,
   onResolveFlagged,
   onEditDimensions,
@@ -244,40 +305,37 @@ export function LiveItemFeed({
                   )}
                 </div>
 
-                {/* Quantity stepper — compact iOS style */}
-                <div className="flex items-center gap-0 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => onUpdateQty(item.id, Math.max(0, Math.round((item.quantity - 0.5) * 10) / 10))}
-                    className="h-10 w-10 flex items-center justify-center rounded-l-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => onUpdateQty(item.id, Math.max(0, Number(e.target.value) || 0))}
-                    className="w-14 h-10 text-center text-sm font-bold border-y border-border-custom bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    min={0}
-                    step="0.5"
+                {/* Quantity stepper + unit pill */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-0">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateQty(item.id, Math.max(0, Math.round((item.quantity - 0.5) * 10) / 10))}
+                      className="h-10 w-10 flex items-center justify-center rounded-l-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => onUpdateQty(item.id, Math.max(0, Number(e.target.value) || 0))}
+                      className="w-14 h-10 text-center text-sm font-bold border-y border-border-custom bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      min={0}
+                      step="0.5"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onUpdateQty(item.id, Math.round((item.quantity + 0.5) * 10) / 10)}
+                      className="h-10 w-10 flex items-center justify-center rounded-r-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <UnitPillPicker
+                    unit={item.unitOfMeasure}
+                    onChange={(unit) => onUpdateUnit?.(item.id, unit)}
                   />
-                  <button
-                    type="button"
-                    onClick={() => onUpdateQty(item.id, Math.round((item.quantity + 0.5) * 10) / 10)}
-                    className="h-10 w-10 flex items-center justify-center rounded-r-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
                 </div>
-
-                {/* Delete button — subtle */}
-                <button
-                  type="button"
-                  onClick={() => onDelete(item.id)}
-                  className="h-10 w-10 flex items-center justify-center text-text-muted/30 hover:text-status-red transition-colors shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </button>
               </div>
               {/* Panel dimension editor — full width below item row */}
               {item.isPanel && item.panelSpecs && onEditDimensions && (

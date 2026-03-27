@@ -402,6 +402,10 @@ export function BomPhotoCapture() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: clamped } : i)))
   }
 
+  function updateItemUnit(id: string, unit: string) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, unitOfMeasure: unit } : i)))
+  }
+
   function deleteItem(id: string) {
     setItems((prev) => prev.filter((i) => i.id !== id))
   }
@@ -733,6 +737,7 @@ export function BomPhotoCapture() {
         items={items}
         phase={feedPhase}
         onUpdateQty={updateItemQty}
+        onUpdateUnit={updateItemUnit}
         onDelete={deleteItem}
         onResolveFlagged={setResolvingItemId}
         onEditDimensions={editItemDimensions}
