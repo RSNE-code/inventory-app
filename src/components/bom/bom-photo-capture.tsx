@@ -531,6 +531,7 @@ export function BomPhotoCapture() {
         matchConfidence: item.confidence,
         rawText: item.rawText,
         parsedUom: item.parsedUom || null,
+        inputUnit: item.unitOfMeasure || null,
       }))
 
       const result = await createBom.mutateAsync({
