@@ -38,8 +38,6 @@ interface FeedItem {
   confirmed: boolean
   isNonCatalog: boolean
   isAssembly?: boolean
-  isT2?: boolean
-  tier?: "TIER_1" | "TIER_2"
   nonCatalogCategory?: string
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
@@ -256,26 +254,23 @@ export function BomPhotoCapture() {
 
             const match: CatalogMatch = parsed.item
             // Use the AI-parsed unit as-is — don't convert to catalog unit.
+            // The unit pill lets the user change it if needed.
             const aiUom = match.parsedItem.unitOfMeasure
-            // Detect T2 from server-side flag
-            const itemIsT2 = !!(match as unknown as Record<string, unknown>).isT2
             const feedItem: FeedItem = {
               id: `item-${parsed.index}-${Date.now()}`,
               rawText: match.parsedItem.rawText,
-              productName: itemIsT2 ? match.parsedItem.name : (match.matchedProduct?.name || match.parsedItem.name),
-              productId: itemIsT2 ? null : (match.matchedProduct?.id || null),
+              productName: match.matchedProduct?.name || match.parsedItem.name,
+              productId: match.matchedProduct?.id || null,
               quantity: match.parsedItem.quantity,
               unitOfMeasure: aiUom || match.parsedItem.unitOfMeasure,
-              confidence: itemIsT2 ? 1.0 : match.matchConfidence,
+              confidence: match.matchConfidence,
               isPanel: !!match.panelSpecs,
-              confirmed: itemIsT2 ? true : match.matchConfidence >= 0.95,
-              isNonCatalog: itemIsT2 ? true : match.isNonCatalog,
+              confirmed: match.matchConfidence >= 0.95,
+              isNonCatalog: match.isNonCatalog,
               isAssembly: !!match.matchedProduct?.isAssembly,
-              isT2: itemIsT2,
-              tier: itemIsT2 ? "TIER_2" : (match.matchedProduct?.tier === "TIER_2" ? "TIER_2" : "TIER_1"),
               nonCatalogCategory: match.matchedProduct?.categoryName || match.parsedItem.category || undefined,
               panelSpecs: match.panelSpecs || undefined,
-              alternatives: itemIsT2 ? undefined : match.alternativeMatches?.map((a) => ({
+              alternatives: match.alternativeMatches?.map((a) => ({
                 productId: a.id,
                 productName: a.name,
                 confidence: a.matchConfidence,
@@ -525,13 +520,13 @@ export function BomPhotoCapture() {
     try {
       const lineItems = validItems.map((item) => ({
         // Assembly products are real catalog items — no more non-catalog hack
-        productId: (item.isNonCatalog || item.isT2) ? null : item.productId,
-        tier: (item.tier || (item.isT2 ? "TIER_2" : "TIER_1")) as "TIER_1" | "TIER_2",
+        productId: item.isNonCatalog ? null : item.productId,
+        tier: "TIER_1" as const,
         qtyNeeded: item.quantity,
-        isNonCatalog: item.isNonCatalog || item.isT2,
-        nonCatalogName: (item.isNonCatalog || item.isT2) ? item.productName : null,
-        nonCatalogCategory: (item.isNonCatalog || item.isT2) ? (item.nonCatalogCategory || null) : null,
-        nonCatalogUom: (item.isNonCatalog || item.isT2) ? item.unitOfMeasure : null,
+        isNonCatalog: item.isNonCatalog,
+        nonCatalogName: item.isNonCatalog ? item.productName : null,
+        nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
+        nonCatalogUom: item.isNonCatalog ? item.unitOfMeasure : null,
         nonCatalogSpecs: item.panelSpecs || null,
         matchConfidence: item.confidence,
         rawText: item.rawText,

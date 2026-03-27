@@ -37,9 +37,6 @@ interface BomLineItemRowProps {
   fabricationSource?: string | null
   onFabricationSourceChange?: (source: "RSNE_MADE" | "SUPPLIER") => void
   missingFabOrder?: boolean
-  productId?: string | null
-  onSelectProduct?: () => void
-  linkedProductName?: string | null
 }
 
 // Convert a dimension value to feet
@@ -122,9 +119,6 @@ export function BomLineItemRow({
   fabricationSource,
   onFabricationSourceChange,
   missingFabOrder,
-  productId,
-  onSelectProduct,
-  linkedProductName,
 }: BomLineItemRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -202,7 +196,6 @@ export function BomLineItemRow({
 
   // Checkout mode render — enter qty to pull
   if (checkoutMode) {
-    const needsProductMatch = tier === "TIER_2" && isNonCatalog && !productId
     return (
       <div className="py-3 border-b border-border-custom last:border-0">
         <div className="flex items-center justify-between gap-3">
@@ -214,9 +207,6 @@ export function BomLineItemRow({
                 <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">T2</Badge>
               )}
             </div>
-            {linkedProductName && (
-              <p className="text-xs text-status-green font-medium mt-0.5">Matched: {linkedProductName}</p>
-            )}
             <p className="text-xs text-text-muted mt-0.5">
               {qtyCheckedOut > 0 ? (
                 <>{formatQuantity(qtyCheckedOut)}/{formatQuantity(qtyNeeded)} {activeInputUnit} pulled</>
@@ -226,28 +216,18 @@ export function BomLineItemRow({
             </p>
           </div>
           {!fullyCheckedOut && (
-            needsProductMatch ? (
-              <button
-                type="button"
-                onClick={onSelectProduct}
-                className="h-11 px-4 text-sm font-semibold text-white bg-purple-600 rounded-xl active:bg-purple-700 transition-colors shrink-0"
-              >
-                Select product
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 shrink-0">
-                <Input
-                  type="number"
-                  value={checkoutQty || ""}
-                  onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
-                  placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
-                  className="h-11 w-20 text-center text-[15px] rounded-xl"
-                  min={0}
-                  step="any"
-                />
-                <UnitPill unit={activeInputUnit} />
-              </div>
-            )
+            <div className="flex items-center gap-2 shrink-0">
+              <Input
+                type="number"
+                value={checkoutQty || ""}
+                onChange={(e) => onCheckoutQtyChange?.(e.target.value === "" ? 0 : parseFloat(e.target.value))}
+                placeholder={remaining > 0 ? String(Math.max(0, remaining)) : "0"}
+                className="h-11 w-20 text-center text-[15px] rounded-xl"
+                min={0}
+                step="any"
+              />
+              <UnitPill unit={activeInputUnit} />
+            </div>
           )}
         </div>
       </div>

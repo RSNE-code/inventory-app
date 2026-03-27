@@ -22,8 +22,6 @@ export interface FeedItem {
   confirmed: boolean // Pass 2 confirmed
   isNonCatalog: boolean
   isAssembly?: boolean
-  isT2?: boolean
-  tier?: "TIER_1" | "TIER_2"
   nonCatalogCategory?: string
   panelSpecs?: Record<string, unknown>
   alternatives?: Array<{ productId: string; productName: string; confidence: number }>
@@ -191,9 +189,8 @@ export function LiveItemFeed({
       {/* Item rows */}
       <div>
         {items.slice(0, visibleCount).map((item, index) => {
-          const isT2 = !!item.isT2
-          const isFlagged = !isT2 && item.confidence < 0.70 && !item.confirmed
-          const isLikelyMatch = !isT2 && !item.confirmed && item.confidence >= 0.70 && item.confidence < 0.95
+          const isFlagged = item.confidence < 0.70 && !item.confirmed
+          const isLikelyMatch = !item.confirmed && item.confidence >= 0.70 && item.confidence < 0.95
           const isConfirmed = item.confirmed
 
           const showConversion = item.needsConversion && item.parsedUom && item.catalogUom && onConversionConfirm
@@ -202,23 +199,19 @@ export function LiveItemFeed({
             <SwipeableRow key={item.id} onDelete={() => onDelete(item.id)}>
               <div className={cn(
                 "border-b",
-                isT2 ? "border-purple-200/60" : isFlagged ? "border-orange-200/60" : "border-border-custom/30"
+                isFlagged ? "border-orange-200/60" : "border-border-custom/30"
               )}>
               <div
                 className={cn(
                   "flex items-center gap-3 px-4 py-3.5 transition-all duration-300",
-                  isT2 ? "bg-purple-50/30" : isFlagged ? "bg-orange-50/40" : "",
+                  isFlagged ? "bg-orange-50/40" : "",
                   "animate-item-enter"
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 {/* Things 3 circle checkbox */}
                 <div className="shrink-0">
-                  {isT2 ? (
-                    <div className="circle-checkbox checked">
-                      <Check className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  ) : isConfirmed ? (
+                  {isConfirmed ? (
                     <div className="circle-checkbox checked">
                       <Check className="h-3.5 w-3.5 text-white" />
                     </div>
@@ -257,10 +250,10 @@ export function LiveItemFeed({
 
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  {item.isPanel || isT2 ? (
+                  {item.isPanel ? (
                     <p className={cn(
                       "text-[15px] font-semibold leading-snug text-left w-full break-words",
-                      "text-navy"
+                      isFlagged ? "text-orange-700" : "text-navy"
                     )}>
                       {item.productName}
                     </p>
@@ -279,21 +272,16 @@ export function LiveItemFeed({
                   {item.isPanel && (
                     <p className="text-xs text-brand-blue font-medium mt-0.5">Brand selected at checkout</p>
                   )}
-                  {isT2 && (
-                    <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-purple-50 text-purple-700">
-                      T2 — match at checkout
-                    </span>
-                  )}
-                  {item.isAssembly && !isT2 && (
+                  {item.isAssembly && (
                     <span className="inline-flex items-center gap-0.5 mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-blue-50 text-brand-blue">
                       <Wrench className="h-2.5 w-2.5" />
                       In-house
                     </span>
                   )}
-                  {item.isNonCatalog && !item.isPanel && !item.isAssembly && !isT2 && (
+                  {item.isNonCatalog && !item.isPanel && !item.isAssembly && (
                     <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-xl text-[10px] font-bold bg-brand-orange/10 text-brand-orange">Custom</span>
                   )}
-                  {isFlagged && !item.isPanel && !isT2 && (
+                  {isFlagged && !item.isPanel && (
                     <button
                       type="button"
                       onClick={() => onResolveFlagged(item.id)}
@@ -359,8 +347,8 @@ export function LiveItemFeed({
                   />
                 </div>
               )}
-              {/* Inline resolver — expands below tapped item (never for panels or T2) */}
-              {resolvingItemId === item.id && !item.isPanel && !isT2 && onResolveSelect && onResolveKeepAsCustom && (
+              {/* Inline resolver — expands below tapped item (never for panels) */}
+              {resolvingItemId === item.id && !item.isPanel && onResolveSelect && onResolveKeepAsCustom && (
                 <div className="px-4 py-3 border-b border-border-custom/40 bg-surface-secondary/50 animate-ios-expand">
                   {item.confirmed && item.isNonCatalog && !item.isPanel ? (
                     <div className="flex items-center gap-2 py-2">
