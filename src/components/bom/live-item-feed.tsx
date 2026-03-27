@@ -355,7 +355,7 @@ export function LiveItemFeed({
                       <div className="circle-checkbox checked" style={{ width: 20, height: 20 }}>
                         <Check className="h-3 w-3 text-white" />
                       </div>
-                      <p className="text-sm font-semibold text-green-700">Added as custom item</p>
+                      <p className="text-sm font-semibold text-green-700">Kept as written</p>
                     </div>
                   ) : (
                     <FlaggedItemResolver

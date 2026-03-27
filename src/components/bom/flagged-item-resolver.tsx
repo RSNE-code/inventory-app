@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertCircle, Star, Plus, Search } from "lucide-react"
+import { AlertCircle, Star, Check, Search } from "lucide-react"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ProductPicker } from "@/components/bom/product-picker"
 
@@ -99,8 +99,8 @@ export function FlaggedItemResolver({
             onClick={onKeepAsCustom}
             className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-brand-orange text-white font-semibold text-sm shadow-[0_4px_12px_rgba(232,121,43,0.25)] hover:shadow-[0_6px_20px_rgba(232,121,43,0.35)] active:scale-[0.97] transition-all"
           >
-            <Plus className="h-4 w-4" />
-            Add as custom item
+            <Check className="h-4 w-4" />
+            Keep as written
           </button>
         </div>
       )}

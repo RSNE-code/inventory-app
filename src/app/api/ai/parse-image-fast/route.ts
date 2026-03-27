@@ -160,22 +160,8 @@ export async function POST(request: NextRequest) {
                 .map((id) => resolveProductId(id, indexToId))
                 .filter((id): id is string => id !== null)
 
-            // Clean unit prefixes from item name (e.g., "Box Drive Pins" → name:"Drive Pins", uom:"box")
-            const cleanedName = stripQtyPrefix(item.name.toLowerCase()).replace(/^\w/, c => c.toUpperCase())
-            const strippedPart = item.name.toLowerCase().replace(cleanedName.toLowerCase(), "").trim()
-            let cleanedUom = item.unitOfMeasure
-            if (strippedPart && cleanedName !== item.name) {
-              // The stripped portion was a unit word — use it as UOM if AI didn't set one meaningfully
-              const unitWords = /^(ea|each|pcs?|pieces?|lbs?|pounds?|lf|sf|ft|feet|in|inches?|box(?:es)?|rolls?|bags?|tubes?|gal(?:lon)?s?|cases?|bundles?|sheets?|sticks?|pairs?|sets?|packs?|ct|count)$/i
-              if (unitWords.test(strippedPart)) {
-                cleanedUom = strippedPart.toLowerCase()
-              }
-            }
-
             const resolvedItem: BomStreamItem = {
               ...item,
-              name: cleanedName !== item.name.toLowerCase() ? cleanedName : item.name,
-              unitOfMeasure: cleanedUom,
               matchedProductId: resolvedId,
               alternativeProductIds: resolvedAlts,
             }

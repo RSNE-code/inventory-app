@@ -446,7 +446,7 @@ export function BomPhotoCapture() {
       )
     )
     setResolvingItemId(null)
-    toast.success(`Added "${customName}" as custom item`)
+    toast.success(`Kept "${customName}" as written`)
   }
 
   function editItemDimensions(id: string, thickness: number, lengthFt: number, lengthIn: number) {
