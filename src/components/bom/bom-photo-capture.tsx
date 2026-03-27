@@ -564,7 +564,7 @@ export function BomPhotoCapture() {
       // Show success overlay then navigate to BOM list
       setShowSuccessOverlay(true)
       setTimeout(() => {
-        router.push("/boms")
+        window.location.href = "/boms"
       }, 1200)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create BOM")
