@@ -8,21 +8,7 @@ import { PanelDimensionEditor } from "./panel-dimension-editor"
 import { UnitConversionPrompt } from "./unit-conversion-prompt"
 import { FlaggedItemResolver } from "./flagged-item-resolver"
 import { OptionPicker } from "@/components/doors/option-picker"
-
-const STANDARD_UNITS = [
-  { label: "ea", value: "ea" },
-  { label: "lbs", value: "lbs" },
-  { label: "lf", value: "lf" },
-  { label: "sf", value: "sf" },
-  { label: "in", value: "in" },
-  { label: "ft", value: "ft" },
-  { label: "box", value: "box" },
-  { label: "roll", value: "roll" },
-  { label: "bag", value: "bag" },
-  { label: "tube", value: "tube" },
-  { label: "gal", value: "gal" },
-  { label: "case", value: "case" },
-]
+import { STANDARD_UNITS, normalizeUnit } from "@/lib/units"
 
 export interface FeedItem {
   id: string
@@ -65,13 +51,14 @@ interface LiveItemFeedProps {
 /** Tappable unit pill that opens OptionPicker scroll wheel */
 function UnitPillPicker({ unit, onChange }: { unit: string; onChange: (unit: string) => void }) {
   const [open, setOpen] = useState(false)
+  const displayUnit = normalizeUnit(unit)
 
   const options = (() => {
     const seen = new Set<string>()
     const opts: { label: string; value: string }[] = []
-    if (unit && !seen.has(unit)) {
-      opts.push({ label: unit, value: unit })
-      seen.add(unit)
+    if (displayUnit && !seen.has(displayUnit)) {
+      opts.push({ label: displayUnit, value: displayUnit })
+      seen.add(displayUnit)
     }
     for (const u of STANDARD_UNITS) {
       if (!seen.has(u.value)) {
@@ -89,16 +76,16 @@ function UnitPillPicker({ unit, onChange }: { unit: string; onChange: (unit: str
         onClick={() => setOpen(true)}
         className="h-10 w-[52px] text-center text-xs font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
       >
-        {unit}
+        {displayUnit}
       </button>
       <OptionPicker
         open={open}
         onOpenChange={setOpen}
         label="Unit of Measure"
         wheels={[{ label: "Unit", options }]}
-        selectedValues={[unit]}
+        selectedValues={[displayUnit]}
         onDone={([val]) => {
-          if (val && val !== unit) onChange(val)
+          if (val && val !== displayUnit) onChange(val)
         }}
       />
     </>

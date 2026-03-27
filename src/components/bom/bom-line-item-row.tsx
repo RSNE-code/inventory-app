@@ -7,22 +7,7 @@ import { Input } from "@/components/ui/input"
 import { OptionPicker } from "@/components/doors/option-picker"
 import { Trash2, Check, Wrench, Truck, AlertTriangle } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
-
-// Standard unit options for the scroll picker
-const STANDARD_UNITS = [
-  { label: "ea", value: "ea" },
-  { label: "lbs", value: "lbs" },
-  { label: "lf", value: "lf" },
-  { label: "sf", value: "sf" },
-  { label: "in", value: "in" },
-  { label: "ft", value: "ft" },
-  { label: "box", value: "box" },
-  { label: "roll", value: "roll" },
-  { label: "bag", value: "bag" },
-  { label: "tube", value: "tube" },
-  { label: "gal", value: "gal" },
-  { label: "case", value: "case" },
-]
+import { STANDARD_UNITS } from "@/lib/units"
 
 interface BomLineItemRowProps {
   name: string

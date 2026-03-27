@@ -8,21 +8,7 @@ import { cn } from "@/lib/utils"
 import { useHaptic } from "@/hooks/use-haptic"
 import type { CatalogMatch, ConfirmedBomItem } from "@/lib/ai/types"
 import { getMatchStockLevel, stockDotColor, stockLabel } from "@/lib/bom-utils"
-
-const STANDARD_UNITS = [
-  { label: "ea", value: "ea" },
-  { label: "lbs", value: "lbs" },
-  { label: "lf", value: "lf" },
-  { label: "sf", value: "sf" },
-  { label: "in", value: "in" },
-  { label: "ft", value: "ft" },
-  { label: "box", value: "box" },
-  { label: "roll", value: "roll" },
-  { label: "bag", value: "bag" },
-  { label: "tube", value: "tube" },
-  { label: "gal", value: "gal" },
-  { label: "case", value: "case" },
-]
+import { STANDARD_UNITS } from "@/lib/units"
 
 interface BomConfirmationCardProps {
   match: CatalogMatch
