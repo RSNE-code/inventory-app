@@ -266,7 +266,7 @@ export function BomConfirmationCard({
             <span className="text-lg font-medium">+</span>
           </button>
         </div>
-        <span className="text-sm text-text-muted">
+        <span className="inline-flex items-center justify-center h-8 min-w-[36px] px-2.5 text-xs font-semibold text-brand-blue bg-brand-blue/10 rounded-xl">
           {match.matchedProduct?.unitOfMeasure ?? match.parsedItem.unitOfMeasure}
         </span>
       </div>

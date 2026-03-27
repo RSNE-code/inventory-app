@@ -530,7 +530,7 @@ export function BomAIFlow() {
                       onChange={(e) => handleQtyChange(index, Number(e.target.value) || 0)}
                       className="w-14 rounded-xl border border-border-custom px-1.5 py-1.5 text-xs text-center font-bold text-navy tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-blue [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
-                    <span className="text-[10px] text-text-muted w-8">{item.unitOfMeasure}</span>
+                    <span className="inline-flex items-center justify-center h-7 min-w-[36px] px-2 text-xs font-semibold text-brand-blue bg-brand-blue/10 rounded-xl">{item.unitOfMeasure}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveConfirmed(index)}
