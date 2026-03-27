@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
             diagnostics.push(`${item.rawText}|aiId=${item.matchedProductId}|conf=${item.matchConfidence}|matched=${catalogMatch.matchedProduct?.name ?? "NONE"}|panel=${!!catalogMatch.panelSpecs}`)
 
             // Apply match history boosting (catalog + custom items)
-            const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ")
+            const normalized = item.rawText.toLowerCase().trim().replace(/\s+/g, " ").replace(/['"]/g, "")
             const histMatch = historyMap.get(normalized)
 
             let boostedMatch = catalogMatch
