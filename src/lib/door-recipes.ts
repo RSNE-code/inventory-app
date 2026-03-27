@@ -312,12 +312,13 @@ const COOLER_SLIDER_4x7: DoorRecipe = {
   name: "Cooler Slider 4x7",
   components: [
     { name: "SLD 48", qty: 1 },
-    { name: "Insulated Metal Panel (AWIP)-8'-44-4", qty: 32 },
+    { name: '4" IMP', qty: 32 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 60 },
     { name: 'Wiper Gasket 3"', qty: 0.1 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
     { name: "STRIKER", qty: 1 },
     { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
     { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 4 },
     { name: "Fasteners (Generic)", qty: 60 },
   ],
@@ -327,12 +328,13 @@ const COOLER_SLIDER_5x7: DoorRecipe = {
   name: "Cooler Slider 5x7",
   components: [
     { name: "SLD 60", qty: 1 },
-    { name: "Insulated Metal Panel (AWIP)-8'-44-4", qty: 64 },
+    { name: '4" IMP', qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.12 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
     { name: "STRIKER", qty: 1 },
     { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
     { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 5 },
     { name: "Fasteners (Generic)", qty: 60 },
   ],
@@ -342,12 +344,13 @@ const COOLER_SLIDER_6x7: DoorRecipe = {
   name: "Cooler Slider 6x7",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: "Insulated Metal Panel (AWIP)-8'-44-4", qty: 64 },
+    { name: '4" IMP', qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
     { name: "STRIKER", qty: 1 },
     { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
     { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 5 },
     { name: "Fasteners (Generic)", qty: 70 },
   ],
@@ -357,12 +360,13 @@ const COOLER_SLIDER_6x8: DoorRecipe = {
   name: "Cooler Slider 6x8",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: "Insulated Metal Panel (AWIP)-8'-44-4", qty: 80 },
+    { name: '4" IMP', qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
     { name: "STRIKER", qty: 1 },
     { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
     { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 6 },
     { name: "Fasteners (Generic)", qty: 70 },
   ],
@@ -372,14 +376,104 @@ const COOLER_SLIDER_8x8: DoorRecipe = {
   name: "Cooler Slider 8x8",
   components: [
     { name: "SLD 96", qty: 1 },
-    { name: "Insulated Metal Panel (AWIP)-8'-44-4", qty: 80 },
+    { name: '4" IMP', qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 115 },
     { name: 'Wiper Gasket 3"', qty: 0.18 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
     { name: "STRIKER", qty: 1 },
     { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
     { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 8 },
     { name: "Fasteners (Generic)", qty: 80 },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Freezer Slider Recipes (same as cooler + heater wire at width × 4)
+// ---------------------------------------------------------------------------
+
+const FREEZER_SLIDER_4x7: DoorRecipe = {
+  name: "Freezer Slider 4x7",
+  components: [
+    { name: "SLD 48", qty: 1 },
+    { name: '4" IMP', qty: 32 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 60 },
+    { name: 'Wiper Gasket 3"', qty: 0.1 },
+    { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
+    { name: "STRIKER", qty: 1 },
+    { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
+    { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 4 },
+    { name: "Fasteners (Generic)", qty: 60 },
+    { name: "16' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP", qty: 1 },
+  ],
+};
+
+const FREEZER_SLIDER_5x7: DoorRecipe = {
+  name: "Freezer Slider 5x7",
+  components: [
+    { name: "SLD 60", qty: 1 },
+    { name: '4" IMP', qty: 64 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
+    { name: 'Wiper Gasket 3"', qty: 0.12 },
+    { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
+    { name: "STRIKER", qty: 1 },
+    { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
+    { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 5 },
+    { name: "Fasteners (Generic)", qty: 60 },
+    { name: "20' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP", qty: 1 },
+  ],
+};
+
+const FREEZER_SLIDER_6x7: DoorRecipe = {
+  name: "Freezer Slider 6x7",
+  components: [
+    { name: "SLD 72", qty: 1 },
+    { name: '4" IMP', qty: 64 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
+    { name: 'Wiper Gasket 3"', qty: 0.14 },
+    { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
+    { name: "STRIKER", qty: 1 },
+    { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
+    { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 5 },
+    { name: "Fasteners (Generic)", qty: 70 },
+    { name: "24' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP", qty: 1 },
+  ],
+};
+
+const FREEZER_SLIDER_6x8: DoorRecipe = {
+  name: "Freezer Slider 6x8",
+  components: [
+    { name: "SLD 72", qty: 1 },
+    { name: '4" IMP', qty: 80 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
+    { name: 'Wiper Gasket 3"', qty: 0.14 },
+    { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
+    { name: "STRIKER", qty: 1 },
+    { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
+    { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 6 },
+    { name: "Fasteners (Generic)", qty: 70 },
+    { name: "24' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP", qty: 1 },
+  ],
+};
+
+const FREEZER_SLIDER_8x8: DoorRecipe = {
+  name: "Freezer Slider 8x8",
+  components: [
+    { name: "SLD 96", qty: 1 },
+    { name: '4" IMP', qty: 80 },
+    { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 115 },
+    { name: 'Wiper Gasket 3"', qty: 0.18 },
+    { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
+    { name: "STRIKER", qty: 1 },
+    { name: "Slider Tongue - Non-padlock", qty: 1 },
+    { name: "Kason Slider Exterior Pull Handle", qty: 1 },
+    { name: "Aluminum Flat Bar .250 x 3\" x 12'", qty: 8 },
+    { name: "Fasteners (Generic)", qty: 80 },
+    { name: "32' - HEATER, WIRE ALUM BRAID, 115V, -10 DEG, 2 WRAP", qty: 1 },
   ],
 };
 
@@ -415,15 +509,22 @@ export function matchDoorRecipe(specs: {
   const isPlug = !specs.frameType || specs.frameType === "";
 
   // -----------------------------------------------------------------------
-  // Sliding doors
+  // Sliding doors — cooler vs freezer (freezer adds heater wire)
   // -----------------------------------------------------------------------
   if (isSlider) {
+    if (isFreezer) {
+      if (wBucket === "8ft" && hBucket === "8ft") return FREEZER_SLIDER_8x8;
+      if (wBucket === "6ft" && hBucket === "8ft") return FREEZER_SLIDER_6x8;
+      if (wBucket === "6ft") return FREEZER_SLIDER_6x7;
+      if (wBucket === "5ft") return FREEZER_SLIDER_5x7;
+      if (wBucket === "4ft") return FREEZER_SLIDER_4x7;
+      return null;
+    }
     if (wBucket === "8ft" && hBucket === "8ft") return COOLER_SLIDER_8x8;
     if (wBucket === "6ft" && hBucket === "8ft") return COOLER_SLIDER_6x8;
     if (wBucket === "6ft") return COOLER_SLIDER_6x7;
     if (wBucket === "5ft") return COOLER_SLIDER_5x7;
     if (wBucket === "4ft") return COOLER_SLIDER_4x7;
-    // Sliders below 4ft not standard — no match
     return null;
   }
 
