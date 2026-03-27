@@ -194,6 +194,7 @@ export function useCheckoutBom() {
         bomLineItemId: string
         type: "CHECKOUT" | "RETURN"
         quantity: number
+        productId?: string
       }>
     }) => {
       const res = await fetch(`/api/boms/${id}/checkout`, {

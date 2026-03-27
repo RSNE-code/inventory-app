@@ -14,6 +14,7 @@ const checkoutSchema = z.object({
       bomLineItemId: z.string().uuid(),
       type: z.enum(["CHECKOUT", "RETURN"]),
       quantity: z.number().positive(),
+      productId: z.string().uuid().optional(),
     })
   ).min(1),
 })
@@ -101,7 +102,14 @@ export async function POST(
         const lineItem = bom.lineItems.find((li) => li.id === item.bomLineItemId)!
 
         // Non-catalog items without a product (no stock to adjust)
+        // If a productId is provided (T2 deferred match), link it first
         if (lineItem.isNonCatalog && !lineItem.productId) {
+          if (item.productId) {
+            await tx.bomLineItem.update({
+              where: { id: lineItem.id },
+              data: { productId: item.productId },
+            })
+          }
           if (item.type === "CHECKOUT") {
             await tx.bomLineItem.update({
               where: { id: lineItem.id },

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { parseBomImageStream, toBomCatalogMatch, loadProductMap, resolveProductId } from "@/lib/ai/parse"
 import type { BomStreamItem } from "@/lib/ai/parse"
+import { isLikelyT2 } from "@/lib/units"
 
 /** Strip leading quantity + unit from raw text so "2 case butyl" → "butyl", "Box Drive Pins" → "Drive Pins" */
 function stripQtyPrefix(text: string): string {
@@ -225,6 +226,28 @@ export async function POST(request: NextRequest) {
                   isNonCatalog: true,
                 }
               }
+            }
+
+            // T2 deferred matching — consumables/fasteners pass through as-is
+            const detectedT2 = isLikelyT2(
+              boostedMatch.matchedProduct?.tier ?? null,
+              boostedMatch.parsedItem.name,
+              boostedMatch.parsedItem.category ?? null
+            )
+            if (detectedT2 && !boostedMatch.panelSpecs) {
+              const savedCategory = boostedMatch.matchedProduct?.categoryName || boostedMatch.parsedItem.category || "Fasteners"
+              boostedMatch = {
+                ...boostedMatch,
+                matchedProduct: null,
+                matchConfidence: 1.0,
+                isNonCatalog: true,
+                parsedItem: {
+                  ...boostedMatch.parsedItem,
+                  category: savedCategory,
+                },
+                // Mark as T2 for client-side tier detection
+                isT2: true,
+              } as typeof boostedMatch & { isT2: boolean }
             }
 
             // Emit as NDJSON line

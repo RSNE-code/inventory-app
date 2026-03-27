@@ -84,6 +84,26 @@ export function normalizeUnit(unit: string): string {
   return map[u] || u
 }
 
+// ─── T2 (consumable/fastener) detection ───
+
+const T2_KEYWORDS = [
+  "tek", "screw", "bolt", "rivet", "nut", "washer", "fastener",
+  "pin", "shot", "clamp", "anchor", "fabloc", "fablock",
+  "caulk", "silicone", "adhesive", "sealant", "butyl", "dbsc", "durasil",
+  "tape", "froth", "foam", "glue", "epoxy",
+]
+
+/** Detect if an item is likely T2 (consumable/fastener) */
+export function isLikelyT2(
+  productTier: string | null | undefined,
+  itemName: string,
+  category: string | null | undefined
+): boolean {
+  if (productTier === "TIER_2") return true
+  const lower = (itemName + " " + (category || "")).toLowerCase()
+  return T2_KEYWORDS.some((kw) => lower.includes(kw))
+}
+
 // Convert a dimension value to feet
 function toFeet(value: number, unit: string): number {
   return unit === "in" ? value / 12 : value

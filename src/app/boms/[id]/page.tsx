@@ -61,6 +61,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [returnQtys, setReturnQtys] = useState<Record<string, number>>({})
   const [undoAction, setUndoAction] = useState<{ type: string; previousStatus: string } | null>(null)
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
+  const [t2PickerItem, setT2PickerItem] = useState<string | null>(null)
+  const [t2LinkedProducts, setT2LinkedProducts] = useState<Record<string, { id: string; name: string }>>({})
 
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom && ["DRAFT", "PENDING_REVIEW", "APPROVED"].includes(bom.status)
@@ -221,6 +223,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         bomLineItemId,
         type: "CHECKOUT" as const,
         quantity,
+        ...(t2LinkedProducts[bomLineItemId] && { productId: t2LinkedProducts[bomLineItemId].id }),
       }))
 
     if (items.length === 0) {
@@ -553,7 +556,23 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                     toast.error("Failed to update sourcing")
                   }
                 } : undefined}
+                productId={t2LinkedProducts[lineId]?.id || (item.productId as string | null)}
+                linkedProductName={t2LinkedProducts[lineId]?.name || null}
+                onSelectProduct={() => setT2PickerItem(lineId)}
               />
+              {/* T2 product picker */}
+              {t2PickerItem === lineId && (
+                <div className="px-4 py-3 bg-purple-50/30 border-b border-purple-200/60">
+                  <ProductPicker
+                    placeholder="Search for product..."
+                    onSelect={(product) => {
+                      setT2LinkedProducts((prev) => ({ ...prev, [lineId]: { id: product.id, name: product.name } }))
+                      setT2PickerItem(null)
+                      toast.success(`Matched to ${product.name}`)
+                    }}
+                  />
+                </div>
+              )}
               {/* Panel specs summary (view mode) */}
               {isPanelItem && mode === "view" && specs && (
                 <div className="flex items-center gap-1.5 flex-wrap px-4 py-2 -mt-1 text-xs">
