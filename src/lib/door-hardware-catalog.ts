@@ -41,7 +41,7 @@ export const SWING_INSIDE_RELEASE: HardwarePart[] = [
 
 // ─── Slider Door Hardware ────────────────────────────────────────────────────
 
-export const SLIDER_HARDWARE: HardwarePart[] = [
+export const SLIDER_TRACKS: HardwarePart[] = [
   { manufacturer: "Kason", part: "SLD 48", label: "Kason SLD 48" },
   { manufacturer: "Kason", part: "SLD 60", label: "Kason SLD 60" },
   { manufacturer: "Kason", part: "SLD 72", label: "Kason SLD 72" },
@@ -49,14 +49,28 @@ export const SLIDER_HARDWARE: HardwarePart[] = [
   { manufacturer: "Kason", part: "SLD 120", label: "Kason SLD 120" },
 ]
 
+/** @deprecated Use SLIDER_TRACKS instead */
+export const SLIDER_HARDWARE = SLIDER_TRACKS
+
 export const SLIDER_ROLLERS: HardwarePart[] = [
   { manufacturer: "Kason", part: "HD Floor Roller", label: "Kason HD Floor Roller" },
 ]
 
-export const SLIDER_STRIKE_TONGUE: HardwarePart[] = [
-  { manufacturer: "Kason", part: "Slider Tongue Non-Padlock", label: "Kason Slider Tongue Non-Padlock" },
+export const SLIDER_STRIKES: HardwarePart[] = [
   { manufacturer: "Kason", part: "Slider Strike", label: "Kason Slider Strike" },
 ]
+
+export const SLIDER_TONGUES: HardwarePart[] = [
+  { manufacturer: "Kason", part: "Slider Tongue Non-Padlock", label: "Kason Slider Tongue Non-Padlock" },
+  { manufacturer: "Kason", part: "Slider Tongue Padlock", label: "Kason Slider Tongue Padlock" },
+]
+
+export const SLIDER_DOOR_PULLS: HardwarePart[] = [
+  { manufacturer: "Kason", part: "Slider Exterior Pull", label: "Kason Slider Exterior Pull" },
+]
+
+/** @deprecated Use SLIDER_STRIKES and SLIDER_TONGUES instead */
+export const SLIDER_STRIKE_TONGUE = [...SLIDER_STRIKES, ...SLIDER_TONGUES]
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

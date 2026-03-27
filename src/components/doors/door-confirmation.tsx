@@ -10,7 +10,7 @@ import { OptionPicker } from "./option-picker"
 import type { PickerWheel } from "./option-picker"
 import {
   SWING_HINGES, SWING_LATCHES, SWING_CLOSERS, SWING_INSIDE_RELEASE,
-  SLIDER_HARDWARE, SLIDER_ROLLERS, SLIDER_STRIKE_TONGUE,
+  SLIDER_TRACKS, SLIDER_ROLLERS, SLIDER_STRIKES, SLIDER_TONGUES, SLIDER_DOOR_PULLS,
   hardwareToPickerOptions,
 } from "@/lib/door-hardware-catalog"
 import { Card } from "@/components/ui/card"
@@ -288,10 +288,25 @@ export function DoorConfirmation({
         }
       }
       // ── Slider hardware ──
-      case "sliderHardware": {
-        const cat = hardwareToPickerOptions(SLIDER_HARDWARE)
+      case "sliderTrack": {
+        const cat = hardwareToPickerOptions(SLIDER_TRACKS)
         return {
-          label: "Sliding Hardware",
+          label: "Track",
+          wheels: [
+            { label: "Manufacturer", options: cat.manufacturers },
+            { label: "Part", options: cat.partsByMfr["Kason"] || [] },
+          ],
+          values: ["Kason", specs.trackModel || ""],
+          getFiltered: (wi, vals) => {
+            if (wi === 1) return cat.partsByMfr[vals[0]] || []
+            return cat.manufacturers
+          },
+        }
+      }
+      case "sliderDoorPull": {
+        const cat = hardwareToPickerOptions(SLIDER_DOOR_PULLS)
+        return {
+          label: "Door Pull",
           wheels: [
             { label: "Manufacturer", options: cat.manufacturers },
             { label: "Part", options: cat.partsByMfr["Kason"] || [] },
@@ -315,14 +330,29 @@ export function DoorConfirmation({
         }
       }
       case "sliderStrike": {
-        const cat = hardwareToPickerOptions(SLIDER_STRIKE_TONGUE)
+        const cat = hardwareToPickerOptions(SLIDER_STRIKES)
         return {
-          label: "Strike / Tongue",
+          label: "Strike",
           wheels: [
             { label: "Manufacturer", options: cat.manufacturers },
             { label: "Part", options: cat.partsByMfr["Kason"] || [] },
           ],
-          values: ["Kason", specs.trackType || ""],
+          values: ["Kason", specs.strikeModel || ""],
+          getFiltered: (wi, vals) => {
+            if (wi === 1) return cat.partsByMfr[vals[0]] || []
+            return cat.manufacturers
+          },
+        }
+      }
+      case "sliderTongue": {
+        const cat = hardwareToPickerOptions(SLIDER_TONGUES)
+        return {
+          label: "Tongue",
+          wheels: [
+            { label: "Manufacturer", options: cat.manufacturers },
+            { label: "Part", options: cat.partsByMfr["Kason"] || [] },
+          ],
+          values: ["Kason", specs.tongueModel || ""],
           getFiltered: (wi, vals) => {
             if (wi === 1) return cat.partsByMfr[vals[0]] || []
             return cat.manufacturers
@@ -395,14 +425,20 @@ export function DoorConfirmation({
           onSpecChange("insideRelease", values[1])
         }
         break
-      case "sliderHardware":
+      case "sliderTrack":
+        onSpecChange("trackModel", values[1])
+        break
+      case "sliderDoorPull":
         onSpecChange("doorPull", values[1])
         break
       case "sliderRoller":
         // Roller is standard — no separate spec field, stored in components
         break
       case "sliderStrike":
-        onSpecChange("trackType", values[1])
+        onSpecChange("strikeModel", values[1])
+        break
+      case "sliderTongue":
+        onSpecChange("tongueModel", values[1])
         break
     }
     setActivePicker(null)
@@ -490,12 +526,12 @@ export function DoorConfirmation({
           </div>
         ) : (
           <div className="px-4 py-3">
-            <div className="grid grid-cols-1 gap-2">
-              <HwBox title="Sliding Hardware" mfr="Kason" model={specs.doorPull} onEdit={() => setActivePicker("sliderHardware")} />
-              <div className="grid grid-cols-2 gap-2">
-                <HwBox title="Roller" mfr="Kason" model="HD Floor Roller" onEdit={() => setActivePicker("sliderRoller")} />
-                <HwBox title="Strike / Tongue" mfr="Kason" model={specs.trackType} onEdit={() => setActivePicker("sliderStrike")} />
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              <HwBox title="Track" mfr="Kason" model={specs.trackModel} onEdit={() => setActivePicker("sliderTrack")} />
+              <HwBox title="Door Pull" mfr="Kason" model={specs.doorPull} onEdit={() => setActivePicker("sliderDoorPull")} />
+              <HwBox title="Roller" mfr="Kason" model="HD Floor Roller" onEdit={() => setActivePicker("sliderRoller")} />
+              <HwBox title="Strike" mfr="Kason" model={specs.strikeModel} onEdit={() => setActivePicker("sliderStrike")} />
+              <HwBox title="Tongue" mfr="Kason" model={specs.tongueModel} onEdit={() => setActivePicker("sliderTongue")} />
             </div>
           </div>
         )}

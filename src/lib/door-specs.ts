@@ -101,7 +101,10 @@ export interface DoorSpecs {
 
   // Sliding door specific
   doorPull?: string
-  trackType?: string
+  trackType?: string // legacy — use trackModel/strikeModel/tongueModel
+  trackModel?: string
+  strikeModel?: string
+  tongueModel?: string
 
   // Notes
   specialNotes?: string
@@ -390,7 +393,7 @@ export function getStandardHardware(
   isExterior?: boolean,
 ): HardwareDefaults {
   if (!category || category === "SLIDING") {
-    // Sliders have no hinges/latches/closers — they use floor rollers, strikers, tongues
+    // Sliders have no hinges/latches/closers — use getSliderHardwareDefaults() instead
     return {}
   }
 
@@ -444,6 +447,30 @@ export function getStandardHardware(
     latchModel: "D90",
     closerModel: "DENT D276",
     gasketType: "MAGNETIC",
+  }
+}
+
+/** Get slider-specific hardware defaults based on door width */
+export function getSliderHardwareDefaults(widthInClear?: string): {
+  trackModel: string
+  doorPull: string
+  strikeModel: string
+  tongueModel: string
+} {
+  // Map width to SLD track model
+  const widthNum = widthInClear ? parseInt(widthInClear) : 0
+  let trackModel = ""
+  if (widthNum <= 48) trackModel = "SLD 48"
+  else if (widthNum <= 60) trackModel = "SLD 60"
+  else if (widthNum <= 72) trackModel = "SLD 72"
+  else if (widthNum <= 96) trackModel = "SLD 96"
+  else trackModel = "SLD 120"
+
+  return {
+    trackModel,
+    doorPull: "Kason Slider Exterior Pull",
+    strikeModel: "Slider Strike",
+    tongueModel: "Slider Tongue Non-Padlock",
   }
 }
 
@@ -540,8 +567,13 @@ function buildConfig(
     ...(hw.latchModel ? { latchModel: hw.latchModel } : {}),
     ...(hw.closerModel ? { closerModel: hw.closerModel } : {}),
     ...(hw.gasketType ? { gasketType: hw.gasketType } : {}),
-    ...(temp === "FREEZER" ? { insulationType: "PIR" as InsulationType } : { insulationType: "EPS" as InsulationType }),
+    ...(opening === "SLIDE"
+      ? { insulationType: "IMP" as InsulationType }
+      : temp === "FREEZER"
+        ? { insulationType: "PIR" as InsulationType }
+        : { insulationType: "EPS" as InsulationType }),
     ...(isExterior ? { insideRelease: "K481 Safety Glow" } : {}),
+    ...(opening === "SLIDE" ? getSliderHardwareDefaults(widthIn) : {}),
   }
 
   // Auto-calculate heater cable for freezers
