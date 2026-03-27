@@ -359,7 +359,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      <div className="p-4 space-y-3 pb-56">
+      <div className="p-4 space-y-3 pb-80">
         {/* Job Info */}
         <Card className="px-4 py-3 rounded-xl border-border-custom">
           <div className="flex items-start justify-between gap-2">
