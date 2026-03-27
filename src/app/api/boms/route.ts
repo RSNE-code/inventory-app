@@ -28,6 +28,7 @@ const bomLineItemSchema = z.object({
   matchConfidence: z.number().min(0).max(1).optional().nullable(),
   rawText: z.string().optional().nullable(),
   parsedUom: z.string().max(50).optional().nullable(),
+  inputUnit: z.string().max(50).optional().nullable(),
 }).refine(
   (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
   { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
@@ -176,6 +177,7 @@ export async function POST(request: NextRequest) {
             matchConfidence: item.matchConfidence ?? null,
             rawText: item.rawText || null,
             parsedUom: item.parsedUom || null,
+            inputUnit: item.inputUnit || null,
             // Auto-set fabrication source:
             // - Assembly products → RSNE_MADE
             // - Catalog products with fabrication recipes → RSNE_MADE

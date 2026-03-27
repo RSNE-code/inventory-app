@@ -59,6 +59,8 @@ const updateBomSchema = z.object({
         nonCatalogUom: z.string().max(50).optional().nullable(),
         nonCatalogEstCost: z.number().optional().nullable(),
         nonCatalogSpecs: z.any().optional().nullable(),
+        parsedUom: z.string().max(50).optional().nullable(),
+        inputUnit: z.string().max(50).optional().nullable(),
       }).refine(
         (item) => !item.isNonCatalog || (item.nonCatalogName && item.nonCatalogName.trim().length > 0),
         { message: "Name is required for non-catalog items", path: ["nonCatalogName"] }
@@ -74,6 +76,7 @@ const updateBomSchema = z.object({
         fabricationSource: z.enum(["RSNE_MADE", "SUPPLIER"]).optional().nullable(),
         nonCatalogSpecs: z.any().optional(),
         nonCatalogName: z.string().max(255).optional(),
+        inputUnit: z.string().max(50).optional().nullable(),
       })
     )
     .optional(),
@@ -162,6 +165,9 @@ export async function PUT(
           if (item.nonCatalogName !== undefined) {
             updateFields.nonCatalogName = item.nonCatalogName
           }
+          if (item.inputUnit !== undefined) {
+            updateFields.inputUnit = item.inputUnit
+          }
           if (Object.keys(updateFields).length === 0) return Promise.resolve()
           return prisma.bomLineItem.update({
             where: { id: item.id, bomId: id, isActive: true },
@@ -218,6 +224,8 @@ export async function PUT(
                 ? new Prisma.Decimal(item.nonCatalogEstCost)
                 : null,
               nonCatalogSpecs: item.nonCatalogSpecs ? (item.nonCatalogSpecs as Prisma.InputJsonValue) : undefined,
+              parsedUom: item.parsedUom || null,
+              inputUnit: item.inputUnit || null,
               fabricationSource,
             },
           })

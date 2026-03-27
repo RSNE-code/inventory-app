@@ -107,7 +107,7 @@ export function useUpdateBom() {
         nonCatalogSpecs?: Record<string, unknown>
       }>
       removeLineItemIds?: string[]
-      updateLineItems?: Array<{ id: string; qtyNeeded: number }>
+      updateLineItems?: Array<{ id: string; qtyNeeded?: number; inputUnit?: string | null }>
     }) => {
       const res = await fetch(`/api/boms/${id}`, {
         method: "PUT",

@@ -286,6 +286,10 @@ export function BomAIFlow() {
           nonCatalogUom: item.nonCatalogUom,
           nonCatalogEstCost: item.nonCatalogEstCost,
           nonCatalogSpecs: item.catalogMatch.panelSpecs ?? undefined,
+          matchConfidence: item.catalogMatch.matchConfidence ?? null,
+          rawText: item.catalogMatch.parsedItem.rawText || null,
+          parsedUom: item.catalogMatch.parsedItem.unitOfMeasure || null,
+          inputUnit: item.catalogMatch.parsedItem.unitOfMeasure || null,
         })),
       })
       setSubmitted(true)

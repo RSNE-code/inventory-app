@@ -322,6 +322,7 @@ model BomLineItem {
   matchConfidence  Float?    // 0-1 AI confidence score for this match
   rawText          String?   // Original text from photo/voice parse
   parsedUom        String?   @db.VarChar(50) // Original AI-parsed unit before conversion (e.g., "case")
+  inputUnit        String?   @db.VarChar(50) // User's chosen display unit (may differ from parsedUom)
 
   createdAt     DateTime @default(now())
 

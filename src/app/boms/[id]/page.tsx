@@ -95,9 +95,15 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   }
 
   async function handleSaveEdits() {
-    const updateLineItems = Object.entries(pendingQtyChanges).map(([lineId, qty]) => ({
+    // Merge qty and unit changes into a single update list
+    const allChangedIds = new Set([
+      ...Object.keys(pendingQtyChanges),
+      ...Object.keys(pendingUnitChanges),
+    ])
+    const updateLineItems = Array.from(allChangedIds).map((lineId) => ({
       id: lineId,
-      qtyNeeded: qty,
+      ...(pendingQtyChanges[lineId] !== undefined && { qtyNeeded: pendingQtyChanges[lineId] }),
+      ...(pendingUnitChanges[lineId] !== undefined && { inputUnit: pendingUnitChanges[lineId] }),
     }))
 
     try {
@@ -497,7 +503,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 nonCatalogCategory={item.nonCatalogCategory as string | null}
                 qtyCheckedOut={Number(item.qtyCheckedOut || 0)}
                 qtyReturned={Number(item.qtyReturned || 0)}
-                inputUnit={pendingUnitChanges[lineId]}
+                inputUnit={pendingUnitChanges[lineId] ?? (item.inputUnit as string | undefined)}
                 editable={mode === "edit"}
                 checkoutMode={mode === "add-material"}
                 returnMode={mode === "return"}

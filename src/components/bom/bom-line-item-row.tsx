@@ -1,11 +1,28 @@
 "use client"
 
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { OptionPicker } from "@/components/doors/option-picker"
 import { Trash2, Check, Wrench, Truck, AlertTriangle } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
+
+// Standard unit options for the scroll picker
+const STANDARD_UNITS = [
+  { label: "ea", value: "ea" },
+  { label: "lbs", value: "lbs" },
+  { label: "lf", value: "lf" },
+  { label: "sf", value: "sf" },
+  { label: "in", value: "in" },
+  { label: "ft", value: "ft" },
+  { label: "box", value: "box" },
+  { label: "roll", value: "roll" },
+  { label: "bag", value: "bag" },
+  { label: "tube", value: "tube" },
+  { label: "gal", value: "gal" },
+  { label: "case", value: "case" },
+]
 
 interface BomLineItemRowProps {
   name: string
@@ -42,6 +59,53 @@ function toFeet(value: number, unit: string): number {
   return unit === "in" ? value / 12 : value
 }
 
+/** Build the picker options: dimension-based options first, then standard units (deduped) */
+function buildPickerOptions(
+  hasLength: boolean,
+  hasArea: boolean,
+  unitOfMeasure: string
+): { label: string; value: string }[] {
+  const seen = new Set<string>()
+  const options: { label: string; value: string }[] = []
+
+  // Dimension-based options first (if applicable)
+  if (hasLength || hasArea) {
+    for (const u of ["ft", "in"]) {
+      options.push({ label: u, value: u })
+      seen.add(u)
+    }
+    if (hasArea) {
+      options.push({ label: "sq ft", value: "sq ft" })
+      seen.add("sq ft")
+    }
+  }
+
+  // Product's base unit
+  if (unitOfMeasure && !seen.has(unitOfMeasure)) {
+    options.push({ label: unitOfMeasure, value: unitOfMeasure })
+    seen.add(unitOfMeasure)
+  }
+
+  // Standard units (deduped)
+  for (const u of STANDARD_UNITS) {
+    if (!seen.has(u.value)) {
+      options.push(u)
+      seen.add(u.value)
+    }
+  }
+
+  return options
+}
+
+// Static unit pill (view, checkout, return modes)
+function UnitPill({ unit }: { unit: string }) {
+  return (
+    <span className="inline-flex items-center justify-center h-7 min-w-[36px] px-2 text-xs font-semibold text-brand-blue bg-brand-blue/10 rounded-xl">
+      {unit}
+    </span>
+  )
+}
+
 export function BomLineItemRow({
   name,
   sku,
@@ -71,6 +135,8 @@ export function BomLineItemRow({
   onFabricationSourceChange,
   missingFabOrder,
 }: BomLineItemRowProps) {
+  const [pickerOpen, setPickerOpen] = useState(false)
+
   const hasLength = dimLength && dimLength > 0
   const hasWidth = dimWidth && dimWidth > 0
   const hasArea = hasLength && hasWidth
@@ -98,19 +164,8 @@ export function BomLineItemRow({
     }
   }
 
-  // Build unit options for the dropdown
-  const unitOptions: { value: string; label: string }[] = []
-  if (hasLength || hasArea) {
-    unitOptions.push({ value: "ft", label: "ft" })
-    unitOptions.push({ value: "in", label: "in" })
-    if (hasArea) {
-      unitOptions.push({ value: "sq ft", label: "sq ft" })
-    }
-    if (unitOfMeasure !== "ft" && unitOfMeasure !== "in" && unitOfMeasure !== "sq ft") {
-      unitOptions.push({ value: unitOfMeasure, label: unitOfMeasure })
-    }
-  }
-  const showUnitPicker = editable && unitOptions.length > 0
+  // Build picker options
+  const pickerOptions = buildPickerOptions(!!hasLength, !!hasArea, unitOfMeasure)
 
   // Checkout progress
   const outstanding = qtyCheckedOut - qtyReturned
@@ -147,7 +202,7 @@ export function BomLineItemRow({
               max={outstanding}
               step="any"
             />
-            <span className="text-xs text-text-muted w-10">{activeInputUnit}</span>
+            <UnitPill unit={activeInputUnit} />
           </div>
         </div>
       </div>
@@ -186,7 +241,7 @@ export function BomLineItemRow({
                 min={0}
                 step="any"
               />
-              <span className="text-xs text-text-muted w-10">{activeInputUnit}</span>
+              <UnitPill unit={activeInputUnit} />
             </div>
           )}
         </div>
@@ -260,7 +315,7 @@ export function BomLineItemRow({
 
         {editable ? (
           <div className="flex items-center gap-1.5 shrink-0">
-            <div>
+            <div className="flex flex-col items-center">
               <Input
                 type="number"
                 value={qtyNeeded || ""}
@@ -269,22 +324,25 @@ export function BomLineItemRow({
                 min={0}
                 step="any"
               />
-              {showUnitPicker ? (
-                <Select value={activeInputUnit} onValueChange={(v) => onInputUnitChange?.(v)}>
-                  <SelectTrigger className="h-5 w-16 text-[10px] font-medium uppercase border-0 bg-transparent px-0 justify-center text-text-muted">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {unitOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <label className="text-[10px] text-text-muted font-medium uppercase block text-center h-5 leading-5">
-                  {activeInputUnit}
-                </label>
-              )}
+              <button
+                type="button"
+                onClick={() => setPickerOpen(true)}
+                className="mt-0.5 h-8 min-w-[44px] px-2.5 text-xs font-semibold text-brand-blue bg-brand-blue/10 border border-brand-blue/20 rounded-xl active:bg-brand-blue/20 transition-colors"
+              >
+                {activeInputUnit}
+              </button>
+              <OptionPicker
+                open={pickerOpen}
+                onOpenChange={setPickerOpen}
+                label="Unit of Measure"
+                wheels={[{ label: "Unit", options: pickerOptions }]}
+                selectedValues={[activeInputUnit]}
+                onDone={([unit]) => {
+                  if (unit && unit !== activeInputUnit) {
+                    onInputUnitChange?.(unit)
+                  }
+                }}
+              />
             </div>
             {piecesNeeded !== null && (
               <div className="w-16">
@@ -308,17 +366,17 @@ export function BomLineItemRow({
             </Button>
           </div>
         ) : (
-          <div className="text-right shrink-0">
+          <div className="text-right shrink-0 flex items-center gap-1.5">
             {piecesNeeded !== null ? (
-              <>
+              <div>
                 <span className="text-base font-bold text-navy tabular-nums">{piecesNeeded}</span>
                 <span className="text-sm text-navy ml-0.5">{unitOfMeasure}</span>
                 <p className="text-xs text-text-muted tabular-nums">({formatQuantity(qtyNeeded)} {activeInputUnit})</p>
-              </>
+              </div>
             ) : (
               <>
                 <span className="text-base font-bold text-navy tabular-nums">{formatQuantity(qtyNeeded)}</span>
-                <span className="text-sm text-navy ml-0.5">{unitOfMeasure}</span>
+                <UnitPill unit={activeInputUnit} />
               </>
             )}
           </div>
