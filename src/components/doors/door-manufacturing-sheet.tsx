@@ -163,27 +163,37 @@ export function DoorManufacturingSheet({
           </span>
         </div>
 
-        {/* Frame Type */}
-        <div className="flex items-center gap-6 py-3 border-b border-border-custom">
-          <MfgCheckbox
-            label="FULL FRAME"
-            checked={specs.frameType === "FULL_FRAME"}
-          />
-          <MfgCheckbox
-            label="FACE FRAME"
-            checked={specs.frameType === "FACE_FRAME"}
-          />
-          <MfgCheckbox
-            label="BALLY TYPE"
-            checked={specs.frameType === "BALLY_TYPE"}
-          />
+        {/* Opening Type */}
+        <div className="flex items-center gap-8 py-3 border-b border-border-custom">
+          <MfgCheckbox label="SWING DOOR" checked={isHinged} />
+          <MfgCheckbox label="SLIDING DOOR" checked={!isHinged} />
         </div>
 
-        {/* High Sill / Wiper */}
-        <div className="flex items-center gap-8 py-3 border-b border-border-custom">
-          <MfgCheckbox label="HIGH SILL" checked={specs.highSill} />
-          <MfgCheckbox label="WIPER" checked={specs.wiper} />
-        </div>
+        {/* Frame Type — swing doors only */}
+        {isHinged && (
+          <div className="flex items-center gap-6 py-3 border-b border-border-custom">
+            <MfgCheckbox
+              label="FULL FRAME"
+              checked={specs.frameType === "FULL_FRAME"}
+            />
+            <MfgCheckbox
+              label="FACE FRAME"
+              checked={specs.frameType === "FACE_FRAME"}
+            />
+            <MfgCheckbox
+              label="BALLY TYPE"
+              checked={specs.frameType === "BALLY_TYPE"}
+            />
+          </div>
+        )}
+
+        {/* High Sill / Wiper — swing doors only */}
+        {isHinged && (
+          <div className="flex items-center gap-8 py-3 border-b border-border-custom">
+            <MfgCheckbox label="HIGH SILL" checked={specs.highSill} />
+            <MfgCheckbox label="WIPER" checked={specs.wiper} />
+          </div>
+        )}
 
         {/* Jamb Depth / Heater */}
         <div className="flex items-center gap-6 py-2 border-b border-border-custom">
@@ -243,10 +253,10 @@ export function DoorManufacturingSheet({
           </div>
         </div>
 
-        {/* Hardware — 4-box grid */}
+        {/* Hardware — slider vs swing */}
         <div className="py-3 border-b border-border-custom">
           <span className="text-sm font-bold uppercase block mb-2">HARDWARE</span>
-          {(() => {
+          {isHinged ? (() => {
             const closerHw = splitHardwareValue(specs.closerModel)
             const releaseHw = splitHardwareValue(specs.insideRelease)
             return (
@@ -274,7 +284,15 @@ export function DoorManufacturingSheet({
                 />
               </div>
             )
-          })()}
+          })() : (
+            <div className="grid grid-cols-2 gap-2">
+              <MfgHardwareBox title="TRACK" manufacturer="Kason" model={specs.trackModel} />
+              <MfgHardwareBox title="DOOR PULL" manufacturer="Kason" model={specs.doorPull} />
+              <MfgHardwareBox title="ROLLER" manufacturer="Kason" model="HD Floor Roller" />
+              <MfgHardwareBox title="STRIKE" manufacturer="Kason" model={specs.strikeModel} />
+              <MfgHardwareBox title="TONGUE" manufacturer="Kason" model={specs.tongueModel} />
+            </div>
+          )}
         </div>
 
         {/* Gasket Type */}

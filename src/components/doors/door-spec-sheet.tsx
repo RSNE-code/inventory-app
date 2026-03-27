@@ -240,9 +240,7 @@ export function DoorSpecSheet({
               </div>
             </>
           )}
-          {isSliding && specs.doorPull && (
-            <SpecRow label="Door Pull" value={specs.doorPull} />
-          )}
+          {/* Door Pull now in Hardware section for sliders */}
         </div>
 
         {/* Insulation */}
@@ -277,10 +275,18 @@ export function DoorSpecSheet({
           </div>
         )}
 
-        {/* Hardware — 4-box grid */}
+        {/* Hardware — slider vs swing */}
         <div>
           <SectionHeader>Hardware</SectionHeader>
-          {(() => {
+          {isSliding ? (
+            <div className="grid grid-cols-2 gap-2">
+              <HardwareBox title="Track" manufacturer="Kason" model={specs.trackModel} />
+              <HardwareBox title="Door Pull" manufacturer="Kason" model={specs.doorPull} />
+              <HardwareBox title="Roller" manufacturer="Kason" model="HD Floor Roller" />
+              <HardwareBox title="Strike" manufacturer="Kason" model={specs.strikeModel} />
+              <HardwareBox title="Tongue" manufacturer="Kason" model={specs.tongueModel} />
+            </div>
+          ) : (() => {
             const closerHw = splitHardwareValue(specs.closerModel)
             const releaseHw = splitHardwareValue(specs.insideRelease)
             return (
