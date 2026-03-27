@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { BomStatusBadge } from "./bom-status-badge"
-import { ChevronRight, AlertTriangle } from "lucide-react"
+import { ChevronRight, Wrench } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface BomCardProps {
@@ -47,9 +47,9 @@ export function BomCard({ id, jobName, jobNumber, status, lineItemCount, created
         </div>
         {unfabricatedAssemblyCount > 0 && (
           <div className="flex items-center gap-1.5 mt-2">
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold bg-status-yellow/15 text-yellow-700">
-              <AlertTriangle className="h-3 w-3" />
-              {unfabricatedAssemblyCount} missing fab order{unfabricatedAssemblyCount !== 1 ? "s" : ""}
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold bg-brand-blue/10 text-brand-blue">
+              <Wrench className="h-3 w-3" />
+              {unfabricatedAssemblyCount} fab item{unfabricatedAssemblyCount !== 1 ? "s" : ""}
             </span>
           </div>
         )}

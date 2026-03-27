@@ -80,9 +80,9 @@ export async function GET(request: NextRequest) {
       prisma.bom.count({ where }),
     ])
 
-    // Enrich with unfabricated assembly item counts for approved/in-progress BOMs
+    // Enrich with unfabricated assembly item counts (all active statuses)
     const bomIds = boms
-      .filter((b) => ["APPROVED", "IN_PROGRESS"].includes(b.status))
+      .filter((b) => ["DRAFT", "PENDING_REVIEW", "APPROVED", "IN_PROGRESS"].includes(b.status))
       .map((b) => b.id)
 
     let unfabCounts = new Map<string, number>()

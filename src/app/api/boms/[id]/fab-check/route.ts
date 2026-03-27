@@ -126,22 +126,33 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
       }
     }
 
-    // Try to match from queue by template or by name similarity
+    // Try to match from queue by template, door type, or name similarity
     const matched = queueDoors.find((qd) => {
       // Match by template if both have one
       if (li.product?.assemblyTemplate?.id && qd.templateId) {
         return li.product.assemblyTemplate.id === qd.templateId
       }
-      // Match by door name in specs
+
       const qdSpecs = qd.specs as Record<string, unknown> | null
+
+      // Match by door type (cooler/freezer + swing/slide) — most reliable
+      // Product name like "Cooler Slider 5' x 7'" → type = slider, temp = cooler
+      const bomType = extractDoorType(productName)
+      const queueType = qdSpecs ? extractDoorTypeFromSpecs(qdSpecs) : null
+      if (bomType && queueType && bomType === queueType) {
+        return true
+      }
+
+      // Fallback: name similarity
       if (qdSpecs) {
         const qdName = getDoorLabel(qdSpecs)
-        if (qdName && productName.toLowerCase().includes(qdName.toLowerCase())) {
-          return true
-        }
-        // Reverse: queue door name contains product name
-        if (qdName && qdName.toLowerCase().includes(productName.toLowerCase())) {
-          return true
+        if (qdName) {
+          // Compare type portion only (strip dimensions for fuzzy match)
+          const qdType = extractDoorType(qdName)
+          if (bomType && qdType && bomType === qdType) return true
+          // Full string contains check
+          if (productName.toLowerCase().includes(qdName.toLowerCase())) return true
+          if (qdName.toLowerCase().includes(productName.toLowerCase())) return true
         }
       }
       return false
@@ -172,6 +183,36 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
     doorItems,
     allResolved: doorItems.every((d) => d.status !== "unresolved"),
   }
+}
+
+/** Extract normalized door type from a product name (e.g., "Cooler Slider 5' x 7'" → "cooler_slider") */
+function extractDoorType(name: string): string | null {
+  const n = name.toLowerCase()
+  const isSlider = /slider|sliding/i.test(n)
+  const isFreezer = /freezer/i.test(n)
+  const isCooler = /cooler/i.test(n)
+  const isDoor = /door|swing/i.test(n)
+
+  if (isSlider && isFreezer) return "freezer_slider"
+  if (isSlider && isCooler) return "cooler_slider"
+  if (isSlider) return "cooler_slider" // default slider = cooler
+  if (isDoor && isFreezer) return "freezer_swing"
+  if (isDoor && isCooler) return "cooler_swing"
+  if (isFreezer) return "freezer_swing"
+  if (isCooler) return "cooler_swing"
+  return null
+}
+
+/** Extract normalized door type from assembly specs */
+function extractDoorTypeFromSpecs(specs: Record<string, unknown>): string | null {
+  const category = specs.doorCategory as string | undefined
+  if (!category) return null
+  const map: Record<string, string> = {
+    HINGED_COOLER: "cooler_swing",
+    HINGED_FREEZER: "freezer_swing",
+    SLIDING: "cooler_slider",
+  }
+  return map[category] || null
 }
 
 /** Extract a human-readable label from door assembly specs */
