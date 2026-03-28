@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Check, PackageCheck, Layers } from "lucide-react"
+import { Check, PackageCheck, Layers, Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface PickItem {
@@ -28,11 +28,8 @@ export function PickCheckoutSection({
   isPending,
   onPanelCheckout,
 }: PickCheckoutSectionProps) {
-  // Session-local pick state: which items are marked for checkout this trip
+  // Session-local pick state: lineItemId → qty to checkout
   const [picked, setPicked] = useState<Record<string, number>>({})
-
-  const nonPanelItems = items.filter((i) => !i.isPanel)
-  const panelItems = items.filter((i) => i.isPanel)
 
   function getRemaining(item: PickItem) {
     const net = item.qtyCheckedOut - item.qtyReturned
@@ -44,7 +41,7 @@ export function PickCheckoutSection({
   }
 
   function togglePick(item: PickItem) {
-    if (isFullyCheckedOut(item)) return
+    if (isFullyCheckedOut(item) || item.isPanel) return
     const remaining = getRemaining(item)
     if (remaining <= 0) return
 
@@ -58,10 +55,14 @@ export function PickCheckoutSection({
     })
   }
 
+  function updatePickQty(id: string, qty: number) {
+    setPicked((prev) => ({ ...prev, [id]: Math.max(0, qty) }))
+  }
+
   function selectAllRemaining() {
     const next: Record<string, number> = {}
-    for (const item of nonPanelItems) {
-      if (isFullyCheckedOut(item)) continue
+    for (const item of items) {
+      if (isFullyCheckedOut(item) || item.isPanel) continue
       const remaining = getRemaining(item)
       if (remaining > 0) next[item.id] = remaining
     }
@@ -78,21 +79,19 @@ export function PickCheckoutSection({
       }))
     if (checkoutItems.length === 0) return
     onCheckout(checkoutItems)
-    // Clear picks after checkout (they'll show as green on re-render)
     setPicked({})
   }
 
   const pickedCount = Object.keys(picked).length
-  const totalItems = nonPanelItems.length
-  const fulfilledCount = nonPanelItems.filter((i) => isFullyCheckedOut(i)).length
-  const panelsFulfilled = panelItems.filter((i) => isFullyCheckedOut(i)).length
+  const totalItems = items.length
+  const fulfilledCount = items.filter((i) => isFullyCheckedOut(i)).length
 
   return (
-    <div className="space-y-3">
-      {/* Progress summary */}
+    <div className="space-y-2">
+      {/* Header */}
       <div className="flex items-center justify-between px-1">
         <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
-          {fulfilledCount + panelsFulfilled} of {totalItems + panelItems.length} items fulfilled
+          {fulfilledCount} of {totalItems} fulfilled
         </span>
         {fulfilledCount < totalItems && (
           <button
@@ -100,163 +99,137 @@ export function PickCheckoutSection({
             onClick={selectAllRemaining}
             className="text-xs font-semibold text-brand-blue active:text-brand-blue/70"
           >
-            Select All Remaining
+            Select All
           </button>
         )}
       </div>
 
-      {/* Non-panel items with pick circles */}
-      <div className="space-y-0">
-        {nonPanelItems.map((item) => {
+      {/* Item list — each row has pick circle + name + qty controls */}
+      <div className="rounded-xl border border-border-custom overflow-hidden bg-white">
+        {items.map((item) => {
           const remaining = getRemaining(item)
           const fullyDone = isFullyCheckedOut(item)
           const isPicked = picked[item.id] !== undefined
-          const progress = item.qtyNeeded > 0 ? Math.min(1, (item.qtyCheckedOut / item.qtyNeeded)) : 0
+          const progress = item.qtyNeeded > 0 ? Math.min(1, item.qtyCheckedOut / item.qtyNeeded) : 0
 
           return (
             <div
               key={item.id}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 border-b border-border-custom/30 transition-all",
+                "flex items-center gap-3 px-3 py-3 border-b border-border-custom/30 last:border-b-0 transition-colors",
                 isPicked && "bg-brand-blue/5",
-                fullyDone && "opacity-60",
               )}
             >
               {/* Pick circle */}
               <button
                 type="button"
                 onClick={() => togglePick(item)}
-                disabled={fullyDone || remaining <= 0}
+                disabled={fullyDone || item.isPanel}
                 className="shrink-0 ios-press"
               >
                 {fullyDone ? (
-                  <div className="h-7 w-7 rounded-full bg-status-green flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-status-green flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
                   </div>
                 ) : isPicked ? (
-                  <div className="h-7 w-7 rounded-full bg-brand-blue flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-brand-blue flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
                   </div>
-                ) : progress > 0 ? (
-                  <div className="relative h-7 w-7">
-                    <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28">
-                      <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-border-custom" />
-                      <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="2.5"
+                ) : progress > 0 && !item.isPanel ? (
+                  <div className="relative h-8 w-8">
+                    <svg className="h-8 w-8 -rotate-90" viewBox="0 0 32 32">
+                      <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-border-custom" />
+                      <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2.5"
                         className="text-status-green"
-                        strokeDasharray={`${progress * 75.4} 75.4`}
+                        strokeDasharray={`${progress * 87.96} 87.96`}
                         strokeLinecap="round"
                       />
                     </svg>
                   </div>
+                ) : item.isPanel ? (
+                  progress > 0 ? (
+                    <div className="relative h-8 w-8">
+                      <svg className="h-8 w-8 -rotate-90" viewBox="0 0 32 32">
+                        <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-border-custom" />
+                        <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2.5"
+                          className="text-status-green"
+                          strokeDasharray={`${progress * 87.96} 87.96`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div className="h-8 w-8 rounded-full border-2 border-border-custom" />
+                  )
                 ) : (
-                  <div className="h-7 w-7 rounded-full border-2 border-border-custom" />
+                  <div className="h-8 w-8 rounded-full border-2 border-border-custom" />
                 )}
               </button>
 
-              {/* Item info */}
+              {/* Item name + status */}
               <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "text-[15px] font-semibold leading-snug truncate",
-                  fullyDone ? "text-text-muted line-through" : "text-navy"
-                )}>
-                  {item.name}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  {item.isPanel && <Layers className="h-3.5 w-3.5 text-brand-blue shrink-0" />}
+                  <p className={cn(
+                    "text-[15px] font-semibold leading-snug truncate",
+                    fullyDone ? "text-text-muted line-through" : "text-navy"
+                  )}>
+                    {item.name}
+                  </p>
+                </div>
                 <p className="text-xs text-text-muted mt-0.5">
                   {fullyDone
-                    ? `${formatQuantity(item.qtyCheckedOut)} ${item.unitOfMeasure} checked out`
+                    ? `${formatQuantity(item.qtyCheckedOut)} ${item.unitOfMeasure} done`
                     : item.qtyCheckedOut > 0
-                      ? `${formatQuantity(item.qtyCheckedOut)} of ${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure} pulled`
-                      : `${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure} needed`}
+                      ? `${formatQuantity(item.qtyCheckedOut)}/${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure} pulled`
+                      : `${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure}`}
                 </p>
               </div>
 
-              {/* Pick qty badge */}
+              {/* Qty stepper — shows when picked */}
               {isPicked && (
-                <span className="shrink-0 px-2 py-1 rounded-xl text-xs font-bold bg-brand-blue/10 text-brand-blue tabular-nums">
-                  {formatQuantity(picked[item.id])} {item.unitOfMeasure}
-                </span>
+                <div className="flex items-center gap-0 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => updatePickQty(item.id, (picked[item.id] || 0) - 1)}
+                    className="h-10 w-10 flex items-center justify-center rounded-l-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <input
+                    type="number"
+                    value={picked[item.id] || 0}
+                    onChange={(e) => updatePickQty(item.id, Math.max(0, Number(e.target.value) || 0))}
+                    className="w-12 h-10 text-center text-sm font-bold border-y border-border-custom bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    min={0}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updatePickQty(item.id, (picked[item.id] || 0) + 1)}
+                    className="h-10 w-10 flex items-center justify-center rounded-r-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Panel checkout button — instead of qty stepper */}
+              {item.isPanel && !fullyDone && remaining > 0 && onPanelCheckout && !isPicked && (
+                <button
+                  type="button"
+                  onClick={() => onPanelCheckout(item.id)}
+                  className="shrink-0 h-10 px-3 flex items-center gap-1.5 rounded-xl bg-brand-blue/10 text-brand-blue text-xs font-semibold active:bg-brand-blue/20 ios-press transition-all"
+                >
+                  <PackageCheck className="h-3.5 w-3.5" />
+                  Checkout
+                </button>
               )}
             </div>
           )
         })}
       </div>
 
-      {/* Panel items — auto-state circles */}
-      {panelItems.length > 0 && (
-        <div className="space-y-0">
-          {panelItems.map((item) => {
-            const fullyDone = isFullyCheckedOut(item)
-            const progress = item.qtyNeeded > 0 ? Math.min(1, (item.qtyCheckedOut / item.qtyNeeded)) : 0
-            const remaining = getRemaining(item)
-
-            return (
-              <div
-                key={item.id}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-3 border-b border-border-custom/30 transition-all",
-                  fullyDone && "opacity-60",
-                )}
-              >
-                {/* Auto-state circle — not tappable */}
-                <div className="shrink-0">
-                  {fullyDone ? (
-                    <div className="h-7 w-7 rounded-full bg-status-green flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                  ) : progress > 0 ? (
-                    <div className="relative h-7 w-7">
-                      <svg className="h-7 w-7 -rotate-90" viewBox="0 0 28 28">
-                        <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-border-custom" />
-                        <circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" strokeWidth="2.5"
-                          className="text-status-green"
-                          strokeDasharray={`${progress * 75.4} 75.4`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div className="h-7 w-7 rounded-full border-2 border-border-custom" />
-                  )}
-                </div>
-
-                {/* Panel info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5 text-brand-blue shrink-0" />
-                    <p className={cn(
-                      "text-[15px] font-semibold leading-snug truncate",
-                      fullyDone ? "text-text-muted line-through" : "text-navy"
-                    )}>
-                      {item.name}
-                    </p>
-                  </div>
-                  <p className="text-xs text-text-muted mt-0.5">
-                    {fullyDone
-                      ? "Panel checkout complete"
-                      : item.qtyCheckedOut > 0
-                        ? `${formatQuantity(item.qtyCheckedOut)} of ${formatQuantity(item.qtyNeeded)} panels checked out`
-                        : `${formatQuantity(remaining)} panels — use panel checkout`}
-                  </p>
-                </div>
-
-                {/* Panel checkout button */}
-                {!fullyDone && remaining > 0 && onPanelCheckout && (
-                  <button
-                    type="button"
-                    onClick={() => onPanelCheckout(item.id)}
-                    className="shrink-0 h-10 px-3 flex items-center gap-1.5 rounded-xl bg-brand-blue/10 text-brand-blue text-xs font-semibold active:bg-brand-blue/20 ios-press transition-all"
-                  >
-                    <PackageCheck className="h-3.5 w-3.5" />
-                    Check Out
-                  </button>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Checkout picked button */}
+      {/* Checkout button */}
       {pickedCount > 0 && (
         <Button
           onClick={handleCheckoutPicked}
