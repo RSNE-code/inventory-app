@@ -299,6 +299,9 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
         <Card className={cn("p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccentClass[status] || "card-accent-gray")}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
+              {!!assembly.jobNumber && (
+                <p className="text-lg font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
+              )}
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold text-navy text-base">{name as string}</p>
                 <Badge className={cn("text-[12px] px-2.5 py-1 gap-1.5 border-0", statusColors[status])}>
@@ -306,12 +309,6 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                   {statusLabels[status] || status}
                 </Badge>
               </div>
-              {/* Job # sub-header — directly beneath job name */}
-              {!!assembly.jobNumber && (
-                <p className="text-xs text-brand-blue font-medium mt-0.5">
-                  Job #{String(assembly.jobNumber)}
-                </p>
-              )}
               <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium">
                 <span>{typeLabels[assembly.type as string]}</span>
                 {Number(assembly.batchSize) > 1 && (
