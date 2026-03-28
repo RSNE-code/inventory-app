@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { OptionPicker } from "@/components/doors/option-picker"
-import { Trash2, Check, Wrench, Truck, AlertTriangle } from "lucide-react"
+import { Trash2, Check, Wrench, Truck, AlertTriangle, Minus, Plus, PackageCheck } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 import { STANDARD_UNITS } from "@/lib/units"
 
@@ -37,6 +37,14 @@ interface BomLineItemRowProps {
   fabricationSource?: string | null
   onFabricationSourceChange?: (source: "RSNE_MADE" | "SUPPLIER") => void
   missingFabOrder?: boolean
+  // Pick mode (checkout with circle checkboxes)
+  pickMode?: boolean
+  isPicked?: boolean
+  pickQty?: number
+  onTogglePick?: () => void
+  onPickQtyChange?: (qty: number) => void
+  isPanel?: boolean
+  onPanelCheckout?: () => void
 }
 
 // Convert a dimension value to feet
@@ -119,6 +127,13 @@ export function BomLineItemRow({
   fabricationSource,
   onFabricationSourceChange,
   missingFabOrder,
+  pickMode = false,
+  isPicked = false,
+  pickQty,
+  onTogglePick,
+  onPickQtyChange,
+  isPanel = false,
+  onPanelCheckout,
 }: BomLineItemRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -236,12 +251,45 @@ export function BomLineItemRow({
 
   // Normal view render
   return (
-    <div className="py-3 border-b border-border-custom last:border-0">
-      <div className="flex items-center justify-between gap-3">
+    <div className={`py-3 border-b border-border-custom last:border-0 ${pickMode && isPicked ? "bg-brand-blue/5" : ""}`}>
+      <div className="flex items-center gap-3">
+        {/* Pick circle — shown in pick mode */}
+        {pickMode && (
+          <button
+            type="button"
+            onClick={() => isPanel ? onPanelCheckout?.() : onTogglePick?.()}
+            disabled={fullyCheckedOut}
+            className="shrink-0 ios-press"
+          >
+            {fullyCheckedOut ? (
+              <div className="h-8 w-8 rounded-full bg-status-green flex items-center justify-center">
+                <Check className="h-4 w-4 text-white" />
+              </div>
+            ) : isPicked ? (
+              <div className="h-8 w-8 rounded-full bg-brand-blue flex items-center justify-center">
+                <Check className="h-4 w-4 text-white" />
+              </div>
+            ) : qtyCheckedOut > 0 ? (
+              <div className="relative h-8 w-8">
+                <svg className="h-8 w-8 -rotate-90" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-border-custom" />
+                  <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2.5"
+                    className="text-status-green"
+                    strokeDasharray={`${Math.min(1, qtyCheckedOut / qtyNeeded) * 87.96} 87.96`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            ) : (
+              <div className="h-8 w-8 rounded-full border-2 border-border-custom" />
+            )}
+          </button>
+        )}
+
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-[15px] font-medium text-navy truncate">{name}</p>
-            {fullyCheckedOut && qtyCheckedOut > 0 && <Check className="h-3.5 w-3.5 text-status-green shrink-0" />}
+            <p className={`text-[15px] font-medium truncate ${fullyCheckedOut && pickMode ? "text-text-muted line-through" : "text-navy"}`}>{name}</p>
+            {fullyCheckedOut && qtyCheckedOut > 0 && !pickMode && <Check className="h-3.5 w-3.5 text-status-green shrink-0" />}
             {tier === "TIER_2" && (
               <Badge variant="outline" className="text-[10px] px-1 py-0 bg-purple-50 text-purple-700 border-purple-200 shrink-0">T2</Badge>
             )}
@@ -350,6 +398,41 @@ export function BomLineItemRow({
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+        ) : pickMode && isPicked && !isPanel ? (
+          /* Qty stepper when picked for checkout */
+          <div className="flex items-center gap-0 shrink-0">
+            <button
+              type="button"
+              onClick={() => onPickQtyChange?.(Math.max(0, (pickQty || 0) - 1))}
+              className="h-10 w-10 flex items-center justify-center rounded-l-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <input
+              type="number"
+              value={pickQty || 0}
+              onChange={(e) => onPickQtyChange?.(Math.max(0, Number(e.target.value) || 0))}
+              className="w-12 h-10 text-center text-sm font-bold border-y border-border-custom bg-white tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              min={0}
+            />
+            <button
+              type="button"
+              onClick={() => onPickQtyChange?.((pickQty || 0) + 1)}
+              className="h-10 w-10 flex items-center justify-center rounded-r-xl border border-border-custom bg-surface-secondary text-navy active:bg-border-custom transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        ) : pickMode && isPanel && !fullyCheckedOut && remaining > 0 ? (
+          /* Panel checkout button */
+          <button
+            type="button"
+            onClick={onPanelCheckout}
+            className="shrink-0 h-10 px-3 flex items-center gap-1.5 rounded-xl bg-brand-blue/10 text-brand-blue text-xs font-semibold active:bg-brand-blue/20 ios-press transition-all"
+          >
+            <PackageCheck className="h-3.5 w-3.5" />
+            Checkout
+          </button>
         ) : (
           <div className="text-right shrink-0 flex items-center gap-1.5">
             {piecesNeeded !== null ? (

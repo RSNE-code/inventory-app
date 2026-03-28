@@ -64,6 +64,22 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [undoAction, setUndoAction] = useState<{ type: string; previousStatus: string } | null>(null)
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
   const [fabGateResolved, setFabGateResolved] = useState(true)
+  const [pickedItems, setPickedItems] = useState<Record<string, number>>({})
+
+  function togglePick(itemId: string, remaining: number) {
+    setPickedItems((prev) => {
+      if (prev[itemId] !== undefined) {
+        const next = { ...prev }
+        delete next[itemId]
+        return next
+      }
+      return { ...prev, [itemId]: remaining }
+    })
+  }
+
+  function updatePickQty(itemId: string, qty: number) {
+    setPickedItems((prev) => ({ ...prev, [itemId]: Math.max(0, qty) }))
+  }
 
   const isCreator = me && bom && me.id === bom.createdById
   const canEdit = isCreator && bom && ["DRAFT", "PENDING_REVIEW", "APPROVED"].includes(bom.status)
@@ -568,6 +584,16 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   ["Door", "Floor Panel", "Wall Panel", "Ramp"].includes(item.nonCatalogCategory as string || "") &&
                   ["APPROVED", "IN_PROGRESS"].includes(bom.status)
                 }
+                pickMode={canCheckout && mode === "view" && ["APPROVED", "IN_PROGRESS"].includes(bom.status)}
+                isPicked={pickedItems[lineId] !== undefined}
+                pickQty={pickedItems[lineId]}
+                onTogglePick={() => {
+                  const r = Number(item.qtyNeeded) - Number(item.qtyCheckedOut || 0)
+                  togglePick(lineId, Math.max(0, r))
+                }}
+                onPickQtyChange={(qty) => updatePickQty(lineId, qty)}
+                isPanel={isPanelItem}
+                onPanelCheckout={() => setPanelCheckoutItem(lineId)}
                 fabricationSource={item.fabricationSource as string | null}
                 onFabricationSourceChange={mode === "edit" ? async (source) => {
                   try {
@@ -768,14 +794,23 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </>
             )}
 
-            {/* Approved — pick checkout for authorized users */}
-            {bom.status === "APPROVED" && canCheckout && (
-              <PickCheckoutSection
-                items={pickItems}
-                onCheckout={handleCheckoutAll}
-                isPending={checkoutBom.isPending}
-                onPanelCheckout={(lineItemId) => setPanelCheckoutItem(lineItemId)}
-              />
+            {/* Approved — checkout button for authorized users */}
+            {bom.status === "APPROVED" && canCheckout && Object.keys(pickedItems).length > 0 && (
+              <Button
+                onClick={() => {
+                  const items = Object.entries(pickedItems)
+                    .filter(([, qty]) => qty > 0)
+                    .map(([itemId, qty]) => ({ bomLineItemId: itemId, type: "CHECKOUT" as const, quantity: qty }))
+                  if (items.length > 0) {
+                    handleCheckoutAll(items)
+                    setPickedItems({})
+                  }
+                }}
+                disabled={checkoutBom.isPending}
+                className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl"
+              >
+                {checkoutBom.isPending ? "Processing..." : `Check Out ${Object.keys(pickedItems).length} Item${Object.keys(pickedItems).length !== 1 ? "s" : ""}`}
+              </Button>
             )}
 
             {/* Approved — role-based message for non-checkout users */}
@@ -786,15 +821,26 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </div>
             )}
 
-            {/* In Progress — pick checkout + add material + return + complete */}
+            {/* In Progress — checkout + add material + return + complete */}
             {bom.status === "IN_PROGRESS" && canCheckout && (
               <>
-                <PickCheckoutSection
-                  items={pickItems}
-                  onCheckout={handleCheckoutAll}
-                  isPending={checkoutBom.isPending}
-                  onPanelCheckout={(lineItemId) => setPanelCheckoutItem(lineItemId)}
-                />
+                {Object.keys(pickedItems).length > 0 && (
+                  <Button
+                    onClick={() => {
+                      const items = Object.entries(pickedItems)
+                        .filter(([, qty]) => qty > 0)
+                        .map(([itemId, qty]) => ({ bomLineItemId: itemId, type: "CHECKOUT" as const, quantity: qty }))
+                      if (items.length > 0) {
+                        handleCheckoutAll(items)
+                        setPickedItems({})
+                      }
+                    }}
+                    disabled={checkoutBom.isPending}
+                    className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl"
+                  >
+                    {checkoutBom.isPending ? "Processing..." : `Check Out ${Object.keys(pickedItems).length} Item${Object.keys(pickedItems).length !== 1 ? "s" : ""}`}
+                  </Button>
+                )}
                 <div className="flex gap-3">
                   <Button
                     onClick={() => setMode("add-material")}
