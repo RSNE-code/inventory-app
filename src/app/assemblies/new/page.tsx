@@ -24,6 +24,7 @@ function NewAssemblyContent() {
   const urlType = searchParams.get("type")
   const fromBom = searchParams.get("fromBom")
   const jobNameParam = searchParams.get("jobName")
+  const doorHintParam = searchParams.get("doorHint")
 
   const [flow, setFlow] = useState<"choose" | "door" | "fab">("choose")
   const [initialized, setInitialized] = useState(false)
@@ -97,6 +98,7 @@ function NewAssemblyContent() {
           <DoorCreationFlow
             prefillJobName={jobNameParam || undefined}
             fromBomId={fromBom || undefined}
+            doorHint={doorHintParam || undefined}
           />
         )}
 

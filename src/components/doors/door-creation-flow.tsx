@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useCreateAssembly } from "@/hooks/use-assemblies"
 import { useJobs } from "@/hooks/use-jobs"
@@ -104,17 +104,39 @@ interface DoorCreationFlowProps {
   prefillJobName?: string
   /** BOM ID to redirect back to after creation */
   fromBomId?: string
+  /** Door hint from BOM (e.g., "Cooler Slider 5' x 7'") — auto-advances to CONFIRM */
+  doorHint?: string
 }
 
-export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlowProps = {}) {
+/** Parse a door product name like "Cooler Slider 5' x 7'" into a type key */
+function parseDoorHint(hint: string): { typeKey: DoorTypeKey; widthFt: number; heightFt: number } | null {
+  const h = hint.toLowerCase()
+  let typeKey: DoorTypeKey | null = null
+
+  if (/slider|sliding/.test(h) && /freezer/.test(h)) typeKey = "FREEZER_SLIDER"
+  else if (/slider|sliding/.test(h)) typeKey = "COOLER_SLIDER"
+  else if (/freezer/.test(h)) typeKey = "FREEZER_SWING"
+  else if (/cooler|door/.test(h)) typeKey = "COOLER_SWING"
+
+  if (!typeKey) return null
+
+  // Extract dimensions: "5' x 7'", "5x7", "5' × 7'"
+  const dimMatch = hint.match(/(\d+)[''′]?\s*[x×]\s*(\d+)/)
+  if (!dimMatch) return null
+
+  return { typeKey, widthFt: parseInt(dimMatch[1]), heightFt: parseInt(dimMatch[2]) }
+}
+
+export function DoorCreationFlow({ prefillJobName, fromBomId, doorHint }: DoorCreationFlowProps = {}) {
   const router = useRouter()
   const { celebrate } = useCelebration()
   const createAssembly = useCreateAssembly()
 
-  // Flow state — skip JOB phase if pre-filled
+  // Flow state — skip to CONFIRM if doorHint provided, or TYPE if just job name
   const [phase, setPhase] = useState<FlowPhase>(prefillJobName ? "TYPE" : "JOB")
   const [specs, setSpecs] = useState<Partial<DoorSpecs>>(getDefaultSpecs())
   const [selectedType, setSelectedType] = useState<DoorTypeKey | null>(null)
+  const [autoAdvanced, setAutoAdvanced] = useState(false)
 
   // Job — pre-fill if provided
   const [jobSearch, setJobSearch] = useState("")
@@ -127,6 +149,38 @@ export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlow
   const [notes, setNotes] = useState("")
   const [components, setComponents] = useState<ComponentItem[]>([])
   const [loadingRecipe, setLoadingRecipe] = useState(false)
+
+  // Auto-advance: if doorHint is provided, parse it and jump to CONFIRM
+  useEffect(() => {
+    if (autoAdvanced || !doorHint) return
+    const parsed = parseDoorHint(doorHint)
+    if (!parsed) return
+
+    setAutoAdvanced(true)
+    setSelectedType(parsed.typeKey)
+
+    // Find matching standard config
+    const configs = STANDARD_DOOR_CONFIGS[parsed.typeKey] || []
+    const widthIn = String(parsed.widthFt * 12)
+    const heightIn = String(parsed.heightFt * 12)
+    const match = configs.find((c) => c.specs.widthInClear === widthIn && c.specs.heightInClear === heightIn)
+      || configs.find((c) => c.widthInClear === widthIn && c.heightInClear === heightIn)
+
+    if (match) {
+      // Use handleSizeSelect logic inline (can't call async in useEffect directly)
+      const mergedSpecs = { ...match.specs, jobName: prefillJobName || undefined }
+      setSpecs(mergedSpecs)
+      setLoadingRecipe(true)
+      setPhase("CONFIRM")
+
+      // Load recipe in background
+      loadRecipeComponents(mergedSpecs).then((autoComponents) => {
+        if (autoComponents.length > 0) setComponents(autoComponents)
+        setLoadingRecipe(false)
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doorHint, autoAdvanced])
 
   // ── Recipe loading (shared between size select and custom builder) ──
 
