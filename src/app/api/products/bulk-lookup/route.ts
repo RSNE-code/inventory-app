@@ -3,8 +3,8 @@ import { prisma } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 
 /**
- * GET /api/products/bulk-lookup?names=HINGE D690,D90 Handle,...
- * Looks up products by name fragments. Returns matching products for recipe auto-populate.
+ * GET /api/products/bulk-lookup?names=HINGE D690|D90 Handle|...
+ * Looks up products by name. Uses pipe (|) delimiter because product names contain commas.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "names parameter required" }, { status: 400 })
     }
 
-    const nameFragments = namesParam.split(",").map((n) => n.trim()).filter(Boolean)
+    // Use pipe delimiter — product names contain commas (e.g., heater wire)
+    const nameFragments = namesParam.split("|").map((n) => n.trim()).filter(Boolean)
     if (nameFragments.length === 0) {
       return NextResponse.json({ data: [] })
     }

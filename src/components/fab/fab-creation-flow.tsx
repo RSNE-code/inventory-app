@@ -99,7 +99,7 @@ export function FabCreationFlow() {
   async function loadRecipeComponents(recipe: { name: string; qty: number }[]): Promise<ComponentItem[]> {
     if (recipe.length === 0) return []
     try {
-      const names = recipe.map((c) => c.name).join(",")
+      const names = recipe.map((c) => c.name).join("|")
       const res = await fetch(`/api/products/bulk-lookup?names=${encodeURIComponent(names)}`)
       if (!res.ok) return []
       const json = await res.json()

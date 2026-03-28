@@ -193,7 +193,7 @@ export function DoorCreationFlow({ prefillJobName, fromBomId, doorHint }: DoorCr
     if (!recipe || recipe.components.length === 0) return []
 
     try {
-      const names = recipe.components.map((c) => c.name).join(",")
+      const names = recipe.components.map((c) => c.name).join("|")
       const res = await fetch(`/api/products/bulk-lookup?names=${encodeURIComponent(names)}`)
       if (!res.ok) return []
 
@@ -258,8 +258,59 @@ export function DoorCreationFlow({ prefillJobName, fromBomId, doorHint }: DoorCr
 
   // ── Spec & component handlers ──
 
-  function handleSpecChange(field: string, value: unknown) {
+  // Hardware spec fields that map to component product names
+  const HARDWARE_COMPONENT_MAP: Record<string, string[]> = {
+    hingeModel: ["D690", "D690CS", "K1277", "K1248", "K1245"],
+    latchModel: ["D90", "K56", "K55"],
+    closerModel: ["D276", "K1094"],
+    insideRelease: ["K481", "Glow Push Panel"],
+    doorPull: ["Slider Exterior Pull", "Slider Pull"],
+    trackModel: ["SLD 48", "SLD 60", "SLD 72", "SLD 96", "SLD 120"],
+    strikeModel: ["Slider Strike", "Strike"],
+    tongueModel: ["Slider Tongue"],
+  }
+
+  async function handleSpecChange(field: string, value: unknown) {
     setSpecs((prev) => ({ ...prev, [field]: value }))
+
+    // If this is a hardware field, swap the component in the list
+    const searchTerms = HARDWARE_COMPONENT_MAP[field]
+    if (!searchTerms || !value || typeof value !== "string") return
+
+    // Find the old component matching any of the search terms for this hardware type
+    const oldIndex = components.findIndex((c) =>
+      searchTerms.some((term) => c.productName.toLowerCase().includes(term.toLowerCase()))
+    )
+
+    // Look up the new product
+    try {
+      const res = await fetch(`/api/products/bulk-lookup?names=${encodeURIComponent(value as string)}`)
+      if (!res.ok) return
+      const json = await res.json()
+      const match = json.data?.[0]?.product
+      if (!match) return
+
+      const newComponent: ComponentItem = {
+        productId: match.id,
+        productName: match.name,
+        unitOfMeasure: match.unitOfMeasure,
+        qtyUsed: 1,
+        currentQty: match.currentQty,
+      }
+
+      setComponents((prev) => {
+        if (oldIndex >= 0) {
+          // Replace existing hardware component
+          const updated = [...prev]
+          updated[oldIndex] = { ...newComponent, qtyUsed: prev[oldIndex].qtyUsed }
+          return updated
+        }
+        // Add new hardware component
+        return [...prev, newComponent]
+      })
+    } catch {
+      // Silent fail — component list stays as-is
+    }
   }
 
   const handleAIAddComponents = useCallback(
