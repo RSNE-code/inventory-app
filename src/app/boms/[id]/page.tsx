@@ -11,6 +11,7 @@ import { BomStatusBadge } from "@/components/bom/bom-status-badge"
 import { BomLineItemRow } from "@/components/bom/bom-line-item-row"
 import { ProductPicker } from "@/components/bom/product-picker"
 import { CheckoutAllButton } from "@/components/bom/checkout-all-button"
+import { PickCheckoutSection } from "@/components/bom/pick-checkout-section"
 import { AIInput } from "@/components/ai/ai-input"
 import { toast } from "sonner"
 import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
@@ -348,6 +349,25 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         isNonCatalog: item.isNonCatalog as boolean,
       }
     })
+
+  // Build pick items for PickCheckoutSection — includes both regular and panel items
+  const pickItems = allItems.map((item) => {
+    const product = item.product as Record<string, unknown> | null
+    const specs = item.nonCatalogSpecs as Record<string, unknown> | null
+    return {
+      id: item.id as string,
+      name: (item.isNonCatalog as boolean)
+        ? (item.nonCatalogName as string) || "Non-catalog item"
+        : (product?.name as string) || "Unknown",
+      qtyNeeded: Number(item.qtyNeeded),
+      qtyCheckedOut: Number(item.qtyCheckedOut || 0),
+      qtyReturned: Number(item.qtyReturned || 0),
+      unitOfMeasure: (item.isNonCatalog as boolean)
+        ? (item.inputUnit as string) || (item.nonCatalogUom as string) || ""
+        : (item.inputUnit as string) || (product?.unitOfMeasure as string) || "",
+      isPanel: specs?.type === "panel",
+    }
+  })
 
   const BOM_LIFECYCLE = ["Draft", "Review", "Approved", "In Progress", "Completed"]
   const bomStepIndex = bom.status === "CANCELLED" ? -1
@@ -692,8 +712,29 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         {/* Action buttons — view mode (sticky bottom bar) */}
         {mode === "view" && (
           <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-2px_8px_rgba(0,0,0,0.06)] px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] space-y-2">
-            {/* Draft / Pending Review actions */}
-            {(bom.status === "DRAFT" || bom.status === "PENDING_REVIEW") && (
+            {/* Draft actions */}
+            {bom.status === "DRAFT" && (
+              <>
+                <Button
+                  onClick={() => handleStatusChange("PENDING_REVIEW")}
+                  disabled={updateBom.isPending}
+                  className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base"
+                >
+                  {updateBom.isPending ? "Submitting..." : "Submit for Review"}
+                </Button>
+                <Button
+                  onClick={() => setMode("edit")}
+                  variant="outline"
+                  className="w-full h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px]"
+                >
+                  <Pencil className="h-4 w-4 mr-1.5" />
+                  Edit Draft
+                </Button>
+              </>
+            )}
+
+            {/* Pending Review actions */}
+            {bom.status === "PENDING_REVIEW" && (
               <>
                 {/* Fabrication gate — shows door resolution status above approve */}
                 {showFabGate && (
@@ -727,25 +768,14 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </>
             )}
 
-            {/* Confirmation dialogs rendered at bottom of component */}
-
-            {/* Approved — Check Out All as primary action */}
+            {/* Approved — pick checkout for authorized users */}
             {bom.status === "APPROVED" && canCheckout && (
-              <>
-                <CheckoutAllButton
-                  items={checkoutItems}
-                  onCheckoutAll={handleCheckoutAll}
-                  isPending={checkoutBom.isPending}
-                />
-                <Button
-                  onClick={() => setMode("add-material")}
-                  variant="outline"
-                  className="w-full h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px]"
-                >
-                  <Plus className="h-5 w-5 mr-1.5" />
-                  Adjust & Check Out
-                </Button>
-              </>
+              <PickCheckoutSection
+                items={pickItems}
+                onCheckout={handleCheckoutAll}
+                isPending={checkoutBom.isPending}
+                onPanelCheckout={(lineItemId) => setPanelCheckoutItem(lineItemId)}
+              />
             )}
 
             {/* Approved — role-based message for non-checkout users */}
@@ -756,13 +786,14 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
               </div>
             )}
 
-            {/* In Progress — Check Out All + add material + return + complete */}
+            {/* In Progress — pick checkout + add material + return + complete */}
             {bom.status === "IN_PROGRESS" && canCheckout && (
               <>
-                <CheckoutAllButton
-                  items={checkoutItems}
-                  onCheckoutAll={handleCheckoutAll}
+                <PickCheckoutSection
+                  items={pickItems}
+                  onCheckout={handleCheckoutAll}
                   isPending={checkoutBom.isPending}
+                  onPanelCheckout={(lineItemId) => setPanelCheckoutItem(lineItemId)}
                 />
                 <div className="flex gap-3">
                   <Button

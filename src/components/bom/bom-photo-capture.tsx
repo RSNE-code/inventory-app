@@ -502,6 +502,51 @@ export function BomPhotoCapture() {
     }
   }
 
+  // ─── Save as Draft ─────────────────────────────
+
+  async function handleSaveAsDraft() {
+    if (submitted) return
+    if (!jobName.trim()) {
+      toast.error("Select a job first")
+      return
+    }
+    const validItems = items.filter((item) => item.quantity > 0)
+    if (validItems.length === 0) {
+      toast.error("No items to save")
+      return
+    }
+
+    try {
+      const lineItems = validItems.map((item) => ({
+        productId: item.isNonCatalog ? null : item.productId,
+        tier: "TIER_1" as const,
+        qtyNeeded: item.quantity,
+        isNonCatalog: item.isNonCatalog,
+        nonCatalogName: item.isNonCatalog ? item.productName : null,
+        nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
+        nonCatalogUom: item.isNonCatalog ? item.unitOfMeasure : null,
+        nonCatalogSpecs: item.panelSpecs || null,
+        matchConfidence: item.confidence,
+        rawText: item.rawText,
+        parsedUom: item.parsedUom || null,
+        inputUnit: item.unitOfMeasure || null,
+      }))
+
+      await createBom.mutateAsync({
+        jobName: jobName.trim(),
+        jobNumber: jobNumber || undefined,
+        lineItems,
+        source: "photo",
+        status: "DRAFT",
+      } as Parameters<typeof createBom.mutateAsync>[0])
+
+      toast.success("BOM saved as draft")
+      window.location.href = "/boms"
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save draft")
+    }
+  }
+
   // ─── Submit BOM ─────────────────────────────
 
   async function handleSubmit() {
@@ -816,6 +861,14 @@ export function BomPhotoCapture() {
                   : feedPhase !== "done"
                     ? "Processing..."
                     : `Create BOM (${items.length} item${items.length !== 1 ? "s" : ""})`}
+            </Button>
+            <Button
+              onClick={handleSaveAsDraft}
+              disabled={submitted || createBom.isPending || !jobName.trim() || items.length === 0 || feedPhase !== "done"}
+              variant="outline"
+              className="w-full h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px] rounded-xl transition-all active:scale-95"
+            >
+              Save as Draft
             </Button>
           </div>
         </div>

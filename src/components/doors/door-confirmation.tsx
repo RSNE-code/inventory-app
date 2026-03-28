@@ -48,6 +48,7 @@ interface DoorConfirmationProps {
   notes: string
   onNotesChange: (notes: string) => void
   onSubmit: () => void
+  onSaveAsDraft?: () => void
   isSubmitting: boolean
   onBack: () => void
 }
@@ -64,6 +65,7 @@ export function DoorConfirmation({
   notes,
   onNotesChange,
   onSubmit,
+  onSaveAsDraft,
   isSubmitting,
   onBack,
 }: DoorConfirmationProps) {
@@ -667,6 +669,16 @@ export function DoorConfirmation({
           <Factory className="h-5 w-5 mr-2" />
           {isSubmitting ? "Creating..." : "Submit Door Sheet for Approval"}
         </Button>
+        {onSaveAsDraft && (
+          <Button
+            onClick={onSaveAsDraft}
+            disabled={isSubmitting}
+            variant="outline"
+            className="w-full h-12 border-2 border-brand-blue text-brand-blue hover:bg-brand-blue/5 font-semibold text-[15px] rounded-xl transition-all"
+          >
+            Save as Draft
+          </Button>
+        )}
         <Button variant="ghost" onClick={onBack} className="w-full text-text-muted">Back</Button>
       </div>
 

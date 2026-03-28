@@ -61,6 +61,7 @@ enum AssemblyType {
 }
 
 enum AssemblyStatus {
+  DRAFT
   PLANNED
   AWAITING_APPROVAL
   APPROVED

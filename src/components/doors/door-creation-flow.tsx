@@ -266,7 +266,6 @@ export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlow
       })
       toast.success("Door sheet submitted for approval")
       celebrate()
-      // Redirect back to BOM if launched from fab gate, otherwise to door detail
       if (fromBomId) {
         router.push(`/boms/${fromBomId}`)
       } else {
@@ -274,6 +273,38 @@ export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlow
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create door")
+    }
+  }
+
+  async function handleSaveAsDraft() {
+    const finalSpecs = { ...specs }
+    if (jobName.trim()) {
+      finalSpecs.jobName = finalSpecs.jobName || jobName.trim()
+    }
+
+    try {
+      const result = await createAssembly.mutateAsync({
+        templateId: null,
+        type: "DOOR",
+        specs: finalSpecs as Record<string, unknown>,
+        batchSize: 1,
+        jobName: jobName.trim() || finalSpecs.jobName || null,
+        notes: notes.trim() || null,
+        requiresApproval: false,
+        isDraft: true,
+        components: components.map((c) => ({
+          productId: c.productId,
+          qtyUsed: c.qtyUsed,
+        })),
+      } as Parameters<typeof createAssembly.mutateAsync>[0])
+      toast.success("Door sheet saved as draft")
+      if (fromBomId) {
+        router.push(`/boms/${fromBomId}`)
+      } else {
+        router.push(`/assemblies/${result.data.id}`)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save draft")
     }
   }
 
@@ -555,6 +586,7 @@ export function DoorCreationFlow({ prefillJobName, fromBomId }: DoorCreationFlow
           notes={notes}
           onNotesChange={setNotes}
           onSubmit={handleSubmit}
+          onSaveAsDraft={handleSaveAsDraft}
           isSubmitting={createAssembly.isPending}
           onBack={handleConfirmBack}
         />

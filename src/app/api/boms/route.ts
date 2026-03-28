@@ -40,6 +40,7 @@ const createBomSchema = z.object({
   jobStartDate: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   source: z.enum(["photo", "manual"]).optional().default("manual"),
+  status: z.enum(["DRAFT", "PENDING_REVIEW"]).optional(),
   lineItems: z.array(bomLineItemSchema).min(1),
 })
 
@@ -150,8 +151,9 @@ export async function POST(request: NextRequest) {
       for (const r of recipes) recipeLookup.set(r.finishedProductId, true)
     }
 
-    // Photo-created BOMs go to PENDING_REVIEW, manual to DRAFT
-    const initialStatus = data.source === "photo" ? "PENDING_REVIEW" : "DRAFT"
+    // Explicit status override (e.g., "DRAFT" for save-as-draft), else photo → PENDING_REVIEW, manual → DRAFT
+    const initialStatus = data.status === "DRAFT" ? "DRAFT"
+      : data.source === "photo" ? "PENDING_REVIEW" : "DRAFT"
 
     const bom = await prisma.bom.create({
       data: {

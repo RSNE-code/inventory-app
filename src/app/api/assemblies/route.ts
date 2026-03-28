@@ -19,6 +19,7 @@ const createAssemblySchema = z.object({
   priority: z.number().int().default(0),
   notes: z.string().optional().nullable(),
   requiresApproval: z.boolean().default(false),
+  isDraft: z.boolean().default(false),
   components: z.array(componentSchema).default([]),
 })
 
@@ -153,10 +154,12 @@ export async function POST(request: NextRequest) {
     // Door → DOOR_SHOP queue, panels/floors → FABRICATION queue
     const queueType = data.type === "DOOR" ? "DOOR_SHOP" : "FABRICATION"
 
-    // Doors require approval; panels/floors don't by default
-    const approvalStatus = data.requiresApproval || data.type === "DOOR"
-      ? "PENDING"
-      : "NOT_REQUIRED"
+    // Draft assemblies skip approval queue entirely
+    const approvalStatus = data.isDraft
+      ? "NOT_REQUIRED"
+      : (data.requiresApproval || data.type === "DOOR")
+        ? "PENDING"
+        : "NOT_REQUIRED"
 
     // Get product costs for components (if any)
     let costMap = new Map<string, number>()
@@ -173,7 +176,7 @@ export async function POST(request: NextRequest) {
       data: {
         templateId: data.templateId || null,
         type: data.type,
-        status: approvalStatus === "PENDING" ? "AWAITING_APPROVAL" : "PLANNED",
+        status: data.isDraft ? "DRAFT" : approvalStatus === "PENDING" ? "AWAITING_APPROVAL" : "PLANNED",
         specs: (data.specs as Prisma.InputJsonValue) || Prisma.JsonNull,
         batchSize: data.batchSize,
         jobName: data.jobName || null,

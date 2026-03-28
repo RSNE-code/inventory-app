@@ -103,7 +103,7 @@ export async function PUT(
     // Status transition validation
     if (data.status) {
       const validTransitions: Record<string, string[]> = {
-        DRAFT: ["APPROVED", "CANCELLED"],
+        DRAFT: ["PENDING_REVIEW", "APPROVED", "CANCELLED"],
         PENDING_REVIEW: ["APPROVED", "CANCELLED"],
         APPROVED: ["IN_PROGRESS", "CANCELLED"],
         IN_PROGRESS: ["COMPLETED", "CANCELLED"],
