@@ -312,7 +312,7 @@ const COOLER_SLIDER_4x7: DoorRecipe = {
   name: "Cooler Slider 4x7",
   components: [
     { name: "SLD 48", qty: 1 },
-    { name: '4" IMP', qty: 32 },
+    { name: "4in IMP", qty: 32 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 60 },
     { name: 'Wiper Gasket 3"', qty: 0.1 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -328,7 +328,7 @@ const COOLER_SLIDER_5x7: DoorRecipe = {
   name: "Cooler Slider 5x7",
   components: [
     { name: "SLD 60", qty: 1 },
-    { name: '4" IMP', qty: 64 },
+    { name: "4in IMP", qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.12 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -344,7 +344,7 @@ const COOLER_SLIDER_6x7: DoorRecipe = {
   name: "Cooler Slider 6x7",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: '4" IMP', qty: 64 },
+    { name: "4in IMP", qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -360,7 +360,7 @@ const COOLER_SLIDER_6x8: DoorRecipe = {
   name: "Cooler Slider 6x8",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: '4" IMP', qty: 80 },
+    { name: "4in IMP", qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -376,7 +376,7 @@ const COOLER_SLIDER_8x8: DoorRecipe = {
   name: "Cooler Slider 8x8",
   components: [
     { name: "SLD 96", qty: 1 },
-    { name: '4" IMP', qty: 80 },
+    { name: "4in IMP", qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 115 },
     { name: 'Wiper Gasket 3"', qty: 0.18 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -396,7 +396,7 @@ const FREEZER_SLIDER_4x7: DoorRecipe = {
   name: "Freezer Slider 4x7",
   components: [
     { name: "SLD 48", qty: 1 },
-    { name: '4" IMP', qty: 32 },
+    { name: "4in IMP", qty: 32 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 60 },
     { name: 'Wiper Gasket 3"', qty: 0.1 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -413,7 +413,7 @@ const FREEZER_SLIDER_5x7: DoorRecipe = {
   name: "Freezer Slider 5x7",
   components: [
     { name: "SLD 60", qty: 1 },
-    { name: '4" IMP', qty: 64 },
+    { name: "4in IMP", qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.12 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -430,7 +430,7 @@ const FREEZER_SLIDER_6x7: DoorRecipe = {
   name: "Freezer Slider 6x7",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: '4" IMP', qty: 64 },
+    { name: "4in IMP", qty: 64 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -447,7 +447,7 @@ const FREEZER_SLIDER_6x8: DoorRecipe = {
   name: "Freezer Slider 6x8",
   components: [
     { name: "SLD 72", qty: 1 },
-    { name: '4" IMP', qty: 80 },
+    { name: "4in IMP", qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 70 },
     { name: 'Wiper Gasket 3"', qty: 0.14 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
@@ -464,7 +464,7 @@ const FREEZER_SLIDER_8x8: DoorRecipe = {
   name: "Freezer Slider 8x8",
   components: [
     { name: "SLD 96", qty: 1 },
-    { name: '4" IMP', qty: 80 },
+    { name: "4in IMP", qty: 80 },
     { name: "Galvanized Steel Coil - Textured White (26ga)", qty: 115 },
     { name: 'Wiper Gasket 3"', qty: 0.18 },
     { name: "Kason Heavy Duty Floor Roller w/ Strike", qty: 1 },
