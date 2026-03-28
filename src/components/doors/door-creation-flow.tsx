@@ -362,6 +362,7 @@ export function DoorCreationFlow({ prefillJobName, fromBomId, doorHint }: DoorCr
         specs: finalSpecs as Record<string, unknown>,
         batchSize: 1,
         jobName: jobName.trim() || finalSpecs.jobName || null,
+        jobNumber: jobNumber.trim() || null,
         notes: notes.trim() || null,
         requiresApproval: true,
         components: components.map((c) => ({
@@ -394,6 +395,7 @@ export function DoorCreationFlow({ prefillJobName, fromBomId, doorHint }: DoorCr
         specs: finalSpecs as Record<string, unknown>,
         batchSize: 1,
         jobName: jobName.trim() || finalSpecs.jobName || null,
+        jobNumber: jobNumber.trim() || null,
         notes: notes.trim() || null,
         requiresApproval: false,
         isDraft: true,

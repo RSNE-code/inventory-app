@@ -710,17 +710,17 @@ function HwBox({ title, mfr, model, offset, onEdit }: {
       <p className="text-[10px] font-bold uppercase text-navy tracking-wide mb-1.5">{title}</p>
       <div className="space-y-1">
         <div className="flex items-center justify-between min-h-[20px]">
-          <span className="text-[10px] text-text-muted uppercase">Manufacturer</span>
-          {mfr ? <span className="text-sm font-semibold text-navy">{mfr}</span> : <span className="text-xs text-text-muted">—</span>}
+          <span className="text-[10px] text-text-muted uppercase shrink-0">Manufacturer</span>
+          {mfr ? <span className="text-sm font-semibold text-navy text-right">{mfr}</span> : <span className="text-xs text-text-muted text-right">—</span>}
         </div>
         <div className="flex items-center justify-between min-h-[20px]">
-          <span className="text-[10px] text-text-muted uppercase">Model</span>
-          {model ? <span className="text-sm font-semibold text-navy">{model}</span> : <span className="text-xs text-text-muted">—</span>}
+          <span className="text-[10px] text-text-muted uppercase shrink-0">Model</span>
+          {model ? <span className="text-sm font-semibold text-navy text-right">{model}</span> : <span className="text-xs text-text-muted text-right">—</span>}
         </div>
         {offset && (
           <div className="flex items-center justify-between min-h-[20px]">
-            <span className="text-[10px] text-text-muted uppercase">Offset</span>
-            <span className="text-sm font-semibold text-navy">{offset}</span>
+            <span className="text-[10px] text-text-muted uppercase shrink-0">Offset</span>
+            <span className="text-sm font-semibold text-navy text-right">{offset}</span>
           </div>
         )}
       </div>
