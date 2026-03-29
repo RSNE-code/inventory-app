@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { OptionPicker } from "@/components/doors/option-picker"
-import { Trash2, Check, Wrench, Truck, AlertTriangle, Minus, Plus, PackageCheck } from "lucide-react"
+import { Trash2, Check, Wrench, Truck, AlertTriangle, Minus, Plus, PackageCheck, Clock } from "lucide-react"
 import { formatQuantity } from "@/lib/utils"
 import { STANDARD_UNITS } from "@/lib/units"
 
@@ -45,6 +45,7 @@ interface BomLineItemRowProps {
   onPickQtyChange?: (qty: number) => void
   isPanel?: boolean
   onPanelCheckout?: () => void
+  isDoorPending?: boolean
 }
 
 // Convert a dimension value to feet
@@ -134,6 +135,7 @@ export function BomLineItemRow({
   onPickQtyChange,
   isPanel = false,
   onPanelCheckout,
+  isDoorPending = false,
 }: BomLineItemRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -257,13 +259,17 @@ export function BomLineItemRow({
         {pickMode && (
           <button
             type="button"
-            onClick={() => isPanel ? onPanelCheckout?.() : onTogglePick?.()}
-            disabled={fullyCheckedOut}
+            onClick={() => isDoorPending ? undefined : isPanel ? onPanelCheckout?.() : onTogglePick?.()}
+            disabled={fullyCheckedOut || isDoorPending}
             className="shrink-0 ios-press"
           >
             {fullyCheckedOut ? (
               <div className="h-8 w-8 rounded-full bg-status-green flex items-center justify-center">
                 <Check className="h-4 w-4 text-white" />
+              </div>
+            ) : isDoorPending ? (
+              <div className="h-8 w-8 rounded-full bg-status-yellow/20 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-status-yellow" />
               </div>
             ) : isPicked ? (
               <div className="h-8 w-8 rounded-full bg-brand-blue flex items-center justify-center">

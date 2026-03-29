@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Check, PackageCheck, Layers, Minus, Plus } from "lucide-react"
+import { Check, PackageCheck, Layers, Minus, Plus, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface PickItem {
@@ -13,6 +13,7 @@ interface PickItem {
   qtyReturned: number
   unitOfMeasure: string
   isPanel: boolean
+  isDoorPending?: boolean
 }
 
 interface PickCheckoutSectionProps {
@@ -41,7 +42,7 @@ export function PickCheckoutSection({
   }
 
   function togglePick(item: PickItem) {
-    if (isFullyCheckedOut(item) || item.isPanel) return
+    if (isFullyCheckedOut(item) || item.isPanel || item.isDoorPending) return
     const remaining = getRemaining(item)
     if (remaining <= 0) return
 
@@ -62,7 +63,7 @@ export function PickCheckoutSection({
   function selectAllRemaining() {
     const next: Record<string, number> = {}
     for (const item of items) {
-      if (isFullyCheckedOut(item) || item.isPanel) continue
+      if (isFullyCheckedOut(item) || item.isPanel || item.isDoorPending) continue
       const remaining = getRemaining(item)
       if (remaining > 0) next[item.id] = remaining
     }
@@ -124,12 +125,16 @@ export function PickCheckoutSection({
               <button
                 type="button"
                 onClick={() => togglePick(item)}
-                disabled={fullyDone || item.isPanel}
+                disabled={fullyDone || item.isPanel || item.isDoorPending}
                 className="shrink-0 ios-press"
               >
                 {fullyDone ? (
                   <div className="h-8 w-8 rounded-full bg-status-green flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
+                  </div>
+                ) : item.isDoorPending ? (
+                  <div className="h-8 w-8 rounded-full bg-status-yellow/20 flex items-center justify-center">
+                    <Clock className="h-4 w-4 text-status-yellow" />
                   </div>
                 ) : isPicked ? (
                   <div className="h-8 w-8 rounded-full bg-brand-blue flex items-center justify-center">
@@ -178,7 +183,9 @@ export function PickCheckoutSection({
                   </p>
                 </div>
                 <p className="text-xs text-text-muted mt-0.5">
-                  {fullyDone
+                  {item.isDoorPending
+                    ? "In Door Shop — complete before checkout"
+                    : fullyDone
                     ? `${formatQuantity(item.qtyCheckedOut)} ${item.unitOfMeasure} done`
                     : item.qtyCheckedOut > 0
                       ? `${formatQuantity(item.qtyCheckedOut)}/${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure} pulled`

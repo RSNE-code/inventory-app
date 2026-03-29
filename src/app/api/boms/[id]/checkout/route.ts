@@ -57,6 +57,7 @@ export async function POST(
             where: { isActive: true },
             include: {
               product: true,
+              assembly: { select: { id: true, status: true } },
             },
           },
         },
@@ -75,6 +76,15 @@ export async function POST(
         const specs = lineItem.nonCatalogSpecs as Record<string, unknown> | null
         if (specs?.type === "panel") {
           throw new Error(`"${lineItem.nonCatalogName}" is a panel item — use the panel checkout flow instead`)
+        }
+
+        // Reject door items whose assembly is not yet completed
+        if (item.type === "CHECKOUT" && lineItem.assemblyId && lineItem.assembly) {
+          const COMPLETED_STATUSES = ["COMPLETED", "ALLOCATED", "SHIPPED"]
+          if (!COMPLETED_STATUSES.includes(lineItem.assembly.status)) {
+            const itemName = lineItem.product?.name || lineItem.nonCatalogName || "Door"
+            throw new Error(`"${itemName}" cannot be checked out — the door must be completed in the Door Shop first (current status: ${lineItem.assembly.status.replace(/_/g, " ").toLowerCase()})`)
+          }
         }
 
         if (item.type === "RETURN") {
@@ -250,6 +260,9 @@ export async function POST(
                 dimWidth: true,
                 dimWidthUnit: true,
               },
+            },
+            assembly: {
+              select: { id: true, status: true },
             },
           },
         },

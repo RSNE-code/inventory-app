@@ -24,6 +24,9 @@ export async function GET(
             product: {
               select: { id: true, name: true, sku: true, unitOfMeasure: true, currentQty: true, pieceUnit: true, dimLength: true, dimLengthUnit: true, dimWidth: true, dimWidthUnit: true, isAssembly: true },
             },
+            assembly: {
+              select: { id: true, status: true },
+            },
           },
           orderBy: { createdAt: "asc" },
         },

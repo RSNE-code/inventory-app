@@ -11,6 +11,7 @@ interface CheckoutItem {
   qtyReturned: number
   unitOfMeasure: string
   isNonCatalog: boolean
+  isDoorPending?: boolean
 }
 
 interface CheckoutAllButtonProps {
@@ -25,7 +26,9 @@ export function CheckoutAllButton({
   isPending,
 }: CheckoutAllButtonProps) {
   // Filter to items that haven't been fully checked out (accounting for returns)
+  // Exclude door-pending items — they can't be checked out until the door is complete
   const remainingItems = items.filter((item) => {
+    if (item.isDoorPending) return false
     const netCheckedOut = item.qtyCheckedOut - item.qtyReturned
     const remaining = item.qtyNeeded - netCheckedOut
     return remaining > 0

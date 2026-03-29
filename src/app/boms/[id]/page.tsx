@@ -344,6 +344,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   })
 
   // Build checkout items for CheckoutAllButton — exclude panel items (they use panel checkout)
+  const DOOR_COMPLETE_STATUSES = ["COMPLETED", "ALLOCATED", "SHIPPED"]
   const checkoutItems = allItems
     .filter((item) => {
       const specs = item.nonCatalogSpecs as Record<string, unknown> | null
@@ -351,6 +352,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     })
     .map((item) => {
       const product = item.product as Record<string, unknown> | null
+      const assembly = item.assembly as { id: string; status: string } | null
       return {
         id: item.id as string,
         name: (item.isNonCatalog as boolean)
@@ -363,6 +365,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
           ? (item.nonCatalogUom as string) || ""
           : (product?.unitOfMeasure as string) || "",
         isNonCatalog: item.isNonCatalog as boolean,
+        isDoorPending: !!(assembly && !DOOR_COMPLETE_STATUSES.includes(assembly.status)),
       }
     })
 
@@ -370,6 +373,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const pickItems = allItems.map((item) => {
     const product = item.product as Record<string, unknown> | null
     const specs = item.nonCatalogSpecs as Record<string, unknown> | null
+    const assembly = item.assembly as { id: string; status: string } | null
+    const isDoorPending = !!(assembly && !DOOR_COMPLETE_STATUSES.includes(assembly.status))
     return {
       id: item.id as string,
       name: (item.isNonCatalog as boolean)
@@ -382,6 +387,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         ? (item.inputUnit as string) || (item.nonCatalogUom as string) || ""
         : (item.inputUnit as string) || (product?.unitOfMeasure as string) || "",
       isPanel: specs?.type === "panel",
+      isDoorPending,
     }
   })
 
@@ -594,6 +600,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 onPickQtyChange={(qty) => updatePickQty(lineId, qty)}
                 isPanel={isPanelItem}
                 onPanelCheckout={() => setPanelCheckoutItem(lineId)}
+                isDoorPending={!!((item.assembly as { id: string; status: string } | null) && !DOOR_COMPLETE_STATUSES.includes((item.assembly as { id: string; status: string }).status))}
                 fabricationSource={item.fabricationSource as string | null}
                 onFabricationSourceChange={mode === "edit" ? async (source) => {
                   try {
