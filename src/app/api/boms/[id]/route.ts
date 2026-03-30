@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { requireAuth, requireRole } from "@/lib/auth"
+import { createClient } from "@/lib/supabase/server"
 import { checkBomDoors } from "./fab-check/route"
 import { z } from "zod"
 import { Prisma } from "@prisma/client"
@@ -299,6 +300,63 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, { status: 400 })
     }
+    const message = error instanceof Error ? error.message : "Internal server error"
+    if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
+    if (message.includes("Forbidden")) return NextResponse.json({ error: message }, { status: 403 })
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await requireAuth()
+    requireRole(user.role, ["ADMIN"])
+    const { id } = await params
+
+    const bom = await prisma.bom.findUnique({
+      where: { id },
+      select: { id: true, status: true, paperBomUrl: true },
+    })
+
+    if (!bom) {
+      return NextResponse.json({ error: "BOM not found" }, { status: 404 })
+    }
+
+    if (bom.status === "IN_PROGRESS") {
+      return NextResponse.json(
+        { error: "Cannot delete a BOM that is in progress. Complete or cancel it first." },
+        { status: 400 }
+      )
+    }
+
+    // Nullify bomId on related transactions (preserve audit trail)
+    await prisma.transaction.updateMany({
+      where: { bomId: id },
+      data: { bomId: null },
+    })
+
+    // Delete paper BOM from Supabase Storage if it exists
+    if (bom.paperBomUrl) {
+      try {
+        const supabase = await createClient()
+        // Extract file path from URL: everything after /paper-boms/
+        const match = bom.paperBomUrl.match(/\/paper-boms\/(.+)$/)
+        if (match) {
+          await supabase.storage.from("paper-boms").remove([match[1]])
+        }
+      } catch {
+        // Storage cleanup is best-effort — don't block deletion
+      }
+    }
+
+    // Delete BOM (line items cascade via onDelete: Cascade)
+    await prisma.bom.delete({ where: { id } })
+
+    return NextResponse.json({ message: "BOM deleted" })
+  } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error"
     if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
     if (message.includes("Forbidden")) return NextResponse.json({ error: message }, { status: 403 })

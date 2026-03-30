@@ -136,6 +136,7 @@ export function BomPhotoCapture() {
   const router = useRouter()
   const createBom = useCreateBom()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const compressedPhotoRef = useRef<File | null>(null)
 
   // State
   const [phase, setPhase] = useState<Phase>("capture")
@@ -210,6 +211,8 @@ export function BomPhotoCapture() {
       for (let i = 0; i < files.length; i++) {
         compressed.push(await compressImage(files[i]))
       }
+      // Store first compressed photo for paper BOM upload later
+      compressedPhotoRef.current = compressed[0] || null
 
       // Start streaming parse
       const formData = new FormData()
@@ -532,13 +535,24 @@ export function BomPhotoCapture() {
         inputUnit: item.unitOfMeasure || null,
       }))
 
-      await createBom.mutateAsync({
+      const draftResult = await createBom.mutateAsync({
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
         lineItems,
         source: "photo",
         status: "DRAFT",
       } as Parameters<typeof createBom.mutateAsync>[0])
+
+      // Upload paper BOM photo (fire-and-forget)
+      const draftBomId = draftResult?.data?.id
+      if (draftBomId && compressedPhotoRef.current) {
+        const paperForm = new FormData()
+        paperForm.append("image", compressedPhotoRef.current)
+        fetch(`/api/boms/${draftBomId}/upload-paper`, {
+          method: "POST",
+          body: paperForm,
+        }).catch(() => console.warn("Paper BOM upload failed"))
+      }
 
       toast.success("BOM saved as draft")
       window.location.href = "/boms"
@@ -587,6 +601,17 @@ export function BomPhotoCapture() {
       } as Parameters<typeof createBom.mutateAsync>[0])
 
       setSubmitted(true)
+
+      // Upload paper BOM photo (fire-and-forget)
+      const bomId = result?.data?.id
+      if (bomId && compressedPhotoRef.current) {
+        const paperForm = new FormData()
+        paperForm.append("image", compressedPhotoRef.current)
+        fetch(`/api/boms/${bomId}/upload-paper`, {
+          method: "POST",
+          body: paperForm,
+        }).catch(() => console.warn("Paper BOM upload failed"))
+      }
 
       // Feed confirmed matches into learning loop (catalog + custom items)
       const allConfirmedMatches = validItems

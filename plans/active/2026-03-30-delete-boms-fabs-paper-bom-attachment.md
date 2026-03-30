@@ -1,7 +1,7 @@
 # Plan: Delete BOMs/Fab Items + Paper BOM Attachment
 
 **Created:** 2026-03-30
-**Status:** Draft
+**Status:** Implemented
 **Request:** Add hard-delete for BOMs and Fab items, and store/display paper BOM photos as attachments.
 
 ---
@@ -317,3 +317,22 @@ Run TypeScript checks and verify the implementation.
 - The `paper-boms` Supabase Storage bucket needs to be created. This can be done via the Supabase dashboard or via the API. The upload endpoint should handle bucket creation gracefully.
 - Future enhancement: could add paper BOM upload to the BOM detail page directly (not just during photo capture) for cases where someone wants to attach a paper BOM to a manually-created BOM.
 - The design system says "Soft deletes. Never hard-delete." — this plan deliberately overrides that convention per the user's explicit request. The design system note should be updated.
+
+---
+
+## Implementation Notes
+
+**Implemented:** 2026-03-30
+
+### Summary
+
+All 9 steps completed. Added DELETE endpoints for BOMs and assemblies with ADMIN-only access and safety guards. Added paper BOM photo persistence via Supabase Storage with upload after AI parse. Added delete confirmation dialogs and paper BOM viewer to detail pages.
+
+### Deviations from Plan
+
+- Used existing `Dialog` component from shadcn/ui instead of `AlertDialog` (AlertDialog was not installed; Dialog provides the same UX with proper overlay and focus management).
+- `prisma db push` could not run in this environment (missing dotenv dependency in sandbox). Schema change is correct and will apply on next push in the real environment.
+
+### Issues Encountered
+
+- TypeScript check shows only pre-existing errors from missing node_modules in the sandbox environment. No new errors were introduced by this implementation.

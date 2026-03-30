@@ -217,3 +217,53 @@ export async function PATCH(
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await requireAuth()
+    requireRole(user.role, ["ADMIN"])
+    const { id } = await params
+
+    const assembly = await prisma.assembly.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    })
+
+    if (!assembly) {
+      return NextResponse.json({ error: "Assembly not found" }, { status: 404 })
+    }
+
+    const blockedStatuses = ["IN_PRODUCTION", "COMPLETED", "ALLOCATED", "SHIPPED"]
+    if (blockedStatuses.includes(assembly.status)) {
+      return NextResponse.json(
+        { error: `Cannot delete an assembly that is ${assembly.status.toLowerCase().replace("_", " ")}. Materials have already been consumed.` },
+        { status: 400 }
+      )
+    }
+
+    // Nullify assemblyId on related transactions (preserve audit trail)
+    await prisma.transaction.updateMany({
+      where: { assemblyId: id },
+      data: { assemblyId: null },
+    })
+
+    // Nullify assemblyId on related BOM line items
+    await prisma.bomLineItem.updateMany({
+      where: { assemblyId: id },
+      data: { assemblyId: null },
+    })
+
+    // Delete assembly (components and change log cascade via onDelete: Cascade)
+    await prisma.assembly.delete({ where: { id } })
+
+    return NextResponse.json({ message: "Assembly deleted" })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Internal server error"
+    if (message === "Unauthorized") return NextResponse.json({ error: message }, { status: 401 })
+    if (message.includes("Forbidden")) return NextResponse.json({ error: message }, { status: 403 })
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}

@@ -1,7 +1,8 @@
 "use client"
 
 import { use, useState, useCallback } from "react"
-import { useBom, useUpdateBom, useCheckoutBom } from "@/hooks/use-boms"
+import { useRouter } from "next/navigation"
+import { useBom, useUpdateBom, useCheckoutBom, useDeleteBom } from "@/hooks/use-boms"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
@@ -18,7 +19,16 @@ import { PanelCheckoutSheet } from "@/components/bom/panel-checkout-sheet"
 import { PanelDimensionEditor } from "@/components/bom/panel-dimension-editor"
 import { FabGateSection } from "@/components/bom/fab-gate-section"
 import { SwipeToDelete } from "@/components/ui/swipe-to-delete"
-import { Pencil, Plus, Undo2, Mic, Info, Layers } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Pencil, Plus, Undo2, Mic, Info, Layers, Trash2, Image as ImageIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { StepProgress } from "@/components/layout/step-progress"
 import type { ParseResult, ReceivingParseResult, CatalogMatch } from "@/lib/ai/types"
@@ -48,10 +58,12 @@ function buildQtyUpdates(
 
 export default function BomDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const { data, isLoading } = useBom(id)
   const { data: meData } = useMe()
   const updateBom = useUpdateBom()
   const checkoutBom = useCheckoutBom()
+  const deleteBom = useDeleteBom()
   const bom = data?.data
   const me = meData?.data
 
@@ -65,6 +77,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<string | null>(null)
   const [fabGateResolved, setFabGateResolved] = useState(true)
   const [pickedItems, setPickedItems] = useState<Record<string, number>>({})
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showPaperBom, setShowPaperBom] = useState(false)
 
   function togglePick(itemId: string, remaining: number) {
     setPickedItems((prev) => {
@@ -86,6 +100,19 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
   const canCheckout = bom && ["APPROVED", "IN_PROGRESS"].includes(bom.status) && me &&
     ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER", "SHOP_FOREMAN"].includes(me.role)
   const canApprove = me && ["ADMIN", "OPERATIONS_MANAGER", "OFFICE_MANAGER"].includes(me.role)
+  const isAdmin = me && me.role === "ADMIN"
+  const canDelete = isAdmin && bom && bom.status !== "IN_PROGRESS"
+
+  async function handleDeleteBom() {
+    try {
+      await deleteBom.mutateAsync(id)
+      toast.success("BOM deleted")
+      router.push("/boms")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete BOM")
+    }
+    setShowDeleteConfirm(false)
+  }
 
   // Detect if BOM may contain door items (assembly products or non-catalog "Door" items)
   const bomLineItems = bom?.lineItems
@@ -439,6 +466,30 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
             <p className="text-xs text-text-secondary bg-surface-secondary px-2.5 py-2 rounded-xl mt-2">{bom.notes}</p>
           )}
         </Card>
+
+        {/* Paper BOM Attachment */}
+        {bom.paperBomUrl && (
+          <Card className="px-4 py-3 rounded-xl border-border-custom">
+            <button
+              type="button"
+              onClick={() => setShowPaperBom(true)}
+              className="flex items-center gap-3 w-full min-h-[44px] text-left"
+            >
+              <div className="h-12 w-12 rounded-lg bg-brand-blue/10 flex items-center justify-center shrink-0">
+                <ImageIcon className="h-5 w-5 text-brand-blue" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-navy">Paper BOM</p>
+                <p className="text-xs text-text-muted">Tap to view original document</p>
+              </div>
+              <img
+                src={bom.paperBomUrl}
+                alt="Paper BOM thumbnail"
+                className="h-12 w-12 rounded-lg object-cover border border-border-custom"
+              />
+            </button>
+          </Card>
+        )}
 
         {/* Line Items */}
         <Card className="px-4 py-3 rounded-xl border-border-custom">
@@ -881,7 +932,67 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         )}
       </div>
 
-      {/* Dialogs removed — status changes are direct actions with toast confirmation */}
+      {/* Delete BOM — ADMIN only */}
+      {canDelete && mode === "view" && (
+        <div className="px-4 -mt-1 pb-4">
+          <Button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            variant="outline"
+            className="w-full h-12 border-2 border-status-red/30 text-status-red hover:bg-status-red/5 font-semibold"
+          >
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            Delete BOM
+          </Button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="max-w-sm mx-auto rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-navy">Delete BOM?</DialogTitle>
+            <DialogDescription className="text-text-secondary">
+              This will permanently delete <span className="font-semibold text-navy">{bom.jobName}</span> and all its line items. Checkout/return transactions will be preserved. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" className="flex-1 h-12">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              onClick={handleDeleteBom}
+              disabled={deleteBom.isPending}
+              className="flex-1 h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
+            >
+              {deleteBom.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Paper BOM Full-Screen Viewer */}
+      <Dialog open={showPaperBom} onOpenChange={setShowPaperBom}>
+        <DialogContent className="max-w-lg mx-auto p-0 rounded-xl overflow-hidden">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle className="text-navy">Paper BOM</DialogTitle>
+            <DialogDescription className="text-text-muted text-xs">
+              Original document for {bom.jobName}
+            </DialogDescription>
+          </DialogHeader>
+          {bom.paperBomUrl && (
+            <div className="px-4 pb-4">
+              <img
+                src={bom.paperBomUrl}
+                alt="Paper BOM"
+                className="w-full rounded-lg border border-border-custom"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Panel Checkout Sheet */}
       {panelCheckoutItem && (() => {

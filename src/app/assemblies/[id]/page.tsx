@@ -1,7 +1,8 @@
 "use client"
 
 import { use, useState, useEffect } from "react"
-import { useAssembly, useUpdateAssembly } from "@/hooks/use-assemblies"
+import { useRouter } from "next/navigation"
+import { useAssembly, useUpdateAssembly, useDeleteAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
 import { useCelebration } from "@/hooks/use-celebration"
 import { Header } from "@/components/layout/header"
@@ -19,6 +20,15 @@ import { getDoorFieldLabel, formatDoorFieldValue } from "@/lib/door-field-labels
 import { StepProgress } from "@/components/layout/step-progress"
 import { SwipeToDelete } from "@/components/ui/swipe-to-delete"
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
   User,
   Calendar,
   CheckCircle,
@@ -33,6 +43,7 @@ import {
   Layers,
   Triangle,
   DoorOpen,
+  Trash2,
 } from "lucide-react"
 
 const statusColors: Record<string, string> = {
@@ -94,14 +105,17 @@ const SHOP_ROLES = ["DOOR_SHOP", "SHOP_FOREMAN", "CREW"]
 
 export default function AssemblyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const router = useRouter()
   const { data, isLoading } = useAssembly(id)
   const { data: meData } = useMe()
   const updateAssembly = useUpdateAssembly()
+  const deleteAssembly = useDeleteAssembly()
   const { celebrate } = useCelebration()
   const me = meData?.data
 
   const [approvalNotes, setApprovalNotes] = useState("")
   const [showStartBuildModal, setShowStartBuildModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Door sheet view toggle
   const [sheetView, setSheetView] = useState<"spec" | "manufacturing">("spec")
@@ -114,6 +128,19 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
   }, [me])
 
   const assembly = data?.data
+  const isAdmin = me && me.role === "ADMIN"
+  const canDeleteAssembly = isAdmin && assembly && ["PLANNED", "AWAITING_APPROVAL", "APPROVED"].includes(assembly.status)
+
+  async function handleDeleteAssembly() {
+    try {
+      await deleteAssembly.mutateAsync(id)
+      toast.success("Assembly deleted")
+      router.push("/assemblies")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete assembly")
+    }
+    setShowDeleteConfirm(false)
+  }
 
   if (isLoading) {
     return (
@@ -600,6 +627,47 @@ export default function AssemblyDetailPage({ params }: { params: Promise<{ id: s
         }>}
         isPending={updateAssembly.isPending}
       />
+
+      {/* Delete Assembly — ADMIN only, before production */}
+      {canDeleteAssembly && (
+        <div className="px-4 pb-4">
+          <Button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            variant="outline"
+            className="w-full h-12 border-2 border-status-red/30 text-status-red hover:bg-status-red/5 font-semibold"
+          >
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            Delete Assembly
+          </Button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="max-w-sm mx-auto rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-navy">Delete Assembly?</DialogTitle>
+            <DialogDescription className="text-text-secondary">
+              This will permanently delete this {typeLabels[assembly.type] || assembly.type}{assembly.jobName ? ` for ${assembly.jobName}` : ""}. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <DialogClose asChild>
+              <Button variant="outline" className="flex-1 h-12">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              onClick={handleDeleteAssembly}
+              disabled={deleteAssembly.isPending}
+              className="flex-1 h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
+            >
+              {deleteAssembly.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
