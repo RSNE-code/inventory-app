@@ -63,7 +63,21 @@ export async function GET(request: NextRequest) {
         },
         _count: { select: { changeLog: true } },
       },
+      // sortOrder=0 means "unpositioned" — sorted after positioned items
+      // Prisma can't express "0 last" so we use priority+createdAt as base,
+      // then re-sort in JS below
       orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    })
+
+    // Re-sort: positioned items (sortOrder > 0) first by sortOrder,
+    // then unpositioned items (sortOrder = 0) in their original priority/createdAt order
+    assemblies.sort((a, b) => {
+      const aPos = a.sortOrder || 0
+      const bPos = b.sortOrder || 0
+      if (aPos > 0 && bPos > 0) return aPos - bPos
+      if (aPos > 0 && bPos === 0) return -1
+      if (aPos === 0 && bPos > 0) return 1
+      return 0 // both unpositioned — keep priority/createdAt order from DB
     })
 
     // Match door assemblies to BOMs by jobName

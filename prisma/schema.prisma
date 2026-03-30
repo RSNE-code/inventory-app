@@ -399,6 +399,7 @@ model Assembly {
   jobName        String?
   jobNumber      String?
   priority       Int               @default(0)
+  sortOrder      Int               @default(0)
   queueType      QueueType
   cost           Decimal?          @db.Decimal(12, 4)
 
@@ -425,6 +426,8 @@ model Assembly {
   transactions Transaction[]
   bomLineItems BomLineItem[]
   changeLog    AssemblyChangeLog[]
+
+  @@index([queueType, sortOrder])
 }
 
 model AssemblyComponent {

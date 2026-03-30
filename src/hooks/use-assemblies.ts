@@ -149,6 +149,28 @@ export function useDeleteAssembly() {
   })
 }
 
+export function useReorderAssemblies() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      const res = await fetch("/api/assemblies/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderedIds }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || "Failed to reorder assemblies")
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assemblies"] })
+    },
+  })
+}
+
 export function useBatchShip() {
   const queryClient = useQueryClient()
 

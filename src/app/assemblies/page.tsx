@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { useAssemblies } from "@/hooks/use-assemblies"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { useAssemblies, useReorderAssemblies } from "@/hooks/use-assemblies"
 import { useUpdateAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
@@ -12,12 +12,32 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon } from "lucide-react"
+import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon, GripVertical } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
 import { formatDoorFieldValue } from "@/lib/door-field-labels"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+  DragOverlay,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 type QueueTab = "DOOR_SHOP" | "FABRICATION" | "SHIPPING"
 type StatusFilter = "all" | "AWAITING_APPROVAL" | "APPROVED" | "PLANNED" | "IN_PRODUCTION" | "COMPLETED"
@@ -99,7 +119,7 @@ export default function AssembliesPage() {
 
   const assemblies = data?.data || []
 
-  const notStarted = assemblies.filter((a: Record<string, unknown>) =>
+  const notStartedRaw = assemblies.filter((a: Record<string, unknown>) =>
     ["PLANNED", "AWAITING_APPROVAL", "APPROVED"].includes(a.status as string)
   )
   const inProgress = assemblies.filter((a: Record<string, unknown>) =>
@@ -108,6 +128,58 @@ export default function AssembliesPage() {
   const completed = assemblies.filter((a: Record<string, unknown>) =>
     ["COMPLETED", "ALLOCATED", "SHIPPED"].includes(a.status as string)
   )
+
+  // Drag-and-drop state for Not Started group
+  const [localOrder, setLocalOrder] = useState<Record<string, unknown>[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const reorderMutation = useReorderAssemblies()
+
+  // Sync local order with server data when not actively dragging
+  useEffect(() => {
+    if (!activeId) {
+      setLocalOrder(notStartedRaw)
+    }
+  }, [notStartedRaw, activeId])
+
+  const notStarted = localOrder.length > 0 ? localOrder : notStartedRaw
+  const notStartedIds = notStarted.map((a: Record<string, unknown>) => a.id as string)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }, [])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = notStartedIds.indexOf(active.id as string)
+    const newIndex = notStartedIds.indexOf(over.id as string)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove([...notStarted], oldIndex, newIndex)
+    setLocalOrder(reordered)
+
+    // Persist the new order
+    const newIds = reordered.map((a) => a.id as string)
+    reorderMutation.mutate(newIds, {
+      onError: () => {
+        toast.error("Failed to save queue order")
+        setLocalOrder(notStartedRaw)
+      },
+    })
+  }, [notStarted, notStartedIds, notStartedRaw, reorderMutation])
+
+  const activeAssembly = activeId
+    ? notStarted.find((a: Record<string, unknown>) => (a.id as string) === activeId) || null
+    : null
 
   return (
     <div className="overscroll-fix">
@@ -213,21 +285,38 @@ export default function AssembliesPage() {
           </div>
         ) : (
           <>
-            {/* Not Started */}
+            {/* Not Started — Drag-and-drop reorderable */}
             {notStarted.length > 0 && (
               <div className="space-y-3 mt-2 animate-fade-in-up stagger-1">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-text-muted" />
                   <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                    Not Started
+                    Queue Order
                   </h3>
                   <span className="text-xs text-text-muted/60 tabular-nums">{notStarted.length}</span>
                 </div>
-                {notStarted.map((assembly: Record<string, unknown>, i: number) => (
-                  <div key={assembly.id as string} className={`animate-card-enter stagger-${Math.min(i + 1, 8)}`}>
-                    <AssemblyCard assembly={assembly} />
-                  </div>
-                ))}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext items={notStartedIds} strategy={verticalListSortingStrategy}>
+                    {notStarted.map((assembly: Record<string, unknown>, i: number) => (
+                      <SortableAssemblyCard
+                        key={assembly.id as string}
+                        assembly={assembly}
+                        position={i + 1}
+                        isDragOverlay={false}
+                      />
+                    ))}
+                  </SortableContext>
+                  <DragOverlay dropAnimation={{ duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
+                    {activeAssembly ? (
+                      <AssemblyCard assembly={activeAssembly} position={notStartedIds.indexOf(activeId!) + 1} isDragging />
+                    ) : null}
+                  </DragOverlay>
+                </DndContext>
               </div>
             )}
 
@@ -275,7 +364,53 @@ export default function AssembliesPage() {
   )
 }
 
-function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
+function SortableAssemblyCard({
+  assembly,
+  position,
+  isDragOverlay,
+}: {
+  assembly: Record<string, unknown>
+  position: number
+  isDragOverlay: boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: assembly.id as string })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <AssemblyCard
+        assembly={assembly}
+        position={position}
+        isDragging={isDragging}
+        dragHandleProps={{ ...attributes, ...listeners }}
+      />
+    </div>
+  )
+}
+
+function AssemblyCard({
+  assembly,
+  position,
+  isDragging,
+  dragHandleProps,
+}: {
+  assembly: Record<string, unknown>
+  position?: number
+  isDragging?: boolean
+  dragHandleProps?: Record<string, unknown>
+}) {
   const template = assembly.template as Record<string, unknown> | null
   const producedBy = assembly.producedBy as Record<string, unknown>
   const specs = assembly.specs as Record<string, unknown> | null
@@ -296,8 +431,26 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
   return (
     <>
       <Link href={`/assemblies/${assembly.id}`}>
-        <Card className={cn("p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden", statusAccentClass[status] || "card-accent-gray")}>
-          <div className="flex items-start justify-between gap-2">
+        <Card className={cn(
+          "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden",
+          statusAccentClass[status] || "card-accent-gray",
+          isDragging && "shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02]"
+        )}>
+          <div className="flex items-start gap-2">
+            {/* Drag handle + position number */}
+            {dragHandleProps && (
+              <div
+                className="flex items-center gap-1 shrink-0 pt-0.5 touch-none"
+                {...dragHandleProps}
+                onClick={(e) => e.preventDefault()}
+              >
+                <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center select-none">
+                  {position}
+                </span>
+                <GripVertical className="h-5 w-5 text-text-muted/40 cursor-grab active:cursor-grabbing" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               {!!assembly.jobNumber && (
                 <p className="text-lg font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
@@ -396,6 +549,9 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
               )}
               <p className="text-xs text-text-muted mt-1">
                 By {producedBy.name as string}
+                {assembly.startedAt ? (
+                  <span> · Started {new Date(String(assembly.startedAt)).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                ) : null}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -405,6 +561,7 @@ function AssemblyCard({ assembly }: { assembly: Record<string, unknown> }) {
                 </Badge>
               )}
               <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+            </div>
             </div>
           </div>
         </Card>
