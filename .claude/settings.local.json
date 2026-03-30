@@ -4,7 +4,9 @@
       "Bash(ls -la \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App\")",
       "Bash(find \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App\" -type f -name \"*.md\" | head -20)",
       "Bash(ls \"/Users/gabeperez/Documents/Software & App Data/Claude Projects Folder/Claude Code/Inventory Management App/context/\")",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "mcp__2f0f5532-919e-468c-86fd-803fda018bdc__apply_migration",
+      "mcp__2f0f5532-919e-468c-86fd-803fda018bdc__execute_sql"
     ]
   }
 }
