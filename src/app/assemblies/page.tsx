@@ -12,32 +12,12 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
-import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon, GripVertical } from "lucide-react"
+import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon, ChevronUp, ChevronDown } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
 import { formatDoorFieldValue } from "@/lib/door-field-labels"
 import { BomStatusBadge } from "@/components/bom/bom-status-badge"
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-  DragOverlay,
-} from "@dnd-kit/core"
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 
 type QueueTab = "DOOR_SHOP" | "FABRICATION" | "SHIPPING"
 type StatusFilter = "all" | "AWAITING_APPROVAL" | "APPROVED" | "PLANNED" | "IN_PRODUCTION" | "COMPLETED"
@@ -129,46 +109,29 @@ export default function AssembliesPage() {
     ["COMPLETED", "ALLOCATED", "SHIPPED"].includes(a.status as string)
   )
 
-  // Drag-and-drop state for Not Started group
+  // Queue reorder state
   const [localOrder, setLocalOrder] = useState<Record<string, unknown>[]>([])
-  const [activeId, setActiveId] = useState<string | null>(null)
   const mutatingRef = useRef(false)
   const reorderMutation = useReorderAssemblies()
 
-  // Sync local order with server data when not actively dragging and no mutation in-flight
+  // Sync local order with server data when no mutation in-flight
   useEffect(() => {
-    if (!activeId && !mutatingRef.current) {
+    if (!mutatingRef.current) {
       setLocalOrder(notStartedRaw)
     }
-  }, [notStartedRaw, activeId])
+  }, [notStartedRaw])
 
   const notStarted = localOrder.length > 0 ? localOrder : notStartedRaw
-  const notStartedIds = notStarted.map((a: Record<string, unknown>) => a.id as string)
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  )
+  const moveItem = useCallback((index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= notStarted.length) return
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
-  }, [])
-
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveId(null)
-
-    if (!over || active.id === over.id) return
-
-    const oldIndex = notStartedIds.indexOf(active.id as string)
-    const newIndex = notStartedIds.indexOf(over.id as string)
-    if (oldIndex === -1 || newIndex === -1) return
-
-    const reordered = arrayMove([...notStarted], oldIndex, newIndex)
+    const reordered = [...notStarted]
+    const [moved] = reordered.splice(index, 1)
+    reordered.splice(newIndex, 0, moved)
     setLocalOrder(reordered)
 
-    // Persist the new order
     mutatingRef.current = true
     const newIds = reordered.map((a) => a.id as string)
     reorderMutation.mutate(newIds, {
@@ -180,16 +143,7 @@ export default function AssembliesPage() {
         mutatingRef.current = false
       },
     })
-  }, [notStarted, notStartedIds, notStartedRaw, reorderMutation])
-
-  const handleDragCancel = useCallback(() => {
-    setActiveId(null)
-    setLocalOrder(notStartedRaw)
-  }, [notStartedRaw])
-
-  const activeAssembly = activeId
-    ? notStarted.find((a: Record<string, unknown>) => (a.id as string) === activeId) || null
-    : null
+  }, [notStarted, notStartedRaw, reorderMutation])
 
   return (
     <div className="overscroll-fix">
@@ -305,31 +259,16 @@ export default function AssembliesPage() {
                   </h3>
                   <span className="text-xs text-text-muted/60 tabular-nums">{notStarted.length}</span>
                 </div>
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                  onDragCancel={handleDragCancel}
-                >
-                  <SortableContext items={notStartedIds} strategy={verticalListSortingStrategy}>
-                    {notStarted.map((assembly: Record<string, unknown>, i: number) => (
-                      <SortableAssemblyCard
-                        key={assembly.id as string}
-                        assembly={assembly}
-                        position={i + 1}
-                      />
-                    ))}
-                  </SortableContext>
-                  <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
-                    {activeAssembly ? (
-                      <DragPreview
-                        assembly={activeAssembly}
-                        position={notStartedIds.indexOf(activeId!) + 1}
-                      />
-                    ) : null}
-                  </DragOverlay>
-                </DndContext>
+                {notStarted.map((assembly: Record<string, unknown>, i: number) => (
+                  <AssemblyCard
+                    key={assembly.id as string}
+                    assembly={assembly}
+                    position={i + 1}
+                    totalInQueue={notStarted.length}
+                    onMoveUp={() => moveItem(i, "up")}
+                    onMoveDown={() => moveItem(i, "down")}
+                  />
+                ))}
               </div>
             )}
 
@@ -377,50 +316,18 @@ export default function AssembliesPage() {
   )
 }
 
-function SortableAssemblyCard({
-  assembly,
-  position,
-}: {
-  assembly: Record<string, unknown>
-  position: number
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: assembly.id as string })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <AssemblyCard
-        assembly={assembly}
-        position={position}
-        isDragging={isDragging}
-        dragHandleProps={{ ...attributes, ...listeners }}
-      />
-    </div>
-  )
-}
-
 function AssemblyCard({
   assembly,
   position,
-  isDragging,
-  dragHandleProps,
+  totalInQueue,
+  onMoveUp,
+  onMoveDown,
 }: {
   assembly: Record<string, unknown>
   position?: number
-  isDragging?: boolean
-  dragHandleProps?: Record<string, unknown>
+  totalInQueue?: number
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }) {
   const template = assembly.template as Record<string, unknown> | null
   const producedBy = assembly.producedBy as Record<string, unknown>
@@ -559,37 +466,49 @@ function AssemblyCard({
     <>
       <Card className={cn(
         "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden",
-        statusAccentClass[status] || "card-accent-gray",
-        isDragging && "shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02]"
+        statusAccentClass[status] || "card-accent-gray"
       )}>
         <div className="flex items-start gap-2">
-          {/* Drag handle — outside the Link to prevent navigation conflicts */}
-          {dragHandleProps && (
-            <div
-              className="flex items-center gap-1 shrink-0 pt-0.5 touch-none select-none"
-              {...dragHandleProps}
-              onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center select-none">
+          {/* Move up/down controls */}
+          {onMoveUp && onMoveDown && position !== undefined && totalInQueue !== undefined && (
+            <div className="flex flex-col items-center gap-0.5 shrink-0 -my-1">
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveUp() }}
+                disabled={position <= 1}
+                className={cn(
+                  "flex items-center justify-center h-8 w-8 rounded-lg transition-colors",
+                  position <= 1
+                    ? "text-text-muted/20"
+                    : "text-text-muted hover:bg-brand-blue/10 hover:text-brand-blue active:scale-95"
+                )}
+                aria-label="Move up"
+              >
+                <ChevronUp className="h-5 w-5" />
+              </button>
+              <span className="text-sm font-bold text-navy/40 tabular-nums leading-none">
                 {position}
               </span>
-              <GripVertical className="h-5 w-5 text-text-muted/40 cursor-grab active:cursor-grabbing" />
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMoveDown() }}
+                disabled={position >= totalInQueue}
+                className={cn(
+                  "flex items-center justify-center h-8 w-8 rounded-lg transition-colors",
+                  position >= totalInQueue
+                    ? "text-text-muted/20"
+                    : "text-text-muted hover:bg-brand-blue/10 hover:text-brand-blue active:scale-95"
+                )}
+                aria-label="Move down"
+              >
+                <ChevronDown className="h-5 w-5" />
+              </button>
             </div>
           )}
-          {/* Card content — navigates on tap */}
-          {dragHandleProps ? (
-            <div
-              className="flex-1 min-w-0 cursor-pointer"
-              onClick={() => { window.location.href = `/assemblies/${assembly.id}` }}
-            >
-              {cardContent}
-            </div>
-          ) : (
-            <Link href={`/assemblies/${assembly.id}`} className="flex-1 min-w-0">
-              {cardContent}
-            </Link>
-          )}
+          {/* Card content */}
+          <Link href={`/assemblies/${assembly.id}`} className="flex-1 min-w-0">
+            {cardContent}
+          </Link>
         </div>
       </Card>
 
@@ -602,43 +521,6 @@ function AssemblyCard({
         />
       )}
     </>
-  )
-}
-
-/** Lightweight drag preview — renders at 60fps without heavy children */
-function DragPreview({ assembly, position }: { assembly: Record<string, unknown>; position: number }) {
-  const template = assembly.template as Record<string, unknown> | null
-  const status = assembly.status as string
-  const name = assembly.jobName
-    ? String(assembly.jobName)
-    : template?.name || `Custom ${typeLabels[assembly.type as string] || assembly.type}`
-
-  return (
-    <Card className={cn(
-      "p-4 rounded-xl border-border-custom shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02] overflow-hidden",
-      statusAccentClass[status] || "card-accent-gray"
-    )}>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 shrink-0">
-          <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center">
-            {position}
-          </span>
-          <GripVertical className="h-5 w-5 text-brand-orange/60" />
-        </div>
-        <div className="flex-1 min-w-0">
-          {!!assembly.jobNumber && (
-            <p className="text-sm font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
-          )}
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-navy text-sm truncate">{name as string}</p>
-            <Badge className={cn("text-[11px] px-2 py-0.5 gap-1 border-0 shrink-0", statusColors[status])}>
-              <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", statusDots[status])} />
-              {statusLabels[status] || status}
-            </Badge>
-          </div>
-        </div>
-      </div>
-    </Card>
   )
 }
 
