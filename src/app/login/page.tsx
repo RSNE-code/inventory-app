@@ -103,7 +103,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange-hover active:scale-[0.98] text-white font-semibold text-base shadow-md transition-all duration-300 disabled:opacity-70"
+                className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange-hover active:scale-[0.98] text-white font-semibold text-base shadow-brand-md transition-all duration-300 disabled:opacity-70"
               >
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
@@ -113,7 +113,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowForgot(!showForgot)}
-                className="text-sm text-text-muted hover:text-brand-blue py-2 px-3 -mx-3 rounded-lg transition-colors duration-300"
+                className="text-sm text-text-muted hover:text-brand-blue py-2 px-3 -mx-3 rounded-xl transition-colors duration-300"
               >
                 Forgot password?
               </button>
