@@ -13,6 +13,7 @@ import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
 import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon, ChevronUp, ChevronDown } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
 import { formatDoorFieldValue } from "@/lib/door-field-labels"
@@ -88,6 +89,8 @@ export default function AssembliesPage() {
   }, [queueTab])
   const { data: meData } = useMe()
   const me = meData?.data
+
+  const router = useRouter()
 
   const { data, isLoading } = useAssemblies(
     queueTab !== "SHIPPING" ? {
@@ -235,13 +238,14 @@ export default function AssembliesPage() {
         </div>
 
         {/* Create button */}
-        <Link
-          href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}
+        <button
+          type="button"
+          onClick={() => router.push(queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL")}
           className="flex items-center justify-center w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all active:scale-[0.97]"
         >
           <Plus className="h-5 w-5 mr-2" />
           {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor / Ramp"}
-        </Link>
+        </button>
 
         {isLoading ? (
           <ListSkeleton count={4} />
