@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    if (status && ["DRAFT", "APPROVED", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) {
+    if (status && ["DRAFT", "PENDING_REVIEW", "APPROVED", "IN_PROGRESS", "COMPLETED", "CANCELLED"].includes(status)) {
       where.status = status as Prisma.BomWhereInput["status"]
     }
 

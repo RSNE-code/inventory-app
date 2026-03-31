@@ -191,15 +191,27 @@ export async function POST(request: NextRequest) {
 
             let boostedMatch = catalogMatch
             if (histMatch) {
+              // Items confirmed 3+ times are "hard matches" — auto-confirm (0.98 > 0.95 threshold)
+              const isHardMatch = histMatch.usageCount >= 3
+              const boostTarget = isHardMatch ? 0.98 : 0.90
+
               if (histMatch.productId && catalogMatch.matchedProduct?.id === histMatch.productId) {
-                // Catalog match confirmed by history — boost to 0.90 (below auto-confirm)
-                // History informs but doesn't override — user still reviews
                 boostedMatch = {
                   ...catalogMatch,
-                  matchConfidence: Math.max(catalogMatch.matchConfidence, 0.90),
+                  matchConfidence: Math.max(catalogMatch.matchConfidence, boostTarget),
+                }
+              } else if (histMatch.productId && !catalogMatch.matchedProduct && isHardMatch) {
+                // Hard match overrides a miss — look up the remembered product
+                const rememberedProduct = productMap.get(histMatch.productId)
+                if (rememberedProduct) {
+                  boostedMatch = {
+                    ...catalogMatch,
+                    matchedProduct: rememberedProduct,
+                    matchConfidence: boostTarget,
+                    isNonCatalog: false,
+                  }
                 }
               } else if (histMatch.customName && !histMatch.productId) {
-                // Custom item from history — override to non-catalog with remembered name
                 boostedMatch = {
                   ...catalogMatch,
                   parsedItem: {
@@ -207,7 +219,7 @@ export async function POST(request: NextRequest) {
                     name: histMatch.customName,
                   },
                   matchedProduct: null,
-                  matchConfidence: 0.90,
+                  matchConfidence: boostTarget,
                   isNonCatalog: true,
                 }
               }

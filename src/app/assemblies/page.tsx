@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { ListSkeleton } from "@/components/shared/skeleton"
 import { cn, formatQuantity } from "@/lib/utils"
 import { Plus, Factory, DoorOpen, Layers, Snowflake, Thermometer, ChevronRight, Truck, Package, Search, LinkIcon, ChevronUp, ChevronDown } from "lucide-react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { FinishedGoodsList } from "@/components/shipping/finished-goods-list"
 import { formatDoorFieldValue } from "@/lib/door-field-labels"
@@ -474,12 +474,17 @@ function AssemblyCard({
     </div>
   )
 
+  const router = useRouter()
+
   return (
     <>
-      <Card className={cn(
-        "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden",
-        statusAccentClass[status] || "card-accent-gray"
-      )}>
+      <Card
+        className={cn(
+          "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden cursor-pointer",
+          statusAccentClass[status] || "card-accent-gray"
+        )}
+        onClick={() => router.push(`/assemblies/${assembly.id as string}`)}
+      >
         <div className="flex items-start gap-2">
           {/* Move up/down controls */}
           {onMoveUp && onMoveDown && position !== undefined && totalInQueue !== undefined && (
@@ -518,9 +523,9 @@ function AssemblyCard({
             </div>
           )}
           {/* Card content */}
-          <Link href={`/assemblies/${assembly.id}`} className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
             {cardContent}
-          </Link>
+          </div>
         </div>
       </Card>
 

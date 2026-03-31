@@ -9,6 +9,8 @@ import { useCreateBom } from "@/hooks/use-boms"
 import { toast } from "sonner"
 import { cn, formatQuantity } from "@/lib/utils"
 import { PanelLineItemForm, type PanelLineItem } from "@/components/bom/panel-line-item-form"
+import { CreationFabWarning } from "@/components/bom/creation-fab-warning"
+import type { PreFabCheckItem } from "@/app/api/boms/fab-check-items/route"
 import {
   ClipboardList,
   Minus,
@@ -49,6 +51,7 @@ interface CartItem {
 type CartAction =
   | { type: "ADD"; product: BrowseProduct }
   | { type: "ADD_PANEL"; panel: PanelLineItem }
+  | { type: "ADD_CUSTOM"; name: string; qty: number; uom: string; category?: string }
   | { type: "INCREMENT"; productId: string }
   | { type: "DECREMENT"; productId: string }
   | { type: "SET_QTY"; productId: string; qty: number }
@@ -72,6 +75,21 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
           nonCatalogUom: action.panel.nonCatalogUom,
           nonCatalogSpecs: action.panel.nonCatalogSpecs,
         },
+      ]
+    case "ADD_CUSTOM":
+      return [
+        ...state,
+        {
+          productId: `custom-${Date.now()}`,
+          productName: action.name,
+          unitOfMeasure: action.uom,
+          tier: "TIER_2",
+          qtyNeeded: action.qty,
+          isNonCatalog: true,
+          nonCatalogName: action.name,
+          nonCatalogCategory: action.category || null,
+          nonCatalogUom: action.uom,
+        } as CartItem,
       ]
     case "ADD": {
       const existing = state.find((i) => i.productId === action.product.id)
@@ -221,6 +239,9 @@ function CartBar({
   onSetQty,
   onRemove,
   onSubmit,
+  onSaveDraft,
+  onCancel,
+  onAddCustom,
   isPending,
   disabled,
 }: {
@@ -230,15 +251,84 @@ function CartBar({
   onSetQty: (productId: string, qty: number) => void
   onRemove: (productId: string) => void
   onSubmit: () => void
+  onSaveDraft: () => void
+  onCancel: () => void
+  onAddCustom: (name: string, qty: number, uom: string) => void
   isPending: boolean
   disabled: boolean
 }) {
-  if (cart.length === 0) return null
+  const [showCustomForm, setShowCustomForm] = useState(false)
+  const [customName, setCustomName] = useState("")
+  const [customQty, setCustomQty] = useState("1")
+  const [customUom, setCustomUom] = useState("each")
+
+  function handleAddCustom() {
+    const name = customName.trim()
+    if (!name) { toast.error("Enter an item name"); return }
+    const qty = Number(customQty) || 1
+    onAddCustom(name, qty, customUom || "each")
+    setCustomName("")
+    setCustomQty("1")
+    setCustomUom("each")
+    setShowCustomForm(false)
+    toast.success(`Added ${name}`)
+  }
 
   const totalItems = cart.reduce((sum, i) => sum + i.qtyNeeded, 0)
 
   return (
     <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-border-custom shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)]">
+      {/* Custom item form */}
+      {showCustomForm && (
+        <div className="px-4 py-3 border-b border-border-custom bg-surface-secondary/50 animate-ios-expand">
+          <p className="text-sm font-bold text-navy mb-2">Add Custom Item</p>
+          <div className="space-y-2">
+            <Input
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+              placeholder="Item name (e.g. Custom bracket)"
+              className="h-12 rounded-xl text-base"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={customQty}
+                onChange={(e) => setCustomQty(e.target.value)}
+                placeholder="Qty"
+                className="h-12 rounded-xl text-base w-24"
+                min={1}
+                step="any"
+              />
+              <Input
+                value={customUom}
+                onChange={(e) => setCustomUom(e.target.value)}
+                placeholder="Unit (each, ft, etc.)"
+                className="h-12 rounded-xl text-base flex-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={handleAddCustom}
+                className="flex-1 h-12 rounded-xl bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add to Cart
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCustomForm(false)}
+                className="h-12 rounded-xl px-4"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Expanded cart */}
       {expanded && (
         <div className="max-h-64 overflow-y-auto border-b border-border-custom">
@@ -248,7 +338,12 @@ function CartBar({
               className="flex items-center gap-3 px-4 py-3 border-b border-border-custom/30 last:border-0"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-navy truncate">{item.productName}</p>
+                <p className="text-sm font-semibold text-navy truncate">
+                  {item.productName}
+                  {item.isNonCatalog && (
+                    <span className="ml-1.5 text-[10px] font-bold uppercase text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded">Custom</span>
+                  )}
+                </p>
                 <p className="text-xs text-text-muted">{item.unitOfMeasure}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
@@ -289,29 +384,60 @@ function CartBar({
 
       <div className="p-4 space-y-2">
         {/* Cart summary row */}
-        <button
-          type="button"
-          onClick={onToggleExpand}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-surface-secondary"
-        >
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-brand-blue" />
-            <span className="text-sm font-bold text-navy">
-              {cart.length} item{cart.length !== 1 ? "s" : ""} ({totalItems} total)
-            </span>
-          </div>
-          <ChevronUp className={cn("h-4 w-4 text-text-muted transition-transform", expanded && "rotate-180")} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            className="flex-1 flex items-center justify-between px-3 py-2 rounded-xl bg-surface-secondary"
+          >
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-brand-blue" />
+              <span className="text-sm font-bold text-navy">
+                {cart.length} item{cart.length !== 1 ? "s" : ""} ({totalItems} total)
+              </span>
+            </div>
+            <ChevronUp className={cn("h-4 w-4 text-text-muted transition-transform", expanded && "rotate-180")} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCustomForm(!showCustomForm)}
+            className="h-10 px-3 flex items-center gap-1.5 rounded-xl border border-dashed border-brand-blue/40 text-brand-blue text-xs font-semibold hover:bg-brand-blue/5 active:scale-[0.97] transition-all shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Custom
+          </button>
+        </div>
 
         {/* Create BOM button */}
         <Button
           onClick={onSubmit}
           disabled={isPending || disabled}
-          className="w-full h-14 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl"
+          className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold text-base rounded-xl"
         >
           <ClipboardList className="h-5 w-5 mr-2" />
           {isPending ? "Creating..." : `Create BOM (${cart.length} item${cart.length !== 1 ? "s" : ""})`}
         </Button>
+
+        {/* Save Draft + Cancel row */}
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            onClick={onSaveDraft}
+            disabled={isPending || disabled}
+            variant="outline"
+            className="flex-1 h-12 rounded-xl border-2 border-brand-blue/30 text-brand-blue font-semibold hover:bg-brand-blue/5"
+          >
+            {isPending ? "Saving..." : "Save Draft"}
+          </Button>
+          <Button
+            type="button"
+            onClick={onCancel}
+            variant="outline"
+            className="flex-1 h-12 rounded-xl border-2 border-border-custom text-text-muted font-semibold hover:bg-surface-secondary"
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     </div>
   )
@@ -328,6 +454,12 @@ export function BomQuickPick() {
   const [jobNumber, setJobNumber] = useState<string | null>(null)
   const [cart, dispatch] = useReducer(cartReducer, [])
   const [cartExpanded, setCartExpanded] = useState(false)
+
+  // Custom item state (standalone — for when cart is empty)
+  const [showStandaloneCustom, setShowStandaloneCustom] = useState(false)
+
+  // Fab gate warning state
+  const [fabWarningDoors, setFabWarningDoors] = useState<PreFabCheckItem[] | null>(null)
 
   // Browse state
   const [search, setSearch] = useState("")
@@ -427,9 +559,88 @@ export function BomQuickPick() {
     }
   }
 
-  // ─── Submit ─────────────────────────────────
+  // ─── Build line items from cart ─────────────
+
+  function buildLineItems() {
+    return cart.map((item) => item.isNonCatalog ? ({
+      tier: item.tier,
+      qtyNeeded: item.qtyNeeded,
+      isNonCatalog: true,
+      nonCatalogName: item.nonCatalogName,
+      nonCatalogCategory: item.nonCatalogCategory,
+      nonCatalogUom: item.nonCatalogUom,
+      nonCatalogSpecs: item.nonCatalogSpecs,
+    }) : ({
+      productId: item.productId,
+      tier: item.tier,
+      qtyNeeded: item.qtyNeeded,
+    }))
+  }
+
+  // ─── Actually create the BOM ────────────────
+
+  async function doCreateBom() {
+    try {
+      const result = await createBom.mutateAsync({
+        jobName: jobName.trim(),
+        jobNumber: jobNumber || undefined,
+        lineItems: buildLineItems(),
+      })
+      toast.success("BOM created")
+      setFabWarningDoors(null)
+      router.push(`/boms/${result.data.id}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create BOM")
+    }
+  }
+
+  // ─── Submit (create BOM) — checks fab gate first ───
 
   async function handleSubmit() {
+    if (!jobName.trim()) {
+      toast.error("Select a job first")
+      return
+    }
+    if (cart.length === 0) {
+      toast.error("Add at least one item")
+      return
+    }
+
+    // Check if any items are doors that need a door sheet
+    try {
+      const res = await fetch("/api/boms/fab-check-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobName: jobName.trim(),
+          items: cart.map((item) => ({
+            productId: item.isNonCatalog ? null : item.productId,
+            isNonCatalog: item.isNonCatalog || false,
+            nonCatalogName: item.nonCatalogName || null,
+            nonCatalogCategory: item.nonCatalogCategory || null,
+          })),
+        }),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const unresolved = (json.data?.doorItems || []).filter(
+          (d: PreFabCheckItem) => d.status === "unresolved"
+        )
+        if (unresolved.length > 0) {
+          setFabWarningDoors(unresolved)
+          return // Show warning instead of creating
+        }
+      }
+    } catch {
+      // If fab check fails, proceed with creation anyway
+    }
+
+    await doCreateBom()
+  }
+
+  // ─── Save as Draft ─────────────────────────
+
+  async function handleSaveDraft() {
     if (!jobName.trim()) {
       toast.error("Select a job first")
       return
@@ -443,25 +654,23 @@ export function BomQuickPick() {
       const result = await createBom.mutateAsync({
         jobName: jobName.trim(),
         jobNumber: jobNumber || undefined,
-        lineItems: cart.map((item) => item.isNonCatalog ? ({
-          tier: item.tier,
-          qtyNeeded: item.qtyNeeded,
-          isNonCatalog: true,
-          nonCatalogName: item.nonCatalogName,
-          nonCatalogCategory: item.nonCatalogCategory,
-          nonCatalogUom: item.nonCatalogUom,
-          nonCatalogSpecs: item.nonCatalogSpecs,
-        }) : ({
-          productId: item.productId,
-          tier: item.tier,
-          qtyNeeded: item.qtyNeeded,
-        })),
+        status: "DRAFT",
+        lineItems: buildLineItems(),
       })
-      toast.success("BOM created")
+      toast.success("Draft saved")
       router.push(`/boms/${result.data.id}`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create BOM")
+      toast.error(err instanceof Error ? err.message : "Failed to save draft")
     }
+  }
+
+  // ─── Cancel ────────────────────────────────
+
+  function handleCancel() {
+    if (cart.length > 0) {
+      if (!confirm("You have items in your cart. Discard and go back?")) return
+    }
+    router.push("/boms")
   }
 
   // ─── Render ─────────────────────────────────
@@ -531,6 +740,72 @@ export function BomQuickPick() {
         ))}
       </div>
 
+      {/* ── Standalone Custom Item (visible when cart is empty) ── */}
+      {cart.length === 0 && !showPanelForm && (
+        <div className="px-4 pb-3">
+          {showStandaloneCustom ? (
+            <div className="p-3 rounded-xl border border-border-custom bg-surface-secondary/50 space-y-2 animate-ios-expand">
+              <p className="text-sm font-bold text-navy">Add Custom Item</p>
+              <Input
+                id="standalone-custom-name"
+                placeholder="Item name"
+                className="h-12 rounded-xl text-base"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const input = e.currentTarget
+                    const name = input.value.trim()
+                    if (name) {
+                      dispatch({ type: "ADD_CUSTOM", name, qty: 1, uom: "each" })
+                      toast.success(`Added ${name}`)
+                      input.value = ""
+                      setShowStandaloneCustom(false)
+                    }
+                  }
+                }}
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("standalone-custom-name") as HTMLInputElement
+                    const name = input?.value?.trim()
+                    if (name) {
+                      dispatch({ type: "ADD_CUSTOM", name, qty: 1, uom: "each" })
+                      toast.success(`Added ${name}`)
+                      setShowStandaloneCustom(false)
+                    } else {
+                      toast.error("Enter an item name")
+                    }
+                  }}
+                  className="flex-1 h-12 rounded-xl bg-brand-blue hover:bg-brand-blue/90 text-white font-semibold"
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Add
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowStandaloneCustom(false)}
+                  className="h-12 rounded-xl px-4"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowStandaloneCustom(true)}
+              className="w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-brand-blue/30 text-brand-blue text-sm font-semibold hover:bg-brand-blue/5 active:scale-[0.98] transition-all"
+            >
+              <Plus className="h-4 w-4" />
+              Add Custom Item
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ── Zone 4: Product List or Panel Form ── */}
       <div className="flex-1 bg-white rounded-t-2xl border-t border-border-custom/60">
         {showPanelForm ? (
@@ -580,9 +855,23 @@ export function BomQuickPick() {
         onSetQty={(id, qty) => dispatch({ type: "SET_QTY", productId: id, qty })}
         onRemove={(id) => dispatch({ type: "REMOVE", productId: id })}
         onSubmit={handleSubmit}
+        onSaveDraft={handleSaveDraft}
+        onCancel={handleCancel}
+        onAddCustom={(name, qty, uom) => dispatch({ type: "ADD_CUSTOM", name, qty, uom })}
         isPending={createBom.isPending}
         disabled={!jobName.trim() || cart.length === 0}
       />
+
+      {/* Fab gate warning dialog */}
+      {fabWarningDoors && fabWarningDoors.length > 0 && (
+        <CreationFabWarning
+          unresolvedDoors={fabWarningDoors}
+          jobName={jobName}
+          onDismiss={() => setFabWarningDoors(null)}
+          onCreateAnyway={doCreateBom}
+          isPending={createBom.isPending}
+        />
+      )}
     </div>
   )
 }

@@ -22,6 +22,7 @@ import {
   Upload,
   X,
 } from "lucide-react"
+import { CreationFabWarning } from "@/components/bom/creation-fab-warning"
 import type { CatalogMatch } from "@/lib/ai/types"
 
 // ─── Types ────────────────────────────────────────
@@ -151,6 +152,7 @@ export function BomPhotoCapture() {
   const [showSuccessFlash, setShowSuccessFlash] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false)
+  const [fabWarningDoors, setFabWarningDoors] = useState<Array<{ productName: string; status: string }> | null>(null)
 
   // ─── Drag-and-drop handlers ────────────────
   const dragCounter = useRef(0)
@@ -561,24 +563,14 @@ export function BomPhotoCapture() {
     }
   }
 
-  // ─── Submit BOM ─────────────────────────────
+  // ─── Actually create BOM (called after fab check passes or user dismisses warning) ──
 
-  async function handleSubmit() {
-    if (submitted) return
-    if (!jobName.trim()) {
-      toast.error("Select a job first")
-      return
-    }
-    // Filter out items with 0 quantity
+  async function doCreateBom() {
     const validItems = items.filter((item) => item.quantity > 0)
-    if (validItems.length === 0) {
-      toast.error("No items to create BOM")
-      return
-    }
+    if (validItems.length === 0) return
 
     try {
       const lineItems = validItems.map((item) => ({
-        // Assembly products are real catalog items — no more non-catalog hack
         productId: item.isNonCatalog ? null : item.productId,
         tier: "TIER_1" as const,
         qtyNeeded: item.quantity,
@@ -639,6 +631,52 @@ export function BomPhotoCapture() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create BOM")
     }
+  }
+
+  // ─── Submit BOM (with fab gate check) ──────
+
+  async function handleSubmit() {
+    if (submitted) return
+    if (!jobName.trim()) {
+      toast.error("Select a job first")
+      return
+    }
+    const validItems = items.filter((item) => item.quantity > 0)
+    if (validItems.length === 0) {
+      toast.error("No items to create BOM")
+      return
+    }
+
+    // Check for unresolved door items before creating
+    try {
+      const res = await fetch("/api/boms/fab-check-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobName: jobName.trim(),
+          items: validItems.map((item) => ({
+            productId: item.isNonCatalog ? null : item.productId,
+            isNonCatalog: item.isNonCatalog,
+            nonCatalogName: item.isNonCatalog ? item.productName : null,
+            nonCatalogCategory: item.isNonCatalog ? (item.nonCatalogCategory || null) : null,
+          })),
+        }),
+      })
+      if (res.ok) {
+        const json = await res.json()
+        const unresolved = (json.data?.doorItems || []).filter(
+          (d: { status: string }) => d.status === "unresolved"
+        )
+        if (unresolved.length > 0) {
+          setFabWarningDoors(unresolved)
+          return
+        }
+      }
+    } catch {
+      // If fab check fails, proceed anyway
+    }
+
+    await doCreateBom()
   }
 
   // ─── Render: Capture Phase ──────────────────
@@ -739,6 +777,17 @@ export function BomPhotoCapture() {
           </div>
           <p className="text-2xl font-bold text-white animate-fade-in-up" style={{ animationDelay: "200ms" }}>BOM Created!</p>
         </div>
+      )}
+
+      {/* Fab gate warning dialog */}
+      {fabWarningDoors && fabWarningDoors.length > 0 && (
+        <CreationFabWarning
+          unresolvedDoors={fabWarningDoors.map((d) => ({ productName: d.productName, status: d.status as "unresolved" }))}
+          jobName={jobName}
+          onDismiss={() => setFabWarningDoors(null)}
+          onCreateAnyway={doCreateBom}
+          isPending={createBom.isPending}
+        />
       )}
 
       {/* Photo thumbnail — large during processing, small during review */}

@@ -832,7 +832,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                   <Button
                     onClick={() => handleStatusChange("APPROVED")}
                     disabled={updateBom.isPending || (showFabGate && !fabGateResolved)}
-                    className="w-full h-14 bg-brand-blue hover:bg-brand-blue/90 text-white font-bold text-base"
+                    className="w-full h-12 rounded-xl bg-brand-blue hover:bg-brand-blue/90 text-white font-bold text-base"
                   >
                     {updateBom.isPending ? "Approving..." : showFabGate && !fabGateResolved ? "Resolve Doors to Approve" : "Approve BOM"}
                   </Button>
@@ -845,7 +845,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 <Button
                   onClick={() => handleStatusChange("CANCELLED")}
                   disabled={updateBom.isPending}
-                  className="w-full h-12 bg-status-red hover:bg-status-red/90 text-white font-semibold"
+                  variant="outline"
+                  className="w-full h-12 rounded-xl border-2 border-status-red/30 text-status-red hover:bg-status-red/5 font-semibold"
                 >
                   {updateBom.isPending ? "Cancelling..." : "Cancel BOM"}
                 </Button>
@@ -932,8 +933,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
         )}
       </div>
 
-      {/* Delete BOM — ADMIN only */}
-      {canDelete && mode === "view" && (
+      {/* Delete BOM — ADMIN only, hidden in PENDING_REVIEW (Cancel is sufficient there) */}
+      {canDelete && mode === "view" && bom.status !== "PENDING_REVIEW" && (
         <div className="px-4 -mt-1 pb-4">
           <Button
             type="button"

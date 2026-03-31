@@ -54,6 +54,7 @@ export function useCreateBom() {
       jobNumber?: string | null
       jobStartDate?: string | null
       notes?: string | null
+      status?: "DRAFT" | "PENDING_REVIEW"
       lineItems: Array<{
         productId?: string | null
         tier?: "TIER_1" | "TIER_2"
