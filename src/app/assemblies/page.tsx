@@ -109,15 +109,28 @@ export default function AssembliesPage() {
     ["COMPLETED", "ALLOCATED", "SHIPPED"].includes(a.status as string)
   )
 
-  // Queue reorder state
+  // Queue reorder state — optimistic updates with server sync
   const [localOrder, setLocalOrder] = useState<Record<string, unknown>[]>([])
-  const mutatingRef = useRef(false)
+  const pendingOrderRef = useRef<string[] | null>(null)
   const reorderMutation = useReorderAssemblies()
 
-  // Sync local order with server data when no mutation in-flight
+  // Sync local order with server data, but only accept server data that
+  // matches our pending mutation (or when no mutation is in-flight).
+  // This prevents the "flash of stale data" race condition.
   useEffect(() => {
-    if (!mutatingRef.current) {
+    if (pendingOrderRef.current === null) {
+      // No mutation in-flight — accept server data
       setLocalOrder(notStartedRaw)
+    } else {
+      // Mutation in-flight — check if server now matches our expected order
+      const serverIds = notStartedRaw.map((a: Record<string, unknown>) => a.id as string)
+      const pendingIds = pendingOrderRef.current
+      if (JSON.stringify(serverIds) === JSON.stringify(pendingIds)) {
+        // Server caught up — clear pending and accept
+        pendingOrderRef.current = null
+        setLocalOrder(notStartedRaw)
+      }
+      // Otherwise, keep showing optimistic localOrder
     }
   }, [notStartedRaw])
 
@@ -132,15 +145,13 @@ export default function AssembliesPage() {
     reordered.splice(newIndex, 0, moved)
     setLocalOrder(reordered)
 
-    mutatingRef.current = true
     const newIds = reordered.map((a) => a.id as string)
+    pendingOrderRef.current = newIds
     reorderMutation.mutate(newIds, {
       onError: () => {
         toast.error("Failed to save queue order")
+        pendingOrderRef.current = null
         setLocalOrder(notStartedRaw)
-      },
-      onSettled: () => {
-        mutatingRef.current = false
       },
     })
   }, [notStarted, notStartedRaw, reorderMutation])
