@@ -128,26 +128,17 @@ export async function GET(request: NextRequest) {
         return { ...a, matchedBoms: [] }
       }
 
-      // Check for manual links in specs.linkedBomIds first
       const specs = a.specs as Record<string, unknown> | null
       const linkedBomIds = (specs?.linkedBomIds as string[]) || []
-
       const autoMatched = bomsByJobName.get(a.jobName.trim().toLowerCase()) || []
 
-      // If manual links exist, prioritize them but also include auto-matches
+      // If door has explicitly linked BOMs, show ONLY those (one door = one BOM)
       if (linkedBomIds.length > 0) {
-        // Manual links are already in the BOM query if they share jobName;
-        // for cross-job manual links, we'd need a separate query — but that's an edge case.
-        // For now, mark manual matches.
-        return {
-          ...a,
-          matchedBoms: autoMatched.map((b) => ({
-            ...b,
-            isManualLink: linkedBomIds.includes(b.id),
-          })),
-        }
+        const linked = autoMatched.filter((b) => linkedBomIds.includes(b.id))
+        return { ...a, matchedBoms: linked }
       }
 
+      // No explicit link — show name-matched as fallback for the "tap to search" flow
       return { ...a, matchedBoms: autoMatched }
     })
 
