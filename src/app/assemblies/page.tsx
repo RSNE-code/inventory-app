@@ -132,11 +132,12 @@ export default function AssembliesPage() {
   // Drag-and-drop state for Not Started group
   const [localOrder, setLocalOrder] = useState<Record<string, unknown>[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const mutatingRef = useRef(false)
   const reorderMutation = useReorderAssemblies()
 
-  // Sync local order with server data when not actively dragging
+  // Sync local order with server data when not actively dragging and no mutation in-flight
   useEffect(() => {
-    if (!activeId) {
+    if (!activeId && !mutatingRef.current) {
       setLocalOrder(notStartedRaw)
     }
   }, [notStartedRaw, activeId])
@@ -146,7 +147,7 @@ export default function AssembliesPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
@@ -168,14 +169,23 @@ export default function AssembliesPage() {
     setLocalOrder(reordered)
 
     // Persist the new order
+    mutatingRef.current = true
     const newIds = reordered.map((a) => a.id as string)
     reorderMutation.mutate(newIds, {
       onError: () => {
         toast.error("Failed to save queue order")
         setLocalOrder(notStartedRaw)
       },
+      onSettled: () => {
+        mutatingRef.current = false
+      },
     })
   }, [notStarted, notStartedIds, notStartedRaw, reorderMutation])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+    setLocalOrder(notStartedRaw)
+  }, [notStartedRaw])
 
   const activeAssembly = activeId
     ? notStarted.find((a: Record<string, unknown>) => (a.id as string) === activeId) || null
@@ -300,6 +310,7 @@ export default function AssembliesPage() {
                   collisionDetection={closestCenter}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
                 >
                   <SortableContext items={notStartedIds} strategy={verticalListSortingStrategy}>
                     {notStarted.map((assembly: Record<string, unknown>, i: number) => (
@@ -307,13 +318,15 @@ export default function AssembliesPage() {
                         key={assembly.id as string}
                         assembly={assembly}
                         position={i + 1}
-                        isDragOverlay={false}
                       />
                     ))}
                   </SortableContext>
-                  <DragOverlay dropAnimation={{ duration: 250, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
+                  <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }}>
                     {activeAssembly ? (
-                      <AssemblyCard assembly={activeAssembly} position={notStartedIds.indexOf(activeId!) + 1} isDragging />
+                      <DragPreview
+                        assembly={activeAssembly}
+                        position={notStartedIds.indexOf(activeId!) + 1}
+                      />
                     ) : null}
                   </DragOverlay>
                 </DndContext>
@@ -367,11 +380,9 @@ export default function AssembliesPage() {
 function SortableAssemblyCard({
   assembly,
   position,
-  isDragOverlay,
 }: {
   assembly: Record<string, unknown>
   position: number
-  isDragOverlay: boolean
 }) {
   const {
     attributes,
@@ -428,144 +439,159 @@ function AssemblyCard({
 
   const [linkSheetOpen, setLinkSheetOpen] = useState(false)
 
+  const cardContent = (
+    <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
+      <div className="flex-1 min-w-0">
+        {!!assembly.jobNumber && (
+          <p className="text-lg font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
+        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="font-semibold text-navy text-base">{name as string}</p>
+          <Badge className={cn("text-[12px] px-2.5 py-1 gap-1.5 border-0", statusColors[status])}>
+            <span className={cn("h-2 w-2 rounded-full shrink-0", statusDots[status])} />
+            {statusLabels[status] || status}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium">
+          <span>{typeLabels[assembly.type as string]}</span>
+          {Number(assembly.batchSize) > 1 && (
+            <span>Qty: {assembly.batchSize as number}</span>
+          )}
+        </div>
+        {/* Door-specific specs + job # pill */}
+        {assembly.type === "DOOR" && specs && (() => {
+          const ds = specs as Record<string, unknown>
+          const w = ds.widthInClear ? String(ds.widthInClear) : null
+          const h = ds.heightInClear ? String(ds.heightInClear) : null
+          const temp = ds.temperatureType ? String(ds.temperatureType) : null
+          const frame = ds.frameType ? String(ds.frameType) : null
+          const jn = assembly.jobNumber ? String(assembly.jobNumber) : null
+          return (
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {jn && (
+                <span className="text-xs font-semibold text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded">
+                  #{jn}
+                </span>
+              )}
+              {w && h && (
+                <span className="text-xs font-semibold text-navy/70 bg-surface-secondary px-1.5 py-0.5 rounded">
+                  {w}&quot; × {h}&quot;
+                </span>
+              )}
+              {temp && (
+                <Badge className={cn(
+                  "text-[12px] px-1.5 py-0 border-0",
+                  temp === "FREEZER"
+                    ? "bg-brand-blue/10 text-brand-blue"
+                    : "bg-cyan-50 text-cyan-600"
+                )}>
+                  {temp === "FREEZER" ? (
+                    <><Snowflake className="h-2.5 w-2.5 mr-0.5" />Freezer</>
+                  ) : (
+                    <><Thermometer className="h-2.5 w-2.5 mr-0.5" />Cooler</>
+                  )}
+                </Badge>
+              )}
+              {frame && (
+                <span className="text-[12px] text-text-muted font-medium">
+                  {formatDoorFieldValue("frameType", frame)}
+                </span>
+              )}
+            </div>
+          )
+        })()}
+        {/* BOM match badges — door assemblies only */}
+        {assembly.type === "DOOR" && (
+          <div className="mt-2">
+            {matchedBoms.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {matchedBoms.map((bom) => (
+                  <span
+                    key={bom.id}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      window.location.href = `/boms/${bom.id}`
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-xl bg-brand-blue/8 border border-brand-blue/15 text-xs font-medium text-brand-blue cursor-pointer hover:bg-brand-blue/15 active:scale-[0.97] transition-all"
+                  >
+                    <Package className="h-3 w-3 shrink-0" />
+                    <BomStatusBadge status={bom.status} />
+                    <span className="text-text-muted">{bom.lineItemCount} item{bom.lineItemCount !== 1 ? "s" : ""}</span>
+                  </span>
+                ))}
+              </div>
+            ) : assembly.jobName ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setLinkSheetOpen(true)
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] rounded-xl border border-dashed border-text-muted/30 text-xs font-medium text-text-muted hover:border-brand-blue/40 hover:text-brand-blue hover:bg-brand-blue/5 active:scale-[0.97] transition-all"
+              >
+                <LinkIcon className="h-3 w-3" />
+                No BOM linked — tap to search
+              </button>
+            ) : null}
+          </div>
+        )}
+        <p className="text-xs text-text-muted mt-1">
+          By {producedBy.name as string}
+          {assembly.startedAt ? (
+            <span> · Started {new Date(String(assembly.startedAt)).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+          ) : null}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {assembly.priority !== undefined && Number(assembly.priority) > 0 && (
+          <Badge variant="outline" className="text-xs font-semibold">
+            P{assembly.priority as number}
+          </Badge>
+        )}
+        <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+      </div>
+    </div>
+  )
+
   return (
     <>
-      <Link href={`/assemblies/${assembly.id}`}>
-        <Card className={cn(
-          "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden",
-          statusAccentClass[status] || "card-accent-gray",
-          isDragging && "shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02]"
-        )}>
-          <div className="flex items-start gap-2">
-            {/* Drag handle + position number */}
-            {dragHandleProps && (
-              <div
-                className="flex items-center gap-1 shrink-0 pt-0.5 touch-none"
-                {...dragHandleProps}
-                onClick={(e) => e.preventDefault()}
-              >
-                <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center select-none">
-                  {position}
-                </span>
-                <GripVertical className="h-5 w-5 text-text-muted/40 cursor-grab active:cursor-grabbing" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0 flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              {!!assembly.jobNumber && (
-                <p className="text-lg font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
-              )}
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-semibold text-navy text-base">{name as string}</p>
-                <Badge className={cn("text-[12px] px-2.5 py-1 gap-1.5 border-0", statusColors[status])}>
-                  <span className={cn("h-2 w-2 rounded-full shrink-0", statusDots[status])} />
-                  {statusLabels[status] || status}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3 mt-1 text-xs text-text-muted font-medium">
-                <span>{typeLabels[assembly.type as string]}</span>
-                {Number(assembly.batchSize) > 1 && (
-                  <span>Qty: {assembly.batchSize as number}</span>
-                )}
-              </div>
-              {/* Door-specific specs + job # pill */}
-              {assembly.type === "DOOR" && specs && (() => {
-                const ds = specs as Record<string, unknown>
-                const w = ds.widthInClear ? String(ds.widthInClear) : null
-                const h = ds.heightInClear ? String(ds.heightInClear) : null
-                const temp = ds.temperatureType ? String(ds.temperatureType) : null
-                const frame = ds.frameType ? String(ds.frameType) : null
-                const jn = assembly.jobNumber ? String(assembly.jobNumber) : null
-                return (
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    {jn && (
-                      <span className="text-xs font-semibold text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded">
-                        #{jn}
-                      </span>
-                    )}
-                    {w && h && (
-                      <span className="text-xs font-semibold text-navy/70 bg-surface-secondary px-1.5 py-0.5 rounded">
-                        {w}&quot; × {h}&quot;
-                      </span>
-                    )}
-                    {temp && (
-                      <Badge className={cn(
-                        "text-[12px] px-1.5 py-0 border-0",
-                        temp === "FREEZER"
-                          ? "bg-brand-blue/10 text-brand-blue"
-                          : "bg-cyan-50 text-cyan-600"
-                      )}>
-                        {temp === "FREEZER" ? (
-                          <><Snowflake className="h-2.5 w-2.5 mr-0.5" />Freezer</>
-                        ) : (
-                          <><Thermometer className="h-2.5 w-2.5 mr-0.5" />Cooler</>
-                        )}
-                      </Badge>
-                    )}
-                    {frame && (
-                      <span className="text-[12px] text-text-muted font-medium">
-                        {formatDoorFieldValue("frameType", frame)}
-                      </span>
-                    )}
-                  </div>
-                )
-              })()}
-              {/* BOM match badges — door assemblies only */}
-              {assembly.type === "DOOR" && (
-                <div className="mt-2">
-                  {matchedBoms.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {matchedBoms.map((bom) => (
-                        <span
-                          key={bom.id}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            window.location.href = `/boms/${bom.id}`
-                          }}
-                          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-xl bg-brand-blue/8 border border-brand-blue/15 text-xs font-medium text-brand-blue cursor-pointer hover:bg-brand-blue/15 active:scale-[0.97] transition-all"
-                        >
-                          <Package className="h-3 w-3 shrink-0" />
-                          <BomStatusBadge status={bom.status} />
-                          <span className="text-text-muted">{bom.lineItemCount} item{bom.lineItemCount !== 1 ? "s" : ""}</span>
-                        </span>
-                      ))}
-                    </div>
-                  ) : assembly.jobName ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setLinkSheetOpen(true)
-                      }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] rounded-xl border border-dashed border-text-muted/30 text-xs font-medium text-text-muted hover:border-brand-blue/40 hover:text-brand-blue hover:bg-brand-blue/5 active:scale-[0.97] transition-all"
-                    >
-                      <LinkIcon className="h-3 w-3" />
-                      No BOM linked — tap to search
-                    </button>
-                  ) : null}
-                </div>
-              )}
-              <p className="text-xs text-text-muted mt-1">
-                By {producedBy.name as string}
-                {assembly.startedAt ? (
-                  <span> · Started {new Date(String(assembly.startedAt)).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                ) : null}
-              </p>
+      <Card className={cn(
+        "p-5 rounded-xl border-border-custom shadow-brand hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden",
+        statusAccentClass[status] || "card-accent-gray",
+        isDragging && "shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02]"
+      )}>
+        <div className="flex items-start gap-2">
+          {/* Drag handle — outside the Link to prevent navigation conflicts */}
+          {dragHandleProps && (
+            <div
+              className="flex items-center gap-1 shrink-0 pt-0.5 touch-none select-none"
+              {...dragHandleProps}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation() }}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center select-none">
+                {position}
+              </span>
+              <GripVertical className="h-5 w-5 text-text-muted/40 cursor-grab active:cursor-grabbing" />
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {assembly.priority !== undefined && Number(assembly.priority) > 0 && (
-                <Badge variant="outline" className="text-xs font-semibold">
-                  P{assembly.priority as number}
-                </Badge>
-              )}
-              <ChevronRight className="h-4 w-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+          )}
+          {/* Card content — navigates on tap */}
+          {dragHandleProps ? (
+            <div
+              className="flex-1 min-w-0 cursor-pointer"
+              onClick={() => { window.location.href = `/assemblies/${assembly.id}` }}
+            >
+              {cardContent}
             </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
+          ) : (
+            <Link href={`/assemblies/${assembly.id}`} className="flex-1 min-w-0">
+              {cardContent}
+            </Link>
+          )}
+        </div>
+      </Card>
 
       {/* Manual BOM link Sheet */}
       {assembly.type === "DOOR" && (
@@ -576,6 +602,43 @@ function AssemblyCard({
         />
       )}
     </>
+  )
+}
+
+/** Lightweight drag preview — renders at 60fps without heavy children */
+function DragPreview({ assembly, position }: { assembly: Record<string, unknown>; position: number }) {
+  const template = assembly.template as Record<string, unknown> | null
+  const status = assembly.status as string
+  const name = assembly.jobName
+    ? String(assembly.jobName)
+    : template?.name || `Custom ${typeLabels[assembly.type as string] || assembly.type}`
+
+  return (
+    <Card className={cn(
+      "p-4 rounded-xl border-border-custom shadow-brand-md ring-2 ring-brand-orange/30 scale-[1.02] overflow-hidden",
+      statusAccentClass[status] || "card-accent-gray"
+    )}>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-lg font-bold text-navy/30 tabular-nums w-5 text-center">
+            {position}
+          </span>
+          <GripVertical className="h-5 w-5 text-brand-orange/60" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {!!assembly.jobNumber && (
+            <p className="text-sm font-bold text-navy tabular-nums">{String(assembly.jobNumber)}</p>
+          )}
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-navy text-sm truncate">{name as string}</p>
+            <Badge className={cn("text-[11px] px-2 py-0.5 gap-1 border-0 shrink-0", statusColors[status])}>
+              <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", statusDots[status])} />
+              {statusLabels[status] || status}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </Card>
   )
 }
 
