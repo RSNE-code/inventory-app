@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 
 export default function InventoryPage() {
   return (
-    <Suspense fallback={<div><Header title="Inventory" /><div className="p-4"><ListSkeleton count={6} /></div></div>}>
+    <Suspense fallback={<div className="p-4"><ListSkeleton count={6} /></div>}>
       <InventoryContent />
     </Suspense>
   )

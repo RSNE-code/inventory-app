@@ -41,6 +41,7 @@ export function useBom(id: string) {
       return res.json()
     },
     enabled: !!id,
+    retry: false,
   })
 }
 

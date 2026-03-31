@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import Image from "next/image"
 
 export default function LoginPage() {
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -47,9 +48,6 @@ export default function LoginPage() {
               priority
             />
           </div>
-          <CardTitle className="text-xl font-bold text-navy">
-            Inventory Management
-          </CardTitle>
           <p className="text-text-muted text-sm mt-1">
             Sign in to manage inventory
           </p>
@@ -90,6 +88,20 @@ export default function LoginPage() {
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setShowForgot(!showForgot)}
+                className="text-xs text-text-muted hover:text-navy transition-colors"
+              >
+                Forgot password?
+              </button>
+              {showForgot && (
+                <p className="text-xs text-text-muted mt-2 bg-surface-secondary rounded-lg px-3 py-2">
+                  Contact your administrator to reset your password.
+                </p>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>

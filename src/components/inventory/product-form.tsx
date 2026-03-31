@@ -177,7 +177,7 @@ export function ProductForm({ product }: ProductFormProps) {
         <Label>Category *</Label>
         <Select value={categoryId} onValueChange={setCategoryId} required>
           <SelectTrigger className="h-12">
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder="Choose one…" />
           </SelectTrigger>
           <SelectContent>
             {categories.map((cat) => (
@@ -195,8 +195,8 @@ export function ProductForm({ product }: ProductFormProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="TIER_1">Tier 1 (Tracked)</SelectItem>
-              <SelectItem value="TIER_2">Tier 2 (Costing Only)</SelectItem>
+              <SelectItem value="TIER_1">1 — Tracked</SelectItem>
+              <SelectItem value="TIER_2">2 — Costing Only</SelectItem>
             </SelectContent>
           </Select>
         </div>

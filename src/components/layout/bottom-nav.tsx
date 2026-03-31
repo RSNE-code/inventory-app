@@ -14,8 +14,21 @@ const tabs = [
   { name: "Assemblies", href: "/assemblies", icon: Factory },
 ]
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(true)
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 768px)")
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(!e.matches)
+    handler(mql)
+    mql.addEventListener("change", handler)
+    return () => mql.removeEventListener("change", handler)
+  }, [])
+  return isMobile
+}
+
 export function BottomNav() {
   const pathname = usePathname()
+  const isMobile = useIsMobile()
   const navRef = useRef<HTMLDivElement>(null)
   const [indicator, setIndicator] = useState({ left: 0, width: 0 })
 
@@ -34,10 +47,10 @@ export function BottomNav() {
     }
   }, [activeIndex])
 
-  if (pathname === "/login") return null
+  if (pathname === "/login" || !isMobile) return null
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-custom/60 bg-white/95 backdrop-blur-md md:hidden pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-custom/60 bg-white/95 backdrop-blur-md pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <div ref={navRef} className="relative flex h-16 items-center justify-around">
         {/* Sliding pill indicator */}
         {activeIndex >= 0 && (

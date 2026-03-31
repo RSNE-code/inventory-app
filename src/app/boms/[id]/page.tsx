@@ -59,7 +59,7 @@ function buildQtyUpdates(
 export default function BomDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
-  const { data, isLoading } = useBom(id)
+  const { data, isLoading, error } = useBom(id)
   const { data: meData } = useMe()
   const updateBom = useUpdateBom()
   const checkoutBom = useCheckoutBom()
@@ -342,7 +342,7 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  if (!bom) {
+  if (!bom || error) {
     return (
       <div>
         <Header title="BOM Detail" showBack showMenu />

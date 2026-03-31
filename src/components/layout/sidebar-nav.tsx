@@ -30,23 +30,22 @@ export function SidebarNav() {
   if (pathname === "/login") return null
 
   return (
-    <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-60 bg-navy z-50">
+    <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 bg-navy z-50">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
-        <div className="rounded-xl bg-white px-2 py-1 shrink-0 shadow-brand">
+      <div className="flex items-center justify-center py-4 border-b border-white/8">
+        <div className="rounded-xl bg-white px-1.5 py-1 shrink-0 shadow-brand">
           <Image
             src="/logo.jpg"
             alt="RSNE"
-            width={80}
-            height={32}
-            className="h-6 w-auto"
+            width={40}
+            height={16}
+            className="h-4 w-auto"
           />
         </div>
-        <span className="text-white/70 text-sm font-semibold tracking-tight">Inventory</span>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      {/* Nav items — icon-only rail with tooltips */}
+      <nav className="flex-1 flex flex-col items-center gap-1 py-4 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -58,23 +57,24 @@ export function SidebarNav() {
             <Link
               key={item.name}
               href={item.href}
+              title={item.name}
+              aria-label={item.name}
               className={cn(
-                "flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300",
+                "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300",
                 isActive
-                  ? "bg-brand-blue/15 text-white border-l-4 border-brand-blue-bright pl-2 pr-3"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/8 border-l-4 border-transparent pl-2 pr-3"
+                  ? "bg-brand-blue/15 text-white ring-2 ring-brand-blue-bright/30"
+                  : "text-white/50 hover:text-white/80 hover:bg-white/8"
               )}
             >
-              <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive && "text-brand-blue-bright")} />
-              {item.name}
+              <Icon className={cn("h-[20px] w-[20px]", isActive && "text-brand-blue-bright")} />
             </Link>
           )
         })}
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/8">
-        <p className="text-[12px] text-white/30 font-medium">RSNE Inventory v1.0</p>
+      <div className="py-3 text-center border-t border-white/8">
+        <p className="text-[10px] text-white/30 font-medium">v1.0</p>
       </div>
     </aside>
   )
