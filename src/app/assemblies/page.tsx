@@ -236,12 +236,12 @@ export default function AssembliesPage() {
         </div>
 
         {/* Create button */}
-        <Link href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}>
-          <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all">
+        <Button asChild className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all">
+          <Link href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}>
             <Plus className="h-5 w-5 mr-2" />
             {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor / Ramp"}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         {isLoading ? (
           <ListSkeleton count={4} />
