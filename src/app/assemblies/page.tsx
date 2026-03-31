@@ -6,7 +6,6 @@ import { useUpdateAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
 import { Header } from "@/components/layout/header"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -236,12 +235,13 @@ export default function AssembliesPage() {
         </div>
 
         {/* Create button */}
-        <Button asChild className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all">
-          <Link href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}>
-            <Plus className="h-5 w-5 mr-2" />
-            {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor / Ramp"}
-          </Link>
-        </Button>
+        <Link
+          href={queueTab === "DOOR_SHOP" ? "/assemblies/new?type=DOOR" : "/assemblies/new?type=PANEL"}
+          className="flex items-center justify-center w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold rounded-xl shadow-[0_2px_8px_rgba(232,121,43,0.25)] transition-all active:scale-[0.97]"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          {queueTab === "DOOR_SHOP" ? "New Door" : "New Panel / Floor / Ramp"}
+        </Link>
 
         {isLoading ? (
           <ListSkeleton count={4} />
