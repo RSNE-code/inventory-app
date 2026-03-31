@@ -53,11 +53,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         title={product.name}
         showBack
         action={
-          <Link href={`/inventory/${id}/edit`}>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-navy-light">
+          <Button asChild variant="ghost" size="icon" className="text-white hover:bg-navy-light">
+            <Link href={`/inventory/${id}/edit`}>
               <Pencil className="h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         }
       />
 
@@ -93,18 +93,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <Link href={`/inventory/${id}/adjust`} className="block">
-            <Button className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold">
+          <Button asChild className="w-full h-12 bg-brand-orange hover:bg-brand-orange-hover text-white font-semibold">
+            <Link href={`/inventory/${id}/adjust`}>
               <ArrowUpDown className="h-4 w-4 mr-2" />
               Adjust Stock
-            </Button>
-          </Link>
-          <Link href={`/inventory/${id}/edit`} className="block">
-            <Button variant="outline" className="w-full h-12 font-semibold">
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full h-12 font-semibold">
+            <Link href={`/inventory/${id}/edit`}>
               <Pencil className="h-4 w-4 mr-2" />
               Edit Details
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Details */}
