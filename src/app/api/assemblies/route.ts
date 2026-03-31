@@ -71,14 +71,16 @@ export async function GET(request: NextRequest) {
 
     // Re-sort: positioned items (sortOrder > 0) first by sortOrder,
     // then unpositioned items (sortOrder = 0) in their original priority/createdAt order
-    assemblies.sort((a, b) => {
-      const aPos = a.sortOrder || 0
-      const bPos = b.sortOrder || 0
-      if (aPos > 0 && bPos > 0) return aPos - bPos
-      if (aPos > 0 && bPos === 0) return -1
-      if (aPos === 0 && bPos > 0) return 1
-      return 0 // both unpositioned — keep priority/createdAt order from DB
-    })
+    if (assemblies.length > 0 && "sortOrder" in assemblies[0]) {
+      assemblies.sort((a, b) => {
+        const aPos = (a as Record<string, unknown>).sortOrder as number || 0
+        const bPos = (b as Record<string, unknown>).sortOrder as number || 0
+        if (aPos > 0 && bPos > 0) return aPos - bPos
+        if (aPos > 0 && bPos === 0) return -1
+        if (aPos === 0 && bPos > 0) return 1
+        return 0 // both unpositioned — keep priority/createdAt order from DB
+      })
+    }
 
     // Match door assemblies to BOMs by jobName
     const doorJobNames = assemblies
