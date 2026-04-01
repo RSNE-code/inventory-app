@@ -29,7 +29,7 @@
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
         ],
-        "timeout": 30000
+        "timeout": 300000
       }
     ],
     "quiet": false,
@@ -73,25 +73,25 @@
   },
   "suites": [
     {
-      "title": "25-ux-consistency.spec.ts",
-      "file": "25-ux-consistency.spec.ts",
+      "title": "01-auth.spec.ts",
+      "file": "01-auth.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "UX: Empty States — Every Page Has One",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 13,
+          "title": "Authentication",
+          "file": "01-auth.spec.ts",
+          "line": 12,
           "column": 6,
           "specs": [
             {
-              "title": "inventory with impossible search shows helpful empty state",
-              "ok": false,
+              "title": "login page renders with correct form fields",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 300000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
@@ -100,220 +100,13 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30038,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 23,
-                            "line": 19
-                          },
-                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByPlaceholder(/search products or SKUs/i)\u001b[22m\n\n\n  17 |\n  18 |     const searchInput = page.getByPlaceholder(/search products or SKUs/i)\n> 19 |     await searchInput.fill(\"zzzzz_impossible_product_99999\")\n     |                       ^\n  20 |     await page.waitForTimeout(1_500)\n  21 |     await screenshot(page, \"25-ux-empty-inventory-search\")\n  22 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:19:23"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:33:10.045Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-8c8b5-h-shows-helpful-empty-state-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-8c8b5-h-shows-helpful-empty-state-chromium/error-context.md"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-46d5dbdb826433da095f",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 14,
-              "column": 7
-            },
-            {
-              "title": "BOM list with impossible search shows helpful empty state",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 15924,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:36:59",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 59,
-                          "line": 36
-                        },
-                        "snippet": "  34 |   test(\"BOM list with impossible search shows helpful empty state\", async ({ page }) => {\n  35 |     await page.goto(\"/boms\")\n> 36 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n     |                                                           ^\n  37 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  38 |     await page.waitForTimeout(500)\n  39 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 59,
-                            "line": 36
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n\n  34 |   test(\"BOM list with impossible search shows helpful empty state\", async ({ page }) => {\n  35 |     await page.goto(\"/boms\")\n> 36 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n     |                                                           ^\n  37 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  38 |     await page.waitForTimeout(500)\n  39 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:36:59"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:33:40.778Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-5cd37-h-shows-helpful-empty-state-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-5cd37-h-shows-helpful-empty-state-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 59,
-                        "line": 36
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-b198592a50bfb183d644",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 34,
-              "column": 7
-            },
-            {
-              "title": "assemblies page with no assemblies shows create prompt",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3290,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:63:29",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 29,
-                          "line": 63
-                        },
-                        "snippet": "  61 |       body.includes(\"Get started\")\n  62 |\n> 63 |     expect(hasCreatePrompt).toBe(true)\n     |                             ^\n  64 |   })\n  65 | })\n  66 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 29,
-                            "line": 63
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  61 |       body.includes(\"Get started\")\n  62 |\n> 63 |     expect(hasCreatePrompt).toBe(true)\n     |                             ^\n  64 |   })\n  65 | })\n  66 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:63:29"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:33:57.505Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-01b48-emblies-shows-create-prompt-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Empty-01b48-emblies-shows-create-prompt-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 29,
-                        "line": 63
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-2a3193a96d70f85cf82c",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 48,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "UX: Loading Skeletons — No Blank Flashes",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 67,
-          "column": 6,
-          "specs": [
-            {
-              "title": "inventory list shows loading state before data arrives",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 3287,
+                      "duration": 685,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-31T15:34:01.541Z",
+                      "startTime": "2026-03-31T18:22:09.219Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -321,1054 +114,366 @@
                   "status": "expected"
                 }
               ],
-              "id": "3080dc4d1bb6a011c5a4-79cbbbfc466ad20f71f2",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 68,
+              "id": "791b3c4e0869e77b2651-100bcd39c98e8d2cbe73",
+              "file": "01-auth.spec.ts",
+              "line": 16,
               "column": 7
             },
             {
-              "title": "dashboard shows content while data loads",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 15692,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:93:7",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 7,
-                          "line": 93
-                        },
-                        "snippet": "  91 |         .or(page.locator(\"text=Good afternoon\"))\n  92 |         .or(page.locator(\"text=Good evening\"))\n> 93 |     ).toBeVisible({ timeout: 15_000 })\n     |       ^\n  94 |     await screenshot(page, \"25-ux-dashboard-loaded\")\n  95 |   })\n  96 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 7,
-                            "line": 93
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Good morning').or(locator('text=Good afternoon')).or(locator('text=Good evening'))\u001b[22m\n\n\n  91 |         .or(page.locator(\"text=Good afternoon\"))\n  92 |         .or(page.locator(\"text=Good evening\"))\n> 93 |     ).toBeVisible({ timeout: 15_000 })\n     |       ^\n  94 |     await screenshot(page, \"25-ux-dashboard-loaded\")\n  95 |   })\n  96 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:93:7"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:05.081Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Loadi-c4507-ws-content-while-data-loads-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Loadi-c4507-ws-content-while-data-loads-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 7,
-                        "line": 93
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-88d7b8fbf33c06d53a34",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 81,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "UX: Consistent Navigation — No Dead Ends",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 98,
-          "column": 6,
-          "specs": [
-            {
-              "title": "dashboard page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 4,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3401,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:21.210Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-2cc63-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-2cc63-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-00aae40cfa28a51e07bd",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            },
-            {
-              "title": "inventory page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 5,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3260,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:25.376Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-1444e-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-1444e-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-c66491a3d67d7b6d2bfe",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            },
-            {
-              "title": "boms page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 6,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3328,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:29.327Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-f5364-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-f5364-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-3c2e8b175bd94cdc2051",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            },
-            {
-              "title": "assemblies page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 7,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3359,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:33.325Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-d274e-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-d274e-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-d78414f329e3b24a7b3f",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            },
-            {
-              "title": "receiving page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 8,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3156,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:37.425Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-807c5-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-807c5-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-7faa4baf47bcf1a26574",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            },
-            {
-              "title": "settings page has working navigation to leave",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 9,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 3365,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 24,
-                          "line": 122
-                        },
-                        "snippet": "  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 24,
-                            "line": 122
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  120 |       const navCount = await navLinks.count()\n  121 |\n> 122 |       expect(navCount).toBeGreaterThan(0)\n      |                        ^\n  123 |     })\n  124 |   }\n  125 | })\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:122:24"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:41.264Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-5cac7-working-navigation-to-leave-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-5cac7-working-navigation-to-leave-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 24,
-                        "line": 122
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-2031b1f786cfbb2f3779",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 109,
-              "column": 9
-            }
-          ]
-        },
-        {
-          "title": "UX: Error State Recovery — Can User Try Again?",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 127,
-          "column": 6,
-          "specs": [
-            {
-              "title": "after failed login, user can immediately retry",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 10,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 73,
-                      "error": {
-                        "message": "Error: Playwright Test did not expect test.use() to be called here.\nMost common reasons include:\n- You are calling test.use() in a configuration file.\n- You are calling test.use() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.",
-                        "stack": "Error: Playwright Test did not expect test.use() to be called here.\nMost common reasons include:\n- You are calling test.use() in a configuration file.\n- You are calling test.use() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:130:10",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 10,
-                          "line": 130
-                        },
-                        "snippet": "  128 |   test(\"after failed login, user can immediately retry\", async ({ page }) => {\n  129 |     // Run without auth\n> 130 |     test.use({ storageState: { cookies: [], origins: [] } } as any)\n      |          ^\n  131 |\n  132 |     await page.goto(\"/login\")\n  133 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 10,
-                            "line": 130
-                          },
-                          "message": "Error: Playwright Test did not expect test.use() to be called here.\nMost common reasons include:\n- You are calling test.use() in a configuration file.\n- You are calling test.use() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n\n  128 |   test(\"after failed login, user can immediately retry\", async ({ page }) => {\n  129 |     // Run without auth\n> 130 |     test.use({ storageState: { cookies: [], origins: [] } } as any)\n      |          ^\n  131 |\n  132 |     await page.goto(\"/login\")\n  133 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:130:10"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:45.361Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Error-b47d6--user-can-immediately-retry-chromium/test-failed-1.png"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 10,
-                        "line": 130
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-8801dece16768c4f13d9",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 128,
-              "column": 7
-            },
-            {
-              "title": "after clearing inventory search, full list returns",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 11,
-                      "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30053,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 23,
-                            "line": 161
-                          },
-                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByPlaceholder(/search products or SKUs/i)\u001b[22m\n\n\n  159 |\n  160 |     // Search for nothing\n> 161 |     await searchInput.fill(\"zzz_nothing_here\")\n      |                       ^\n  162 |     await page.waitForTimeout(1_500)\n  163 |     await expect(page.locator(\"text=No products found\")).toBeVisible({ timeout: 5_000 })\n  164 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:161:23"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:34:46.120Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Error-a88c8-ry-search-full-list-returns-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Error-a88c8-ry-search-full-list-returns-chromium/error-context.md"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-b5056a9acbcf64546250",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 154,
-              "column": 7
-            },
-            {
-              "title": "after clearing BOM search, full list returns",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 12,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 16220,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:179:59",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 59,
-                          "line": 179
-                        },
-                        "snippet": "  177 |   test(\"after clearing BOM search, full list returns\", async ({ page }) => {\n  178 |     await page.goto(\"/boms\")\n> 179 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  180 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  181 |     await page.waitForTimeout(500)\n  182 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 59,
-                            "line": 179
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n\n  177 |   test(\"after clearing BOM search, full list returns\", async ({ page }) => {\n  178 |     await page.goto(\"/boms\")\n> 179 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  180 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  181 |     await page.waitForTimeout(500)\n  182 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:179:59"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:35:16.869Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Error-44899-OM-search-full-list-returns-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Error-44899-OM-search-full-list-returns-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 59,
-                        "line": 179
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-2adb32a4013e7fe9a054",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 177,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "UX: Consistent Status Colors — Visual Language",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 203,
-          "column": 6,
-          "specs": [
-            {
-              "title": "BOM status badges use consistent colors across list and detail",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [
-                    {
-                      "workerIndex": 13,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 15931,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:207:59",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 59,
-                          "line": 207
-                        },
-                        "snippet": "  205 |     // Check BOM list page for status badges\n  206 |     await page.goto(\"/boms\")\n> 207 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  208 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  209 |     await page.waitForTimeout(500)\n  210 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 59,
-                            "line": 207
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n\n  205 |     // Check BOM list page for status badges\n  206 |     await page.goto(\"/boms\")\n> 207 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  208 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  209 |     await page.waitForTimeout(500)\n  210 |\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:207:59"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2026-03-31T15:35:33.907Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-3d2d5-lors-across-list-and-detail-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Consi-3d2d5-lors-across-list-and-detail-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 59,
-                        "line": 207
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "3080dc4d1bb6a011c5a4-769b58acf04f13882e77",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 204,
-              "column": 7
-            }
-          ]
-        },
-        {
-          "title": "UX: Form Behavior — Keyboard & Mobile Friendliness",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 229,
-          "column": 6,
-          "specs": [
-            {
-              "title": "quantity inputs accept decimal values for partial units",
+              "title": "shows error for invalid credentials",
               "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "location": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "line": 236,
-                        "column": 12
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 813,
+                      "status": "passed",
+                      "duration": 1808,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-31T15:35:50.547Z",
-                      "annotations": [
-                        {
-                          "type": "skip",
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "line": 236,
-                            "column": 12
-                          }
-                        }
-                      ],
+                      "startTime": "2026-03-31T18:22:10.188Z",
+                      "annotations": [],
                       "attachments": []
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
-              "id": "3080dc4d1bb6a011c5a4-e2b3f0d08d02b73c476e",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 230,
+              "id": "791b3c4e0869e77b2651-79954c57bb0d39a00609",
+              "file": "01-auth.spec.ts",
+              "line": 38,
               "column": 7
             },
             {
-              "title": "pressing Enter in search submits search (not form)",
-              "ok": false,
+              "title": "shows loading state while signing in",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 300000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 14,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30051,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 23,
-                            "line": 266
-                          },
-                          "message": "Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByPlaceholder(/search products or SKUs/i)\u001b[22m\n\n\n  264 |\n  265 |     const searchInput = page.getByPlaceholder(/search products or SKUs/i)\n> 266 |     await searchInput.fill(\"caulk\")\n      |                       ^\n  267 |     await searchInput.press(\"Enter\")\n  268 |     await page.waitForTimeout(1_500)\n  269 |     await screenshot(page, \"25-ux-search-enter-key\")\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:266:23"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1384,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-31T15:35:51.688Z",
+                      "startTime": "2026-03-31T18:22:12.001Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Form--75e3e-ch-submits-search-not-form--chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Form--75e3e-ch-submits-search-not-form--chromium/error-context.md"
-                        }
-                      ]
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "3080dc4d1bb6a011c5a4-2a811f6f65b27cc07b68",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 261,
+              "id": "791b3c4e0869e77b2651-02ef6c4f1cefc86ee264",
+              "file": "01-auth.spec.ts",
+              "line": 54,
+              "column": 7
+            },
+            {
+              "title": "successful login redirects to dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3491,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:13.389Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-f8626e21c07f84bf9955",
+              "file": "01-auth.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "unauthenticated user is redirected to login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 527,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:16.884Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-30b6f4337907ff5bbd5f",
+              "file": "01-auth.spec.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "sign out from settings page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4173,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:17.414Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "791b3c4e0869e77b2651-b2283645011b8aaa3649",
+              "file": "01-auth.spec.ts",
+              "line": 98,
               "column": 7
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "title": "20-ux-login-errors.spec.ts",
+      "file": "20-ux-login-errors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
         {
-          "title": "UX: Fab Flow — Template vs Custom Clarity",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 277,
+          "title": "UX: Login Error Messages",
+          "file": "20-ux-login-errors.spec.ts",
+          "line": 11,
           "column": 6,
           "specs": [
             {
-              "title": "custom option is visually distinct from templates",
-              "ok": false,
+              "title": "error message is specific enough to help the user",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 300000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 15,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 11381,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByPlaceholder(/search jobs/i)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByPlaceholder(/search jobs/i)\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByPlaceholder(/search jobs/i)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByPlaceholder(/search jobs/i)\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:284:31",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 31,
-                          "line": 284
-                        },
-                        "snippet": "  282 |     // Job step - quick entry\n  283 |     const searchInput = page.getByPlaceholder(/search jobs/i)\n> 284 |     await expect(searchInput).toBeVisible({ timeout: 10_000 })\n      |                               ^\n  285 |     await searchInput.fill(\"Template Test\")\n  286 |     await page.waitForTimeout(1_000)\n  287 |     const manualInput = page.getByPlaceholder(/enter job name manually/i)"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 31,
-                            "line": 284
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByPlaceholder(/search jobs/i)\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByPlaceholder(/search jobs/i)\u001b[22m\n\n\n  282 |     // Job step - quick entry\n  283 |     const searchInput = page.getByPlaceholder(/search jobs/i)\n> 284 |     await expect(searchInput).toBeVisible({ timeout: 10_000 })\n      |                               ^\n  285 |     await searchInput.fill(\"Template Test\")\n  286 |     await page.waitForTimeout(1_000)\n  287 |     const manualInput = page.getByPlaceholder(/enter job name manually/i)\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:284:31"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1748,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-31T15:36:22.162Z",
+                      "startTime": "2026-03-31T18:22:21.593Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Fab-F-b3bde-lly-distinct-from-templates-chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Fab-F-b3bde-lly-distinct-from-templates-chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 31,
-                        "line": 284
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "3080dc4d1bb6a011c5a4-9eb3e8d47076b9a50812",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 278,
+              "id": "2e48c220d9ceaa5404b5-2751c97ef51c5a1659fd",
+              "file": "20-ux-login-errors.spec.ts",
+              "line": 15,
               "column": 7
-            }
-          ]
-        },
-        {
-          "title": "UX: Double-Click Prevention",
-          "file": "25-ux-consistency.spec.ts",
-          "line": 317,
-          "column": 6,
-          "specs": [
+            },
             {
-              "title": "BOM approve button disables after click (prevents double-approve)",
-              "ok": false,
+              "title": "loading state provides visual feedback during sign-in",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 300000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 16,
+                      "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 16047,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:321:59",
-                        "location": {
-                          "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                          "column": 59,
-                          "line": 321
-                        },
-                        "snippet": "  319 |     // Navigate to a draft BOM\n  320 |     await page.goto(\"/boms\")\n> 321 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  322 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  323 |     await page.waitForTimeout(500)\n  324 |     await page.locator(\"button\").filter({ hasText: \"Draft\" }).click()"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                            "column": 59,
-                            "line": 321
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('text=Bills of Materials')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('text=Bills of Materials')\u001b[22m\n\n\n  319 |     // Navigate to a draft BOM\n  320 |     await page.goto(\"/boms\")\n> 321 |     await expect(page.locator(\"text=Bills of Materials\")).toBeVisible({ timeout: 15_000 })\n      |                                                           ^\n  322 |     await page.locator(\"button\").filter({ hasText: \"BOM List\" }).click()\n  323 |     await page.waitForTimeout(500)\n  324 |     await page.locator(\"button\").filter({ hasText: \"Draft\" }).click()\n    at /Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts:321:59"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 1436,
+                      "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-03-31T15:36:34.288Z",
+                      "startTime": "2026-03-31T18:22:23.345Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Doubl-c455f-ck-prevents-double-approve--chromium/test-failed-1.png"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/Users/gabeperez/Documents/GitHub/inventory-app/test-results/25-ux-consistency-UX-Doubl-c455f-ck-prevents-double-approve--chromium/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/Users/gabeperez/Documents/GitHub/inventory-app/tests/e2e/25-ux-consistency.spec.ts",
-                        "column": 59,
-                        "line": 321
-                      }
+                      "attachments": []
                     }
                   ],
-                  "status": "unexpected"
+                  "status": "expected"
                 }
               ],
-              "id": "3080dc4d1bb6a011c5a4-117d14142e6e3dd2a79d",
-              "file": "25-ux-consistency.spec.ts",
-              "line": 318,
+              "id": "2e48c220d9ceaa5404b5-35292cae326d94968a6c",
+              "file": "20-ux-login-errors.spec.ts",
+              "line": 44,
+              "column": 7
+            },
+            {
+              "title": "error message clears when user starts typing again",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2758,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:24.785Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e48c220d9ceaa5404b5-4ca426014643c7e83f56",
+              "file": "20-ux-login-errors.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "sign-in button is not clickable when fields are empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2537,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:27.546Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e48c220d9ceaa5404b5-a827024c2653889248c6",
+              "file": "20-ux-login-errors.spec.ts",
+              "line": 98,
+              "column": 7
+            },
+            {
+              "title": "sign out has no confirmation — accidental sign-out is unrecoverable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 300000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4433,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-31T18:22:30.087Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2e48c220d9ceaa5404b5-08651cacfaf0a6b67561",
+              "file": "20-ux-login-errors.spec.ts",
+              "line": 113,
               "column": 7
             }
           ]
@@ -1378,11 +483,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-03-31T15:33:09.579Z",
-    "duration": 221044.956,
-    "expected": 1,
-    "skipped": 1,
-    "unexpected": 17,
+    "startTime": "2026-03-31T18:22:08.753Z",
+    "duration": 25799.1,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
     "flaky": 0
   }
 }
