@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { BomStatusBadge } from "./bom-status-badge"
 import { ChevronRight, ChevronUp, ChevronDown, Wrench } from "lucide-react"
@@ -33,13 +32,12 @@ const statusAccent: Record<string, string> = {
 }
 
 export function BomCard({ id, jobName, jobNumber, status, lineItemCount, createdByName, createdAt, sequenceLabel, unfabricatedAssemblyCount = 0, position, totalInList, onMoveUp, onMoveDown }: BomCardProps) {
-  const router = useRouter()
   const hasReorder = position !== undefined && totalInList !== undefined && onMoveUp && onMoveDown
 
   return (
     <Card
       className={cn("p-4 rounded-xl shadow-brand border-border-custom hover:shadow-brand-md hover:-translate-y-0.5 transition-all duration-300 active:scale-[0.98] group overflow-hidden cursor-pointer", statusAccent[status] || "card-accent-gray")}
-      onClick={() => router.push(`/boms/${id}`)}
+      onClick={() => { window.location.href = `/boms/${id}` }}
     >
       <div className="flex items-start gap-2">
         {/* Reorder controls */}
