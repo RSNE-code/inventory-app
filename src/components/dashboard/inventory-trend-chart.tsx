@@ -192,7 +192,7 @@ export function InventoryTrendChart() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-navy text-sm tracking-tight leading-none">Inventory Value</h3>
+          <h3 className="font-semibold text-navy text-sm tracking-tight leading-none">Value Trend</h3>
           <div className="flex items-baseline gap-2 mt-0.5">
             <p className="text-xl font-extrabold text-navy tabular-nums tracking-tight">
               {formatCurrency(currentVal)}
@@ -231,7 +231,7 @@ export function InventoryTrendChart() {
                 : "bg-surface-secondary text-text-secondary hover:bg-border-custom"
             )}
           >
-            {cat.name}
+            {cat.name.replace("Fabrication Supplies", "Fab Supplies").replace("Miscellaneous Materials", "Misc Materials").replace("Insulated Metal Panel", "IMP")}
           </button>
         ))}
       </div>

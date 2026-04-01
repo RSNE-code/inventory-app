@@ -65,7 +65,7 @@ export function ActionItems({
   const pendingReview = bomStatusCounts.PENDING_REVIEW || 0
   if (pendingReview > 0) {
     rows.push({
-      label: `${pendingReview} BOM${pendingReview !== 1 ? "s" : ""} pending review`,
+      label: `${pendingReview} bill${pendingReview !== 1 ? "s" : ""} of material pending review`,
       count: pendingReview,
       href: "/boms",
       severity: "info",

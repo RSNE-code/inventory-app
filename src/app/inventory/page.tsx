@@ -51,7 +51,7 @@ function InventoryContent() {
 
   return (
     <div>
-      <Header title="Inventory" />
+      <Header title="Product Catalog" />
 
       <div className="p-4 space-y-3">
         <SearchInput
@@ -83,7 +83,10 @@ function InventoryContent() {
 
       <div className="px-4 space-y-3 pb-24">
         {isLoading ? (
-          <ListSkeleton count={6} />
+          <>
+            <p className="text-text-muted text-xs font-semibold uppercase tracking-wide">Loading products...</p>
+            <ListSkeleton count={6} />
+          </>
         ) : products.length === 0 ? (
           <EmptyState
             icon={Package}

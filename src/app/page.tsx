@@ -28,7 +28,7 @@ function getActionSummary(d: DashboardData): { text: string; urgent: boolean } {
   const unfab = d.unfabricatedAssemblyCount || 0
   if (unfab > 0) return { text: `${unfab} assembly item${unfab !== 1 ? "s" : ""} need fab orders`, urgent: true }
   const review = d.bomStatusCounts?.PENDING_REVIEW || 0
-  if (review > 0) return { text: `${review} BOM${review !== 1 ? "s" : ""} need${review === 1 ? "s" : ""} review`, urgent: true }
+  if (review > 0) return { text: `${review} bill${review !== 1 ? "s" : ""} of material need${review === 1 ? "s" : ""} review`, urgent: true }
   const low = d.summary?.lowStockCount || 0
   if (low > 0) return { text: `${low} item${low !== 1 ? "s" : ""} running low`, urgent: true }
   return { text: "All clear — you're caught up", urgent: false }

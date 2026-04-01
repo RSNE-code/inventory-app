@@ -16,10 +16,10 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Receive", href: "/receiving", icon: PackageCheck },
   { name: "Inventory", href: "/inventory", icon: Package },
   { name: "BOMs", href: "/boms", icon: ClipboardList },
   { name: "Assemblies", href: "/assemblies", icon: Factory },
-  { name: "Receiving", href: "/receiving", icon: PackageCheck },
   { name: "Cycle Counts", href: "/cycle-counts", icon: ClipboardCheck },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
@@ -27,10 +27,11 @@ const navItems = [
 export function SidebarNav() {
   const pathname = usePathname()
 
-  if (pathname === "/login") return null
+  // Sidebar hidden — bottom nav is the primary navigation on all viewports
+  if (true || pathname === "/login") return null
 
   return (
-    <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 bg-navy z-50">
+    <aside className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:w-16 bg-navy z-50" aria-hidden="true">
       {/* Logo */}
       <div className="flex items-center justify-center py-4 border-b border-white/8">
         <div className="rounded-xl bg-white px-1.5 py-1 shrink-0 shadow-brand">
@@ -44,7 +45,7 @@ export function SidebarNav() {
         </div>
       </div>
 
-      {/* Nav items — icon-only rail with tooltips */}
+      {/* Nav items — icon-only rail with native title tooltips */}
       <nav className="flex-1 flex flex-col items-center gap-1 py-4 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
@@ -57,8 +58,6 @@ export function SidebarNav() {
             <Link
               key={item.name}
               href={item.href}
-              title={item.name}
-              aria-label={item.name}
               className={cn(
                 "flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300",
                 isActive

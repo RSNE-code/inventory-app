@@ -37,7 +37,7 @@ export function WorkPipelines({ bomStatusCounts, fabrication, doorQueueCount }: 
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-blue/12">
               <ClipboardList className="h-4 w-4 text-brand-blue" />
             </div>
-            <h4 className="text-sm font-bold text-navy">BOMs</h4>
+            <h4 className="text-sm font-bold text-navy">BOM Status</h4>
           </div>
           <div className="space-y-2">
             {bomStatuses.map((s) => {
