@@ -116,14 +116,17 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
 
   // Detect if BOM may contain door items (assembly products or non-catalog "Door" items)
   const bomLineItems = bom?.lineItems
-  const hasPotentialDoors = bomLineItems?.some((li: Record<string, unknown>) => {
+  const FAB_CATEGORY_KEYWORDS = ["door", "floor", "wall", "panel", "ramp"]
+  const hasPotentialFabItems = bomLineItems?.some((li: Record<string, unknown>) => {
     const product = li.product as Record<string, unknown> | null
     if (product?.isAssembly) return true
-    if (li.isNonCatalog && typeof li.nonCatalogCategory === "string" &&
-        (li.nonCatalogCategory as string).toLowerCase().includes("door")) return true
+    if (li.isNonCatalog && typeof li.nonCatalogCategory === "string") {
+      const cat = (li.nonCatalogCategory as string).toLowerCase()
+      return FAB_CATEGORY_KEYWORDS.some((kw) => cat.includes(kw))
+    }
     return false
   }) ?? false
-  const showFabGate = hasPotentialDoors && bom && ["DRAFT", "PENDING_REVIEW"].includes(bom.status)
+  const showFabGate = hasPotentialFabItems && bom && ["DRAFT", "PENDING_REVIEW"].includes(bom.status)
 
   const handleFabResolved = useCallback((resolved: boolean) => {
     setFabGateResolved(resolved)
@@ -652,6 +655,8 @@ export default function BomDetailPage({ params }: { params: Promise<{ id: string
                 isPanel={isPanelItem}
                 onPanelCheckout={() => setPanelCheckoutItem(lineId)}
                 isDoorPending={!!((item.assembly as { id: string; status: string } | null) && !DOOR_COMPLETE_STATUSES.includes((item.assembly as { id: string; status: string }).status))}
+                pickupDate={item.pickupDate as string | null}
+                lastCheckoutAt={item.lastCheckoutAt as string | null}
                 fabricationSource={item.fabricationSource as string | null}
                 onFabricationSourceChange={mode === "edit" ? async (source) => {
                   try {

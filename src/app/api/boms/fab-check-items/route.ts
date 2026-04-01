@@ -4,10 +4,13 @@ import { requireAuth } from "@/lib/auth"
 import { z } from "zod"
 
 /**
- * Pre-creation fab check: accepts an array of line items (not yet saved)
- * and checks if any door items lack a matching door in the queue.
- * Used by BOM creation flows to warn before saving.
+ * Pre-creation fab check: accepts line items (not yet saved) and checks:
+ * 1. Are there fab items (doors, panels, ramps) without matching queue entries? (unresolved)
+ * 2. Are there queue entries for this job not represented in the BOM? (unmatchedQueueItems)
  */
+
+const FAB_TYPES = ["DOOR", "FLOOR_PANEL", "WALL_PANEL", "RAMP"] as const
+const FAB_CATEGORY_KEYWORDS = ["door", "floor", "wall", "panel", "ramp"]
 
 const lineItemSchema = z.object({
   productId: z.string().uuid().optional().nullable(),
@@ -23,8 +26,35 @@ const requestSchema = z.object({
 
 export interface PreFabCheckItem {
   productName: string
+  assemblyType: string
   status: "matched" | "unresolved"
   assemblyId?: string
+}
+
+export interface UnmatchedQueueItem {
+  assemblyId: string
+  type: string
+  typeName: string
+  status: string
+  jobName: string
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  DOOR: "Door",
+  FLOOR_PANEL: "Floor Panel",
+  WALL_PANEL: "Wall Panel",
+  RAMP: "Ramp",
+}
+
+function inferTypeFromCategory(category: string | null | undefined): string | null {
+  if (!category) return null
+  const c = category.toLowerCase()
+  if (c.includes("floor")) return "FLOOR_PANEL"
+  if (c.includes("wall")) return "WALL_PANEL"
+  if (c.includes("ramp")) return "RAMP"
+  if (c.includes("door")) return "DOOR"
+  if (c.includes("panel")) return "FLOOR_PANEL"
+  return null
 }
 
 export async function POST(request: NextRequest) {
@@ -53,68 +83,106 @@ export async function POST(request: NextRequest) {
 
     const productMap = new Map(products.map((p) => [p.id, p]))
 
-    // Identify door items from the submitted line items
-    const doorItems: Array<{ name: string; templateId: string | null }> = []
+    // Identify fab items from the submitted line items
+    const fabItems: Array<{ name: string; templateId: string | null; assemblyType: string }> = []
 
     for (const item of items) {
       if (item.productId && !item.isNonCatalog) {
         const product = productMap.get(item.productId)
-        if (product?.isAssembly && product.assemblyTemplate?.type === "DOOR") {
-          doorItems.push({ name: product.name, templateId: product.assemblyTemplate.id })
+        if (product?.isAssembly && product.assemblyTemplate?.type &&
+            FAB_TYPES.includes(product.assemblyTemplate.type as typeof FAB_TYPES[number])) {
+          fabItems.push({
+            name: product.name,
+            templateId: product.assemblyTemplate.id,
+            assemblyType: product.assemblyTemplate.type,
+          })
         }
-      } else if (item.isNonCatalog && item.nonCatalogCategory?.toLowerCase().includes("door")) {
-        doorItems.push({ name: item.nonCatalogName || "Door", templateId: null })
+      } else if (item.isNonCatalog && item.nonCatalogCategory) {
+        const cat = item.nonCatalogCategory.toLowerCase()
+        if (FAB_CATEGORY_KEYWORDS.some((kw) => cat.includes(kw))) {
+          fabItems.push({
+            name: item.nonCatalogName || "Fab Item",
+            templateId: null,
+            assemblyType: inferTypeFromCategory(item.nonCatalogCategory) || "DOOR",
+          })
+        }
       }
     }
 
-    if (doorItems.length === 0) {
-      return NextResponse.json({ data: { doorItems: [], allResolved: true } })
-    }
-
-    // Search Door Shop Queue for matching doors by jobName
-    const queueDoors = await prisma.assembly.findMany({
+    // Search all fab queues for this job
+    const queueEntries = await prisma.assembly.findMany({
       where: {
-        type: "DOOR",
+        type: { in: [...FAB_TYPES] },
         jobName: { equals: jobName, mode: "insensitive" },
       },
       select: {
         id: true,
+        type: true,
         status: true,
         templateId: true,
         specs: true,
+        jobName: true,
       },
       orderBy: { createdAt: "desc" },
     })
 
-    const results: PreFabCheckItem[] = doorItems.map((door) => {
-      // Try to match by template ID
-      if (door.templateId) {
-        const match = queueDoors.find((qd) => qd.templateId === door.templateId)
-        if (match) {
-          return { productName: door.name, status: "matched" as const, assemblyId: match.id }
-        }
-      }
+    // Track which queue entries get matched
+    const matchedQueueIds = new Set<string>()
 
-      // Try to match by name/type similarity
-      const doorType = extractDoorType(door.name)
-      const match = queueDoors.find((qd) => {
-        const qdSpecs = qd.specs as Record<string, unknown> | null
-        if (!qdSpecs) return false
-        const qdType = extractDoorTypeFromSpecs(qdSpecs)
-        return doorType && qdType && doorType === qdType
+    // Check each fab item against the queue
+    const results: PreFabCheckItem[] = fabItems.map((fab) => {
+      const match = queueEntries.find((qe) => {
+        if (matchedQueueIds.has(qe.id)) return false // already claimed
+        if (qe.type !== fab.assemblyType) return false
+
+        // Match by template ID
+        if (fab.templateId && qe.templateId && fab.templateId === qe.templateId) return true
+
+        // For doors: detailed type matching
+        if (fab.assemblyType === "DOOR") {
+          const qdSpecs = qe.specs as Record<string, unknown> | null
+          const bomType = extractDoorType(fab.name)
+          const queueType = qdSpecs ? extractDoorTypeFromSpecs(qdSpecs) : null
+          return bomType !== null && queueType !== null && bomType === queueType
+        }
+
+        // For panels/ramps: same type + same job is sufficient
+        return true
       })
 
       if (match) {
-        return { productName: door.name, status: "matched" as const, assemblyId: match.id }
+        matchedQueueIds.add(match.id)
+        return {
+          productName: fab.name,
+          assemblyType: fab.assemblyType,
+          status: "matched" as const,
+          assemblyId: match.id,
+        }
       }
 
-      return { productName: door.name, status: "unresolved" as const }
+      return {
+        productName: fab.name,
+        assemblyType: fab.assemblyType,
+        status: "unresolved" as const,
+      }
     })
+
+    // Item 8: Find queue entries NOT matched to any BOM line item
+    const unmatchedQueueItems: UnmatchedQueueItem[] = queueEntries
+      .filter((qe) => !matchedQueueIds.has(qe.id))
+      .map((qe) => ({
+        assemblyId: qe.id,
+        type: qe.type,
+        typeName: TYPE_LABELS[qe.type] || qe.type,
+        status: qe.status,
+        jobName: qe.jobName || jobName,
+      }))
 
     return NextResponse.json({
       data: {
         doorItems: results,
-        allResolved: results.every((r) => r.status !== "unresolved"),
+        allResolved: fabItems.length === 0 || results.every((r) => r.status !== "unresolved"),
+        unmatchedQueueItems,
       },
     })
   } catch (error) {

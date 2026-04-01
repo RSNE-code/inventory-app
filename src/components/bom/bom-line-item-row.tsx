@@ -46,6 +46,8 @@ interface BomLineItemRowProps {
   isPanel?: boolean
   onPanelCheckout?: () => void
   isDoorPending?: boolean
+  pickupDate?: string | null
+  lastCheckoutAt?: string | null
 }
 
 // Convert a dimension value to feet
@@ -136,6 +138,8 @@ export function BomLineItemRow({
   isPanel = false,
   onPanelCheckout,
   isDoorPending = false,
+  pickupDate,
+  lastCheckoutAt,
 }: BomLineItemRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
 
@@ -348,6 +352,14 @@ export function BomLineItemRow({
             <p className="text-xs text-text-muted">
               {formatQuantity(qtyCheckedOut)}/{formatQuantity(qtyNeeded)} {activeInputUnit} pulled
               {qtyReturned > 0 && <span className="text-status-green"> · {formatQuantity(qtyReturned)} ret</span>}
+              {pickupDate && (
+                <span className="text-text-muted/70">
+                  {" · "}Pulled {new Date(pickupDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {lastCheckoutAt && lastCheckoutAt !== pickupDate && (
+                    <>, last {new Date(lastCheckoutAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</>
+                  )}
+                </span>
+              )}
             </p>
           )}
         </div>

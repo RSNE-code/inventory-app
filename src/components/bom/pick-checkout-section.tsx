@@ -42,9 +42,8 @@ export function PickCheckoutSection({
   }
 
   function togglePick(item: PickItem) {
-    if (isFullyCheckedOut(item) || item.isPanel || item.isDoorPending) return
+    if (item.isPanel || item.isDoorPending) return
     const remaining = getRemaining(item)
-    if (remaining <= 0) return
 
     setPicked((prev) => {
       if (prev[item.id] !== undefined) {
@@ -52,7 +51,8 @@ export function PickCheckoutSection({
         delete next[item.id]
         return next
       }
-      return { ...prev, [item.id]: remaining }
+      // For fully checked out items, default to 1 (adding more)
+      return { ...prev, [item.id]: remaining > 0 ? remaining : 1 }
     })
   }
 
@@ -125,12 +125,16 @@ export function PickCheckoutSection({
               <button
                 type="button"
                 onClick={() => togglePick(item)}
-                disabled={fullyDone || item.isPanel || item.isDoorPending}
+                disabled={item.isPanel || item.isDoorPending}
                 className="shrink-0 ios-press"
               >
-                {fullyDone ? (
+                {fullyDone && !isPicked ? (
                   <div className="h-8 w-8 rounded-full bg-status-green flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
+                  </div>
+                ) : fullyDone && isPicked ? (
+                  <div className="h-8 w-8 rounded-full bg-brand-orange flex items-center justify-center">
+                    <Plus className="h-4 w-4 text-white" />
                   </div>
                 ) : item.isDoorPending ? (
                   <div className="h-8 w-8 rounded-full bg-status-yellow/20 flex items-center justify-center">
@@ -185,8 +189,10 @@ export function PickCheckoutSection({
                 <p className="text-xs text-text-muted mt-0.5">
                   {item.isDoorPending
                     ? "In Door Shop — complete before checkout"
-                    : fullyDone
-                    ? `${formatQuantity(item.qtyCheckedOut)} ${item.unitOfMeasure} done`
+                    : fullyDone && !isPicked
+                    ? <>{formatQuantity(item.qtyCheckedOut)} {item.unitOfMeasure} done · <span className="text-brand-blue font-semibold cursor-pointer" onClick={(e) => { e.stopPropagation(); togglePick(item) }}>Need more?</span></>
+                    : fullyDone && isPicked
+                    ? `Adding more (${formatQuantity(item.qtyCheckedOut)} already pulled)`
                     : item.qtyCheckedOut > 0
                       ? `${formatQuantity(item.qtyCheckedOut)}/${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure} pulled`
                       : `${formatQuantity(item.qtyNeeded)} ${item.unitOfMeasure}`}

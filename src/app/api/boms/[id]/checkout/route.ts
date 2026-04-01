@@ -113,12 +113,15 @@ export async function POST(
         // Non-catalog items without a product (no stock to adjust)
         if (lineItem.isNonCatalog && !lineItem.productId) {
           if (item.type === "CHECKOUT") {
+            const isFirstCheckout = Number(lineItem.qtyCheckedOut) === 0
             await tx.bomLineItem.update({
               where: { id: lineItem.id },
               data: {
                 qtyCheckedOut: new Prisma.Decimal(
                   Number(lineItem.qtyCheckedOut) + item.quantity
                 ),
+                ...(isFirstCheckout && { pickupDate: new Date() }),
+                lastCheckoutAt: new Date(),
               },
             })
             hasCheckout = true
@@ -188,12 +191,15 @@ export async function POST(
             }
           }
 
+          const isFirstCheckout = Number(lineItem.qtyCheckedOut) === 0
           await tx.bomLineItem.update({
             where: { id: lineItem.id },
             data: {
               qtyCheckedOut: new Prisma.Decimal(
                 Number(lineItem.qtyCheckedOut) + purchaseQty
               ),
+              ...(isFirstCheckout && { pickupDate: new Date() }),
+              lastCheckoutAt: new Date(),
             },
           })
 

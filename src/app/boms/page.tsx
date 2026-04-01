@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { ClipboardList } from "lucide-react"
-import { useBoms } from "@/hooks/use-boms"
+import { ClipboardList, ChevronUp, ChevronDown } from "lucide-react"
+import { useBoms, useReorderBoms } from "@/hooks/use-boms"
+import { toast } from "sonner"
 import { Header } from "@/components/layout/header"
 import { SearchInput } from "@/components/shared/search-input"
 import { BomCard } from "@/components/bom/bom-card"
@@ -34,6 +35,39 @@ export default function BomsPage() {
   const { data, isLoading } = useBoms({ search, status, page })
   const boms = data?.data || []
   const totalPages = data?.totalPages || 1
+
+  // Reorder support — only for APPROVED and IN_PROGRESS
+  const isReorderable = ["APPROVED", "IN_PROGRESS"].includes(status)
+  const reorderMutation = useReorderBoms()
+  const [localOrder, setLocalOrder] = useState<Record<string, unknown>[] | null>(null)
+  const pendingOrderRef = useRef<string[] | null>(null)
+
+  // Reset local order when server data changes
+  const displayBoms = localOrder && isReorderable ? localOrder : boms
+
+  const moveItem = useCallback((index: number, direction: "up" | "down") => {
+    const source = localOrder || boms
+    const newIndex = direction === "up" ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= source.length) return
+
+    const reordered = [...source]
+    const [moved] = reordered.splice(index, 1)
+    reordered.splice(newIndex, 0, moved)
+    setLocalOrder(reordered)
+
+    const newIds = reordered.map((b) => b.id as string)
+    pendingOrderRef.current = newIds
+    reorderMutation.mutate(newIds, {
+      onError: () => {
+        toast.error("Failed to save order")
+        pendingOrderRef.current = null
+        setLocalOrder(null)
+      },
+      onSuccess: () => {
+        pendingOrderRef.current = null
+      },
+    })
+  }, [localOrder, boms, reorderMutation])
 
   return (
     <div>
@@ -115,11 +149,11 @@ export default function BomsPage() {
                 {(() => {
                   const jobNameCounts: Record<string, number> = {}
                   const jobNameSeq: Record<string, number> = {}
-                  for (const b of boms) {
+                  for (const b of displayBoms) {
                     const jn = b.jobName as string
                     jobNameCounts[jn] = (jobNameCounts[jn] || 0) + 1
                   }
-                  return boms.map((bom: Record<string, unknown>, i: number) => {
+                  return displayBoms.map((bom: Record<string, unknown>, i: number) => {
                     const jn = bom.jobName as string
                     let sequenceLabel: string | null = null
                     if (jobNameCounts[jn] > 1) {
@@ -138,6 +172,10 @@ export default function BomsPage() {
                           createdAt={bom.createdAt as string}
                           sequenceLabel={sequenceLabel}
                           unfabricatedAssemblyCount={(bom as Record<string, unknown>).unfabricatedAssemblyCount as number || 0}
+                          position={isReorderable ? i + 1 : undefined}
+                          totalInList={isReorderable ? displayBoms.length : undefined}
+                          onMoveUp={isReorderable ? () => moveItem(i, "up") : undefined}
+                          onMoveDown={isReorderable ? () => moveItem(i, "down") : undefined}
                         />
                       </div>
                     )

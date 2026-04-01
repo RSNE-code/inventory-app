@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
           createdBy: { select: { id: true, name: true } },
           _count: { select: { lineItems: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ sortOrder: "desc" }, { createdAt: "desc" }],
         skip: (page - 1) * limit,
         take: limit,
       }),

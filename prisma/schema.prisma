@@ -286,11 +286,14 @@ model Bom {
   jobStartDate DateTime?
   notes        String?
   paperBomUrl  String?
+  sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   lineItems    BomLineItem[]
   transactions Transaction[]
+
+  @@index([sortOrder])
 }
 
 model BomLineItem {
@@ -313,8 +316,9 @@ model BomLineItem {
   qtyReturned   Decimal  @default(0) @db.Decimal(12, 4)
   qtyConsumed   Decimal  @default(0) @db.Decimal(12, 4)
   isAdditional  Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  pickupDate    DateTime?
+  isActive        Boolean  @default(true)
+  pickupDate      DateTime?
+  lastCheckoutAt  DateTime?
 
   // Fabrication sourcing — null means N/A (not a fabricable item)
   fabricationSource FabricationSource?

@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth"
 export interface FabCheckDoorItem {
   lineItemId: string
   productName: string
+  assemblyType: string // DOOR, FLOOR_PANEL, WALL_PANEL, RAMP
   status: "linked" | "matched" | "unresolved"
   assembly?: {
     id: string
@@ -13,6 +14,9 @@ export interface FabCheckDoorItem {
     specs: Record<string, unknown> | null
   }
 }
+
+const FAB_TYPES = ["DOOR", "FLOOR_PANEL", "WALL_PANEL", "RAMP"] as const
+const FAB_CATEGORY_KEYWORDS = ["door", "floor", "wall", "panel", "ramp"] as const
 
 export interface FabCheckResponse {
   doorItems: FabCheckDoorItem[]
@@ -62,28 +66,31 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
 
   if (!bom) throw new Error("BOM not found")
 
-  // Identify door line items
-  const doorLineItems = bom.lineItems.filter((li) => {
-    // Catalog door: product is an assembly with DOOR template
-    if (li.product?.isAssembly && li.product.assemblyTemplate?.type === "DOOR") {
+  // Identify fab line items (doors, floor panels, wall panels, ramps)
+  const fabLineItems = bom.lineItems.filter((li) => {
+    // Catalog: product is an assembly with a fab-type template
+    if (li.product?.isAssembly && li.product.assemblyTemplate?.type &&
+        FAB_TYPES.includes(li.product.assemblyTemplate.type as typeof FAB_TYPES[number])) {
       return true
     }
-    // Non-catalog door: category contains "Door"
-    if (li.isNonCatalog && li.nonCatalogCategory?.toLowerCase().includes("door")) {
-      return true
+    // Non-catalog: category contains a fab keyword
+    if (li.isNonCatalog && li.nonCatalogCategory) {
+      const cat = li.nonCatalogCategory.toLowerCase()
+      return FAB_CATEGORY_KEYWORDS.some((kw) => cat.includes(kw))
     }
     return false
   })
 
-  if (doorLineItems.length === 0) {
+  if (fabLineItems.length === 0) {
     return { doorItems: [], allResolved: true }
   }
 
-  // For unlinked items, search the Door Shop Queue by jobName
-  const unlinkedItems = doorLineItems.filter((li) => !li.assemblyId)
+  // For unlinked items, search the fab queues by jobName
+  const unlinkedItems = fabLineItems.filter((li) => !li.assemblyId)
 
-  let queueDoors: Array<{
+  let queueItems: Array<{
     id: string
+    type: string
     status: string
     approvalStatus: string
     specs: unknown
@@ -91,14 +98,14 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
   }> = []
 
   if (unlinkedItems.length > 0 && bom.jobName) {
-    queueDoors = await prisma.assembly.findMany({
+    queueItems = await prisma.assembly.findMany({
       where: {
-        type: "DOOR",
+        type: { in: [...FAB_TYPES] },
         jobName: { equals: bom.jobName, mode: "insensitive" },
-        status: { not: "COMPLETED" },
       },
       select: {
         id: true,
+        type: true,
         status: true,
         approvalStatus: true,
         specs: true,
@@ -108,14 +115,19 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
     })
   }
 
-  const doorItems: FabCheckDoorItem[] = doorLineItems.map((li) => {
-    const productName = li.product?.name || li.nonCatalogName || "Unknown Door"
+  const doorItems: FabCheckDoorItem[] = fabLineItems.map((li) => {
+    const productName = li.product?.name || li.nonCatalogName || "Unknown Item"
+    // Determine assembly type from template or category
+    const assemblyType = li.product?.assemblyTemplate?.type
+      || inferTypeFromCategory(li.nonCatalogCategory)
+      || "DOOR"
 
     // Already linked
     if (li.assemblyId && li.assembly) {
       return {
         lineItemId: li.id,
         productName,
+        assemblyType,
         status: "linked" as const,
         assembly: {
           id: li.assembly.id,
@@ -126,42 +138,44 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
       }
     }
 
-    // Try to match from queue by template, door type, or name similarity
-    const matched = queueDoors.find((qd) => {
+    // Try to match from queue — different strategies per type
+    const matched = queueItems.find((qi) => {
+      // Must be same assembly type
+      if (qi.type !== assemblyType) return false
+
       // Match by template if both have one
-      if (li.product?.assemblyTemplate?.id && qd.templateId) {
-        return li.product.assemblyTemplate.id === qd.templateId
+      if (li.product?.assemblyTemplate?.id && qi.templateId) {
+        return li.product.assemblyTemplate.id === qi.templateId
       }
 
-      const qdSpecs = qd.specs as Record<string, unknown> | null
-
-      // Match by door type (cooler/freezer + swing/slide) — most reliable
-      // Product name like "Cooler Slider 5' x 7'" → type = slider, temp = cooler
-      const bomType = extractDoorType(productName)
-      const queueType = qdSpecs ? extractDoorTypeFromSpecs(qdSpecs) : null
-      if (bomType && queueType && bomType === queueType) {
-        return true
-      }
-
-      // Fallback: name similarity
-      if (qdSpecs) {
-        const qdName = getDoorLabel(qdSpecs)
-        if (qdName) {
-          // Compare type portion only (strip dimensions for fuzzy match)
-          const qdType = extractDoorType(qdName)
-          if (bomType && qdType && bomType === qdType) return true
-          // Full string contains check
-          if (productName.toLowerCase().includes(qdName.toLowerCase())) return true
-          if (qdName.toLowerCase().includes(productName.toLowerCase())) return true
+      // For doors: use detailed type matching (cooler/freezer + swing/slide)
+      if (assemblyType === "DOOR") {
+        const qdSpecs = qi.specs as Record<string, unknown> | null
+        const bomType = extractDoorType(productName)
+        const queueType = qdSpecs ? extractDoorTypeFromSpecs(qdSpecs) : null
+        if (bomType && queueType && bomType === queueType) return true
+        if (qdSpecs) {
+          const qdName = getDoorLabel(qdSpecs)
+          if (qdName) {
+            const qdType = extractDoorType(qdName)
+            if (bomType && qdType && bomType === qdType) return true
+            if (productName.toLowerCase().includes(qdName.toLowerCase())) return true
+            if (qdName.toLowerCase().includes(productName.toLowerCase())) return true
+          }
         }
+        return false
       }
-      return false
+
+      // For panels/ramps: match by same type + same job is sufficient
+      // (there's typically one floor panel, one wall panel per job)
+      return true
     })
 
     if (matched) {
       return {
         lineItemId: li.id,
         productName,
+        assemblyType,
         status: "matched" as const,
         assembly: {
           id: matched.id,
@@ -175,6 +189,7 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
     return {
       lineItemId: li.id,
       productName,
+      assemblyType,
       status: "unresolved" as const,
     }
   })
@@ -183,6 +198,18 @@ export async function checkBomDoors(bomId: string): Promise<FabCheckResponse> {
     doorItems,
     allResolved: doorItems.every((d) => d.status !== "unresolved"),
   }
+}
+
+/** Infer assembly type from a non-catalog category string */
+function inferTypeFromCategory(category: string | null | undefined): string | null {
+  if (!category) return null
+  const c = category.toLowerCase()
+  if (c.includes("floor")) return "FLOOR_PANEL"
+  if (c.includes("wall")) return "WALL_PANEL"
+  if (c.includes("ramp")) return "RAMP"
+  if (c.includes("door")) return "DOOR"
+  if (c.includes("panel")) return "FLOOR_PANEL" // generic "panel" defaults to floor
+  return null
 }
 
 /** Extract normalized door type from a product name (e.g., "Cooler Slider 5' x 7'" → "cooler_slider") */

@@ -21,6 +21,20 @@ const STATUS_LABELS: Record<string, string> = {
   SHIPPED: "Shipped",
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  DOOR: "Door",
+  FLOOR_PANEL: "Floor Panel",
+  WALL_PANEL: "Wall Panel",
+  RAMP: "Ramp",
+}
+
+const TYPE_CREATE_URLS: Record<string, string> = {
+  DOOR: "DOOR",
+  FLOOR_PANEL: "FLOOR_PANEL",
+  WALL_PANEL: "WALL_PANEL",
+  RAMP: "RAMP",
+}
+
 function QueueStatusBadge({ status }: { status: string }) {
   const label = STATUS_LABELS[status] || status
   const isGreen = ["APPROVED", "IN_PRODUCTION", "COMPLETED", "SHIPPED"].includes(status)
@@ -138,24 +152,24 @@ export function FabGateSection({ bomId, jobName, onResolved }: FabGateSectionPro
                 {isResolved && item.assembly && (
                   <div className="mt-1.5 ml-7 flex items-center gap-2">
                     <QueueStatusBadge status={item.assembly.status} />
-                    <span className="text-xs text-text-muted">in Door Shop Queue</span>
+                    <span className="text-xs text-text-muted">in {item.assemblyType === "DOOR" ? "Door Shop" : "Fab"} Queue</span>
                   </div>
                 )}
 
                 {!isResolved && (
                   <p className="mt-1 ml-7 text-xs text-brand-orange font-medium">
-                    No matching door in queue
+                    No matching {(TYPE_LABELS[item.assemblyType] || "item").toLowerCase()} in queue
                   </p>
                 )}
               </div>
 
               {!isResolved && (
                 <a
-                  href={`/assemblies/new?type=DOOR&jobName=${encodeURIComponent(jobName)}&doorHint=${encodeURIComponent(item.productName)}&fromBom=${bomId}`}
+                  href={`/assemblies/new?type=${TYPE_CREATE_URLS[item.assemblyType] || "DOOR"}&jobName=${encodeURIComponent(jobName)}&doorHint=${encodeURIComponent(item.productName)}&fromBom=${bomId}`}
                   className="shrink-0 h-11 px-3.5 flex items-center gap-1.5 rounded-xl bg-brand-blue text-white text-xs font-semibold active:bg-brand-blue/80 ios-press transition-all"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Create Door Sheet
+                  Create {TYPE_LABELS[item.assemblyType] || "Item"}
                 </a>
               )}
             </div>

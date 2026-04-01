@@ -152,7 +152,7 @@ export function BomPhotoCapture() {
   const [showSuccessFlash, setShowSuccessFlash] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false)
-  const [fabWarningDoors, setFabWarningDoors] = useState<Array<{ productName: string; status: string }> | null>(null)
+  const [fabWarningDoors, setFabWarningDoors] = useState<Array<{ productName: string; assemblyType: string; status: string }> | null>(null)
 
   // ─── Drag-and-drop handlers ────────────────
   const dragCounter = useRef(0)
@@ -712,28 +712,35 @@ export function BomPhotoCapture() {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            "w-full flex flex-col items-center justify-center gap-4 py-16 rounded-2xl bg-gradient-to-b from-navy/[0.03] to-navy/[0.08] border-2 border-dashed border-brand-orange/40 hover:border-brand-orange/60 active:scale-[0.99] transition-all animate-fade-in-up",
-            isDragging && "animate-drag-glow bg-brand-orange/[0.04]"
+            "w-full relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy via-navy to-navy-light p-8 flex flex-col items-center justify-center gap-5 shadow-brand-md hover:shadow-brand-lg hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 animate-fade-in-up group",
+            isDragging && "ring-3 ring-brand-orange ring-offset-2 shadow-[0_0_30px_rgba(232,121,43,0.3)]"
           )}
         >
+          {/* Subtle glow behind icon */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-brand-blue/20 rounded-full blur-3xl pointer-events-none" />
+
           {isDragging ? (
             <>
-              <div className="h-20 w-20 rounded-2xl bg-brand-orange/20 border-2 border-brand-orange flex items-center justify-center">
-                <Upload className="h-10 w-10 text-brand-orange" />
+              <div className="relative h-20 w-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                <Upload className="h-10 w-10 text-white" />
               </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-brand-orange">Drop your image here</p>
-                <p className="text-sm text-brand-orange/60 mt-1">Release to start scanning</p>
+              <div className="text-center relative">
+                <p className="text-lg font-bold text-white">Drop your image here</p>
+                <p className="text-sm text-white/60 mt-1">Release to start scanning</p>
               </div>
             </>
           ) : (
             <>
-              <div className="h-20 w-20 rounded-2xl bg-brand-orange flex items-center justify-center shadow-brand-md shadow-brand-orange/20">
-                <Camera className="h-10 w-10 text-white" />
+              <div className="relative h-20 w-20 rounded-2xl bg-white flex items-center justify-center shadow-brand-lg group-hover:scale-105 transition-transform duration-300">
+                <Camera className="h-10 w-10 text-brand-orange" />
               </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-navy">Snap Your Material List</p>
-                <p className="text-sm text-text-muted mt-1">Take a photo or drag & drop an image</p>
+              <div className="text-center relative">
+                <p className="text-lg font-bold text-white">Snap your material list</p>
+                <p className="text-sm text-white/50 mt-1">Take a photo or drag & drop an image</p>
+              </div>
+              <div className="relative flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
+                <ImagePlus className="h-4 w-4 text-brand-orange" />
+                <span className="text-xs font-semibold text-white/80">Supports multiple photos</span>
               </div>
             </>
           )}
@@ -782,7 +789,7 @@ export function BomPhotoCapture() {
       {/* Fab gate warning dialog */}
       {fabWarningDoors && fabWarningDoors.length > 0 && (
         <CreationFabWarning
-          unresolvedDoors={fabWarningDoors.map((d) => ({ productName: d.productName, status: d.status as "unresolved" }))}
+          unresolvedDoors={fabWarningDoors.map((d) => ({ productName: d.productName, assemblyType: d.assemblyType, status: d.status as "unresolved" }))}
           jobName={jobName}
           onDismiss={() => setFabWarningDoors(null)}
           onCreateAnyway={doCreateBom}
