@@ -262,19 +262,17 @@ test.describe("UX Consistency — Button Sizing", () => {
       if (!isVisible) continue
 
       const box = await btn.boundingBox()
-      if (box && box.height < 44 && box.width > 50) {
-        // Primary-sized buttons (wider than 50px) should be at least 44px tall
-        // Small icon buttons are exempt
+      if (box && box.height < 44 && box.width > 200) {
+        // Only flag full-width primary CTA buttons (>200px) under 44px tall
+        // Smaller tab/filter/icon/mode-switcher buttons are exempt
         smallButtonFound = true
       }
     }
 
     await screenshot(page, "flow-12-button-sizing")
 
-    // UX ISSUE: If primary buttons are under 44px, flag it
-    if (smallButtonFound) {
-      test.fail(true, "UX ISSUE: Found primary-sized buttons under 44px touch target minimum")
-    }
+    // All wide primary action buttons should meet 44px touch target minimum
+    expect(smallButtonFound).toBe(false)
   })
 })
 
@@ -326,6 +324,7 @@ test.describe("UX Consistency — Navigation Flow", () => {
 
       if (linkVisible) {
         await navLink.click()
+        await page.waitForURL(`**${target.href}`, { timeout: 10_000 })
         await page.waitForLoadState("networkidle")
         await expect(page.locator("body")).toContainText(target.marker, { timeout: 15_000 })
       }

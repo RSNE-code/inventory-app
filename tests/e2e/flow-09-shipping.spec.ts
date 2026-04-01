@@ -62,12 +62,8 @@ test.describe("Shipping — Assembly Lifecycle", () => {
     await page.goto(`/assemblies/${assembly.id}`)
 
     // Lifecycle tracker should show stage labels
-    const body = page.locator("body")
     await expect(
-      body.getByText("Created")
-        .or(body.getByText("Building"))
-        .or(body.getByText("Complete"))
-        .or(body.getByText("Shipped")),
+      page.getByText("Created", { exact: true }).first(),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-09-lifecycle-stages")
   })
@@ -156,7 +152,7 @@ test.describe("Shipping — Assembly Lifecycle", () => {
 
     // Should transition to SHIPPED
     await expect(
-      page.getByText("Shipped").or(page.getByText("SHIPPED")),
+      page.getByText("Shipped", { exact: true }).first(),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-09-shipped")
   })

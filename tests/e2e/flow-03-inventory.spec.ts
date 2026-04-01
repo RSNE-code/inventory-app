@@ -9,9 +9,10 @@ test.describe("Inventory — List, Search & Filter", () => {
     // Search bar present
     await expect(page.getByPlaceholder(/search products or SKUs/i)).toBeVisible({ timeout: 10_000 })
 
-    // Should show product count text or product cards
-    const body = await page.locator("body").innerText()
-    expect(body.includes("products") || body.includes("No products")).toBe(true)
+    // Wait for products to load — shows "X products" count or "No products found"
+    await expect(
+      page.getByText(/\d+ products/).or(page.getByText("No products found"))
+    ).toBeVisible({ timeout: 15_000 })
   })
 
   test("search filters inventory by name", async ({ page }) => {
@@ -45,9 +46,9 @@ test.describe("Inventory — List, Search & Filter", () => {
   test("category filter is available and visible", async ({ page }) => {
     await goToInventory(page)
 
-    const categoryFilter = page.getByText("Select category").or(
-      page.locator("select").filter({ hasText: /category/i })
-    )
+    // App uses pill-style category buttons (not a dropdown)
+    // The "All" pill is always visible as the default category filter
+    const categoryFilter = page.locator("button").filter({ hasText: "All" }).first()
     await expect(categoryFilter).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow03-category-filter")
   })
@@ -92,8 +93,8 @@ test.describe("Inventory — Product Detail", () => {
     await expect(page.locator("body")).toContainText(product.name, { timeout: 10_000 })
 
     // Core fields should always be shown (with value or "Not specified")
-    // Details/Stock section
-    await expect(page.getByText("Details").or(page.getByText("Stock"))).toBeVisible()
+    // Details section heading
+    await expect(page.locator("h3").filter({ hasText: "Details" })).toBeVisible()
 
     // Action buttons always present
     await expect(page.getByText("Adjust Stock")).toBeVisible()
@@ -170,8 +171,8 @@ test.describe("Inventory — Stock Adjustment", () => {
     // Quantity input
     await expect(page.getByText("Quantity")).toBeVisible()
 
-    // Reason selector
-    await expect(page.getByText("Reason")).toBeVisible()
+    // Reason selector (label text is "Reason *")
+    await expect(page.getByText("Reason *")).toBeVisible()
   })
 
   test("stock adjust shows preview of new quantity after input", async ({ page }) => {
@@ -237,7 +238,7 @@ test.describe("Inventory — Edit Product", () => {
 
     // Page should show edit context
     await expect(
-      page.getByText("Product Name").or(page.getByText("Edit Product"))
+      page.getByRole("heading", { name: "Edit Product" })
     ).toBeVisible({ timeout: 10_000 })
 
     // Save button present

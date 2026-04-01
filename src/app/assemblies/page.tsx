@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useAssemblies, useReorderAssemblies } from "@/hooks/use-assemblies"
 import { useUpdateAssembly } from "@/hooks/use-assemblies"
 import { useMe } from "@/hooks/use-me"
@@ -97,14 +97,23 @@ export default function AssembliesPage() {
 
   const assemblies = data?.data || []
 
-  const notStartedRaw = assemblies.filter((a: Record<string, unknown>) =>
-    ["PLANNED", "AWAITING_APPROVAL", "APPROVED"].includes(a.status as string)
+  const notStartedRaw = useMemo(
+    () => assemblies.filter((a: Record<string, unknown>) =>
+      ["PLANNED", "AWAITING_APPROVAL", "APPROVED"].includes(a.status as string)
+    ),
+    [assemblies]
   )
-  const inProgress = assemblies.filter((a: Record<string, unknown>) =>
-    a.status === "IN_PRODUCTION"
+  const inProgress = useMemo(
+    () => assemblies.filter((a: Record<string, unknown>) =>
+      a.status === "IN_PRODUCTION"
+    ),
+    [assemblies]
   )
-  const completed = assemblies.filter((a: Record<string, unknown>) =>
-    ["COMPLETED", "ALLOCATED", "SHIPPED"].includes(a.status as string)
+  const completed = useMemo(
+    () => assemblies.filter((a: Record<string, unknown>) =>
+      ["COMPLETED", "ALLOCATED", "SHIPPED"].includes(a.status as string)
+    ),
+    [assemblies]
   )
 
   // Queue reorder state — optimistic updates with server sync
@@ -115,22 +124,29 @@ export default function AssembliesPage() {
   // Sync local order with server data, but only accept server data that
   // matches our pending mutation (or when no mutation is in-flight).
   // This prevents the "flash of stale data" race condition.
+  // Compare by IDs to avoid infinite re-render loops from reference changes.
+  const notStartedIds = useMemo(
+    () => notStartedRaw.map((a: Record<string, unknown>) => a.id as string).join(","),
+    [notStartedRaw]
+  )
   useEffect(() => {
     if (pendingOrderRef.current === null) {
-      // No mutation in-flight — accept server data
-      setLocalOrder(notStartedRaw)
+      // No mutation in-flight — accept server data (only if IDs differ)
+      setLocalOrder((prev) => {
+        const prevIds = prev.map((a) => a.id as string).join(",")
+        return prevIds === notStartedIds ? prev : notStartedRaw
+      })
     } else {
       // Mutation in-flight — check if server now matches our expected order
-      const serverIds = notStartedRaw.map((a: Record<string, unknown>) => a.id as string)
-      const pendingIds = pendingOrderRef.current
-      if (JSON.stringify(serverIds) === JSON.stringify(pendingIds)) {
+      const pendingIds = pendingOrderRef.current.join(",")
+      if (notStartedIds === pendingIds) {
         // Server caught up — clear pending and accept
         pendingOrderRef.current = null
         setLocalOrder(notStartedRaw)
       }
       // Otherwise, keep showing optimistic localOrder
     }
-  }, [notStartedRaw])
+  }, [notStartedIds, notStartedRaw])
 
   const notStarted = localOrder.length > 0 ? localOrder : notStartedRaw
 

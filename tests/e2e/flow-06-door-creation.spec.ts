@@ -17,14 +17,14 @@ async function fillJobStep(page: import("@playwright/test").Page, jobName: strin
   await expect(searchInput).toBeVisible({ timeout: 10_000 })
   await searchInput.fill(jobName)
 
+  // Wait for API to respond — "No jobs found" appears, then manual input shows
   const manualInput = page.getByPlaceholder(/enter job name manually/i)
-  if (await manualInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await manualInput.fill(jobName)
-    const continueBtn = page.getByRole("button", { name: /continue/i })
-    if (await continueBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await continueBtn.click()
-    }
-  }
+  await expect(manualInput).toBeVisible({ timeout: 20_000 })
+  await manualInput.fill(jobName)
+
+  const continueBtn = page.getByRole("button", { name: /continue/i })
+  await expect(continueBtn).toBeVisible({ timeout: 5_000 })
+  await continueBtn.click()
 }
 
 async function advanceToTypeStep(page: import("@playwright/test").Page, jobName = "E2E Door Type Test") {
@@ -35,25 +35,24 @@ async function advanceToTypeStep(page: import("@playwright/test").Page, jobName 
 async function advanceToSizeStep(
   page: import("@playwright/test").Page,
   doorType: string,
-  jobName = "E2E Door Size Test",
+  jobName = "E2E DoorSize Test",
 ) {
   await advanceToTypeStep(page, jobName)
-  await page.getByText(doorType, { exact: false }).click()
+  await page.getByText(doorType, { exact: true }).click()
   await expect(
-    page.getByText("Standard Size").or(page.getByText("Custom Size")),
+    page.getByText("Standard Size").or(page.getByText("Custom Size")).first(),
   ).toBeVisible({ timeout: 10_000 })
 }
 
 async function advanceToConfirmStep(page: import("@playwright/test").Page) {
-  await advanceToSizeStep(page, "Cooler Swing", "E2E Door Confirm Test")
+  await advanceToSizeStep(page, "Cooler Swing", "E2E DoorConfirm Test")
   const sizeCard = page.locator("button, [role='button']").filter({ hasText: /×|x/ }).first()
   if (await sizeCard.isVisible({ timeout: 5_000 }).catch(() => false)) {
     await sizeCard.click()
   }
-  const body = page.locator("body")
   await expect(
-    body.getByText("Components").or(body.getByText("Submit for Approval")).or(body.getByText("Save as Draft")),
-  ).toBeVisible({ timeout: 10_000 })
+    page.getByText("Components").or(page.getByText("Submit for Approval")).or(page.getByText("Save as Draft")),
+  ).toBeVisible({ timeout: 15_000 })
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────
@@ -91,40 +90,40 @@ test.describe("Door Creation — Type Chooser", () => {
 
   test("selecting Cooler Swing advances to size step", async ({ page }) => {
     await advanceToTypeStep(page, "E2E Cooler Swing Size")
-    await page.getByText("Cooler Swing").click()
+    await page.getByText("Cooler Swing", { exact: true }).click()
 
     await expect(
-      page.getByText("Standard Size").or(page.getByText("Custom Size")),
+      page.getByRole("heading", { name: "Standard Size" }),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-06-cooler-swing-size")
   })
 
   test("selecting Freezer Swing advances to size step", async ({ page }) => {
-    await advanceToTypeStep(page, "E2E Freezer Swing Size")
-    await page.getByText("Freezer Swing").click()
+    await advanceToTypeStep(page, "E2E FrzSwing Size")
+    await page.getByText("Freezer Swing", { exact: true }).click()
 
     await expect(
-      page.getByText("Standard Size").or(page.getByText("Custom Size")),
+      page.getByRole("heading", { name: "Standard Size" }),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-06-freezer-swing-size")
   })
 
   test("selecting Cooler Slider advances to size step", async ({ page }) => {
-    await advanceToTypeStep(page, "E2E Cooler Slider Size")
-    await page.getByText("Cooler Slider").click()
+    await advanceToTypeStep(page, "E2E ClrSlider Size")
+    await page.getByText("Cooler Slider", { exact: true }).click()
 
     await expect(
-      page.getByText("Standard Size").or(page.getByText("Custom Size")),
+      page.getByRole("heading", { name: "Standard Size" }),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-06-cooler-slider-size")
   })
 
   test("selecting Freezer Slider advances to size step", async ({ page }) => {
-    await advanceToTypeStep(page, "E2E Freezer Slider Size")
-    await page.getByText("Freezer Slider").click()
+    await advanceToTypeStep(page, "E2E FrzSlider Size")
+    await page.getByText("Freezer Slider", { exact: true }).click()
 
     await expect(
-      page.getByText("Standard Size").or(page.getByText("Custom Size")),
+      page.getByRole("heading", { name: "Standard Size" }),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-06-freezer-slider-size")
   })
@@ -153,7 +152,7 @@ test.describe("Door Creation — Size Selection", () => {
       page.getByText("Components")
         .or(page.getByText("Submit for Approval"))
         .or(page.getByText("Save as Draft")),
-    ).toBeVisible({ timeout: 10_000 })
+    ).toBeVisible({ timeout: 15_000 })
     await screenshot(page, "flow-06-size-to-confirm")
   })
 })
@@ -174,11 +173,11 @@ test.describe("Door Creation — Confirm Step", () => {
 test.describe("Door Creation — Full Flows", () => {
   test("full flow: create cooler swing door end-to-end", async ({ page }) => {
     await page.goto("/assemblies/new?type=DOOR")
-    await fillJobStep(page, `E2E Cooler Swing ${Date.now()}`)
+    await fillJobStep(page, `E2E ClrSwing ${Date.now()}`)
 
     // Type step
-    await expect(page.getByText("Cooler Swing")).toBeVisible({ timeout: 10_000 })
-    await page.getByText("Cooler Swing").click()
+    await expect(page.getByText("Cooler Swing", { exact: true })).toBeVisible({ timeout: 10_000 })
+    await page.getByText("Cooler Swing", { exact: true }).click()
 
     // Size step — pick first standard
     const sizeCard = page.locator("button, [role='button']").filter({ hasText: /×|x/ }).first()
@@ -186,22 +185,21 @@ test.describe("Door Creation — Full Flows", () => {
     await sizeCard.click()
 
     // Confirm step — should have Submit button
-    const body = await page.locator("body").innerText()
-    expect(
-      body.includes("Submit for Approval") ||
-      body.includes("Save as Draft") ||
-      body.includes("Components"),
-    ).toBe(true)
+    await expect(
+      page.getByText("Submit for Approval")
+        .or(page.getByText("Save as Draft"))
+        .or(page.getByText("Components")),
+    ).toBeVisible({ timeout: 15_000 })
     await screenshot(page, "flow-06-cooler-swing-e2e-confirm")
   })
 
   test("full flow: create freezer slider door end-to-end", async ({ page }) => {
     await page.goto("/assemblies/new?type=DOOR")
-    await fillJobStep(page, `E2E Freezer Slider ${Date.now()}`)
+    await fillJobStep(page, `E2E FrzSldr ${Date.now()}`)
 
     // Type step
-    await expect(page.getByText("Freezer Slider")).toBeVisible({ timeout: 10_000 })
-    await page.getByText("Freezer Slider").click()
+    await expect(page.getByText("Freezer Slider", { exact: true })).toBeVisible({ timeout: 10_000 })
+    await page.getByText("Freezer Slider", { exact: true }).click()
 
     // Size step — pick first standard
     const sizeCard = page.locator("button, [role='button']").filter({ hasText: /×|x/ }).first()
@@ -209,12 +207,11 @@ test.describe("Door Creation — Full Flows", () => {
     await sizeCard.click()
 
     // Confirm step
-    const body = await page.locator("body").innerText()
-    expect(
-      body.includes("Submit for Approval") ||
-      body.includes("Save as Draft") ||
-      body.includes("Components"),
-    ).toBe(true)
+    await expect(
+      page.getByText("Submit for Approval")
+        .or(page.getByText("Save as Draft"))
+        .or(page.getByText("Components")),
+    ).toBeVisible({ timeout: 15_000 })
     await screenshot(page, "flow-06-freezer-slider-e2e-confirm")
   })
 })
@@ -250,12 +247,8 @@ test.describe("Door Creation — Queue & Detail", () => {
     await page.goto(`/assemblies/${door.id}`)
 
     // Lifecycle stages: Created, Building, Complete, Shipped
-    const body = page.locator("body")
     await expect(
-      body.getByText("Created")
-        .or(body.getByText("Building"))
-        .or(body.getByText("Complete"))
-        .or(body.getByText("Shipped")),
+      page.getByText("Created", { exact: true }).first(),
     ).toBeVisible({ timeout: 10_000 })
     await screenshot(page, "flow-06-door-detail-lifecycle")
   })

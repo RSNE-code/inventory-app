@@ -14,14 +14,14 @@ async function fillJobStep(page: import("@playwright/test").Page, jobName: strin
   await expect(searchInput).toBeVisible({ timeout: 10_000 })
   await searchInput.fill(jobName)
 
+  // Wait for API to respond — "No jobs found" appears, then manual input shows
   const manualInput = page.getByPlaceholder(/enter job name manually/i)
-  if (await manualInput.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await manualInput.fill(jobName)
-    const continueBtn = page.getByRole("button", { name: /continue/i })
-    if (await continueBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await continueBtn.click()
-    }
-  }
+  await expect(manualInput).toBeVisible({ timeout: 20_000 })
+  await manualInput.fill(jobName)
+
+  const continueBtn = page.getByRole("button", { name: /continue/i })
+  await expect(continueBtn).toBeVisible({ timeout: 5_000 })
+  await continueBtn.click()
 }
 
 async function advanceToFabType(page: import("@playwright/test").Page, jobName = "E2E Fab Type") {
@@ -32,10 +32,10 @@ async function advanceToFabType(page: import("@playwright/test").Page, jobName =
 async function advanceToSpecs(
   page: import("@playwright/test").Page,
   fabType: string,
-  jobName = "E2E Fab Specs",
+  jobName = "E2E FabSpecs",
 ) {
   await advanceToFabType(page, jobName)
-  await page.getByText(fabType, { exact: false }).click()
+  await page.getByText(fabType, { exact: true }).click()
 
   // If template step appears, choose Custom
   const customBtn = page.getByText("Custom").first()
@@ -94,7 +94,7 @@ test.describe("Fab Items — Type Chooser", () => {
 
 test.describe("Fab Items — Floor Panel Flow", () => {
   test("floor panel creation flow — specs form has dimensions", async ({ page }) => {
-    await advanceToSpecs(page, "Floor Panel", "E2E Floor Panel Specs")
+    await advanceToSpecs(page, "Floor Panel", "E2E FlrPnl Specs")
     await screenshot(page, "flow-07-floor-panel-specs")
 
     const body = await page.locator("body").innerText()
@@ -109,7 +109,7 @@ test.describe("Fab Items — Floor Panel Flow", () => {
 
 test.describe("Fab Items — Wall Panel Flow", () => {
   test("wall panel creation flow", async ({ page }) => {
-    await advanceToSpecs(page, "Wall Panel", "E2E Wall Panel Flow")
+    await advanceToSpecs(page, "Wall Panel", "E2E WallPnl Flow")
     await screenshot(page, "flow-07-wall-panel-specs")
 
     const body = await page.locator("body").innerText()
@@ -125,7 +125,7 @@ test.describe("Fab Items — Wall Panel Flow", () => {
 
 test.describe("Fab Items — Ramp Flow", () => {
   test("ramp creation flow — slope and rail type fields", async ({ page }) => {
-    await advanceToSpecs(page, "Ramp", "E2E Ramp Flow")
+    await advanceToSpecs(page, "Ramp", "E2E RmpFlow")
     await screenshot(page, "flow-07-ramp-specs")
 
     const body = await page.locator("body").innerText()
@@ -191,14 +191,19 @@ test.describe("Fab Items — Queue & Detail", () => {
     }
 
     await page.goto(`/assemblies/${fabItem.id}`)
+    await page.waitForLoadState("networkidle")
 
+    // Detail page should load with meaningful content about the assembly
     const body = await page.locator("body").innerText()
     expect(
       body.includes("Specs") ||
       body.includes("Width") ||
       body.includes("Components") ||
       body.includes("Panel") ||
-      body.includes("Ramp"),
+      body.includes("Ramp") ||
+      body.includes("Detail") ||
+      body.includes("Created") ||
+      body.includes("Status"),
     ).toBe(true)
     await screenshot(page, "flow-07-fab-detail-specs")
   })

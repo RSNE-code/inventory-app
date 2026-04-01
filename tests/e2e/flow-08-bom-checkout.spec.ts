@@ -48,8 +48,8 @@ test.describe("BOM Checkout — Pick Mode", () => {
     await page.goto(`/boms/${bom.id}`)
     await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
 
-    // Pick section header: "N of M fulfilled"
-    await expect(page.getByText(/\d+ of \d+ fulfilled/)).toBeVisible({ timeout: 10_000 })
+    // Pick section shows "Items (N)" header with pick circles
+    await expect(page.getByText(/Items \(\d+\)/)).toBeVisible({ timeout: 10_000 })
 
     // Items should be visible
     await expect(page.getByText("Checkout Item A")).toBeVisible()
@@ -62,14 +62,12 @@ test.describe("BOM Checkout — Pick Mode", () => {
 
     await page.goto(`/boms/${bom.id}`)
     await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText("Checkout Item A")).toBeVisible({ timeout: 10_000 })
 
-    // Click on the first item's pick circle to select it
-    const itemRow = page.getByText("Checkout Item A")
-    await expect(itemRow).toBeVisible({ timeout: 10_000 })
-
-    // Click the pick circle button (preceding the item text)
-    const pickCircle = itemRow.locator("..").locator("..").locator("button").first()
-    if (await pickCircle.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    // Click the pick circle (round button before item text) to select it
+    // Pick circles are rendered as round buttons in each BomLineItemRow
+    const pickCircle = page.locator("button.ios-press").first()
+    if (await pickCircle.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await pickCircle.click()
     }
 
@@ -80,17 +78,19 @@ test.describe("BOM Checkout — Pick Mode", () => {
     await screenshot(page, "flow-08-pick-enables-checkout")
   })
 
-  test("Select All picks all remaining items", async ({ page }) => {
+  test("picking all items enables checkout button with correct count", async ({ page }) => {
     const bom = await createApprovedBom(page, `E2E Select All ${Date.now()}`)
 
     await page.goto(`/boms/${bom.id}`)
     await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText(/\d+ of \d+ fulfilled/)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Items \(\d+\)/)).toBeVisible({ timeout: 10_000 })
 
-    // Click "Select All"
-    const selectAllBtn = page.getByText("Select All")
-    await expect(selectAllBtn).toBeVisible({ timeout: 5_000 })
-    await selectAllBtn.click()
+    // Click all pick circles to select all items
+    const pickCircles = page.locator("button.ios-press")
+    const count = await pickCircles.count()
+    for (let i = 0; i < count; i++) {
+      await pickCircles.nth(i).click()
+    }
 
     // Checkout button should show count matching total items
     await expect(
@@ -108,10 +108,14 @@ test.describe("BOM Checkout — Pick Mode", () => {
 
     await page.goto(`/boms/${bom.id}`)
     await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText(/\d+ of \d+ fulfilled/)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Items \(\d+\)/)).toBeVisible({ timeout: 10_000 })
 
-    // Select all
-    await page.getByText("Select All").click()
+    // Click all pick circles
+    const pickCircles = page.locator("button.ios-press")
+    const count = await pickCircles.count()
+    for (let i = 0; i < count; i++) {
+      await pickCircles.nth(i).click()
+    }
 
     // Should say "Check Out 3 Items" (3 line items)
     await expect(
@@ -142,7 +146,7 @@ test.describe("BOM Checkout — Fully Checked Out Items", () => {
     await screenshot(page, "flow-08-green-check")
 
     // The fulfilled counter should show progress
-    await expect(page.getByText(/\d+ of \d+ fulfilled/)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Items \(\d+\)/)).toBeVisible({ timeout: 10_000 })
   })
 
   test("Need more? link appears on fully-checked-out items", async ({ page }) => {
@@ -211,14 +215,8 @@ test.describe("BOM Checkout — IN_PROGRESS Actions", () => {
   test("IN_PROGRESS BOM shows Add Material and Return buttons", async ({ page }) => {
     const bom = await getBomByStatus(page, "IN_PROGRESS")
     if (!bom) {
-      // Create and check out to get IN_PROGRESS
-      const newBom = await createApprovedBom(page, `E2E InProgress ${Date.now()}`, [
-        { productId: null, qtyNeeded: 1, isNonCatalog: true, nonCatalogName: "IP Test Item", tier: "TIER_2" },
-      ])
-      await page.goto(`/boms/${newBom.id}`)
-      await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
-      await screenshot(page, "flow-08-approved-before-ip")
-      // Cannot advance to IN_PROGRESS without checking out — test approved state
+      // No IN_PROGRESS BOMs exist — skip (requires checkout to reach this state)
+      test.skip()
       return
     }
 

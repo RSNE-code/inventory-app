@@ -23,7 +23,9 @@ export async function goToDashboard(page: Page) {
 
 export async function goToInventory(page: Page) {
   await page.goto("/inventory")
-  await expect(page.locator("text=Inventory")).toBeVisible({ timeout: 15_000 })
+  await expect(
+    page.getByRole("heading", { name: "Product Catalog" })
+  ).toBeVisible({ timeout: 15_000 })
 }
 
 export async function goToBomList(page: Page) {
