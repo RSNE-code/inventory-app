@@ -2,44 +2,24 @@
 
 ## Skill Usage Rules — BLOCKING
 
-Claude has access to installed skill plugins. **These are NOT optional. Skipping them will produce rejected work.**
+Skill gates are enforced via `.claude/rules/skill-gates.md` — read it. The full gate table, triggers, and process are there. Summary:
 
-### Every session, no exceptions
-- **`frontend-design`** + **`design-inspiration`** — Before writing ANY frontend/UI code. Design first, then verify against design system tokens, code second.
-- **`self-improving-agent`** — Run `/si:review` periodically to keep memory clean and promote proven patterns.
+- **UI/frontend** → `frontend-design` + `design-inspiration` first
+- **API/backend/architecture** → `engineering-skills` first
+- **Schema/security/infra** → `engineering-advanced-skills` first
+- **Product/UX decisions** → `product-skills` first
+- **Every session** → `/si:review` periodically to keep memory clean
 
-### Skill Gates (enforced via `.claude/rules/skill-gates.md`)
-
-Before writing ANY plan or code, STOP and check which gates apply:
-
-| If the work touches... | STOP and invoke FIRST | Then proceed |
-|------------------------|----------------------|--------------|
-| UI components or pages | `frontend-design` + `design-inspiration` | Write UI code |
-| API routes or backend logic | `engineering-skills` (backend) | Write API code |
-| Architecture or new modules | `engineering-skills` (architecture, fullstack) | Write system design |
-| Database schema or migrations | `engineering-advanced-skills` (database design) | Write schema changes |
-| Auth, payments, API keys, security | `engineering-advanced-skills` (security auditing) | Write security code |
-| Product decisions, feature prioritization | `product-skills` (product manager, product strategist) | Make product decisions |
-| UX flows or usability | `product-skills` (UX researcher) | Design UX flows |
-| Business model, pricing | `c-level-skills`, `finance-skills` | Make business decisions |
-| Tests or debugging | `engineering-skills` (QA) | Write tests |
-| Deployment, CI/CD, infrastructure | `engineering-advanced-skills` (DevOps, release management) | Write infra code |
-
-### How it works
-- **`/create-plan`** has a mandatory Skill Invocation Phase before research. Skills are invoked, and their output goes into a "Skill Inputs" section in the plan.
-- **`/implement`** checks skill gates before each step. If a step touches a gated area, the skill is invoked before writing code for that step.
-- **Direct requests** (no plan): invoke relevant skills before writing any code.
-- When multiple skills apply (e.g., building a new page = `frontend-design` + `engineering-skills:fullstack`), invoke them in sequence: design first, then implement.
-- If a skill's output conflicts with an existing CLAUDE.md rule, the CLAUDE.md rule wins.
+**The process, always:** Skill Gate → Write Code → QA → Commit/Push. No shortcuts.
 
 ---
 
 ## The Claude-User Relationship
 
-Claude is the **sole developer**. Gabe is the owner/product director — he has no coding experience and does not review code, debug, or manage infrastructure. The relationship is:
+Claude is the **sole developer**. Gabe is the owner/product director — no coding experience, does not review code or manage infrastructure.
 
-- **Gabe**: Provides product direction, priorities, and feedback. Knows what the app should do, not how to build it.
-- **Claude**: Makes ALL technical decisions, writes ALL code, sets up ALL infrastructure, and handles ALL tooling. Never asks Gabe technical questions (e.g., "have you created a Supabase project?", "what's your connection string?"). If something technical needs doing, Claude does it or gives Gabe exact click-by-click instructions when account creation requires his identity.
+- **Gabe**: Product direction, priorities, feedback.
+- **Claude**: All technical decisions, all code, all infrastructure. Never asks Gabe technical questions. If something needs doing, Claude does it or gives exact click-by-click instructions when identity is required.
 
 ---
 
@@ -47,135 +27,47 @@ Claude is the **sole developer**. Gabe is the owner/product director — he has 
 
 ```
 .
-├── CLAUDE.md              # This file — core context, always loaded
+├── CLAUDE.md              # This file
 ├── .claude/
-│   └── commands/          # Slash commands Claude can execute
-│       ├── prime.md       # /prime — session initialization
-│       ├── create-plan.md  # /create-plan — create implementation plans
-│       ├── implement.md   # /implement — execute plans
-│       └── qa.md          # /qa — full app quality audit
-├── context/               # Background context — project goals, PRD, strategy, tech stack
+│   ├── commands/          # /prime, /create-plan, /implement, /qa, /ux-audit, /walkthrough, /si:*
+│   └── rules/             # Scoped rule files (skill-gates, design-references, workflow-conventions)
+├── context/               # PRD, project goals, tech stack, AI module, project status
 ├── plans/
 │   ├── active/            # Draft or in-progress plans
 │   └── completed/         # Implemented plans (historical reference)
-├── outputs/
-│   ├── qa-reports/        # QA audit reports by date
-│   ├── audits/            # UX/design audit reports
-│   ├── data/              # Extracted data, CSVs, JSONs
-│   └── images/            # Generated images, photos
-├── reference/
-│   ├── docs/              # Technical docs — API, schema, design system, UX checklist
-│   ├── data/              # Source data — Excel exports, catalogs, PO data
-│   └── images/            # Door drawings, UI samples, team photos
-└── scripts/               # Automation — UX lint, token audit, test generation
+├── outputs/               # qa-reports/, audits/, data/, images/
+├── reference/             # docs/, data/, images/
+└── scripts/               # UX lint, token audit, accessibility check
 ```
 
-**Key directories:**
-
-| Directory              | Purpose                                                                    |
-| ---------------------- | -------------------------------------------------------------------------- |
-| `context/`             | Who the user is, PRD, project goals, strategy, tech stack. Read by `/prime`. |
-| `plans/active/`        | Plans being drafted or executed. Created by `/create-plan`.                |
-| `plans/completed/`     | Implemented plans — historical reference only.                             |
-| `outputs/qa-reports/`  | QA audit reports by date.                                                  |
-| `outputs/audits/`      | UX and design audit reports.                                               |
-| `reference/docs/`      | Technical docs — API, schema, design system, UX checklist, business logic. |
-| `reference/data/`      | Source data — Excel catalogs, PO exports, supplier lists.                  |
-| `scripts/`             | UX lint, token audit, accessibility check, test generation.                |
+After any workspace change, check: does CLAUDE.md, context/, or reference/ need updating?
 
 ---
 
 ## Commands
 
-### /prime
+| Command | Purpose |
+|---------|---------|
+| `/prime` | Initialize session — reads CLAUDE.md + context files |
+| `/create-plan [request]` | Create a dated plan in `plans/active/` before making changes |
+| `/implement [plan-path]` | Execute a plan step-by-step with QA at each step |
+| `/ux-audit [focus]` | UX quality audit — runs `npm run ux:all` + manual review |
+| `/walkthrough [workflow]` | Simulate a user workflow, identify friction points |
+| `/si:review` | Audit auto-memory — find promotion candidates, stale entries |
+| `/si:promote` | Graduate a memory pattern → CLAUDE.md or `.claude/rules/` |
+| `/si:status` | Memory health dashboard |
+| `/si:remember` | Explicitly save knowledge to auto-memory |
+| `/si:extract` | Turn a proven pattern into a reusable skill |
 
-**Purpose:** Initialize a new session with full context awareness.
+**Session workflow:** `/prime` → work → `/create-plan` for significant changes → `/implement` → commit/push.
 
-Run this at the start of every session. Claude will:
-
-1. Read CLAUDE.md and context files
-2. Summarize understanding of the user, workspace, and goals
-3. Confirm readiness to assist
-
-### /create-plan [request]
-
-**Purpose:** Create a detailed implementation plan before making changes.
-
-Use when adding new functionality, commands, scripts, or making structural changes. Produces a thorough plan document in `plans/` that captures context, rationale, and step-by-step tasks.
-
-Example: `/create-plan add a competitor analysis command`
-
-### /implement [plan-path]
-
-**Purpose:** Execute a plan created by /create-plan.
-
-Reads the plan, executes each step in order, validates the work, and updates the plan status.
-
-Example: `/implement plans/2026-01-28-competitor-analysis-command.md`
-
-### /ux-audit [focus]
-
-**Purpose:** Run a comprehensive UX quality audit — design tokens, button affordance, mobile layout, copy review.
-
-Runs automated scripts (`npm run ux:all`) plus manual review across 6 phases. Produces a report in `outputs/`.
-
-Example: `/ux-audit boms`
-
-### /walkthrough [workflow]
-
-**Purpose:** Simulate a user workflow step-by-step and identify friction points.
-
-Predefined workflows: `bom-creation`, `bom-photo`, `bom-checkout`, `receiving`, `door-creation`, `inventory-adjust`, `cycle-count`. Produces a report in `outputs/`.
-
-Example: `/walkthrough bom-creation`
-
-### UX Scripts (npm)
-
-```bash
-npm run ux:lint     # UX anti-pattern linter
-npm run ux:tokens   # Design token consistency checker
-npm run ux:a11y     # Accessibility checker
-npm run ux:all      # Run all three
-```
+**UX scripts:** `npm run ux:lint` · `npm run ux:tokens` · `npm run ux:a11y` · `npm run ux:all`
 
 ---
-
-## Critical Instruction: Maintain Context and Reference Files
-
-**Whenever Claude makes changes to the workspace, Claude MUST consider whether reference and/or context files need updating.**
-
-After any change — adding commands, scripts, workflows, or modifying structure — ask:
-
-1. Does this change add new functionality users need to know about?
-2. Does it modify the workspace structure documented above?
-3. Should a new command be listed?
-4. Does context/ or reference/ need new files to capture this?
-
-If yes to any, update the relevant sections. Context files must always reflect the current state of the workspace so future sessions have accurate context.
-
----
-
-## Session Workflow
-
-1. **Start**: Run `/prime` to load context
-2. **Work**: Use commands or direct Claude with tasks
-3. **Plan changes**: Use `/create-plan` before significant additions
-4. **Execute**: Use `/implement` to execute plans
-5. **Maintain**: Claude updates CLAUDE.md and context/ as the workspace evolves
-
----
-
-## UI Change Rule: Don't Over-Redesign
-- **Never redesign working UI without strong justification.** Make minimal, targeted changes. If the original works, keep it.
-- Specific patterns that work and must not be changed without Gabe's explicit request:
-  - PO cards: navy badge, job name on its own line with Briefcase icon, Building2 supplier icon
-  - Mic button: simple Mic/MicOff toggle (no animated orbs or Shazam-style redesigns)
-  - Attribute pills: full-size with icons (no compact/dot-separator variants)
-- Changes that reduce readability or break established layout patterns will be rejected.
 
 ## RSNE Inventory App
 
-The app lives in `inventory-management-app/`. Detailed technical reference is split across context files — read these when working on the app:
+Context files — read when working on the app:
 
 | File | Contents |
 |------|----------|
@@ -185,9 +77,27 @@ The app lives in `inventory-management-app/`. Detailed technical reference is sp
 
 ---
 
-## Notes
+## UI Rules
 
-- Keep context minimal but sufficient — avoid bloat
-- Plans live in `plans/` with dated filenames for history
-- Outputs are organized by type/purpose in `outputs/`
-- Reference materials go in `reference/` for reuse
+**Don't over-redesign.** Make minimal, targeted changes. If the original works, keep it.
+
+Locked patterns (do not change without explicit request):
+- PO cards: navy badge, job name on its own line with Briefcase icon, Building2 supplier icon
+- Mic button: simple Mic/MicOff toggle (no animated orbs or Shazam-style redesigns)
+- Attribute pills: full-size with icons (no compact/dot-separator variants)
+
+**No breadcrumbs** in workflow pages. The Header `showBack` prop is the only navigation needed.
+
+**Consistent data structure.** Every data display must show the same columns/rows for all items. Never conditionally hide empty fields — show "Not specified" instead. Think of it like a table: every row must have the same columns.
+
+Changes that reduce readability or break established layout patterns will be rejected.
+
+**Never use `router.push()` for card/item click navigation.** It silently fails in this app. Always use `window.location.href = \`/path/${id}\`` in onClick handlers. This has broken twice — once for the New Door button, once for AssemblyCard + BomCard refactors. `<Link>` wrappers are fine for simple cases, but when the card has interactive children (buttons, badges) that need `stopPropagation`, use `window.location.href` on the parent.
+
+---
+
+## Workflow Rules
+
+**Always commit and push after implementation.** After any code changes: `git add` the specific files, commit with a descriptive message, push to `origin/main`. Do not wait to be asked.
+
+**Mirror existing workflows element-by-element.** Before building a new workflow that parallels an existing one, read the existing workflow file line-by-line and make an explicit checklist of every UI element. Copy exact patterns (classes, structure, icons) — don't recreate from memory. See `.claude/rules/workflow-conventions.md`.
