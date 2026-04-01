@@ -35,7 +35,7 @@ export async function goToBomList(page: Page) {
 
 export async function goToAssemblies(page: Page) {
   await page.goto("/assemblies")
-  await expect(page.locator("text=Door Shop").or(page.locator("text=Fabrication"))).toBeVisible({
+  await expect(page.locator("text=Door Shop").or(page.locator("text=Fabrication")).first()).toBeVisible({
     timeout: 15_000,
   })
 }
