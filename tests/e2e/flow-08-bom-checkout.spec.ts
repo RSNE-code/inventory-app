@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { screenshot, createTestBom, getBomByStatus } from "./helpers"
+import { screenshot, createTestBom, getBomByStatus, createInProgressBom, createApprovedBomWithProduct } from "./helpers"
 
 /**
  * BOM Checkout Flow Tests
@@ -213,23 +213,14 @@ test.describe("BOM Checkout — Timestamps", () => {
 
 test.describe("BOM Checkout — IN_PROGRESS Actions", () => {
   test("IN_PROGRESS BOM shows Add Material and Return buttons", async ({ page }) => {
-    const bom = await getBomByStatus(page, "IN_PROGRESS")
-    if (!bom) {
-      // No IN_PROGRESS BOMs exist — skip (requires checkout to reach this state)
-      test.skip()
-      return
-    }
+    // Create a BOM, approve it, checkout an item → auto-transitions to IN_PROGRESS
+    const { bom } = await createInProgressBom(page)
 
     await page.goto(`/boms/${bom.id}`)
     await expect(page.getByText("BOM Detail")).toBeVisible({ timeout: 15_000 })
 
-    // Wait for BOM content to load (not just the header)
-    const hasContent = await page.getByText(/Items \(\d+\)/).isVisible({ timeout: 10_000 }).catch(() => false)
-    if (!hasContent) {
-      // BOM exists but content didn't render — stale data
-      test.skip()
-      return
-    }
+    // Wait for BOM content to load
+    await expect(page.getByText(/Items \(\d+\)/)).toBeVisible({ timeout: 10_000 })
 
     // IN_PROGRESS BOM should show lifecycle at step 4 and action buttons
     const body = await page.locator("body").innerText()

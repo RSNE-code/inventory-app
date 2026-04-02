@@ -140,6 +140,153 @@ export async function getAssemblies(page: Page, type?: string) {
   return json.data ?? []
 }
 
+// ─── Test data seeding helpers ──────────────────────────────────────
+
+const BASE = "http://localhost:3000"
+
+/** Get or create a category for test products */
+async function getTestCategoryId(page: Page): Promise<string> {
+  const res = await page.request.get(`${BASE}/api/categories`)
+  if (res.ok()) {
+    const json = await res.json()
+    const categories = json.data || []
+    if (categories.length > 0) return categories[0].id
+  }
+  throw new Error("No categories found in database")
+}
+
+/** Create a real product in inventory for Quick Pick testing */
+export async function createTestProduct(page: Page, name?: string) {
+  const categoryId = await getTestCategoryId(page)
+  const productName = name || `E2E Test Product ${Date.now()}`
+
+  const res = await page.request.post(`${BASE}/api/inventory`, {
+    data: {
+      name: productName,
+      categoryId,
+      unitOfMeasure: "ea",
+      tier: "TIER_2",
+      reorderPoint: 0,
+    },
+  })
+
+  if (!res.ok()) {
+    throw new Error(`Failed to create product: ${res.status()} ${await res.text()}`)
+  }
+
+  const json = await res.json()
+  return json.data as { id: string; name: string }
+}
+
+/** Create an APPROVED BOM with catalog line items for checkout testing */
+export async function createApprovedBomWithProduct(page: Page, jobName?: string) {
+  const product = await createTestProduct(page, `E2E Checkout Product ${Date.now()}`)
+
+  const bom = await createTestBom(page, {
+    jobName: jobName || `E2E Checkout BOM ${Date.now()}`,
+    lineItems: [
+      { productId: product.id, qtyNeeded: 5, tier: "TIER_2" },
+    ],
+  })
+
+  // Approve the BOM
+  await page.request.put(`${BASE}/api/boms/${bom.id}`, {
+    data: { status: "APPROVED" },
+  })
+
+  return { bom, product }
+}
+
+/** Create an IN_PROGRESS BOM by creating, approving, and checking out an item */
+export async function createInProgressBom(page: Page) {
+  const { bom, product } = await createApprovedBomWithProduct(
+    page,
+    `E2E InProgress ${Date.now()}`
+  )
+
+  // Get the line item ID from the BOM
+  const bomRes = await page.request.get(`${BASE}/api/boms/${bom.id}`)
+  if (!bomRes.ok()) throw new Error("Failed to fetch BOM details")
+  const bomData = await bomRes.json()
+  const lineItem = bomData.data?.lineItems?.[0]
+  if (!lineItem) throw new Error("BOM has no line items")
+
+  // Checkout the item — this auto-transitions BOM to IN_PROGRESS
+  const checkoutRes = await page.request.post(`${BASE}/api/boms/${bom.id}/checkout`, {
+    data: {
+      items: [{ bomLineItemId: lineItem.id, type: "CHECKOUT", quantity: 1 }],
+    },
+  })
+
+  if (!checkoutRes.ok()) {
+    const errText = await checkoutRes.text()
+    throw new Error(`Failed to checkout: ${checkoutRes.status()} ${errText}`)
+  }
+
+  return { bom, product, lineItemId: lineItem.id }
+}
+
+/** Create an assembly and advance it through lifecycle stages */
+export async function createTestAssembly(
+  page: Page,
+  options: {
+    type?: string
+    status?: "AWAITING_APPROVAL" | "APPROVED" | "IN_PRODUCTION" | "COMPLETED" | "SHIPPED"
+    jobName?: string
+  } = {}
+) {
+  const {
+    type = "DOOR",
+    status = "AWAITING_APPROVAL",
+    jobName = `E2E Assembly ${Date.now()}`,
+  } = options
+
+  // Create assembly
+  const createRes = await page.request.post(`${BASE}/api/assemblies`, {
+    data: {
+      type,
+      jobName,
+      requiresApproval: true,
+      specs: type === "DOOR"
+        ? { widthInClear: "36", heightInClear: "84", temperatureType: "COOLER", frameType: "FULL_FRAME" }
+        : { width: "48", length: "96" },
+    },
+  })
+
+  if (!createRes.ok()) {
+    throw new Error(`Failed to create assembly: ${createRes.status()} ${await createRes.text()}`)
+  }
+
+  const assembly = (await createRes.json()).data
+
+  // Advance through lifecycle stages as needed
+  if (status === "AWAITING_APPROVAL") return assembly
+
+  // Approve
+  await page.request.patch(`${BASE}/api/assemblies/${assembly.id}`, {
+    data: { approvalStatus: "APPROVED" },
+  })
+  if (status === "APPROVED") return assembly
+
+  // Start build
+  await page.request.patch(`${BASE}/api/assemblies/${assembly.id}`, {
+    data: { status: "IN_PRODUCTION" },
+  })
+  if (status === "IN_PRODUCTION") return assembly
+
+  // Complete build
+  await page.request.patch(`${BASE}/api/assemblies/${assembly.id}`, {
+    data: { status: "COMPLETED" },
+  })
+  if (status === "COMPLETED") return assembly
+
+  // Ship
+  await page.request.patch(`${BASE}/api/assemblies/${assembly.id}`, {
+    data: { status: "SHIPPED" },
+  })
+  return assembly
+}
+
 // ─── Console error collector ────────────────────────────────────────
 
 export function collectConsoleErrors(page: Page) {

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { screenshot, goToAssemblies, getAssemblies } from "./helpers"
+import { screenshot, goToAssemblies, getAssemblies, createTestAssembly } from "./helpers"
 
 /**
  * Shipping Flow Tests
@@ -52,13 +52,13 @@ test.describe("Shipping — Completed Assemblies", () => {
 
 test.describe("Shipping — Assembly Lifecycle", () => {
   test("assembly detail shows lifecycle stages", async ({ page }) => {
-    const assemblies = await getAssemblies(page)
-    if (assemblies.length === 0) {
-      test.skip()
-      return
-    }
+    // Create an assembly so we always have one to test
+    const assembly = await createTestAssembly(page, {
+      type: "DOOR",
+      status: "AWAITING_APPROVAL",
+      jobName: `E2E Lifecycle ${Date.now()}`,
+    })
 
-    const assembly = assemblies[0]
     await page.goto(`/assemblies/${assembly.id}`)
 
     // Lifecycle tracker should show stage labels
@@ -69,15 +69,12 @@ test.describe("Shipping — Assembly Lifecycle", () => {
   })
 
   test("Start Build button works from APPROVED", async ({ page }) => {
-    const assemblies = await getAssemblies(page)
-    const approved = assemblies.find(
-      (a: any) => a.status === "APPROVED" || a.status === "AWAITING_APPROVAL",
-    )
-
-    if (!approved) {
-      test.skip()
-      return
-    }
+    // Create an APPROVED assembly
+    const approved = await createTestAssembly(page, {
+      type: "DOOR",
+      status: "APPROVED",
+      jobName: `E2E StartBuild ${Date.now()}`,
+    })
 
     await page.goto(`/assemblies/${approved.id}`)
 
@@ -105,15 +102,12 @@ test.describe("Shipping — Assembly Lifecycle", () => {
   })
 
   test("Complete Build transitions to COMPLETED", async ({ page }) => {
-    const assemblies = await getAssemblies(page)
-    const building = assemblies.find(
-      (a: any) => a.status === "IN_PRODUCTION",
-    )
-
-    if (!building) {
-      test.skip()
-      return
-    }
+    // Create an IN_PRODUCTION assembly
+    const building = await createTestAssembly(page, {
+      type: "DOOR",
+      status: "IN_PRODUCTION",
+      jobName: `E2E CompleteBuild ${Date.now()}`,
+    })
 
     await page.goto(`/assemblies/${building.id}`)
 
@@ -121,26 +115,20 @@ test.describe("Shipping — Assembly Lifecycle", () => {
     await expect(completeBuildBtn).toBeVisible({ timeout: 10_000 })
     await completeBuildBtn.click()
 
-    // Should transition to COMPLETED
-    const body = await page.locator("body").innerText()
-    expect(
-      body.includes("Completed") ||
-      body.includes("COMPLETED") ||
-      body.includes("Mark as Shipped"),
-    ).toBe(true)
+    // Wait for status transition — toast or badge confirms completion
+    await expect(
+      page.getByText("Build completed").or(page.getByText("Mark as Shipped"))
+    ).toBeVisible({ timeout: 15_000 })
     await screenshot(page, "flow-09-complete-build")
   })
 
   test("Mark as Shipped transitions to SHIPPED", async ({ page }) => {
-    const assemblies = await getAssemblies(page)
-    const completed = assemblies.find(
-      (a: any) => a.status === "COMPLETED" || a.status === "ALLOCATED",
-    )
-
-    if (!completed) {
-      test.skip()
-      return
-    }
+    // Create a COMPLETED assembly ready to ship
+    const completed = await createTestAssembly(page, {
+      type: "DOOR",
+      status: "COMPLETED",
+      jobName: `E2E Ship ${Date.now()}`,
+    })
 
     await page.goto(`/assemblies/${completed.id}`)
 
