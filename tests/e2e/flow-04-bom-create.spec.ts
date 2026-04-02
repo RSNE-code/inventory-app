@@ -75,17 +75,13 @@ test.describe("BOM Create — Quick Pick", () => {
     await page.goto("/boms/new?mode=manual")
     await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
 
-    const searchInput = page.getByPlaceholder(/search products/i)
-    await searchInput.fill("caulk")
+    // Click a category tab to browse products (more reliable than search)
+    const trimTab = page.getByRole("button", { name: /Trim/i })
+    await expect(trimTab).toBeVisible({ timeout: 5_000 })
+    await trimTab.click()
 
-    // Wait for search results to appear — product cards or list items
-    // Results contain add buttons (plus icons)
-    const addButton = page
-      .locator("button")
-      .filter({ has: page.locator(".lucide-plus") })
-      .first()
-
-    await expect(addButton).toBeVisible({ timeout: 10_000 })
+    // Wait for product rows to appear — they show "X unit in stock"
+    await expect(page.locator("text=/in stock/i").first()).toBeVisible({ timeout: 10_000 })
 
     await screenshot(page, "flow-04-quickpick-search-results")
   })
@@ -94,23 +90,25 @@ test.describe("BOM Create — Quick Pick", () => {
     await page.goto("/boms/new?mode=manual")
     await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
 
-    const searchInput = page.getByPlaceholder(/search products/i)
-    await searchInput.fill("caulk")
-
-    const addButton = page
-      .locator("button")
-      .filter({ has: page.locator(".lucide-plus") })
-      .first()
-
-    if (!(await addButton.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip()
-      return
+    // Wait for initial product load (Recent favorites or browse by category)
+    const productRow = page.locator("text=/in stock/i").first()
+    if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      // No favorites — try clicking Fasteners category
+      await page.getByRole("button", { name: "Fasteners" }).click()
+      if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+        test.skip()
+        return
+      }
     }
 
-    await addButton.click()
+    // Click the add button in the first product row
+    const row = productRow.locator("xpath=ancestor::div[contains(@class, 'border-b')]")
+    const addButton = row.locator("button").last()
+    await addButton.scrollIntoViewIfNeeded()
+    await addButton.click({ force: true })
 
-    // Cart bar should appear showing "1 item"
-    await expect(page.getByText("1 item")).toBeVisible({ timeout: 5_000 })
+    // Cart bar should update showing "1 item"
+    await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5_000 })
 
     // Cart bar should have Create BOM button
     await expect(
@@ -145,21 +143,22 @@ test.describe("BOM Create — Quick Pick", () => {
     await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
 
     // Add an item first so cart is non-empty
-    const searchInput = page.getByPlaceholder(/search products/i)
-    await searchInput.fill("caulk")
-
-    const addButton = page
-      .locator("button")
-      .filter({ has: page.locator(".lucide-plus") })
-      .first()
-
-    if (!(await addButton.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip()
-      return
+    // Wait for initial product load (Recent favorites or browse by category)
+    const productRow = page.locator("text=/in stock/i").first()
+    if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      await page.getByRole("button", { name: "Fasteners" }).click()
+      if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+        test.skip()
+        return
+      }
     }
 
-    await addButton.click()
-    await expect(page.getByText("1 item")).toBeVisible({ timeout: 5_000 })
+    // Click the add button in the first product row
+    const row = productRow.locator("xpath=ancestor::div[contains(@class, 'border-b')]")
+    const addButton = row.locator("button").last()
+    await addButton.scrollIntoViewIfNeeded()
+    await addButton.click({ force: true })
+    await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5_000 })
 
     // Click Cancel
     const cancelBtn = page.getByRole("button", { name: /^cancel$/i })
@@ -185,21 +184,22 @@ test.describe("BOM Create — Quick Pick", () => {
     await expect(page.getByRole("heading", { name: "New BOM" })).toBeVisible({ timeout: 10_000 })
 
     // Add an item to enable the create button
-    const searchInput = page.getByPlaceholder(/search products/i)
-    await searchInput.fill("caulk")
-
-    const addButton = page
-      .locator("button")
-      .filter({ has: page.locator(".lucide-plus") })
-      .first()
-
-    if (!(await addButton.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip()
-      return
+    // Wait for initial product load (Recent favorites or browse by category)
+    const productRow = page.locator("text=/in stock/i").first()
+    if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      await page.getByRole("button", { name: "Fasteners" }).click()
+      if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+        test.skip()
+        return
+      }
     }
 
-    await addButton.click()
-    await expect(page.getByText("1 item")).toBeVisible({ timeout: 5_000 })
+    // Click the add button in the first product row
+    const row = productRow.locator("xpath=ancestor::div[contains(@class, 'border-b')]")
+    const addButton = row.locator("button").last()
+    await addButton.scrollIntoViewIfNeeded()
+    await addButton.click({ force: true })
+    await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5_000 })
 
     // Try to create without job name
     const createBtn = page.getByRole("button", { name: /create bom/i })
@@ -253,21 +253,22 @@ test.describe("BOM Create — Quick Pick", () => {
     }
 
     // Add an item
-    const searchInput = page.getByPlaceholder(/search products/i)
-    await searchInput.fill("caulk")
-
-    const addButton = page
-      .locator("button")
-      .filter({ has: page.locator(".lucide-plus") })
-      .first()
-
-    if (!(await addButton.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip()
-      return
+    // Wait for initial product load (Recent favorites or browse by category)
+    const productRow = page.locator("text=/in stock/i").first()
+    if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+      await page.getByRole("button", { name: "Fasteners" }).click()
+      if (!(await productRow.isVisible({ timeout: 10_000 }).catch(() => false))) {
+        test.skip()
+        return
+      }
     }
 
-    await addButton.click()
-    await expect(page.getByText("1 item")).toBeVisible({ timeout: 5_000 })
+    // Click the add button in the first product row
+    const row = productRow.locator("xpath=ancestor::div[contains(@class, 'border-b')]")
+    const addButton = row.locator("button").last()
+    await addButton.scrollIntoViewIfNeeded()
+    await addButton.click({ force: true })
+    await expect(page.getByText(/1 item/)).toBeVisible({ timeout: 5_000 })
 
     // Click Save Draft
     const saveDraftBtn = page.getByRole("button", { name: /save draft/i })

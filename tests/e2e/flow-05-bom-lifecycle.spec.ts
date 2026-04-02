@@ -85,11 +85,9 @@ test.describe("BOM Lifecycle — Draft", () => {
     await expect(submitBtn).toBeVisible()
     await submitBtn.click()
 
-    // Status should change — look for Review badge or Approve button
+    // Status should change — look for Pending Review badge
     await expect(
-      page.getByText(/pending/i)
-        .or(page.getByRole("button", { name: /approve bom/i }))
-        .or(page.getByRole("button", { name: /cancel bom/i }))
+      page.getByText("Pending Review")
     ).toBeVisible({ timeout: 10_000 })
 
     await screenshot(page, "flow-05-submitted-for-review")
