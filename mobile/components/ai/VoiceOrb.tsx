@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { StyleSheet, View, Pressable } from "react-native";
 import Animated, {
   useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay,
-  Easing, cancelAnimation,
+  Easing, cancelAnimation, type SharedValue,
 } from "react-native-reanimated";
 import { Mic, MicOff } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -42,7 +42,7 @@ export function VoiceOrb({ isListening, onPress, size = 64 }: VoiceOrbProps) {
     }
   }, [isListening]);
 
-  const makeWaveStyle = (scale: Animated.SharedValue<number>, opacity: Animated.SharedValue<number>) =>
+  const makeWaveStyle = (scale: SharedValue<number>, opacity: SharedValue<number>) =>
     useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }],
       opacity: opacity.value,
