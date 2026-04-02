@@ -28,7 +28,8 @@ import { CARD_ENTER_DELAY } from "@/constants/animations";
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const { userName } = useAuth();
-  const { data: dashboard, isLoading, error, refetch } = useDashboard();
+  const { data: rawDashboard, isLoading, error, refetch } = useDashboard();
+  const dashboard = (rawDashboard as any)?.data ?? rawDashboard;
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {

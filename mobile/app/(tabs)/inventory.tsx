@@ -32,8 +32,8 @@ export default function InventoryScreen() {
   const { data, isLoading, error, refetch } = useProducts({ search, category });
   const { data: categories } = useCategories();
 
-  const products = (data as { data?: Product[] })?.data ?? (Array.isArray(data) ? data : []);
-  const categoryList = (categories as { data?: { id: string; name: string }[] })?.data ?? (Array.isArray(categories) ? categories : []);
+  const products: Product[] = (data as any)?.data ?? [];
+  const categoryList = (categories as any)?.data ?? [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

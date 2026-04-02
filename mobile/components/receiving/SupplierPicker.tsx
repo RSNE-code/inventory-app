@@ -21,7 +21,7 @@ export function SupplierPicker({ selectedId, onSelect }: SupplierPickerProps) {
   const { data } = useSuppliers();
   const [search, setSearch] = useState("");
 
-  const suppliers = (data as { data?: Supplier[] })?.data ?? (Array.isArray(data) ? data : []);
+  const suppliers: Supplier[] = (data as any)?.data ?? [];
 
   const filtered = useMemo(() => {
     if (!search) return suppliers;

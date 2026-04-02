@@ -76,7 +76,7 @@ export async function apiFetch<T>(
     }
 
     const json = await res.json();
-    return json.data ?? json;
+    return json;
   } catch (e) {
     if (e instanceof AuthError || e instanceof ApiError) throw e;
     if (e instanceof DOMException && e.name === "AbortError") {

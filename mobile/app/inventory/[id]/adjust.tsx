@@ -50,7 +50,7 @@ export default function AdjustStockScreen() {
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
 
-  const product = (data as { data?: Record<string, unknown> })?.data ?? data;
+  const product = (data as any)?.data ?? data;
 
   if (isLoading || !product) {
     return (

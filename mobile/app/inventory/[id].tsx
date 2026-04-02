@@ -27,7 +27,7 @@ export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
   const { data, isLoading, error, refetch } = useProduct(id!);
 
-  const product = (data as { data?: Record<string, unknown> })?.data ?? data;
+  const product = (data as any)?.data ?? data;
 
   if (isLoading) {
     return (

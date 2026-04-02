@@ -38,8 +38,7 @@ export default function AssembliesScreen() {
     isShipping ? {} : { queueType: queueTab as "DOOR_SHOP" | "FABRICATION" }
   );
 
-  const result = data as { data?: Assembly[] } | Assembly[] | undefined;
-  const assemblies = Array.isArray(result) ? result : result?.data ?? [];
+  const assemblies: Assembly[] = (data as any)?.data ?? [];
   const shippingItems = isShipping
     ? assemblies.filter((a) => a.status === "COMPLETED" || a.status === "SHIPPED")
     : assemblies;

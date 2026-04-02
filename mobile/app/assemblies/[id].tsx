@@ -41,8 +41,7 @@ export default function AssemblyDetailScreen() {
   const updateMutation = useUpdateAssembly();
   const deleteMutation = useDeleteAssembly();
 
-  const assembly = (data as { data?: Assembly } | Assembly | undefined);
-  const a = ((assembly as { data?: Assembly })?.data ?? assembly) as Assembly | undefined;
+  const a = ((data as any)?.data ?? data) as Assembly | undefined;
 
   if (isLoading) return (<><Header title="Assembly" showBack /><LoadingState fullScreen /></>);
   if (error || !a) return (<><Header title="Not Found" showBack /><ErrorState message="Assembly not found" onRetry={() => refetch()} /></>);

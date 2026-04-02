@@ -47,8 +47,7 @@ export default function BomsScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const { data, isLoading, refetch } = useBoms({ search, status: statusFilter });
-  const result = data as { data?: Bom[] } | Bom[] | undefined;
-  const boms = Array.isArray(result) ? result : result?.data ?? [];
+  const boms: Bom[] = (data as any)?.data ?? [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

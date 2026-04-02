@@ -31,7 +31,7 @@ export default function BomDetailScreen() {
   const deleteBom = useDeleteBom();
   const checkoutMutation = useCheckoutBom();
 
-  const bom = (data as { data?: Record<string, unknown> })?.data ?? data;
+  const bom = (data as any)?.data ?? data;
 
   if (isLoading) {
     return (

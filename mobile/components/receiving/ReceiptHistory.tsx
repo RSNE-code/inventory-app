@@ -21,7 +21,7 @@ export function ReceiptHistory() {
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const { data, isLoading, refetch } = useReceiptHistory(search || undefined);
-  const receipts = (data as { data?: Receipt[] })?.data ?? (Array.isArray(data) ? data : []);
+  const receipts: Receipt[] = (data as any)?.data ?? [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

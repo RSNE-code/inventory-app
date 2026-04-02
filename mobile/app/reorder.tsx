@@ -37,7 +37,7 @@ export default function ReorderScreen() {
     queryFn: () => apiGet<ReorderItem[]>("/api/reorder-list"),
   });
 
-  const items = (data as { data?: ReorderItem[] })?.data ?? (Array.isArray(data) ? data : []);
+  const items: ReorderItem[] = (data as any)?.data ?? [];
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
