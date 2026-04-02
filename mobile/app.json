@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "ShopBot by RSNE",
+    "slug": "shopbot-rsne",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "shopbot",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1D3A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rsne.shopbot",
+      "appleTeamId": "DV49V2K3VD",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ShopBot uses the camera to scan packing slips and BOMs",
+        "NSMicrophoneUsageDescription": "ShopBot uses the microphone for voice input",
+        "NSSpeechRecognitionUsageDescription": "ShopBot uses speech recognition for voice commands",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1D3A"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.rsne.shopbot",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ShopBot uses the camera to scan packing slips and BOMs"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#2E7DBA"
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "ShopBot uses the microphone for voice input",
+          "speechRecognitionPermission": "ShopBot uses speech recognition for voice commands"
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "886c201d-d38c-4ae6-ad2d-bb2d1aa2c8be"
+      }
+    },
+    "owner": "rsneshopbot"
+  }
+}
