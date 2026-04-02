@@ -7,6 +7,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -56,12 +57,16 @@ export default function LoginScreen() {
           entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15).stiffness(150)}
           style={styles.card}
         >
-          {/* Logo pill */}
+          {/* Logo */}
           <Animated.View
             entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify()}
             style={styles.logoPill}
           >
-            <Text style={styles.logoText}>RSNE</Text>
+            <Image
+              source={require("../assets/logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </Animated.View>
 
           {/* Brand accent line */}
@@ -171,18 +176,14 @@ const styles = StyleSheet.create({
     ...shadowBrandLg,
   },
   logoPill: {
-    backgroundColor: colors.surfaceSecondary,
     borderRadius: radius.xl,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
+    overflow: "hidden",
     marginBottom: spacing.xl,
   },
-  logoText: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: "700",
-    fontSize: 28,
-    color: colors.navy,
-    letterSpacing: 2,
+  logoImage: {
+    width: 120,
+    height: 120,
+    borderRadius: radius.xl,
   },
   accentLine: {
     width: 48,

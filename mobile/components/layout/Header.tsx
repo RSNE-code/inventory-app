@@ -7,6 +7,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Image,
   Pressable,
   Modal,
 } from "react-native";
@@ -21,7 +22,7 @@ import {
 } from "lucide-react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { colors } from "@/constants/colors";
-import { type as typography, FONT_FAMILY } from "@/constants/typography";
+import { type as typography } from "@/constants/typography";
 import { spacing, radius, HEADER_HEIGHT } from "@/constants/layout";
 import { shadowBrandMd } from "@/constants/shadows";
 
@@ -50,10 +51,12 @@ export function Header({ title, showBack, showMenu, action }: HeaderProps) {
           </Pressable>
         )}
 
-        {/* Logo pill */}
-        <View style={styles.logoPill}>
-          <Text style={styles.logoText}>RSNE</Text>
-        </View>
+        {/* Logo */}
+        <Image
+          source={require("../../assets/logo.png")}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
 
         <Text style={styles.title} numberOfLines={1}>
           {title}
@@ -132,24 +135,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: radius.xl,
   },
-  logoPill: {
-    backgroundColor: colors.background,
-    borderRadius: radius.lg,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  logoText: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: "700",
-    fontSize: 14,
-    color: colors.navy,
-    letterSpacing: 1,
+  logoImage: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
   },
   title: {
     flex: 1,
-    fontFamily: FONT_FAMILY,
-    fontWeight: "700",
-    fontSize: 18,
+    ...typography.sectionTitle,
     color: colors.textInverse,
     letterSpacing: -0.3,
   },
