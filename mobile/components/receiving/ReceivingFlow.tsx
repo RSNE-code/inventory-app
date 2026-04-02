@@ -11,6 +11,7 @@ import { PackageCheck, CheckCircle } from "lucide-react-native";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { SupplierPicker } from "./SupplierPicker";
+import { POBrowser } from "./POBrowser";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,7 +23,7 @@ import {
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
-import type { Supplier } from "@/types/api";
+import type { Supplier, PurchaseOrder } from "@/types/api";
 
 type Phase = "INPUT" | "REVIEW" | "SUMMARY";
 
@@ -176,6 +177,12 @@ export function ReceivingFlow() {
     );
   }
 
+  const handlePOSelect = useCallback((po: PurchaseOrder) => {
+    // Pre-fill supplier from PO and go to review
+    setSupplier({ id: po.id, name: po.supplierName });
+    setPhase("REVIEW");
+  }, []);
+
   // INPUT phase
   return (
     <View style={styles.inputContainer}>
@@ -196,15 +203,23 @@ export function ReceivingFlow() {
         isProcessing={parseMutation.isPending || imageParseM.isPending}
         placeholder="e.g. 50 sheets 3/4 plywood, 100 LF copper pipe\u2026"
       />
+
+      {/* PO Browser — the primary receiving entry point */}
+      <View style={styles.poBrowserWrap}>
+        <POBrowser onSelect={handlePOSelect} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   inputContainer: {
-    alignItems: "center",
     paddingTop: spacing["3xl"],
     gap: spacing.lg,
+  },
+  poBrowserWrap: {
+    width: "100%",
+    marginTop: spacing.lg,
   },
   heroIcon: {
     width: 72,
