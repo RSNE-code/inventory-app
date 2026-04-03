@@ -4,10 +4,10 @@
  * PO matching and full confirmation cards will be enhanced in later iterations.
  */
 import { useState, useCallback } from "react";
-import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
+import { StyleSheet, ScrollView, View, Text, Alert, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import { PackageCheck, CheckCircle } from "lucide-react-native";
+import { PackageCheck, CheckCircle, Camera, ClipboardList } from "lucide-react-native";
 import { StepProgress } from "@/components/layout/StepProgress";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
@@ -21,6 +21,7 @@ import {
   useParseReceivingText,
   useParseReceivingImage,
 } from "@/hooks/use-receiving";
+import { useIsTablet } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
@@ -41,6 +42,7 @@ interface ParsedItem {
 
 export function ReceivingFlow() {
   const insets = useSafeAreaInsets();
+  const isTablet = useIsTablet();
   const [phase, setPhase] = useState<Phase>("INPUT");
   const [text, setText] = useState("");
   const [supplier, setSupplier] = useState<Supplier | null>(null);
@@ -193,13 +195,42 @@ export function ReceivingFlow() {
   return (
     <View style={styles.inputContainer}>
       <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
-      <View style={styles.heroIcon}>
-        <PackageCheck size={40} color={colors.brandBlue} strokeWidth={1.2} />
+
+      {/* Prominent entry cards — side-by-side on iPad */}
+      <View style={isTablet ? styles.entryRow : styles.entryCol}>
+        <Pressable
+          onPress={handleCamera}
+          style={[styles.entryCard, styles.entryCardOrange, isTablet && styles.entryHalf]}
+        >
+          <View style={styles.entryIconOrange}>
+            <Camera size={32} color={colors.textInverse} strokeWidth={1.8} />
+          </View>
+          <Text style={styles.entryTitle}>Packing Slip</Text>
+          <Text style={styles.entrySub}>
+            Take a photo of your packing slip
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => {/* PO browser shown below */}}
+          style={[styles.entryCard, styles.entryCardBlue, isTablet && styles.entryHalf]}
+        >
+          <View style={styles.entryIconBlue}>
+            <ClipboardList size={32} color={colors.textInverse} strokeWidth={1.8} />
+          </View>
+          <Text style={styles.entryTitle}>Browse POs</Text>
+          <Text style={styles.entrySub}>
+            Select a purchase order to receive against
+          </Text>
+        </Pressable>
       </View>
-      <Text style={styles.heroTitle}>Receive Material</Text>
-      <Text style={styles.heroSub}>
-        Take a photo of the packing slip, speak, or type what you received
-      </Text>
+
+      {/* Divider */}
+      <View style={styles.dividerRow}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>or type / speak below</Text>
+        <View style={styles.dividerLine} />
+      </View>
 
       <AIInput
         value={text}
@@ -211,7 +242,7 @@ export function ReceivingFlow() {
         placeholder="e.g. 50 sheets 3/4 plywood, 100 LF copper pipe\u2026"
       />
 
-      {/* PO Browser — the primary receiving entry point */}
+      {/* PO Browser */}
       <View style={styles.poBrowserWrap}>
         <POBrowser onSelect={handlePOSelect} />
       </View>
@@ -221,30 +252,83 @@ export function ReceivingFlow() {
 
 const styles = StyleSheet.create({
   inputContainer: {
-    paddingTop: spacing["3xl"],
+    paddingTop: spacing.lg,
     gap: spacing.lg,
   },
-  poBrowserWrap: {
-    width: "100%",
+  entryRow: {
+    flexDirection: "row",
+    gap: spacing.lg,
     marginTop: spacing.lg,
   },
-  heroIcon: {
-    width: 72,
-    height: 72,
+  entryCol: {
+    gap: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  entryHalf: {
+    flex: 1,
+  },
+  entryCard: {
+    alignItems: "center",
+    paddingVertical: spacing["3xl"],
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.xl,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 160,
+  },
+  entryCardOrange: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.brandOrange,
+  },
+  entryCardBlue: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.brandBlue,
+  },
+  entryIconOrange: {
+    width: 64,
+    height: 64,
     borderRadius: radius["2xl"],
-    backgroundColor: colors.statusBlueBg,
+    backgroundColor: colors.brandOrange,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: spacing.lg,
   },
-  heroTitle: {
+  entryIconBlue: {
+    width: 64,
+    height: 64,
+    borderRadius: radius["2xl"],
+    backgroundColor: colors.brandBlue,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
+  entryTitle: {
     ...typography.sectionTitle,
     color: colors.navy,
+    marginBottom: spacing.xs,
   },
-  heroSub: {
+  entrySub: {
     ...typography.body,
     color: colors.textMuted,
     textAlign: "center",
-    paddingHorizontal: spacing["2xl"],
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  poBrowserWrap: {
+    width: "100%",
   },
   sectionTitle: {
     ...typography.sectionTitle,

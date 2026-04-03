@@ -22,6 +22,7 @@ import { capturePhoto } from "@/components/ai/CameraCapture";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { JobPicker } from "@/components/shared/JobPicker";
 import { useCreateBom } from "@/hooks/use-boms";
 import { useParseReceivingText } from "@/hooks/use-receiving";
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
@@ -134,18 +135,14 @@ export default function NewBomScreen() {
           <StepProgress steps={["Items", "Job Info", "Review"]} currentStep={phase === "input" ? 0 : 1} />
           <View style={{ height: spacing.lg }} />
           {/* Job info */}
-          <Input
-            label="Job Name *"
-            value={jobName}
-            onChangeText={setJobName}
-            placeholder="e.g. Smith Residence Kitchen"
-          />
-          <Input
-            label="Job Number"
-            value={jobNumber}
-            onChangeText={setJobNumber}
-            placeholder="Optional"
-            style={styles.fieldGap}
+          <JobPicker
+            label="Job"
+            required
+            selectedJob={jobName ? { name: jobName, number: jobNumber || null } : null}
+            onSelect={(job) => {
+              setJobName(job.name);
+              setJobNumber(job.number ?? "");
+            }}
           />
 
           {phase === "input" ? (

@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useCreateAssembly } from "@/hooks/use-assemblies";
+import { JobPicker } from "@/components/shared/JobPicker";
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -137,7 +138,11 @@ export default function NewAssemblyScreen() {
           {flow === "door" && (
             <View style={styles.form}>
               <Input label="Door Name *" value={name} onChangeText={setName} placeholder="e.g. Walk-in Cooler #3" />
-              <Input label="Job Name" value={jobName} onChangeText={setJobName} placeholder="Optional" />
+              <JobPicker
+                label="Job"
+                selectedJob={jobName ? { name: jobName } : null}
+                onSelect={(job) => setJobName(job.name)}
+              />
               <Text style={styles.hintText}>
                 Full door spec builder (dimensions, hardware, frame type) will be available in the enhanced version.
               </Text>
@@ -173,7 +178,11 @@ export default function NewAssemblyScreen() {
               </View>
 
               <Input label="Name *" value={name} onChangeText={setName} placeholder="e.g. Floor Panel A" />
-              <Input label="Job Name" value={jobName} onChangeText={setJobName} placeholder="Optional" />
+              <JobPicker
+                label="Job"
+                selectedJob={jobName ? { name: jobName } : null}
+                onSelect={(job) => setJobName(job.name)}
+              />
               <View style={styles.dimRow}>
                 <Input label="Length (ft)" value={length} onChangeText={setLength} keyboardType="decimal-pad" style={styles.half} />
                 <Input label="Width (ft)" value={width} onChangeText={setWidth} keyboardType="decimal-pad" style={styles.half} />
