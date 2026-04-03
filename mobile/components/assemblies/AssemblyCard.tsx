@@ -41,14 +41,19 @@ const TYPE_LABELS: Record<string, string> = {
 interface AssemblyCardProps {
   assembly: Assembly;
   onPress: () => void;
+  isSelected?: boolean;
 }
 
-export function AssemblyCard({ assembly, onPress }: AssemblyCardProps) {
+export function AssemblyCard({ assembly, onPress, isSelected }: AssemblyCardProps) {
   const statusConfig = STATUS_BADGE[assembly.status] ?? STATUS_BADGE.PLANNED;
   const isDoor = assembly.type === "DOOR";
 
   return (
-    <Card accent={STATUS_ACCENT[assembly.status] ?? "gray"} onPress={onPress}>
+    <Card
+      accent={isSelected ? "blue" : (STATUS_ACCENT[assembly.status] ?? "gray")}
+      onPress={onPress}
+      style={isSelected ? styles.selectedCard : undefined}
+    >
       <View style={styles.topRow}>
         <View style={styles.iconWrap}>
           {isDoor ? (
@@ -109,5 +114,8 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
     fontVariant: ["tabular-nums"],
+  },
+  selectedCard: {
+    backgroundColor: "rgba(46, 125, 186, 0.06)",
   },
 });

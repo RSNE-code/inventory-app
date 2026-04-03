@@ -4,11 +4,11 @@
  * Matches web's boms/page.tsx.
  */
 import { useState, useCallback } from "react";
-import { StyleSheet, View, FlatList, RefreshControl, ScrollView } from "react-native";
+import { StyleSheet, View, Text, FlatList, RefreshControl, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { ClipboardList, Camera, Mic, PenLine } from "lucide-react-native";
+import { ClipboardList, Camera, ShoppingCart } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
 import { Tabs } from "@/components/ui/Tabs";
@@ -56,6 +56,11 @@ export default function BomsScreen() {
   const { data, isLoading, refetch } = useBoms({ search, status: statusFilter });
   const boms: Bom[] = (data as any)?.data ?? [];
 
+  // Auto-select first BOM on iPad when list loads
+  if (isTablet && boms.length > 0 && !selectedBomId) {
+    setSelectedBomId(boms[0].id);
+  }
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -96,8 +101,8 @@ export default function BomsScreen() {
           data={boms}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
-              <BomCard bom={item} onPress={() => handleBomPress(item)} />
+            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(20)}>
+              <BomCard bom={item} onPress={() => handleBomPress(item)} isSelected={isTablet && item.id === selectedBomId} />
             </Animated.View>
           )}
           contentContainerStyle={{
@@ -146,44 +151,40 @@ export default function BomsScreen() {
             style={styles.content}
             contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
           >
-            {/* Entry point cards */}
-            <Animated.View entering={FadeInDown.springify().damping(15)}>
-              <Card
-                onPress={() => router.push("/boms/new" as never)}
-                style={styles.entryCard}
-              >
-                <View style={styles.entryRow}>
-                  <View style={[styles.entryIcon, { backgroundColor: colors.statusBlueBg }]}>
-                    <Camera size={22} color={colors.brandBlue} strokeWidth={1.8} />
+            {/* Prominent entry cards — side-by-side on iPad */}
+            <View style={isTablet ? styles.entryRow : styles.entryCol}>
+              <Animated.View style={isTablet ? styles.entryHalf : undefined} entering={FadeInDown.springify().damping(20)}>
+                <Card
+                  onPress={() => router.push("/boms/new?mode=photo" as never)}
+                  style={styles.entryCardProminent}
+                >
+                  <View style={styles.entryIconLarge}>
+                    <Camera size={32} color={colors.textInverse} strokeWidth={1.8} />
                   </View>
-                  <View style={styles.entryText}>
-                    <Animated.Text style={styles.entryTitle}>Photo / AI Parse</Animated.Text>
-                    <Animated.Text style={styles.entrySub}>
-                      Snap a packing slip or BOM sheet
-                    </Animated.Text>
-                  </View>
-                </View>
-              </Card>
-            </Animated.View>
+                  <Text style={styles.entryTitleLarge}>Packing Slip</Text>
+                  <Text style={styles.entrySubLarge}>
+                    Snap a photo of your packing slip or BOM sheet
+                  </Text>
+                  <View style={styles.entryAccentOrange} />
+                </Card>
+              </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(STAGGER_DELAY).springify().damping(15)}>
-              <Card
-                onPress={() => router.push("/boms/new" as never)}
-                style={styles.entryCard}
-              >
-                <View style={styles.entryRow}>
-                  <View style={[styles.entryIcon, { backgroundColor: "rgba(232, 121, 43, 0.12)" }]}>
-                    <PenLine size={22} color={colors.brandOrange} strokeWidth={1.8} />
+              <Animated.View style={isTablet ? styles.entryHalf : undefined} entering={FadeInDown.delay(STAGGER_DELAY).springify().damping(20)}>
+                <Card
+                  onPress={() => router.push("/boms/new?mode=manual" as never)}
+                  style={styles.entryCardSecondary}
+                >
+                  <View style={styles.entryIconLargeBlue}>
+                    <ShoppingCart size={32} color={colors.textInverse} strokeWidth={1.8} />
                   </View>
-                  <View style={styles.entryText}>
-                    <Animated.Text style={styles.entryTitle}>Manual / Quick Pick</Animated.Text>
-                    <Animated.Text style={styles.entrySub}>
-                      Search catalog and build a BOM by hand
-                    </Animated.Text>
-                  </View>
-                </View>
-              </Card>
-            </Animated.View>
+                  <Text style={styles.entryTitleLarge}>Browse Products</Text>
+                  <Text style={styles.entrySubLarge}>
+                    Search the catalog and build a BOM by hand
+                  </Text>
+                  <View style={styles.entryAccentBlue} />
+                </Card>
+              </Animated.View>
+            </View>
           </ScrollView>
         ) : isTablet ? (
           <SplitView master={masterContent} detail={detailContent} />
@@ -202,13 +203,54 @@ const styles = StyleSheet.create({
   listContainer: { flex: 1 },
   filters: { paddingTop: spacing.md, gap: spacing.sm },
   detailScroll: { flex: 1, backgroundColor: colors.background },
-  entryCard: { marginBottom: spacing.md },
-  entryRow: { flexDirection: "row", alignItems: "center", gap: spacing.lg },
-  entryIcon: {
-    width: 48, height: 48, borderRadius: radius.xl,
-    alignItems: "center", justifyContent: "center",
+  entryRow: { flexDirection: "row", gap: spacing.lg },
+  entryCol: { gap: spacing.lg },
+  entryHalf: { flex: 1 },
+  entryCardProminent: {
+    alignItems: "center",
+    paddingVertical: spacing["3xl"],
+    borderLeftWidth: 4,
+    borderLeftColor: colors.brandOrange,
+    minHeight: 160,
   },
-  entryText: { flex: 1 },
-  entryTitle: { ...typography.cardTitle, color: colors.navy },
-  entrySub: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
+  entryCardSecondary: {
+    alignItems: "center",
+    paddingVertical: spacing["3xl"],
+    borderLeftWidth: 4,
+    borderLeftColor: colors.brandBlue,
+    minHeight: 160,
+  },
+  entryIconLarge: {
+    width: 64, height: 64, borderRadius: radius["2xl"],
+    backgroundColor: colors.brandOrange,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
+  entryIconLargeBlue: {
+    width: 64, height: 64, borderRadius: radius["2xl"],
+    backgroundColor: colors.brandBlue,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
+  entryTitleLarge: {
+    ...typography.sectionTitle,
+    color: colors.navy,
+    marginBottom: spacing.xs,
+  },
+  entrySubLarge: {
+    ...typography.body,
+    color: colors.textMuted,
+    textAlign: "center",
+    paddingHorizontal: spacing.lg,
+  },
+  entryAccentOrange: {
+    width: 40, height: 3, borderRadius: 2,
+    backgroundColor: colors.brandOrange,
+    marginTop: spacing.lg,
+  },
+  entryAccentBlue: {
+    width: 40, height: 3, borderRadius: 2,
+    backgroundColor: colors.brandBlue,
+    marginTop: spacing.lg,
+  },
 });

@@ -8,6 +8,7 @@ import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { PackageCheck, CheckCircle } from "lucide-react-native";
+import { StepProgress } from "@/components/layout/StepProgress";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { SupplierPicker } from "./SupplierPicker";
@@ -26,6 +27,9 @@ import { spacing, radius } from "@/constants/layout";
 import type { Supplier, PurchaseOrder } from "@/types/api";
 
 type Phase = "INPUT" | "REVIEW" | "SUMMARY";
+
+const STEPS = ["Input", "Review", "Confirm"];
+const PHASE_INDEX: Record<Phase, number> = { INPUT: 0, REVIEW: 1, SUMMARY: 2 };
 
 interface ParsedItem {
   productName: string;
@@ -120,6 +124,7 @@ export function ReceivingFlow() {
   if (phase === "SUMMARY") {
     return (
       <View style={styles.summaryContainer}>
+        <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
         <View style={styles.summaryIcon}>
           <CheckCircle size={48} color={colors.statusGreen} strokeWidth={1.5} />
         </View>
@@ -135,6 +140,8 @@ export function ReceivingFlow() {
   if (phase === "REVIEW") {
     return (
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+        <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
+        <View style={{ height: spacing.lg }} />
         {/* Supplier picker */}
         <SupplierPicker
           selectedId={supplier?.id ?? ""}
@@ -185,6 +192,7 @@ export function ReceivingFlow() {
   // INPUT phase
   return (
     <View style={styles.inputContainer}>
+      <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
       <View style={styles.heroIcon}>
         <PackageCheck size={40} color={colors.brandBlue} strokeWidth={1.2} />
       </View>

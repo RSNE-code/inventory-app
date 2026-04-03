@@ -136,9 +136,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
   },
   logoImage: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.sm,
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    marginRight: spacing.sm,
   },
   title: {
     flex: 1,

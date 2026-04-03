@@ -25,13 +25,18 @@ const STATUS_ACCENT: Record<string, AccentColor> = {
 interface BomCardProps {
   bom: Bom;
   onPress: () => void;
+  isSelected?: boolean;
 }
 
-export function BomCard({ bom, onPress }: BomCardProps) {
+export function BomCard({ bom, onPress, isSelected }: BomCardProps) {
   const itemCount = bom._count?.lineItems ?? 0;
 
   return (
-    <Card accent={STATUS_ACCENT[bom.status] ?? "gray"} onPress={onPress}>
+    <Card
+      accent={isSelected ? "blue" : (STATUS_ACCENT[bom.status] ?? "gray")}
+      onPress={onPress}
+      style={isSelected ? styles.selectedCard : undefined}
+    >
       <View style={styles.topRow}>
         <View style={styles.nameCol}>
           <Text style={styles.jobName} numberOfLines={1}>{bom.jobName}</Text>
@@ -87,5 +92,8 @@ const styles = StyleSheet.create({
   },
   dot: {
     color: colors.border,
+  },
+  selectedCard: {
+    backgroundColor: "rgba(46, 125, 186, 0.06)",
   },
 });

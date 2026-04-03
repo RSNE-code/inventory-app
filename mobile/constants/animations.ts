@@ -6,7 +6,7 @@ import { WithSpringConfig, WithTimingConfig, Easing } from "react-native-reanima
 
 /** Spring config matching web's ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1) */
 export const SPRING_CONFIG: WithSpringConfig = {
-  damping: 15,
+  damping: 20,
   stiffness: 150,
   mass: 1,
 };
@@ -50,4 +50,4 @@ export const EASE_FAST_CONFIG: WithTimingConfig = {
 export const STAGGER_DELAY = 50;
 
 /** Card entrance animation delay base */
-export const CARD_ENTER_DELAY = 60;
+export const CARD_ENTER_DELAY = 40;

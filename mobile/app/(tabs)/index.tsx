@@ -1,7 +1,7 @@
 /**
- * Dashboard tab — full dashboard with all 6 widgets.
- * Matches web's page.tsx layout: ActionItems → WorkPipelines →
- * StockSummary → LowStock → TrendChart → RecentActivity.
+ * Dashboard tab — command center for foremen.
+ * iPad: ActionItems + WorkPipelines in top row, full-width trend, then LowStock + RecentActivity.
+ * Phone: vertical stack.
  */
 import { useCallback, useState } from "react";
 import { StyleSheet, ScrollView, RefreshControl, View } from "react-native";
@@ -11,7 +11,6 @@ import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
 import { ActionItems } from "@/components/dashboard/ActionItems";
 import { WorkPipelines } from "@/components/dashboard/WorkPipelines";
-import { StockSummaryCard } from "@/components/dashboard/StockSummaryCard";
 import { LowStockList } from "@/components/dashboard/LowStockList";
 import { InventoryTrendChart } from "@/components/dashboard/InventoryTrendChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -76,71 +75,72 @@ export default function DashboardScreen() {
           />
         ) : dashboard ? (
           <>
-            {/* 1. Needs Attention — full width */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
-              <ActionItems
-                bomStatusCounts={dashboard.bomStatusCounts || {}}
-                lowStockCount={dashboard.summary.lowStockCount}
-                outOfStockCount={dashboard.summary.outOfStockCount}
-                pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
-                unfabricatedAssemblyCount={0}
-              />
-            </Animated.View>
-
-            {/* 2–3. Work Pipelines + Stock Summary — side-by-side on iPad */}
+            {/* Row 1: Needs Attention + Work Pipelines (BOM + Fab) — side-by-side on iPad */}
             {isTablet ? (
               <View style={styles.tabletRow}>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                <Animated.View style={styles.tabletThird} entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(20)}>
+                  <ActionItems
+                    bomStatusCounts={dashboard.bomStatusCounts || {}}
+                    lowStockCount={dashboard.summary.lowStockCount}
+                    outOfStockCount={dashboard.summary.outOfStockCount}
+                    pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
+                    unfabricatedAssemblyCount={0}
+                  />
+                </Animated.View>
+                <Animated.View style={styles.tabletTwoThirds} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
                   <WorkPipelines
                     bomStatusCounts={dashboard.bomStatusCounts || {}}
                     fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
                     doorQueueCount={0}
                   />
                 </Animated.View>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
-                  <StockSummaryCard summary={dashboard.summary} />
-                </Animated.View>
               </View>
             ) : (
               <>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(20)}>
+                  <ActionItems
+                    bomStatusCounts={dashboard.bomStatusCounts || {}}
+                    lowStockCount={dashboard.summary.lowStockCount}
+                    outOfStockCount={dashboard.summary.outOfStockCount}
+                    pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
+                    unfabricatedAssemblyCount={0}
+                  />
+                </Animated.View>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
                   <WorkPipelines
                     bomStatusCounts={dashboard.bomStatusCounts || {}}
                     fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
                     doorQueueCount={0}
                   />
                 </Animated.View>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
-                  <StockSummaryCard summary={dashboard.summary} />
-                </Animated.View>
               </>
             )}
 
-            {/* 4–5. Low Stock + Trend Chart — side-by-side on iPad */}
+            {/* Row 2: Inventory Trend — full width for better visualization */}
+            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(20)}>
+              <InventoryTrendChart />
+            </Animated.View>
+
+            {/* Row 3: Low Stock + Recent Activity — side-by-side on iPad */}
             {isTablet ? (
               <View style={styles.tabletRow}>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
                   <LowStockList items={dashboard.lowStockItems} />
                 </Animated.View>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)}>
-                  <InventoryTrendChart />
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
+                  <RecentActivity transactions={dashboard.recentTransactions} />
                 </Animated.View>
               </View>
             ) : (
               <>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
                   <LowStockList items={dashboard.lowStockItems} />
                 </Animated.View>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)}>
-                  <InventoryTrendChart />
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
+                  <RecentActivity transactions={dashboard.recentTransactions} />
                 </Animated.View>
               </>
             )}
-
-            {/* 6. Recent Activity — full width */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(15)}>
-              <RecentActivity transactions={dashboard.recentTransactions} />
-            </Animated.View>
           </>
         ) : null}
       </ScrollView>
@@ -169,5 +169,11 @@ const styles = StyleSheet.create({
   },
   tabletHalf: {
     flex: 1,
+  },
+  tabletThird: {
+    flex: 1,
+  },
+  tabletTwoThirds: {
+    flex: 2,
   },
 });

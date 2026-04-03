@@ -124,12 +124,27 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
         <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
           <Card style={styles.specsCard}>
             <Text style={styles.sectionTitle}>Specifications</Text>
-            {Object.entries(specs).map(([key, val]) => (
-              <View key={key} style={styles.specRow}>
-                <Text style={styles.specKey}>{key.replace(/([A-Z])/g, " $1").trim()}</Text>
-                <Text style={styles.specVal}>{String(val ?? "Not specified")}</Text>
-              </View>
-            ))}
+            {Object.entries(specs).map(([key, val]) => {
+              // Format display values — no raw true/false
+              let displayVal: string;
+              if (val === true) displayVal = "Yes";
+              else if (val === false) displayVal = "No";
+              else if (val === null || val === undefined || val === "") displayVal = "Not specified";
+              else displayVal = String(val);
+
+              // Friendlier key names
+              const displayKey = key
+                .replace(/([A-Z])/g, " $1")
+                .replace(/^./, (s) => s.toUpperCase())
+                .trim();
+
+              return (
+                <View key={key} style={styles.specRow}>
+                  <Text style={styles.specKey}>{displayKey}</Text>
+                  <Text style={styles.specVal}>{displayVal}</Text>
+                </View>
+              );
+            })}
           </Card>
         </Animated.View>
       )}

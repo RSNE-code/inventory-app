@@ -1,7 +1,7 @@
 /**
  * New BOM screen — AI photo/text parse or manual entry.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -11,11 +11,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
+import { StepProgress } from "@/components/layout/StepProgress";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { Card } from "@/components/ui/Card";
@@ -37,10 +38,12 @@ interface ParsedItem {
 
 export default function NewBomScreen() {
   const router = useRouter();
+  const { mode } = useLocalSearchParams<{ mode?: string }>();
   const insets = useSafeAreaInsets();
   const createBom = useCreateBom();
   const parseMutation = useParseReceivingText();
   const { screenPadding } = useResponsiveSpacing();
+  const hasTriggeredCamera = useRef(false);
 
   const [jobName, setJobName] = useState("");
   const [jobNumber, setJobNumber] = useState("");
@@ -68,9 +71,28 @@ export default function NewBomScreen() {
   const handleCamera = useCallback(async () => {
     const uri = await capturePhoto();
     if (!uri) return;
-    // Image parsing reuses receiving parse endpoint
-    Alert.alert("Photo captured", "AI parsing will process this image.");
-  }, []);
+    try {
+      const result = await parseMutation.mutateAsync(uri);
+      const parsed = (result as { items?: ParsedItem[] })?.items ?? [];
+      if (parsed.length > 0) {
+        setItems(parsed);
+        setPhase("review");
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else {
+        Alert.alert("No items found", "Try taking a clearer photo.");
+      }
+    } catch {
+      Alert.alert("Error", "Failed to parse image.");
+    }
+  }, [parseMutation]);
+
+  // Auto-trigger camera when arriving from "Packing Slip" entry
+  useEffect(() => {
+    if (mode === "photo" && !hasTriggeredCamera.current) {
+      hasTriggeredCamera.current = true;
+      handleCamera();
+    }
+  }, [mode, handleCamera]);
 
   const handleCreate = async () => {
     if (!jobName.trim() || items.length === 0) return;
@@ -109,6 +131,8 @@ export default function NewBomScreen() {
           contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
         >
           <IPadPage>
+          <StepProgress steps={["Items", "Job Info", "Review"]} currentStep={phase === "input" ? 0 : 1} />
+          <View style={{ height: spacing.lg }} />
           {/* Job info */}
           <Input
             label="Job Name *"

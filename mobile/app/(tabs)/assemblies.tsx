@@ -51,6 +51,11 @@ export default function AssembliesScreen() {
     : assemblies;
   const displayList = isShipping ? shippingItems : assemblies;
 
+  // Auto-select first assembly on iPad when list loads
+  if (isTablet && displayList.length > 0 && !selectedAssemblyId) {
+    setSelectedAssemblyId(displayList[0].id);
+  }
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -89,10 +94,11 @@ export default function AssembliesScreen() {
           data={displayList}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
+            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(20)}>
               <AssemblyCard
                 assembly={item}
                 onPress={() => handleAssemblyPress(item)}
+                isSelected={isTablet && item.id === selectedAssemblyId}
               />
             </Animated.View>
           )}
@@ -135,8 +141,8 @@ export default function AssembliesScreen() {
         title="Assemblies"
         action={
           <Button
-            title="New"
-            variant="ghost"
+            title={queueTab === "DOOR_SHOP" ? "New Door" : "New Assembly"}
+            variant="primary"
             size="sm"
             icon={<Plus size={18} color={colors.textInverse} strokeWidth={2} />}
             onPress={() => router.push("/assemblies/new" as never)}

@@ -54,9 +54,14 @@ export default function NewAssemblyScreen() {
         specs: {},
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const newId = (result as { id?: string })?.id;
-      if (newId) router.replace(`/assemblies/${newId}`);
-      else router.back();
+      const r = result as any;
+      const newId = r?.data?.id ?? r?.id;
+      if (newId) {
+        router.back();
+        setTimeout(() => router.push(`/assemblies/${newId}`), 100);
+      } else {
+        router.back();
+      }
     } catch {
       Alert.alert("Error", "Failed to create door");
     }
@@ -75,9 +80,14 @@ export default function NewAssemblyScreen() {
         },
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const newId = (result as { id?: string })?.id;
-      if (newId) router.replace(`/assemblies/${newId}`);
-      else router.back();
+      const r = result as any;
+      const newId = r?.data?.id ?? r?.id;
+      if (newId) {
+        router.back();
+        setTimeout(() => router.push(`/assemblies/${newId}`), 100);
+      } else {
+        router.back();
+      }
     } catch {
       Alert.alert("Error", "Failed to create assembly");
     }

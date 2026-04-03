@@ -1,7 +1,7 @@
 /**
  * Receive tab — two tabs: AI Receive + Receipt History.
  * iPad: centered content via IPadPage.
- * Matches web's receiving/page.tsx layout.
+ * Receipt History renders its own FlatList (not nested in ScrollView).
  */
 import { useState } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
@@ -33,14 +33,22 @@ export default function ReceiveScreen() {
           <Tabs tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
         </View>
 
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
-        >
-          <IPadPage maxWidth={FORM_MAX_WIDTH}>
-            {activeTab === "receive" ? <ReceivingFlow /> : <ReceiptHistory />}
-          </IPadPage>
-        </ScrollView>
+        {activeTab === "receive" ? (
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
+          >
+            <IPadPage maxWidth={FORM_MAX_WIDTH}>
+              <ReceivingFlow />
+            </IPadPage>
+          </ScrollView>
+        ) : (
+          <View style={[styles.content, { paddingHorizontal: screenPadding }]}>
+            <IPadPage maxWidth={FORM_MAX_WIDTH} style={styles.content}>
+              <ReceiptHistory />
+            </IPadPage>
+          </View>
+        )}
       </View>
     </>
   );
