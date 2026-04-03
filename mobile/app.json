@@ -52,13 +52,6 @@
           "icon": "./assets/notification-icon.png",
           "color": "#2E7DBA"
         }
-      ],
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": "ShopBot uses the microphone for voice input",
-          "speechRecognitionPermission": "ShopBot uses speech recognition for voice commands"
-        }
       ]
     ],
     "extra": {
