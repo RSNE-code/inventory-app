@@ -21,14 +21,21 @@ type Step = "NAME" | "BUILD" | "CONFIRM";
 
 const STEPS = ["Name", "Specs", "Confirm"];
 
-export function DoorCreationFlow() {
+interface DoorCreationFlowProps {
+  /** Pre-fill job name (e.g. from BOM context) */
+  initialJobName?: string;
+  /** Pre-fill door name hint */
+  initialName?: string;
+}
+
+export function DoorCreationFlow({ initialJobName, initialName }: DoorCreationFlowProps = {}) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const createAssembly = useCreateAssembly();
 
   const [step, setStep] = useState<Step>("NAME");
-  const [name, setName] = useState("");
-  const [jobName, setJobName] = useState("");
+  const [name, setName] = useState(initialName ?? "");
+  const [jobName, setJobName] = useState(initialJobName ?? "");
   const [specs, setSpecs] = useState<Partial<DoorSpecs>>({});
 
   const stepIndex = step === "NAME" ? 0 : step === "BUILD" ? 1 : 2;

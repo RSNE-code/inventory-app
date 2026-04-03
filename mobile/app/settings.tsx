@@ -3,7 +3,7 @@
  */
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-import { LogOut, Info, Users } from "lucide-react-native";
+import { LogOut, Info, Users, FileText, ChevronRight } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
@@ -33,6 +33,14 @@ export default function SettingsScreen() {
             <Users size={20} color={colors.textMuted} strokeWidth={1.8} />
             <Text style={styles.menuLabel}>User Management</Text>
             <Text style={styles.comingSoon}>Coming soon</Text>
+          </View>
+        </Card>
+
+        <Card style={styles.card} onPress={() => router.push("/bom-templates" as never)}>
+          <View style={styles.menuRow}>
+            <FileText size={20} color={colors.textMuted} strokeWidth={1.8} />
+            <Text style={styles.menuLabel}>BOM Templates</Text>
+            <ChevronRight size={16} color={colors.textMuted} strokeWidth={1.5} />
           </View>
         </Card>
 

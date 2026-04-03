@@ -2,8 +2,9 @@
  * AIInput — text input bar with voice mic button and camera button.
  * Matches web's ai-input.tsx: text field + mic toggle + camera.
  */
-import { useState } from "react";
-import { StyleSheet, View, TextInput, Pressable, ActivityIndicator } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { StyleSheet, View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withDelay, withSequence } from "react-native-reanimated";
 import { Mic, MicOff, Camera, Send } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { colors } from "@/constants/colors";
@@ -35,6 +36,7 @@ export function AIInput({
   const [focused, setFocused] = useState(false);
 
   return (
+  <>
     <View style={[styles.container, focused && styles.containerFocused]}>
       <TextInput
         value={value}
@@ -98,6 +100,45 @@ export function AIInput({
         )}
       </View>
     </View>
+    {isProcessing ? <ProcessingDots /> : null}
+  </>
+  );
+}
+
+/** Three pulsing orange dots — matches webapp's processing indicator */
+function ProcessingDots() {
+  const dot1 = useSharedValue(0.3);
+  const dot2 = useSharedValue(0.3);
+  const dot3 = useSharedValue(0.3);
+
+  useEffect(() => {
+    const pulse = (sv: typeof dot1, delay: number) => {
+      sv.value = withDelay(delay, withRepeat(
+        withSequence(
+          withTiming(1, { duration: 400 }),
+          withTiming(0.3, { duration: 400 }),
+        ),
+        -1
+      ));
+    };
+    pulse(dot1, 0);
+    pulse(dot2, 150);
+    pulse(dot3, 300);
+  }, [dot1, dot2, dot3]);
+
+  const s1 = useAnimatedStyle(() => ({ opacity: dot1.value, transform: [{ scale: 0.7 + dot1.value * 0.3 }] }));
+  const s2 = useAnimatedStyle(() => ({ opacity: dot2.value, transform: [{ scale: 0.7 + dot2.value * 0.3 }] }));
+  const s3 = useAnimatedStyle(() => ({ opacity: dot3.value, transform: [{ scale: 0.7 + dot3.value * 0.3 }] }));
+
+  return (
+    <View style={styles.processingRow}>
+      <View style={styles.processingDots}>
+        <Animated.View style={[styles.pulseDot, s1]} />
+        <Animated.View style={[styles.pulseDot, s2]} />
+        <Animated.View style={[styles.pulseDot, s3]} />
+      </View>
+      <Text style={styles.processingText}>Reading your list…</Text>
+    </View>
   );
 }
 
@@ -148,5 +189,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandBlue,
     alignItems: "center",
     justifyContent: "center",
+  },
+  processingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+  },
+  processingDots: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  pulseDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.brandOrange,
+  },
+  processingText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    fontWeight: "500",
   },
 });

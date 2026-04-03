@@ -3,6 +3,7 @@
  */
 import { useState } from "react";
 import { StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -28,10 +29,15 @@ const FAB_OPTIONS: { type: FabType; label: string; description: string }[] = [
 ];
 
 export default function NewAssemblyScreen() {
+  const { jobName, doorHint, fromBom } = useLocalSearchParams<{
+    jobName?: string;
+    doorHint?: string;
+    fromBom?: string;
+  }>();
   const insets = useSafeAreaInsets();
   const { screenPadding } = useResponsiveSpacing();
 
-  const [flow, setFlow] = useState<Flow>("choose");
+  const [flow, setFlow] = useState<Flow>(fromBom ? "door" : "choose");
   const [fabType, setFabType] = useState<FabType>("PANEL");
 
   // Door flow renders its own ScrollView — don't nest it
@@ -40,7 +46,7 @@ export default function NewAssemblyScreen() {
       <>
         <Header title="New Door" showBack />
         <IPadPage>
-          <DoorCreationFlow />
+          <DoorCreationFlow initialJobName={jobName} initialName={doorHint} />
         </IPadPage>
       </>
     );

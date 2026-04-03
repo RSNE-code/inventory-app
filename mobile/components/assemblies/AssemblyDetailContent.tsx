@@ -8,7 +8,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Play, CheckCircle, Truck, Trash2, DoorOpen, Layers } from "lucide-react-native";
+import { Play, CheckCircle, Truck, Trash2, DoorOpen, Layers, Package2, History, ArrowRight } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -73,6 +73,8 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
   const statusConfig = STATUS_BADGE[a.status] ?? STATUS_BADGE.PLANNED;
   const isDoor = a.type === "DOOR";
   const specs = a.specs as Record<string, unknown> | null;
+  const components: Array<Record<string, unknown>> = (a as any).components ?? [];
+  const changeLog: Array<Record<string, unknown>> = (a as any).changeLog ?? [];
 
   const handleStatusChange = useCallback(async (newStatus: string) => {
     try {
@@ -220,6 +222,87 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
         </Animated.View>
       ) : null}
 
+      {/* Components Card */}
+      {components.length > 0 ? (
+        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2.5).springify().damping(15)}>
+          <Card style={styles.specsCard}>
+            <View style={styles.componentHeader}>
+              <Package2 size={18} color={colors.brandBlue} strokeWidth={2} />
+              <Text style={styles.sectionTitle}>Components ({components.length})</Text>
+            </View>
+            {components.map((comp, i) => {
+              const product = comp.product as Record<string, unknown> | undefined;
+              const productName = String(product?.name ?? "Unknown");
+              const currentQty = Number(product?.currentQty ?? 0);
+              const qtyUsed = Number(comp.qtyUsed ?? 0);
+              const unitCost = Number(comp.unitCost ?? 0);
+              const uom = String(product?.unitOfMeasure ?? "ea");
+              const hasStock = currentQty >= qtyUsed;
+              return (
+                <View key={String(comp.id ?? i)} style={styles.componentRow}>
+                  <View style={styles.componentInfo}>
+                    <Text style={styles.componentName} numberOfLines={1}>{productName}</Text>
+                    <Text style={styles.componentMeta}>
+                      {qtyUsed} {uom} needed · ${unitCost.toFixed(2)}/ea
+                    </Text>
+                  </View>
+                  <View style={[styles.stockDot, { backgroundColor: hasStock ? colors.statusGreen : colors.statusRed }]} />
+                  <Text style={[styles.componentStock, { color: hasStock ? colors.statusGreen : colors.statusRed }]}>
+                    {currentQty} avail
+                  </Text>
+                </View>
+              );
+            })}
+            {components.length > 0 ? (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total Cost</Text>
+                <Text style={styles.totalValue}>
+                  ${components.reduce((sum, c) => sum + Number(c.totalCost ?? 0), 0).toFixed(2)}
+                </Text>
+              </View>
+            ) : null}
+          </Card>
+        </Animated.View>
+      ) : null}
+
+      {/* Change History Card */}
+      {changeLog.length > 0 ? (
+        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2.8).springify().damping(15)}>
+          <Card style={styles.specsCard}>
+            <View style={styles.componentHeader}>
+              <History size={18} color={colors.brandBlue} strokeWidth={2} />
+              <Text style={styles.sectionTitle}>Change History</Text>
+            </View>
+            {changeLog.slice(0, 10).map((entry, i) => {
+              const changedBy = entry.changedBy as Record<string, unknown> | undefined;
+              return (
+                <View key={String(entry.id ?? i)} style={styles.changeRow}>
+                  <View style={styles.changeInfo}>
+                    <Text style={styles.changeName}>
+                      {String(entry.fieldName ?? "").replace(/([A-Z])/g, " $1").replace(/^./, (s: string) => s.toUpperCase()).trim()}
+                    </Text>
+                    <View style={styles.changeValues}>
+                      <Text style={styles.changeOld} numberOfLines={1}>
+                        {String(entry.oldValue ?? "—")}
+                      </Text>
+                      <ArrowRight size={12} color={colors.textMuted} strokeWidth={2} />
+                      <Text style={styles.changeNew} numberOfLines={1}>
+                        {String(entry.newValue ?? "")}
+                      </Text>
+                    </View>
+                    <Text style={styles.changeMeta}>
+                      {changedBy?.name ? `${String(changedBy.name)} · ` : ""}
+                      {entry.createdAt ? new Date(String(entry.createdAt)).toLocaleDateString() : ""}
+                      {entry.reason ? ` · ${String(entry.reason)}` : ""}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </Card>
+        </Animated.View>
+      ) : null}
+
       {/* Approval card — for assemblies awaiting approval */}
       {a.status === "AWAITING_APPROVAL" ? (
         <ApprovalCard assemblyId={assemblyId} />
@@ -303,4 +386,21 @@ const styles = StyleSheet.create({
   specVal: { ...typography.body, fontWeight: "500", color: colors.navy },
   actions: { marginTop: spacing.lg, gap: spacing.md },
   sheetContent: { marginTop: spacing.md },
+  componentHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
+  componentRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(226,230,235,0.4)" },
+  componentInfo: { flex: 1, minWidth: 0 },
+  componentName: { ...typography.subtitle, fontWeight: "500", color: colors.navy },
+  componentMeta: { ...typography.caption, color: colors.textMuted, marginTop: 1, fontVariant: ["tabular-nums"] },
+  stockDot: { width: 8, height: 8, borderRadius: 4 },
+  componentStock: { ...typography.caption, fontWeight: "600", fontVariant: ["tabular-nums"], minWidth: 50, textAlign: "right" },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", marginTop: spacing.md, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  totalLabel: { ...typography.subtitle, fontWeight: "600", color: colors.textMuted },
+  totalValue: { ...typography.subtitle, fontWeight: "700", color: colors.navy, fontVariant: ["tabular-nums"] },
+  changeRow: { paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(226,230,235,0.4)" },
+  changeInfo: { gap: 2 },
+  changeName: { ...typography.caption, fontWeight: "600", color: colors.navy, textTransform: "capitalize" },
+  changeValues: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  changeOld: { ...typography.caption, color: colors.textMuted, maxWidth: 120 },
+  changeNew: { ...typography.caption, fontWeight: "600", color: colors.navy, maxWidth: 120 },
+  changeMeta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
 });
