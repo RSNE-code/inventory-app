@@ -60,7 +60,7 @@ export default function NewAssemblyScreen() {
 
   return (
     <>
-      <Header title={title} showBack />
+      <Header title="New Assembly" showBack />
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
         <ScrollView style={styles.container} contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}>
           <IPadPage>
