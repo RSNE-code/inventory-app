@@ -35,7 +35,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
       <View style={styles.topRow}>
         <View style={styles.nameCol}>
           <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
-          <Text style={styles.category}>{product.category || "Uncategorized"}</Text>
+          <Text style={styles.category}>{typeof product.category === "object" && product.category !== null ? (product.category as any).name : product.category || "Uncategorized"}</Text>
         </View>
         <StockBadge currentQty={qty} reorderPoint={reorder} />
       </View>
