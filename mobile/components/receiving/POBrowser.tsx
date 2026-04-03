@@ -83,7 +83,7 @@ export function POBrowser({ onSelect }: POBrowserProps) {
           description={search ? "Try a different search term" : undefined}
         />
       ) : (
-        <View style={styles.list}>
+        <ScrollView style={styles.list} nestedScrollEnabled>
           {filtered.map((item, index) => (
             <Animated.View
               key={item.id}
@@ -95,7 +95,7 @@ export function POBrowser({ onSelect }: POBrowserProps) {
               {index < filtered.length - 1 && <View style={styles.sep} />}
             </Animated.View>
           ))}
-        </View>
+        </ScrollView>
       )}
     </View>
   );
