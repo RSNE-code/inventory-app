@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
   Text,
-  FlatList,
+  ScrollView,
   Pressable,
   ActivityIndicator,
 } from "react-native";
@@ -83,21 +83,19 @@ export function POBrowser({ onSelect }: POBrowserProps) {
           description={search ? "Try a different search term" : undefined}
         />
       ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          style={styles.list}
-          renderItem={({ item, index }) => (
+        <View style={styles.list}>
+          {filtered.map((item, index) => (
             <Animated.View
+              key={item.id}
               entering={FadeInDown.delay(index * STAGGER_DELAY)
                 .springify()
                 .damping(15)}
             >
               <PORow po={item} onSelect={() => onSelect(item)} />
+              {index < filtered.length - 1 && <View style={styles.sep} />}
             </Animated.View>
-          )}
-          ItemSeparatorComponent={() => <View style={styles.sep} />}
-        />
+          ))}
+        </View>
       )}
     </View>
   );
