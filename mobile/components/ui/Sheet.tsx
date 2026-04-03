@@ -4,6 +4,7 @@
 import { StyleSheet, View, Text, Modal, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated";
+import { useIsTablet } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
@@ -18,6 +19,7 @@ interface SheetProps {
 
 export function Sheet({ visible, onClose, title, children }: SheetProps) {
   const insets = useSafeAreaInsets();
+  const isTablet = useIsTablet();
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -26,7 +28,11 @@ export function Sheet({ visible, onClose, title, children }: SheetProps) {
         <Animated.View
           entering={SlideInDown.springify().damping(20).stiffness(150)}
           exiting={SlideOutDown.duration(200)}
-          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
+          style={[
+            styles.sheet,
+            { paddingBottom: insets.bottom + spacing.lg },
+            isTablet ? styles.sheetTablet : undefined,
+          ]}
         >
           <View style={styles.handle} />
           {title && <Text style={styles.title}>{title}</Text>}
@@ -53,4 +59,5 @@ const styles = StyleSheet.create({
     alignSelf: "center", marginBottom: spacing.lg,
   },
   title: { ...typography.sectionTitle, color: colors.navy, marginBottom: spacing.lg },
+  sheetTablet: { maxWidth: 600, alignSelf: "center" as const, width: "100%" as any },
 });

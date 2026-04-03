@@ -69,9 +69,13 @@ export default function CycleCountsScreen() {
         {isLoading ? (
           <LoadingState />
         ) : activeTab === "count" ? (
-          <CountTab suggestions={suggestions} onRefresh={onRefresh} refreshing={refreshing} insetBottom={insets.bottom} />
+          <IPadPage maxWidth={DETAIL_MAX_WIDTH} style={styles.flex}>
+            <CountTab suggestions={suggestions} onRefresh={onRefresh} refreshing={refreshing} insetBottom={insets.bottom} />
+          </IPadPage>
         ) : (
-          <HistoryTab history={history} onRefresh={onRefresh} refreshing={refreshing} insetBottom={insets.bottom} />
+          <IPadPage maxWidth={DETAIL_MAX_WIDTH} style={styles.flex}>
+            <HistoryTab history={history} onRefresh={onRefresh} refreshing={refreshing} insetBottom={insets.bottom} />
+          </IPadPage>
         )}
       </View>
     </>
@@ -229,6 +233,7 @@ function HistoryTab({
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: { flex: 1, backgroundColor: colors.background },
   tabBar: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   suggRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.md },

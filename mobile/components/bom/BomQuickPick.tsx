@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
   itemName: { ...typography.subtitle, fontWeight: "500", color: colors.navy },
   itemUnit: { ...typography.caption, color: colors.textMuted },
   stepper: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  stepBtn: { width: 32, height: 32, borderRadius: radius.lg, backgroundColor: colors.surfaceSecondary, alignItems: "center", justifyContent: "center" },
+  stepBtn: { width: 44, height: 44, borderRadius: radius.lg, backgroundColor: colors.surfaceSecondary, alignItems: "center", justifyContent: "center" },
   qty: { ...typography.subtitle, fontWeight: "700", color: colors.navy, minWidth: 32, textAlign: "center", fontVariant: ["tabular-nums"] },
 });

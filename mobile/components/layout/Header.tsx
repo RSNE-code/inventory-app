@@ -129,8 +129,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   iconButton: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: radius.xl,
