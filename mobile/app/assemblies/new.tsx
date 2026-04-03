@@ -2,8 +2,7 @@
  * New Assembly — type selection (Door or Panel/Floor/Ramp), then creation flow.
  */
 import { useState } from "react";
-import { StyleSheet, View, Text, Alert, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -11,11 +10,8 @@ import { DoorOpen, Layers } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import { DoorCreationFlow } from "@/components/doors/DoorCreationFlow";
-import { useCreateAssembly } from "@/hooks/use-assemblies";
-import { JobPicker } from "@/components/shared/JobPicker";
+import { FabCreationFlow } from "@/components/fab/FabCreationFlow";
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -32,45 +28,11 @@ const FAB_OPTIONS: { type: FabType; label: string; description: string }[] = [
 ];
 
 export default function NewAssemblyScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const createMutation = useCreateAssembly();
   const { screenPadding } = useResponsiveSpacing();
 
   const [flow, setFlow] = useState<Flow>("choose");
-  const [name, setName] = useState("");
-  const [jobName, setJobName] = useState("");
   const [fabType, setFabType] = useState<FabType>("PANEL");
-  const [length, setLength] = useState("");
-  const [width, setWidth] = useState("");
-
-  const title = flow === "door" ? "New Door" : flow === "fab" ? "New Assembly" : "New Assembly";
-
-  const handleCreateFab = async () => {
-    if (!name.trim()) return;
-    try {
-      const result = await createMutation.mutateAsync({
-        name: name.trim(),
-        type: fabType,
-        jobName: jobName || undefined,
-        specs: {
-          length: parseFloat(length) || undefined,
-          width: parseFloat(width) || undefined,
-        },
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const r = result as any;
-      const newId = r?.data?.id ?? r?.id;
-      if (newId) {
-        router.back();
-        setTimeout(() => router.push(`/assemblies/${newId}`), 100);
-      } else {
-        router.back();
-      }
-    } catch {
-      Alert.alert("Error", "Failed to create assembly");
-    }
-  };
 
   // Door flow renders its own ScrollView — don't nest it
   if (flow === "door") {
@@ -79,6 +41,18 @@ export default function NewAssemblyScreen() {
         <Header title="New Door" showBack />
         <IPadPage>
           <DoorCreationFlow />
+        </IPadPage>
+      </>
+    );
+  }
+
+  // Fab flow renders its own wizard — don't nest it
+  if (flow === "fab") {
+    return (
+      <>
+        <Header title="New Assembly" showBack />
+        <IPadPage>
+          <FabCreationFlow initialType={fabType} />
         </IPadPage>
       </>
     );
@@ -124,47 +98,6 @@ export default function NewAssemblyScreen() {
               </Animated.View>
             </>
           ) : null}
-
-          {flow === "fab" ? (
-            <View style={styles.form}>
-              {/* Type selection */}
-              <Text style={styles.fieldLabel}>Type</Text>
-              <View style={styles.fabTypes}>
-                {FAB_OPTIONS.map((opt) => (
-                  <Card
-                    key={opt.type}
-                    onPress={() => { setFabType(opt.type); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                    style={{
-                      ...styles.fabChip,
-                      ...(fabType === opt.type ? styles.fabChipActive : {}),
-                    }}
-                  >
-                    <Text style={[styles.fabChipLabel, fabType === opt.type ? styles.fabChipLabelActive : undefined]}>
-                      {opt.label}
-                    </Text>
-                  </Card>
-                ))}
-              </View>
-
-              <Input label="Name *" value={name} onChangeText={setName} placeholder="e.g. Floor Panel A" />
-              <JobPicker
-                label="Job"
-                selectedJob={jobName ? { name: jobName } : null}
-                onSelect={(job) => setJobName(job.name)}
-              />
-              <View style={styles.dimRow}>
-                <Input label="Length (ft)" value={length} onChangeText={setLength} keyboardType="decimal-pad" style={styles.half} />
-                <Input label="Width (ft)" value={width} onChangeText={setWidth} keyboardType="decimal-pad" style={styles.half} />
-              </View>
-              <Button
-                title={createMutation.isPending ? "Creating\u2026" : "Create Assembly"}
-                onPress={handleCreateFab}
-                disabled={!name.trim() || createMutation.isPending}
-                loading={createMutation.isPending}
-                size="lg"
-              />
-            </View>
-          ) : null}
           </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -183,14 +116,4 @@ const styles = StyleSheet.create({
   typeText: { flex: 1 },
   typeTitle: { ...typography.cardTitle, color: colors.navy },
   typeDesc: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
-  form: { gap: spacing.xl },
-  fieldLabel: { ...typography.caption, fontWeight: "500", color: colors.textSecondary },
-  fabTypes: { flexDirection: "row", gap: spacing.sm },
-  fabChip: { flex: 1, padding: spacing.md, alignItems: "center", borderWidth: 0 },
-  fabChipActive: { backgroundColor: colors.navy },
-  fabChipLabel: { ...typography.caption, fontWeight: "600", color: colors.textSecondary },
-  fabChipLabelActive: { color: colors.textInverse },
-  dimRow: { flexDirection: "row", gap: spacing.md },
-  half: { flex: 1 },
-  hintText: { ...typography.body, color: colors.textMuted, fontStyle: "italic" },
 });

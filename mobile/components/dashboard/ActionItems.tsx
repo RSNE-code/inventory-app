@@ -2,6 +2,7 @@
  * ActionItems — "Needs Attention" card with severity-colored rows.
  * Matches web's action-items.tsx exactly.
  */
+import { useCallback } from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import {
   AlertTriangle,
@@ -12,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/Card";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -30,6 +32,7 @@ interface ActionRow {
   label: string;
   severity: "critical" | "warning" | "info";
   Icon: typeof AlertTriangle;
+  route?: string;
 }
 
 const SEVERITY_COLORS = {
@@ -45,6 +48,17 @@ export function ActionItems({
   pendingApprovals,
   unfabricatedAssemblyCount,
 }: ActionItemsProps) {
+  const router = useRouter();
+
+  const handleRowPress = useCallback(
+    (route?: string) => {
+      if (route) {
+        router.push(route as any);
+      }
+    },
+    [router],
+  );
+
   const rows: ActionRow[] = [];
 
   if (outOfStockCount > 0) {
@@ -52,6 +66,7 @@ export function ActionItems({
       label: `${outOfStockCount} item${outOfStockCount !== 1 ? "s" : ""} out of stock`,
       severity: "critical",
       Icon: XCircle,
+      route: "/inventory",
     });
   }
   if (lowStockCount > 0) {
@@ -59,6 +74,7 @@ export function ActionItems({
       label: `${lowStockCount} item${lowStockCount !== 1 ? "s" : ""} need reorder`,
       severity: "warning",
       Icon: AlertTriangle,
+      route: "/reorder",
     });
   }
   if (unfabricatedAssemblyCount > 0) {
@@ -118,6 +134,8 @@ export function ActionItems({
             entering={FadeInDown.delay(i * STAGGER_DELAY).springify().damping(15)}
           >
             <Pressable
+              onPress={() => handleRowPress(row.route)}
+              disabled={!row.route}
               style={[
                 styles.row,
                 i < rows.length - 1 && styles.rowBorder,
@@ -126,7 +144,9 @@ export function ActionItems({
               <View style={[styles.dot, { backgroundColor: sev.dot }]} />
               <row.Icon size={16} color={sev.text} strokeWidth={2} />
               <Text style={styles.rowLabel}>{row.label}</Text>
-              <ChevronRight size={16} color={colors.textMuted} strokeWidth={1.5} />
+              {row.route ? (
+                <ChevronRight size={16} color={colors.textMuted} strokeWidth={1.5} />
+              ) : null}
             </Pressable>
           </Animated.View>
         );

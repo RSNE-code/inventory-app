@@ -19,6 +19,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { NetworkBanner } from "@/components/shared/NetworkBanner";
+import { ToastProvider } from "@/hooks/use-toast";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -86,11 +87,13 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <StatusBar style="dark" />
-              <NetworkBanner />
-              <AuthGate>
-                <Slot />
-              </AuthGate>
+              <ToastProvider>
+                <StatusBar style="dark" />
+                <NetworkBanner />
+                <AuthGate>
+                  <Slot />
+                </AuthGate>
+              </ToastProvider>
             </AuthProvider>
           </QueryClientProvider>
         </SafeAreaProvider>

@@ -17,6 +17,7 @@ import { BomModeBar } from "@/components/bom/BomModeBar";
 import { PickCheckoutSection } from "@/components/bom/PickCheckoutSection";
 import { FabGateSection } from "@/components/bom/FabGateSection";
 import { PanelCheckoutSheet } from "@/components/bom/PanelCheckoutSheet";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -229,22 +230,29 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
         <Card style={styles.itemsCard}>
           <Text style={styles.sectionTitle}>Line Items</Text>
-          {lineItems.map((li, i) => (
-            <BomLineItemRow
-              key={String(li.id ?? i)}
-              item={{
-                id: String(li.id ?? ""),
-                bomId,
-                productId: li.productId ? String(li.productId) : null,
-                productName: String(li.productName ?? ""),
-                quantity: Number(li.quantity ?? 0),
-                checkedOutQty: Number(li.checkedOutQty ?? 0),
-                unit: String(li.unit ?? "EA"),
-                isCustom: Boolean(li.isCustom),
-              }}
-              showCheckout={showCheckout}
-            />
-          ))}
+          {lineItems.map((li, i) => {
+            const row = (
+              <BomLineItemRow
+                key={String(li.id ?? i)}
+                item={{
+                  id: String(li.id ?? ""),
+                  bomId,
+                  productId: li.productId ? String(li.productId) : null,
+                  productName: String(li.productName ?? ""),
+                  quantity: Number(li.quantity ?? 0),
+                  checkedOutQty: Number(li.checkedOutQty ?? 0),
+                  unit: String(li.unit ?? "EA"),
+                  isCustom: Boolean(li.isCustom),
+                }}
+                showCheckout={showCheckout}
+              />
+            );
+            return mode === "edit" ? (
+              <SwipeableRow key={String(li.id ?? i)} onDelete={() => {/* TODO: wire delete mutation */}}>
+                {row}
+              </SwipeableRow>
+            ) : row;
+          })}
         </Card>
       </Animated.View>
 

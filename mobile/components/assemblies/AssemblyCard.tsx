@@ -3,7 +3,7 @@
  * Matches web's assembly card pattern.
  */
 import { StyleSheet, View, Text, Pressable } from "react-native";
-import { DoorOpen, Layers, ChevronRight, ChevronUp, ChevronDown } from "lucide-react-native";
+import { DoorOpen, Layers, ChevronRight, ChevronUp, ChevronDown, Snowflake, Ruler } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { colors } from "@/constants/colors";
@@ -54,6 +54,15 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
   const isDoor = assembly.type === "DOOR";
   const showReorder = position !== undefined && totalInQueue !== undefined && onMoveUp && onMoveDown;
 
+  // Extract door specs for pills (only used when type is DOOR)
+  const specs = isDoor ? assembly.specs : null;
+  const temperatureType = specs ? String(specs.temperatureType ?? "") : "";
+  const widthInClear = specs ? String(specs.widthInClear ?? "") : "";
+  const heightInClear = specs ? String(specs.heightInClear ?? "") : "";
+  const frameType = specs ? String(specs.frameType ?? "") : "";
+  const hasDimensions = widthInClear !== "" && heightInClear !== "";
+  const hasSpecPills = isDoor && (temperatureType !== "" || hasDimensions || frameType !== "");
+
   return (
     <Card
       accent={isSelected ? "blue" : (STATUS_ACCENT[assembly.status] ?? "gray")}
@@ -96,6 +105,28 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
         </View>
         <Badge label={statusConfig.label} variant={statusConfig.variant} />
       </View>
+
+      {hasSpecPills ? (
+        <View style={styles.specPillsRow}>
+          {temperatureType !== "" ? (
+            <View style={styles.specPill}>
+              <Snowflake size={12} color={colors.brandBlue} strokeWidth={2} />
+              <Text style={styles.specPillText}>{temperatureType}</Text>
+            </View>
+          ) : null}
+          {hasDimensions ? (
+            <View style={styles.specPill}>
+              <Ruler size={12} color={colors.brandBlue} strokeWidth={2} />
+              <Text style={styles.specPillText}>{widthInClear}×{heightInClear}</Text>
+            </View>
+          ) : null}
+          {frameType !== "" ? (
+            <View style={styles.specPill}>
+              <Text style={styles.specPillText}>{frameType}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
 
       <View style={styles.bottomRow}>
         <Text style={styles.date}>
@@ -163,5 +194,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.textMuted,
     fontVariant: ["tabular-nums"],
+  },
+  specPillsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  specPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  specPillText: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
 });

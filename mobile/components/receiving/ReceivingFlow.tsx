@@ -16,6 +16,7 @@ import { POBrowser } from "./POBrowser";
 import { POMatchCard } from "./POMatchCard";
 import { POReceiveCard } from "./POReceiveCard";
 import { PanelBreakout } from "./PanelBreakout";
+import { ReceivingConfirmationCard } from "./ReceivingConfirmationCard";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -57,6 +58,7 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [notes, setNotes] = useState("");
   const [matchedPO, setMatchedPO] = useState<PurchaseOrder | null>(null);
+  const [confirmedItemIds, setConfirmedItemIds] = useState<Set<number>>(new Set());
 
   const parseMutation = useParseReceivingText();
   const imageParseM = useParseReceivingImage();
@@ -251,16 +253,26 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
           onSelect={setSupplier}
         />
 
-        {/* Parsed items */}
+        {/* Parsed items with confirm/reject */}
         <Text style={styles.sectionTitle}>Items to Receive ({items.length})</Text>
         {items.map((item, i) => (
-          <Card key={`${item.productName}-${i}`} style={styles.itemCard}>
-            <Text style={styles.itemName}>{item.productName}</Text>
-            <View style={styles.itemRow}>
-              <Text style={styles.itemQty}>{item.quantity} {item.unit}</Text>
-              <Text style={styles.itemCost}>${item.unitCost.toFixed(2)} ea</Text>
-            </View>
-          </Card>
+          <ReceivingConfirmationCard
+            key={`${item.productName}-${i}`}
+            productName={item.productName}
+            quantity={item.quantity}
+            unitCost={item.unitCost}
+            unit={item.unit}
+            isConfirmed={confirmedItemIds.has(i)}
+            onConfirm={() => setConfirmedItemIds((prev) => new Set(prev).add(i))}
+            onReject={() => {
+              setItems((prev) => prev.filter((_, idx) => idx !== i));
+              setConfirmedItemIds((prev) => {
+                const next = new Set(prev);
+                next.delete(i);
+                return next;
+              });
+            }}
+          />
         ))}
 
         {/* Notes */}

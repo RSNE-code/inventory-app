@@ -62,35 +62,35 @@ export default function ReorderScreen() {
             description="All stock levels are above reorder points"
           />
         ) : (
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: screenPadding, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />}
-            renderItem={({ item, index }) => (
-              <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
-              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
-                <Card accent="yellow">
-                  <Text style={styles.itemName}>{item.name}</Text>
-                  <View style={styles.row}>
-                    <View>
-                      <Text style={styles.label}>Current</Text>
-                      <Text style={styles.value}>{formatQuantity(item.currentQty)} {item.unit}</Text>
+          <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
+            <FlatList
+              data={items}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: screenPadding, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />}
+              renderItem={({ item, index }) => (
+                <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
+                  <Card accent="yellow">
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <View style={styles.row}>
+                      <View>
+                        <Text style={styles.label}>Current</Text>
+                        <Text style={styles.value}>{formatQuantity(item.currentQty)} {item.unit}</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.label}>Reorder At</Text>
+                        <Text style={styles.value}>{formatQuantity(item.reorderPoint)}</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.label}>Suggested</Text>
+                        <Text style={styles.valueBold}>{formatQuantity(item.suggestedQty)} {item.unit}</Text>
+                      </View>
                     </View>
-                    <View>
-                      <Text style={styles.label}>Reorder At</Text>
-                      <Text style={styles.value}>{formatQuantity(item.reorderPoint)}</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.label}>Suggested</Text>
-                      <Text style={styles.valueBold}>{formatQuantity(item.suggestedQty)} {item.unit}</Text>
-                    </View>
-                  </View>
-                </Card>
-              </Animated.View>
-              </IPadPage>
-            )}
-          />
+                  </Card>
+                </Animated.View>
+              )}
+            />
+          </IPadPage>
         )}
       </View>
     </>

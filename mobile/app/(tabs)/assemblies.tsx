@@ -14,10 +14,11 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { AssemblyCard } from "@/components/assemblies/AssemblyCard";
 import { AssemblyDetailContent } from "@/components/assemblies/AssemblyDetailContent";
+import { FinishedGoodsList } from "@/components/shipping/FinishedGoodsList";
 import { SplitView } from "@/components/layout/SplitView";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { useAssemblies, useReorderAssemblies } from "@/hooks/use-assemblies";
+import { useAssemblies, useReorderAssemblies, useBatchShip } from "@/hooks/use-assemblies";
 import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
@@ -47,6 +48,8 @@ export default function AssembliesScreen() {
     isShipping ? {} : { queueType: queueTab as "DOOR_SHOP" | "FABRICATION" }
   );
   const reorderMutation = useReorderAssemblies();
+  const batchShipMutation = useBatchShip();
+  const [selectedShipIds, setSelectedShipIds] = useState<string[]>([]);
 
   const assemblies: Assembly[] = (data as any)?.data ?? [];
   const shippingItems = isShipping
@@ -92,7 +95,25 @@ export default function AssembliesScreen() {
   const handleTabChange = useCallback((tab: string) => {
     setQueueTab(tab);
     setSelectedAssemblyId(null);
+    setSelectedShipIds([]);
   }, []);
+
+  const handleToggleShipSelect = useCallback((id: string) => {
+    setSelectedShipIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const handleBatchShip = useCallback(() => {
+    if (selectedShipIds.length === 0) return;
+    batchShipMutation.mutate(selectedShipIds, {
+      onSuccess: () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setSelectedShipIds([]);
+      },
+      onError: () => Alert.alert("Error", "Failed to ship assemblies"),
+    });
+  }, [selectedShipIds, batchShipMutation]);
 
   const handleAssemblyPress = useCallback((assembly: Assembly) => {
     if (isTablet) {
@@ -125,11 +146,21 @@ export default function AssembliesScreen() {
   // Build the full display list: reorderable queue items + other items
   const orderedDisplayList = isShipping ? shippingItems : [...localQueue, ...otherItems];
 
-  /** Master panel: assembly list */
+  /** Master panel: assembly list (or FinishedGoodsList for shipping) */
   const masterContent = (
     <View style={styles.masterContainer}>
       {isLoading ? (
         <LoadingState />
+      ) : isShipping ? (
+        <View style={{ flex: 1, padding: screenPadding }}>
+          <FinishedGoodsList
+            assemblies={shippingItems}
+            selectedIds={selectedShipIds}
+            onToggleSelect={handleToggleShipSelect}
+            onBatchShip={handleBatchShip}
+            loading={batchShipMutation.isPending}
+          />
+        </View>
       ) : orderedDisplayList.length === 0 ? (
         <EmptyState
           icon={<Factory size={48} color={colors.textMuted} strokeWidth={1.2} />}

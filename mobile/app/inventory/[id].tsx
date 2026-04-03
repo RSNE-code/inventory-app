@@ -6,7 +6,7 @@ import { StyleSheet, ScrollView, View, Text, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { Pencil, ArrowUpDown, MapPin, Clock, Package2 } from "lucide-react-native";
+import { Pencil, ArrowUpDown, MapPin, Clock, Package2, Activity } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
@@ -144,6 +144,27 @@ export default function ProductDetailScreen() {
               </Animated.View>
             </>
           )}
+          {/* Recent Activity */}
+          <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
+            <Card style={styles.activityCard}>
+              <View style={styles.activityHeader}>
+                <Activity size={18} color={colors.brandBlue} strokeWidth={2} />
+                <Text style={styles.sectionTitle}>Recent Activity</Text>
+              </View>
+              {p.createdAt ? (
+                <View style={styles.activityRow}>
+                  <Text style={styles.activityType}>Created</Text>
+                  <Text style={styles.activityDate}>{new Date(String(p.createdAt)).toLocaleDateString()}</Text>
+                </View>
+              ) : null}
+              {p.updatedAt && p.updatedAt !== p.createdAt ? (
+                <View style={styles.activityRow}>
+                  <Text style={styles.activityType}>Last Updated</Text>
+                  <Text style={styles.activityDate}>{new Date(String(p.updatedAt)).toLocaleDateString()}</Text>
+                </View>
+              ) : null}
+            </Card>
+          </Animated.View>
         </IPadPage>
       </ScrollView>
     </>
@@ -255,5 +276,30 @@ const styles = StyleSheet.create({
   },
   tabletDetailRight: {
     flex: 1,
+  },
+  activityCard: {
+    marginTop: spacing.lg,
+  },
+  activityHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  activityRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+  },
+  activityType: {
+    ...typography.body,
+    color: colors.textMuted,
+  },
+  activityDate: {
+    ...typography.body,
+    fontWeight: "500",
+    color: colors.navy,
   },
 });
