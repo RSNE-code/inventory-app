@@ -1,14 +1,14 @@
 /**
  * BomCard — list item with job name, status badge, item count, accent bar.
- * Matches web's bom-card.tsx.
+ * Supports reorder controls (up/down) and selection highlight.
  */
-import { StyleSheet, View, Text } from "react-native";
-import { ChevronRight } from "lucide-react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
+import { ChevronRight, ChevronUp, ChevronDown } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { BomStatusBadge } from "./BomStatusBadge";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, radius } from "@/constants/layout";
 import type { Bom } from "@/types/api";
 
 type AccentColor = "gray" | "orange" | "blue" | "yellow" | "green" | "red";
@@ -26,10 +26,16 @@ interface BomCardProps {
   bom: Bom;
   onPress: () => void;
   isSelected?: boolean;
+  /** Queue position (1-based) — shows reorder controls when provided */
+  position?: number;
+  totalInQueue?: number;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
-export function BomCard({ bom, onPress, isSelected }: BomCardProps) {
+export function BomCard({ bom, onPress, isSelected, position, totalInQueue, onMoveUp, onMoveDown }: BomCardProps) {
   const itemCount = bom._count?.lineItems ?? 0;
+  const showReorder = position !== undefined && totalInQueue !== undefined && onMoveUp && onMoveDown;
 
   return (
     <Card
@@ -38,6 +44,25 @@ export function BomCard({ bom, onPress, isSelected }: BomCardProps) {
       style={isSelected ? styles.selectedCard : undefined}
     >
       <View style={styles.topRow}>
+        {showReorder && (
+          <View style={styles.reorderCol}>
+            <Pressable
+              onPress={(e) => { e.stopPropagation?.(); onMoveUp(); }}
+              disabled={position <= 1}
+              style={[styles.reorderBtn, position <= 1 && styles.reorderBtnDisabled]}
+            >
+              <ChevronUp size={18} color={position <= 1 ? colors.border : colors.navy} strokeWidth={2} />
+            </Pressable>
+            <Text style={styles.positionText}>{position}</Text>
+            <Pressable
+              onPress={(e) => { e.stopPropagation?.(); onMoveDown(); }}
+              disabled={position >= totalInQueue}
+              style={[styles.reorderBtn, position >= totalInQueue && styles.reorderBtnDisabled]}
+            >
+              <ChevronDown size={18} color={position >= totalInQueue ? colors.border : colors.navy} strokeWidth={2} />
+            </Pressable>
+          </View>
+        )}
         <View style={styles.nameCol}>
           <Text style={styles.jobName} numberOfLines={1}>{bom.jobName}</Text>
           {bom.jobNumber && (
@@ -95,5 +120,26 @@ const styles = StyleSheet.create({
   },
   selectedCard: {
     backgroundColor: "rgba(46, 125, 186, 0.06)",
+  },
+  reorderCol: {
+    alignItems: "center",
+    gap: 2,
+    marginRight: spacing.sm,
+  },
+  reorderBtn: {
+    width: 32,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.sm,
+  },
+  reorderBtnDisabled: {
+    opacity: 0.3,
+  },
+  positionText: {
+    ...typography.caption,
+    fontWeight: "700",
+    color: colors.textMuted,
+    fontVariant: ["tabular-nums"],
   },
 });

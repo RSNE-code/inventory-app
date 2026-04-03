@@ -2,13 +2,13 @@
  * AssemblyCard — queue list item with type, status badge, accent bar.
  * Matches web's assembly card pattern.
  */
-import { StyleSheet, View, Text } from "react-native";
-import { DoorOpen, Layers, ChevronRight } from "lucide-react-native";
+import { StyleSheet, View, Text, Pressable } from "react-native";
+import { DoorOpen, Layers, ChevronRight, ChevronUp, ChevronDown } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, radius } from "@/constants/layout";
 import type { Assembly } from "@/types/api";
 
 type AccentColor = "gray" | "yellow" | "blue" | "orange" | "green";
@@ -42,11 +42,17 @@ interface AssemblyCardProps {
   assembly: Assembly;
   onPress: () => void;
   isSelected?: boolean;
+  /** Queue position (1-based) — shows reorder controls when provided */
+  position?: number;
+  totalInQueue?: number;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
 }
 
-export function AssemblyCard({ assembly, onPress, isSelected }: AssemblyCardProps) {
+export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQueue, onMoveUp, onMoveDown }: AssemblyCardProps) {
   const statusConfig = STATUS_BADGE[assembly.status] ?? STATUS_BADGE.PLANNED;
   const isDoor = assembly.type === "DOOR";
+  const showReorder = position !== undefined && totalInQueue !== undefined && onMoveUp && onMoveDown;
 
   return (
     <Card
@@ -55,6 +61,25 @@ export function AssemblyCard({ assembly, onPress, isSelected }: AssemblyCardProp
       style={isSelected ? styles.selectedCard : undefined}
     >
       <View style={styles.topRow}>
+        {showReorder && (
+          <View style={styles.reorderCol}>
+            <Pressable
+              onPress={(e) => { e.stopPropagation?.(); onMoveUp(); }}
+              disabled={position <= 1}
+              style={[styles.reorderBtn, position <= 1 && styles.reorderBtnDisabled]}
+            >
+              <ChevronUp size={18} color={position <= 1 ? colors.border : colors.navy} strokeWidth={2} />
+            </Pressable>
+            <Text style={styles.positionText}>{position}</Text>
+            <Pressable
+              onPress={(e) => { e.stopPropagation?.(); onMoveDown(); }}
+              disabled={position >= totalInQueue}
+              style={[styles.reorderBtn, position >= totalInQueue && styles.reorderBtnDisabled]}
+            >
+              <ChevronDown size={18} color={position >= totalInQueue ? colors.border : colors.navy} strokeWidth={2} />
+            </Pressable>
+          </View>
+        )}
         <View style={styles.iconWrap}>
           {isDoor ? (
             <DoorOpen size={18} color={colors.brandBlue} strokeWidth={1.8} />
@@ -117,5 +142,26 @@ const styles = StyleSheet.create({
   },
   selectedCard: {
     backgroundColor: "rgba(46, 125, 186, 0.06)",
+  },
+  reorderCol: {
+    alignItems: "center",
+    gap: 2,
+    marginRight: spacing.sm,
+  },
+  reorderBtn: {
+    width: 32,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radius.sm,
+  },
+  reorderBtnDisabled: {
+    opacity: 0.3,
+  },
+  positionText: {
+    ...typography.caption,
+    fontWeight: "700",
+    color: colors.textMuted,
+    fontVariant: ["tabular-nums"],
   },
 });

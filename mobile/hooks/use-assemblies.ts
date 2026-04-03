@@ -74,8 +74,8 @@ export function useDeleteAssembly() {
 export function useReorderAssemblies() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (assemblyIds: string[]) =>
-      apiPost("/api/assemblies/reorder", { assemblyIds }),
+    mutationFn: (orderedIds: string[]) =>
+      apiPost("/api/assemblies/reorder", { orderedIds }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.assemblies });
     },

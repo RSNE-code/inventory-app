@@ -3,7 +3,8 @@
  * iPad: SplitView master-detail on the list tab.
  * Matches web's boms/page.tsx.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { Alert } from "react-native";
 import { StyleSheet, View, Text, FlatList, RefreshControl, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -20,7 +21,7 @@ import { SplitView } from "@/components/layout/SplitView";
 import { CategoryFilter } from "@/components/inventory/CategoryFilter";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { useBoms } from "@/hooks/use-boms";
+import { useBoms, useReorderBoms } from "@/hooks/use-boms";
 import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -54,11 +55,34 @@ export default function BomsScreen() {
   const [selectedBomId, setSelectedBomId] = useState<string | null>(null);
 
   const { data, isLoading, refetch } = useBoms({ search, status: statusFilter });
+  const reorderMutation = useReorderBoms();
   const boms: Bom[] = (data as any)?.data ?? [];
 
+  // Reorder only applies to APPROVED and IN_PROGRESS
+  const isReorderable = ["APPROVED", "IN_PROGRESS"].includes(statusFilter);
+
+  // Optimistic reorder state
+  const [localBoms, setLocalBoms] = useState<Bom[]>([]);
+  const pendingRef = useRef<string[] | null>(null);
+
+  useEffect(() => {
+    if (pendingRef.current === null) {
+      setLocalBoms(boms);
+    } else {
+      const serverIds = boms.map((b) => b.id).join(",");
+      const pendingIds = pendingRef.current.join(",");
+      if (serverIds === pendingIds) {
+        pendingRef.current = null;
+        setLocalBoms(boms);
+      }
+    }
+  }, [boms.map((b) => b.id).join(",")]);
+
+  const displayBoms = isReorderable ? localBoms : boms;
+
   // Auto-select first BOM on iPad when list loads
-  if (isTablet && boms.length > 0 && !selectedBomId) {
-    setSelectedBomId(boms[0].id);
+  if (isTablet && displayBoms.length > 0 && !selectedBomId) {
+    setSelectedBomId(displayBoms[0].id);
   }
 
   const onRefresh = useCallback(async () => {
@@ -76,6 +100,26 @@ export default function BomsScreen() {
     }
   }, [isTablet, router]);
 
+  const moveBom = useCallback((index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= localBoms.length) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newOrder = [...localBoms];
+    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+    setLocalBoms(newOrder);
+
+    const newIds = newOrder.map((b) => b.id);
+    pendingRef.current = newIds;
+    reorderMutation.mutate(newIds, {
+      onError: () => {
+        pendingRef.current = null;
+        setLocalBoms(boms);
+        Alert.alert("Error", "Failed to save queue order");
+      },
+    });
+  }, [localBoms, boms, reorderMutation]);
+
   /** Master panel: BOM list with filters */
   const masterContent = (
     <View style={styles.listContainer}>
@@ -90,7 +134,7 @@ export default function BomsScreen() {
 
       {isLoading ? (
         <LoadingState />
-      ) : boms.length === 0 ? (
+      ) : displayBoms.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={48} color={colors.textMuted} strokeWidth={1.2} />}
           title={search ? "No matching BOMs" : "No BOMs yet"}
@@ -98,11 +142,19 @@ export default function BomsScreen() {
         />
       ) : (
         <FlatList
-          data={boms}
+          data={displayBoms}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
             <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(20)}>
-              <BomCard bom={item} onPress={() => handleBomPress(item)} isSelected={isTablet && item.id === selectedBomId} />
+              <BomCard
+                bom={item}
+                onPress={() => handleBomPress(item)}
+                isSelected={isTablet && item.id === selectedBomId}
+                position={isReorderable ? index + 1 : undefined}
+                totalInQueue={isReorderable ? displayBoms.length : undefined}
+                onMoveUp={isReorderable ? () => moveBom(index, "up") : undefined}
+                onMoveDown={isReorderable ? () => moveBom(index, "down") : undefined}
+              />
             </Animated.View>
           )}
           contentContainerStyle={{

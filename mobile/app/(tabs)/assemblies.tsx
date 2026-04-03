@@ -1,10 +1,9 @@
 /**
  * Assemblies tab — three tabs: Door Shop, Fabrication, Shipping.
- * iPad: SplitView master-detail.
- * Matches web's assemblies/page.tsx.
+ * iPad: SplitView master-detail with queue reorder controls.
  */
-import { useState, useCallback } from "react";
-import { StyleSheet, View, FlatList, RefreshControl, ScrollView } from "react-native";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { StyleSheet, View, FlatList, RefreshControl, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -18,7 +17,7 @@ import { AssemblyDetailContent } from "@/components/assemblies/AssemblyDetailCon
 import { SplitView } from "@/components/layout/SplitView";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { useAssemblies } from "@/hooks/use-assemblies";
+import { useAssemblies, useReorderAssemblies } from "@/hooks/use-assemblies";
 import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
@@ -30,6 +29,9 @@ const QUEUE_TABS = [
   { key: "FABRICATION", label: "Fabrication" },
   { key: "SHIPPING", label: "Shipping" },
 ];
+
+/** Statuses that can be reordered in the queue */
+const REORDERABLE_STATUSES = ["PLANNED", "AWAITING_APPROVAL", "APPROVED"];
 
 export default function AssembliesScreen() {
   const router = useRouter();
@@ -44,12 +46,34 @@ export default function AssembliesScreen() {
   const { data, isLoading, refetch } = useAssemblies(
     isShipping ? {} : { queueType: queueTab as "DOOR_SHOP" | "FABRICATION" }
   );
+  const reorderMutation = useReorderAssemblies();
 
   const assemblies: Assembly[] = (data as any)?.data ?? [];
   const shippingItems = isShipping
     ? assemblies.filter((a) => a.status === "COMPLETED" || a.status === "SHIPPED")
     : assemblies;
+
+  // Split into reorderable (queue) and non-reorderable (in-progress, completed)
+  const queueItems = assemblies.filter((a) => REORDERABLE_STATUSES.includes(a.status));
+  const otherItems = assemblies.filter((a) => !REORDERABLE_STATUSES.includes(a.status));
   const displayList = isShipping ? shippingItems : assemblies;
+
+  // Optimistic reorder state
+  const [localQueue, setLocalQueue] = useState<Assembly[]>([]);
+  const pendingRef = useRef<string[] | null>(null);
+
+  useEffect(() => {
+    if (pendingRef.current === null) {
+      setLocalQueue(queueItems);
+    } else {
+      const serverIds = queueItems.map((a) => a.id).join(",");
+      const pendingIds = pendingRef.current.join(",");
+      if (serverIds === pendingIds) {
+        pendingRef.current = null;
+        setLocalQueue(queueItems);
+      }
+    }
+  }, [queueItems.map((a) => a.id).join(",")]);
 
   // Auto-select first assembly on iPad when list loads
   if (isTablet && displayList.length > 0 && !selectedAssemblyId) {
@@ -76,12 +100,35 @@ export default function AssembliesScreen() {
     }
   }, [isTablet, router]);
 
+  const moveItem = useCallback((index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= localQueue.length) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newOrder = [...localQueue];
+    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+    setLocalQueue(newOrder);
+
+    const newIds = newOrder.map((a) => a.id);
+    pendingRef.current = newIds;
+    reorderMutation.mutate(newIds, {
+      onError: () => {
+        pendingRef.current = null;
+        setLocalQueue(queueItems);
+        Alert.alert("Error", "Failed to save queue order");
+      },
+    });
+  }, [localQueue, queueItems, reorderMutation]);
+
+  // Build the full display list: reorderable queue items + other items
+  const orderedDisplayList = isShipping ? shippingItems : [...localQueue, ...otherItems];
+
   /** Master panel: assembly list */
   const masterContent = (
     <View style={styles.masterContainer}>
       {isLoading ? (
         <LoadingState />
-      ) : displayList.length === 0 ? (
+      ) : orderedDisplayList.length === 0 ? (
         <EmptyState
           icon={<Factory size={48} color={colors.textMuted} strokeWidth={1.2} />}
           title={isShipping ? "Nothing to ship" : "Queue is empty"}
@@ -91,17 +138,25 @@ export default function AssembliesScreen() {
         />
       ) : (
         <FlatList
-          data={displayList}
+          data={orderedDisplayList}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(20)}>
-              <AssemblyCard
-                assembly={item}
-                onPress={() => handleAssemblyPress(item)}
-                isSelected={isTablet && item.id === selectedAssemblyId}
-              />
-            </Animated.View>
-          )}
+          renderItem={({ item, index }) => {
+            const queueIndex = localQueue.findIndex((q) => q.id === item.id);
+            const isInQueue = queueIndex >= 0 && !isShipping;
+            return (
+              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(20)}>
+                <AssemblyCard
+                  assembly={item}
+                  onPress={() => handleAssemblyPress(item)}
+                  isSelected={isTablet && item.id === selectedAssemblyId}
+                  position={isInQueue ? queueIndex + 1 : undefined}
+                  totalInQueue={isInQueue ? localQueue.length : undefined}
+                  onMoveUp={isInQueue ? () => moveItem(queueIndex, "up") : undefined}
+                  onMoveDown={isInQueue ? () => moveItem(queueIndex, "down") : undefined}
+                />
+              </Animated.View>
+            );
+          }}
           contentContainerStyle={{
             padding: isTablet ? spacing.lg : screenPadding,
             gap: spacing.md,

@@ -100,7 +100,7 @@ export function useCheckoutBom() {
 export function useReorderBoms() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (bomIds: string[]) => apiPost("/api/boms/reorder", { bomIds }),
+    mutationFn: (orderedIds: string[]) => apiPost("/api/boms/reorder", { orderedIds }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.boms });
     },
