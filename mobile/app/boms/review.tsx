@@ -9,12 +9,14 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ClipboardCheck } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { BomCard } from "@/components/bom/BomCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useBoms } from "@/hooks/use-boms";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
-import { spacing } from "@/constants/layout";
+import { spacing, DETAIL_MAX_WIDTH } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
 import type { Bom } from "@/types/api";
 
@@ -22,6 +24,7 @@ export default function BomReviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const { screenPadding } = useResponsiveSpacing();
   const { data, isLoading, refetch } = useBoms({ status: "PENDING_REVIEW" });
   const boms: Bom[] = (data as any)?.data ?? [];
 
@@ -48,12 +51,14 @@ export default function BomReviewScreen() {
           <FlatList
             data={boms}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
+            contentContainerStyle={{ padding: screenPadding, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />}
             renderItem={({ item, index }) => (
-              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
-                <BomCard bom={item} onPress={() => router.push(`/boms/${item.id}`)} />
-              </Animated.View>
+              <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
+                <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
+                  <BomCard bom={item} onPress={() => router.push(`/boms/${item.id}`)} />
+                </Animated.View>
+              </IPadPage>
             )}
           />
         )}

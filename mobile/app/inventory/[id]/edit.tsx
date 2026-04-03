@@ -7,10 +7,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { ProductForm } from "@/components/inventory/ProductForm";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useProduct, useUpdateProduct } from "@/hooks/use-products";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
 
@@ -20,6 +22,7 @@ export default function EditProductScreen() {
   const insets = useSafeAreaInsets();
   const { data, isLoading } = useProduct(id!);
   const updateMutation = useUpdateProduct();
+  const { screenPadding } = useResponsiveSpacing();
 
   const product = (data as any)?.data ?? data;
   const p = product as Record<string, any> | undefined;
@@ -66,16 +69,18 @@ export default function EditProductScreen() {
     <>
       <Header title="Edit Product" showBack />
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
-        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
-          <ProductForm data={form} onChange={setForm} />
-          <Button
-            title={updateMutation.isPending ? "Saving\u2026" : "Save Changes"}
-            onPress={handleSave}
-            disabled={!form.name.trim() || updateMutation.isPending}
-            loading={updateMutation.isPending}
-            size="lg"
-            style={styles.saveBtn}
-          />
+        <ScrollView style={styles.container} contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}>
+          <IPadPage>
+            <ProductForm data={form} onChange={setForm} />
+            <Button
+              title={updateMutation.isPending ? "Saving\u2026" : "Save Changes"}
+              onPress={handleSave}
+              disabled={!form.name.trim() || updateMutation.isPending}
+              loading={updateMutation.isPending}
+              size="lg"
+              style={styles.saveBtn}
+            />
+          </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -84,6 +89,6 @@ export default function EditProductScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background },
   saveBtn: { marginTop: spacing["2xl"] },
 });

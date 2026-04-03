@@ -18,6 +18,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ClipboardCheck, MapPin, ChevronRight } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Tabs } from "@/components/ui/Tabs";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -26,10 +27,11 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useCycleCountData, useRecordCycleCount } from "@/hooks/use-cycle-counts";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { formatQuantity } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing, radius } from "@/constants/layout";
+import { spacing, radius, DETAIL_MAX_WIDTH } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
 import type { CycleCountSuggestion, CycleCount } from "@/types/api";
 
@@ -43,6 +45,7 @@ export default function CycleCountsScreen() {
   const [activeTab, setActiveTab] = useState("count");
   const [refreshing, setRefreshing] = useState(false);
   const { data, isLoading, refetch } = useCycleCountData();
+  const { screenPadding } = useResponsiveSpacing();
 
   const result = data as { suggestions?: CycleCountSuggestion[]; history?: CycleCount[] } | undefined;
   const suggestions = result?.suggestions ?? [];
@@ -59,7 +62,7 @@ export default function CycleCountsScreen() {
     <>
       <Header title="Cycle Counts" showBack />
       <View style={styles.container}>
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { paddingHorizontal: screenPadding }]}>
           <Tabs tabs={PAGE_TABS} activeKey={activeTab} onTabChange={setActiveTab} />
         </View>
 

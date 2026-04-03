@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Pencil, ArrowUpDown, MapPin, Clock, Package2 } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { StockBadge } from "@/components/inventory/StockBadge";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -15,10 +16,11 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/Separator";
 import { useProduct } from "@/hooks/use-products";
+import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { formatCurrency, formatQuantity } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing, radius } from "@/constants/layout";
+import { spacing, radius, DETAIL_MAX_WIDTH } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 
 export default function ProductDetailScreen() {
@@ -26,6 +28,8 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data, isLoading, error, refetch } = useProduct(id!);
+  const isTablet = useIsTablet();
+  const { screenPadding } = useResponsiveSpacing();
 
   const product = (data as any)?.data ?? data;
 
@@ -57,56 +61,90 @@ export default function ProductDetailScreen() {
       <Header title={String(p.name ?? "Product")} showBack />
       <ScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
       >
-        {/* Top card: qty + badge */}
-        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
-          <Card style={styles.topCard}>
-            <View style={styles.topRow}>
-              <View>
-                <Text style={styles.qtyValue}>{formatQuantity(qty)}</Text>
-                <Text style={styles.qtyUnit}>{String(p.unit ?? "ea")} in stock</Text>
+        <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
+          {/* Top card: qty + badge */}
+          <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
+            <Card style={styles.topCard}>
+              <View style={styles.topRow}>
+                <View>
+                  <Text style={styles.qtyValue}>{formatQuantity(qty)}</Text>
+                  <Text style={styles.qtyUnit}>{String(p.unit ?? "ea")} in stock</Text>
+                </View>
+                <StockBadge currentQty={qty} reorderPoint={reorder} />
               </View>
-              <StockBadge currentQty={qty} reorderPoint={reorder} />
-            </View>
-            <Separator style={styles.sep} />
-            <View style={styles.statGrid}>
-              <StatItem label="Reorder Point" value={formatQuantity(reorder)} />
-              <StatItem label="Unit Cost" value={formatCurrency(unitCost)} />
-              <StatItem label="Total Value" value={formatCurrency(qty * unitCost)} />
-              <StatItem label="SKU" value={String(p.sku ?? "Not specified")} />
-            </View>
-          </Card>
-        </Animated.View>
+              <Separator style={styles.sep} />
+              <View style={[styles.statGrid, isTablet && styles.statGridTablet]}>
+                <StatItem label="Reorder Point" value={formatQuantity(reorder)} />
+                <StatItem label="Unit Cost" value={formatCurrency(unitCost)} />
+                <StatItem label="Total Value" value={formatCurrency(qty * unitCost)} />
+                <StatItem label="SKU" value={String(p.sku ?? "Not specified")} />
+              </View>
+            </Card>
+          </Animated.View>
 
-        {/* Details card */}
-        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
-          <Card style={styles.detailCard}>
-            <Text style={styles.sectionTitle}>Details</Text>
-            <DetailRow icon={Package2} label="Category" value={String(p.category ?? "Not specified")} />
-            <DetailRow icon={MapPin} label="Location" value={String(p.location ?? "Not specified")} />
-            <DetailRow icon={Clock} label="Tier" value={`Tier ${p.tier ?? 1}`} />
-          </Card>
-        </Animated.View>
-
-        {/* Action buttons */}
-        <Animated.View
-          entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}
-          style={styles.actions}
-        >
-          <Button
-            title="Adjust Stock"
-            variant="primary"
-            icon={<ArrowUpDown size={18} color={colors.textInverse} strokeWidth={2} />}
-            onPress={() => router.push(`/inventory/${id}/adjust`)}
-          />
-          <Button
-            title="Edit Product"
-            variant="secondary"
-            icon={<Pencil size={18} color={colors.textPrimary} strokeWidth={2} />}
-            onPress={() => router.push(`/inventory/${id}/edit` as never)}
-          />
-        </Animated.View>
+          {/* Details + Actions: side-by-side on iPad */}
+          {isTablet ? (
+            <View style={styles.tabletDetailRow}>
+              <Animated.View style={styles.tabletDetailLeft} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                <Card>
+                  <Text style={styles.sectionTitle}>Details</Text>
+                  <DetailRow icon={Package2} label="Category" value={String(p.category ?? "Not specified")} />
+                  <DetailRow icon={MapPin} label="Location" value={String(p.location ?? "Not specified")} />
+                  <DetailRow icon={Clock} label="Tier" value={`Tier ${p.tier ?? 1}`} />
+                </Card>
+              </Animated.View>
+              <Animated.View style={styles.tabletDetailRight} entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
+                <Card>
+                  <Text style={styles.sectionTitle}>Actions</Text>
+                  <View style={styles.actions}>
+                    <Button
+                      title="Adjust Stock"
+                      variant="primary"
+                      icon={<ArrowUpDown size={18} color={colors.textInverse} strokeWidth={2} />}
+                      onPress={() => router.push(`/inventory/${id}/adjust`)}
+                    />
+                    <Button
+                      title="Edit Product"
+                      variant="secondary"
+                      icon={<Pencil size={18} color={colors.textPrimary} strokeWidth={2} />}
+                      onPress={() => router.push(`/inventory/${id}/edit` as never)}
+                    />
+                  </View>
+                </Card>
+              </Animated.View>
+            </View>
+          ) : (
+            <>
+              <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                <Card style={styles.detailCard}>
+                  <Text style={styles.sectionTitle}>Details</Text>
+                  <DetailRow icon={Package2} label="Category" value={String(p.category ?? "Not specified")} />
+                  <DetailRow icon={MapPin} label="Location" value={String(p.location ?? "Not specified")} />
+                  <DetailRow icon={Clock} label="Tier" value={`Tier ${p.tier ?? 1}`} />
+                </Card>
+              </Animated.View>
+              <Animated.View
+                entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}
+                style={styles.actions}
+              >
+                <Button
+                  title="Adjust Stock"
+                  variant="primary"
+                  icon={<ArrowUpDown size={18} color={colors.textInverse} strokeWidth={2} />}
+                  onPress={() => router.push(`/inventory/${id}/adjust`)}
+                />
+                <Button
+                  title="Edit Product"
+                  variant="secondary"
+                  icon={<Pencil size={18} color={colors.textPrimary} strokeWidth={2} />}
+                  onPress={() => router.push(`/inventory/${id}/edit` as never)}
+                />
+              </Animated.View>
+            </>
+          )}
+        </IPadPage>
       </ScrollView>
     </>
   );
@@ -135,7 +173,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
   },
   topCard: {
     marginBottom: spacing.lg,
@@ -162,6 +199,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.lg,
+  },
+  statGridTablet: {
+    flexWrap: "nowrap",
   },
   statItem: {
     width: "45%",
@@ -205,5 +245,15 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.md,
+  },
+  tabletDetailRow: {
+    flexDirection: "row",
+    gap: spacing.lg,
+  },
+  tabletDetailLeft: {
+    flex: 1,
+  },
+  tabletDetailRight: {
+    flex: 1,
   },
 });

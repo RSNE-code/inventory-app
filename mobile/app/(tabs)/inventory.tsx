@@ -17,6 +17,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Button } from "@/components/ui/Button";
 import { useProducts, useCategories } from "@/hooks/use-products";
+import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
@@ -25,9 +26,12 @@ import type { Product } from "@/types/api";
 export default function InventoryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isTablet = useIsTablet();
+  const { screenPadding } = useResponsiveSpacing();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const numColumns = isTablet ? 2 : 1;
 
   const { data, isLoading, error, refetch } = useProducts({ search, category });
   const { data: categories } = useCategories();
@@ -46,6 +50,7 @@ export default function InventoryScreen() {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}
+        style={isTablet ? styles.gridCell : undefined}
       >
         <ProductCard
           product={item}
@@ -53,7 +58,7 @@ export default function InventoryScreen() {
         />
       </Animated.View>
     ),
-    [router]
+    [router, isTablet]
   );
 
   return (
@@ -71,7 +76,7 @@ export default function InventoryScreen() {
         }
       />
       <View style={styles.container}>
-        <View style={styles.filters}>
+        <View style={[styles.filters, { paddingHorizontal: screenPadding }]}>
           <SearchInput
             value={search}
             onChangeText={setSearch}
@@ -100,12 +105,15 @@ export default function InventoryScreen() {
           />
         ) : (
           <FlatList
+            key={isTablet ? "tablet-2col" : "phone-1col"}
             data={products}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
+            numColumns={numColumns}
+            columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
             contentContainerStyle={[
               styles.list,
-              { paddingBottom: insets.bottom + 100 },
+              { padding: screenPadding, paddingBottom: insets.bottom + 100 },
             ]}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             refreshControl={
@@ -128,15 +136,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   filters: {
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     gap: spacing.sm,
   },
   list: {
-    padding: spacing.lg,
     gap: spacing.md,
   },
   separator: {
     height: spacing.md,
+  },
+  columnWrapper: {
+    gap: spacing.lg,
+  },
+  gridCell: {
+    flex: 1,
   },
 });

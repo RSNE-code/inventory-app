@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { Card } from "@/components/ui/Card";
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useCreateBom } from "@/hooks/use-boms";
 import { useParseReceivingText } from "@/hooks/use-receiving";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
@@ -38,6 +40,7 @@ export default function NewBomScreen() {
   const insets = useSafeAreaInsets();
   const createBom = useCreateBom();
   const parseMutation = useParseReceivingText();
+  const { screenPadding } = useResponsiveSpacing();
 
   const [jobName, setJobName] = useState("");
   const [jobNumber, setJobNumber] = useState("");
@@ -103,8 +106,9 @@ export default function NewBomScreen() {
       >
         <ScrollView
           style={styles.container}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
         >
+          <IPadPage>
           {/* Job info */}
           <Input
             label="Job Name *"
@@ -165,6 +169,7 @@ export default function NewBomScreen() {
               />
             </>
           )}
+          </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -173,7 +178,7 @@ export default function NewBomScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background },
   fieldGap: { marginTop: spacing.lg },
   sectionTitle: {
     ...typography.sectionTitle,

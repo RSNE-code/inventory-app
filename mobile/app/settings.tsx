@@ -5,20 +5,24 @@ import { StyleSheet, View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { LogOut, Info, Users } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/lib/auth";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, SETTINGS_MAX_WIDTH } from "@/constants/layout";
 
 export default function SettingsScreen() {
   const { signOut, userName } = useAuth();
   const router = useRouter();
+  const { screenPadding } = useResponsiveSpacing();
 
   return (
     <>
       <Header title="Settings" showBack />
-      <View style={styles.container}>
+      <View style={[styles.container, { padding: screenPadding }]}>
+        <IPadPage maxWidth={SETTINGS_MAX_WIDTH}>
         <Card style={styles.card}>
           <Text style={styles.greeting}>Signed in as</Text>
           <Text style={styles.userName}>{userName}</Text>
@@ -44,6 +48,7 @@ export default function SettingsScreen() {
           <LogOut size={20} color={colors.statusRed} strokeWidth={1.8} />
           <Text style={styles.signOutLabel}>Sign Out</Text>
         </Pressable>
+        </IPadPage>
       </View>
     </>
   );
@@ -53,7 +58,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
     gap: spacing.md,
   },
   card: {

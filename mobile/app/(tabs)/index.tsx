@@ -20,6 +20,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuth } from "@/lib/auth";
+import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { getGreeting } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
@@ -31,6 +32,8 @@ export default function DashboardScreen() {
   const { data: rawDashboard, isLoading, error, refetch } = useDashboard();
   const dashboard = (rawDashboard as any)?.data ?? rawDashboard;
   const [refreshing, setRefreshing] = useState(false);
+  const isTablet = useIsTablet();
+  const { screenPadding, sectionGap } = useResponsiveSpacing();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -46,7 +49,7 @@ export default function DashboardScreen() {
         style={styles.container}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: insets.bottom + 100 },
+          { padding: screenPadding, gap: sectionGap, paddingBottom: insets.bottom + 100 },
         ]}
         refreshControl={
           <RefreshControl
@@ -73,7 +76,7 @@ export default function DashboardScreen() {
           />
         ) : dashboard ? (
           <>
-            {/* 1. Needs Attention */}
+            {/* 1. Needs Attention — full width */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
               <ActionItems
                 bomStatusCounts={dashboard.bomStatusCounts || {}}
@@ -84,31 +87,57 @@ export default function DashboardScreen() {
               />
             </Animated.View>
 
-            {/* 2. Work Pipelines */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
-              <WorkPipelines
-                bomStatusCounts={dashboard.bomStatusCounts || {}}
-                fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
-                doorQueueCount={0}
-              />
-            </Animated.View>
+            {/* 2–3. Work Pipelines + Stock Summary — side-by-side on iPad */}
+            {isTablet ? (
+              <View style={styles.tabletRow}>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                  <WorkPipelines
+                    bomStatusCounts={dashboard.bomStatusCounts || {}}
+                    fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
+                    doorQueueCount={0}
+                  />
+                </Animated.View>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
+                  <StockSummaryCard summary={dashboard.summary} />
+                </Animated.View>
+              </View>
+            ) : (
+              <>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+                  <WorkPipelines
+                    bomStatusCounts={dashboard.bomStatusCounts || {}}
+                    fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
+                    doorQueueCount={0}
+                  />
+                </Animated.View>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
+                  <StockSummaryCard summary={dashboard.summary} />
+                </Animated.View>
+              </>
+            )}
 
-            {/* 3. Inventory Value */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
-              <StockSummaryCard summary={dashboard.summary} />
-            </Animated.View>
+            {/* 4–5. Low Stock + Trend Chart — side-by-side on iPad */}
+            {isTablet ? (
+              <View style={styles.tabletRow}>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
+                  <LowStockList items={dashboard.lowStockItems} />
+                </Animated.View>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)}>
+                  <InventoryTrendChart />
+                </Animated.View>
+              </View>
+            ) : (
+              <>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
+                  <LowStockList items={dashboard.lowStockItems} />
+                </Animated.View>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)}>
+                  <InventoryTrendChart />
+                </Animated.View>
+              </>
+            )}
 
-            {/* 4. Low Stock */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
-              <LowStockList items={dashboard.lowStockItems} />
-            </Animated.View>
-
-            {/* 5. Trend Chart */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)}>
-              <InventoryTrendChart />
-            </Animated.View>
-
-            {/* 6. Recent Activity */}
+            {/* 6. Recent Activity — full width */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(15)}>
               <RecentActivity transactions={dashboard.recentTransactions} />
             </Animated.View>
@@ -125,8 +154,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    padding: spacing.lg,
-    gap: spacing.lg,
+    // padding and gap set dynamically via useResponsiveSpacing
   },
   skeletons: {
     gap: spacing.lg,
@@ -134,5 +162,12 @@ const styles = StyleSheet.create({
   skeletonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  tabletRow: {
+    flexDirection: "row",
+    gap: spacing.lg,
+  },
+  tabletHalf: {
+    flex: 1,
   },
 });

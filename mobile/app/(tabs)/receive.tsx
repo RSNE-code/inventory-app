@@ -1,5 +1,6 @@
 /**
  * Receive tab — two tabs: AI Receive + Receipt History.
+ * iPad: centered content via IPadPage.
  * Matches web's receiving/page.tsx layout.
  */
 import { useState } from "react";
@@ -7,10 +8,12 @@ import { StyleSheet, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header } from "@/components/layout/Header";
 import { Tabs } from "@/components/ui/Tabs";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { ReceivingFlow } from "@/components/receiving/ReceivingFlow";
 import { ReceiptHistory } from "@/components/receiving/ReceiptHistory";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
-import { spacing } from "@/constants/layout";
+import { spacing, FORM_MAX_WIDTH } from "@/constants/layout";
 
 const TABS = [
   { key: "receive", label: "AI Receive" },
@@ -20,20 +23,23 @@ const TABS = [
 export default function ReceiveScreen() {
   const [activeTab, setActiveTab] = useState("receive");
   const insets = useSafeAreaInsets();
+  const { screenPadding } = useResponsiveSpacing();
 
   return (
     <>
       <Header title="Receive Material" />
       <View style={styles.container}>
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { paddingHorizontal: screenPadding }]}>
           <Tabs tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
         </View>
 
         <ScrollView
           style={styles.content}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
         >
-          {activeTab === "receive" ? <ReceivingFlow /> : <ReceiptHistory />}
+          <IPadPage maxWidth={FORM_MAX_WIDTH}>
+            {activeTab === "receive" ? <ReceivingFlow /> : <ReceiptHistory />}
+          </IPadPage>
         </ScrollView>
       </View>
     </>
@@ -46,11 +52,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   tabBar: {
-    paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
   content: {
     flex: 1,
-    padding: spacing.lg,
   },
 });

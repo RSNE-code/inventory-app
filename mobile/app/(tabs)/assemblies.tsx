@@ -1,9 +1,10 @@
 /**
  * Assemblies tab — three tabs: Door Shop, Fabrication, Shipping.
+ * iPad: SplitView master-detail.
  * Matches web's assemblies/page.tsx.
  */
 import { useState, useCallback } from "react";
-import { StyleSheet, View, FlatList, RefreshControl } from "react-native";
+import { StyleSheet, View, FlatList, RefreshControl, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -13,9 +14,12 @@ import { Header } from "@/components/layout/Header";
 import { Tabs } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { AssemblyCard } from "@/components/assemblies/AssemblyCard";
+import { AssemblyDetailContent } from "@/components/assemblies/AssemblyDetailContent";
+import { SplitView } from "@/components/layout/SplitView";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useAssemblies } from "@/hooks/use-assemblies";
+import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
@@ -30,8 +34,11 @@ const QUEUE_TABS = [
 export default function AssembliesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isTablet = useIsTablet();
+  const { screenPadding } = useResponsiveSpacing();
   const [queueTab, setQueueTab] = useState("DOOR_SHOP");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(null);
 
   const isShipping = queueTab === "SHIPPING";
   const { data, isLoading, refetch } = useAssemblies(
@@ -51,6 +58,77 @@ export default function AssembliesScreen() {
     setRefreshing(false);
   }, [refetch]);
 
+  const handleTabChange = useCallback((tab: string) => {
+    setQueueTab(tab);
+    setSelectedAssemblyId(null);
+  }, []);
+
+  const handleAssemblyPress = useCallback((assembly: Assembly) => {
+    if (isTablet) {
+      setSelectedAssemblyId(assembly.id);
+    } else {
+      router.push(`/assemblies/${assembly.id}`);
+    }
+  }, [isTablet, router]);
+
+  /** Master panel: assembly list */
+  const masterContent = (
+    <View style={styles.masterContainer}>
+      {isLoading ? (
+        <LoadingState />
+      ) : displayList.length === 0 ? (
+        <EmptyState
+          icon={<Factory size={48} color={colors.textMuted} strokeWidth={1.2} />}
+          title={isShipping ? "Nothing to ship" : "Queue is empty"}
+          description={isShipping ? "Completed assemblies will appear here" : "Create a new assembly to get started"}
+          actionLabel={isShipping ? undefined : "New Assembly"}
+          onAction={isShipping ? undefined : () => router.push("/assemblies/new" as never)}
+        />
+      ) : (
+        <FlatList
+          data={displayList}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
+              <AssemblyCard
+                assembly={item}
+                onPress={() => handleAssemblyPress(item)}
+              />
+            </Animated.View>
+          )}
+          contentContainerStyle={{
+            padding: isTablet ? spacing.lg : screenPadding,
+            gap: spacing.md,
+            paddingBottom: insets.bottom + 100,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />
+          }
+        />
+      )}
+    </View>
+  );
+
+  /** Detail panel: selected assembly or empty state */
+  const detailContent = selectedAssemblyId ? (
+    <ScrollView
+      style={styles.detailScroll}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+    >
+      <AssemblyDetailContent
+        assemblyId={selectedAssemblyId}
+        inline
+        onDeleted={() => setSelectedAssemblyId(null)}
+      />
+    </ScrollView>
+  ) : (
+    <EmptyState
+      icon={<Factory size={48} color={colors.textMuted} strokeWidth={1.2} />}
+      title="Select an assembly"
+      description="Tap an assembly from the list to view details"
+    />
+  );
+
   return (
     <>
       <Header
@@ -66,41 +144,14 @@ export default function AssembliesScreen() {
         }
       />
       <View style={styles.container}>
-        <View style={styles.tabBar}>
-          <Tabs tabs={QUEUE_TABS} activeKey={queueTab} onTabChange={setQueueTab} />
+        <View style={[styles.tabBar, { paddingHorizontal: screenPadding }]}>
+          <Tabs tabs={QUEUE_TABS} activeKey={queueTab} onTabChange={handleTabChange} />
         </View>
 
-        {isLoading ? (
-          <LoadingState />
-        ) : displayList.length === 0 ? (
-          <EmptyState
-            icon={<Factory size={48} color={colors.textMuted} strokeWidth={1.2} />}
-            title={isShipping ? "Nothing to ship" : "Queue is empty"}
-            description={isShipping ? "Completed assemblies will appear here" : "Create a new assembly to get started"}
-            actionLabel={isShipping ? undefined : "New Assembly"}
-            onAction={isShipping ? undefined : () => router.push("/assemblies/new" as never)}
-          />
+        {isTablet ? (
+          <SplitView master={masterContent} detail={detailContent} />
         ) : (
-          <FlatList
-            data={displayList}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, index }) => (
-              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
-                <AssemblyCard
-                  assembly={item}
-                  onPress={() => router.push(`/assemblies/${item.id}`)}
-                />
-              </Animated.View>
-            )}
-            contentContainerStyle={{
-              padding: spacing.lg,
-              gap: spacing.md,
-              paddingBottom: insets.bottom + 100,
-            }}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />
-            }
-          />
+          masterContent
         )}
       </View>
     </>
@@ -109,5 +160,7 @@ export default function AssembliesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  tabBar: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  tabBar: { paddingTop: spacing.md },
+  masterContainer: { flex: 1 },
+  detailScroll: { flex: 1, backgroundColor: colors.background },
 });

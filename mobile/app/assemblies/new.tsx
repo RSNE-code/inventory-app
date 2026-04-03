@@ -9,10 +9,12 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { DoorOpen, Layers } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useCreateAssembly } from "@/hooks/use-assemblies";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
@@ -31,6 +33,7 @@ export default function NewAssemblyScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const createMutation = useCreateAssembly();
+  const { screenPadding } = useResponsiveSpacing();
 
   const [flow, setFlow] = useState<Flow>("choose");
   const [name, setName] = useState("");
@@ -84,7 +87,8 @@ export default function NewAssemblyScreen() {
     <>
       <Header title={title} showBack />
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
-        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+        <ScrollView style={styles.container} contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}>
+          <IPadPage>
           {flow === "choose" && (
             <>
               <Text style={styles.heading}>What are you building?</Text>
@@ -173,6 +177,7 @@ export default function NewAssemblyScreen() {
               />
             </View>
           )}
+          </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -181,7 +186,7 @@ export default function NewAssemblyScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background },
   heading: { ...typography.sectionTitle, color: colors.navy, textAlign: "center", marginTop: spacing["2xl"] },
   subheading: { ...typography.body, color: colors.textSecondary, textAlign: "center", marginBottom: spacing["2xl"] },
   typeCard: { marginBottom: spacing.md },

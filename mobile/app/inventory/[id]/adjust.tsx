@@ -18,12 +18,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { ArrowUp, ArrowDown } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { StockBadge } from "@/components/inventory/StockBadge";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useProduct, useAdjustStock } from "@/hooks/use-products";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { formatQuantity } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -44,6 +46,7 @@ export default function AdjustStockScreen() {
   const insets = useSafeAreaInsets();
   const { data, isLoading } = useProduct(id!);
   const adjustMutation = useAdjustStock();
+  const { screenPadding } = useResponsiveSpacing();
 
   const [direction, setDirection] = useState<"up" | "down">("up");
   const [quantity, setQuantity] = useState("");
@@ -94,8 +97,9 @@ export default function AdjustStockScreen() {
       >
         <ScrollView
           style={styles.container}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
         >
+          <IPadPage>
           {/* Current stock */}
           <Card style={styles.currentCard}>
             <View style={styles.currentRow}>
@@ -208,6 +212,7 @@ export default function AdjustStockScreen() {
             loading={adjustMutation.isPending}
             size="lg"
           />
+          </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -219,7 +224,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
   },
   currentCard: {
     marginBottom: spacing.lg,

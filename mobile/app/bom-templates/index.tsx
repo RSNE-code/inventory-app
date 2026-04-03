@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useBomTemplates } from "@/hooks/use-bom-templates";
+import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing } from "@/constants/layout";
@@ -24,8 +25,11 @@ import { Text } from "react-native";
 export default function BomTemplatesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isTablet = useIsTablet();
+  const { screenPadding } = useResponsiveSpacing();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const numColumns = isTablet ? 2 : 1;
   const { data, isLoading, refetch } = useBomTemplates({ search });
   const templates = (data as any)?.data ?? [];
 
@@ -43,17 +47,20 @@ export default function BomTemplatesScreen() {
           onPress={() => router.push("/bom-templates/new" as never)} />
       } />
       <View style={styles.container}>
-        <View style={styles.searchWrap}>
+        <View style={[styles.searchWrap, { paddingHorizontal: screenPadding }]}>
           <SearchInput value={search} onChangeText={setSearch} placeholder="Search templates\u2026" />
         </View>
         {isLoading ? <LoadingState /> : templates.length === 0 ? (
           <EmptyState icon={<FileText size={48} color={colors.textMuted} strokeWidth={1.2} />} title="No templates" description="Create a template to reuse BOM structures" actionLabel="Create Template" onAction={() => router.push("/bom-templates/new" as never)} />
         ) : (
           <FlatList data={templates} keyExtractor={(item: any) => item.id}
-            contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
+            key={isTablet ? "tablet-2col" : "phone-1col"}
+            numColumns={numColumns}
+            columnWrapperStyle={isTablet ? styles.columnWrapper : undefined}
+            contentContainerStyle={{ padding: screenPadding, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />}
             renderItem={({ item, index }: { item: any; index: number }) => (
-              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
+              <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)} style={isTablet ? styles.gridCell : undefined}>
                 <Card onPress={() => router.push(`/bom-templates/${item.id}` as never)}>
                   <Text style={styles.name}>{item.name}</Text>
                   {item.description && <Text style={styles.desc}>{item.description}</Text>}
@@ -69,7 +76,9 @@ export default function BomTemplatesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  searchWrap: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
+  searchWrap: { paddingTop: spacing.md },
+  columnWrapper: { gap: spacing.lg },
+  gridCell: { flex: 1 },
   name: { ...typography.cardTitle, color: colors.navy },
   desc: { ...typography.body, color: colors.textMuted, marginTop: 2 },
   meta: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },

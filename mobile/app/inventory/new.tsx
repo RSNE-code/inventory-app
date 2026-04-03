@@ -14,9 +14,11 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useCreateProduct } from "@/hooks/use-products";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { spacing } from "@/constants/layout";
 
@@ -24,6 +26,7 @@ export default function NewProductScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const createMutation = useCreateProduct();
+  const { screenPadding } = useResponsiveSpacing();
 
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
@@ -63,8 +66,9 @@ export default function NewProductScreen() {
       >
         <ScrollView
           style={styles.container}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
         >
+          <IPadPage>
           <View style={styles.form}>
             <Input label="Product Name *" value={name} onChangeText={setName} placeholder="e.g. 3/4 Plywood" autoCapitalize="words" />
             <Input label="SKU" value={sku} onChangeText={setSku} placeholder="Optional" autoCapitalize="characters" />
@@ -83,6 +87,7 @@ export default function NewProductScreen() {
               size="lg"
             />
           </View>
+          </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
     </>
@@ -94,7 +99,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
   },
   form: {
     gap: spacing.xl,

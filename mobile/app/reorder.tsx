@@ -9,15 +9,17 @@ import * as Haptics from "expo-haptics";
 import { ShoppingCart } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { apiGet } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { formatQuantity } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, DETAIL_MAX_WIDTH } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
 
 interface ReorderItem {
@@ -32,6 +34,7 @@ interface ReorderItem {
 export default function ReorderScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
+  const { screenPadding } = useResponsiveSpacing();
   const { data, isLoading, refetch } = useQuery({
     queryKey: queryKeys.reorderList,
     queryFn: () => apiGet<ReorderItem[]>("/api/reorder-list"),
@@ -62,9 +65,10 @@ export default function ReorderScreen() {
           <FlatList
             data={items}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
+            contentContainerStyle={{ padding: screenPadding, gap: spacing.md, paddingBottom: insets.bottom + 100 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brandBlue} />}
             renderItem={({ item, index }) => (
+              <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
               <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)}>
                 <Card accent="yellow">
                   <Text style={styles.itemName}>{item.name}</Text>
@@ -84,6 +88,7 @@ export default function ReorderScreen() {
                   </View>
                 </Card>
               </Animated.View>
+              </IPadPage>
             )}
           />
         )}

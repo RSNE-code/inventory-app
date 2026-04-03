@@ -7,15 +7,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Trash2 } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
+import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useBomTemplate, useDeleteBomTemplate } from "@/hooks/use-bom-templates";
+import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { formatQuantity } from "@/lib/utils";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, DETAIL_MAX_WIDTH } from "@/constants/layout";
 
 export default function BomTemplateDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +25,7 @@ export default function BomTemplateDetailScreen() {
   const insets = useSafeAreaInsets();
   const { data, isLoading, error, refetch } = useBomTemplate(id!);
   const deleteMutation = useDeleteBomTemplate();
+  const { screenPadding } = useResponsiveSpacing();
 
   const template = (data as any)?.data ?? data;
 
@@ -46,7 +49,8 @@ export default function BomTemplateDetailScreen() {
   return (
     <>
       <Header title={t.name ?? "Template"} showBack />
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}>
+        <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
         <Card>
           <Text style={styles.name}>{t.name}</Text>
           {t.description && <Text style={styles.desc}>{t.description}</Text>}
@@ -66,13 +70,14 @@ export default function BomTemplateDetailScreen() {
         <Button title="Delete Template" variant="destructive"
           icon={<Trash2 size={18} color={colors.textInverse} strokeWidth={2} />}
           onPress={handleDelete} />
+        </IPadPage>
       </ScrollView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background },
   name: { ...typography.sectionTitle, color: colors.navy },
   desc: { ...typography.body, color: colors.textMuted, marginTop: spacing.xs },
   meta: { ...typography.caption, color: colors.textMuted, marginTop: spacing.md },

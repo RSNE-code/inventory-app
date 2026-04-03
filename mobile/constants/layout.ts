@@ -50,6 +50,9 @@ export const FORM_MAX_WIDTH = 600;
 /** Max content width for settings on iPad */
 export const SETTINGS_MAX_WIDTH = 500;
 
+/** Max content width for detail screens on iPad */
+export const DETAIL_MAX_WIDTH = 720;
+
 /** Split view proportions on iPad */
 export const SPLIT_VIEW = {
   masterRatio: 0.38,
