@@ -61,10 +61,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Figtree_400Regular,
-    Figtree_500Medium,
-    Figtree_600SemiBold,
-    Figtree_700Bold,
+    Figtree: Figtree_400Regular,
+    "Figtree-Medium": Figtree_500Medium,
+    "Figtree-SemiBold": Figtree_600SemiBold,
+    "Figtree-Bold": Figtree_700Bold,
   });
 
   // Wire AppState to React Query focus manager (replaces web's refetchOnWindowFocus)

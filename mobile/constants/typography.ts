@@ -1,12 +1,26 @@
 /**
- * Typography scale — Figtree variable font.
+ * Typography scale — Figtree font family.
  * Tight scale (12→14→16→18→24) for information-dense productivity UI.
+ *
+ * Font names registered in _layout.tsx:
+ *   "Figtree" → 400 Regular
+ *   "Figtree-Medium" → 500 Medium
+ *   "Figtree-SemiBold" → 600 SemiBold
+ *   "Figtree-Bold" → 700 Bold
  */
 
-/** Font family constant — loaded via @expo-google-fonts/figtree */
+/** Base font family name (400 weight) */
 export const FONT_FAMILY = "Figtree" as const;
 
-/** Font weights as string literals (required by RN fontWeight prop) */
+/** Weight-specific font family names for React Native */
+export const fontFamily = {
+  regular: "Figtree" as const,
+  medium: "Figtree-Medium" as const,
+  semibold: "Figtree-SemiBold" as const,
+  bold: "Figtree-Bold" as const,
+};
+
+/** Font weights as string literals */
 export const fontWeight = {
   regular: "400" as const,
   medium: "500" as const,
@@ -19,86 +33,66 @@ export const fontWeight = {
  * Use these as spread objects in StyleSheet: { ...type.pageTitle }
  */
 export const type = {
-  /** Page title: one per screen, top of page */
   pageTitle: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     fontSize: 24,
     lineHeight: 30,
     letterSpacing: -0.3,
   },
 
-  /** Section title: group headings within a page */
   sectionTitle: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     fontSize: 18,
     lineHeight: 24,
   },
 
-  /** Card title: title at top of each card */
   cardTitle: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     fontSize: 16,
     lineHeight: 22,
   },
 
-  /** Subtitle: supporting text below a title */
   subtitle: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     fontSize: 14,
     lineHeight: 20,
   },
 
-  /** Body: regular paragraph and content text */
   body: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.regular,
+    fontFamily: fontFamily.regular,
     fontSize: 14,
     lineHeight: 20,
   },
 
-  /** Body medium: slightly bolder body text */
   bodyMedium: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     fontSize: 14,
     lineHeight: 20,
   },
 
-  /** Caption: timestamps, metadata, helper text */
   caption: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.regular,
+    fontFamily: fontFamily.regular,
     fontSize: 12,
     lineHeight: 16,
   },
 
-  /** Label: form labels, overlines, category tags */
   label: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.medium,
+    fontFamily: fontFamily.medium,
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.5,
     textTransform: "uppercase" as const,
   },
 
-  /** Large display number (e.g., inventory value on dashboard) */
   displayLarge: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.bold,
+    fontFamily: fontFamily.bold,
     fontSize: 32,
     lineHeight: 38,
     letterSpacing: -0.5,
   },
 
-  /** Tab bar label */
   tabLabel: {
-    fontFamily: FONT_FAMILY,
-    fontWeight: fontWeight.semibold,
+    fontFamily: fontFamily.semibold,
     fontSize: 11,
     lineHeight: 14,
   },
