@@ -112,6 +112,11 @@ export function ReceivingFlow() {
     setNotes("");
   };
 
+  const handlePOSelect = useCallback((po: PurchaseOrder) => {
+    setSupplier({ id: po.id, name: po.supplierName });
+    setPhase("REVIEW");
+  }, []);
+
   if (phase === "SUMMARY") {
     return (
       <View style={styles.summaryContainer}>
@@ -176,12 +181,6 @@ export function ReceivingFlow() {
       </ScrollView>
     );
   }
-
-  const handlePOSelect = useCallback((po: PurchaseOrder) => {
-    // Pre-fill supplier from PO and go to review
-    setSupplier({ id: po.id, name: po.supplierName });
-    setPhase("REVIEW");
-  }, []);
 
   // INPUT phase
   return (
