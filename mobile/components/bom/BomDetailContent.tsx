@@ -8,17 +8,19 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Send, CheckCircle, Trash2, ShoppingCart } from "lucide-react-native";
+import { Send, CheckCircle, Trash2, ShoppingCart, Pencil, Plus, Undo2, XCircle } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BomStatusBadge } from "@/components/bom/BomStatusBadge";
 import { BomLineItemRow } from "@/components/bom/BomLineItemRow";
+import { BomModeBar } from "@/components/bom/BomModeBar";
+import { PickCheckoutSection } from "@/components/bom/PickCheckoutSection";
 import { FabGateSection } from "@/components/bom/FabGateSection";
 import { PanelCheckoutSheet } from "@/components/bom/PanelCheckoutSheet";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { useBom, useSubmitForReview, useDeleteBom, useCheckoutBom } from "@/hooks/use-boms";
+import { useBom, useSubmitForReview, useUpdateBom, useDeleteBom, useCheckoutBom } from "@/hooks/use-boms";
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -39,9 +41,13 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
   const { screenPadding } = useResponsiveSpacing();
   const { data, isLoading, error, refetch } = useBom(bomId);
   const submitReview = useSubmitForReview();
+  const updateBom = useUpdateBom();
   const deleteBom = useDeleteBom();
   const checkoutMutation = useCheckoutBom();
   const [panelCheckoutItem, setPanelCheckoutItem] = useState<{ name: string; id: string } | null>(null);
+  const [mode, setMode] = useState<"view" | "edit" | "add-material" | "return">("view");
+
+  const handleExitMode = useCallback(() => setMode("view"), []);
 
   const bom = (data as any)?.data ?? data;
 
@@ -122,6 +128,57 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
     );
   }, [panelCheckoutItem, bomId, checkoutMutation]);
 
+  const handleApproveBom = useCallback(async () => {
+    if (fabGateData.unfabricatedCount > 0) {
+      Alert.alert("Fabrication Required", "All assembly items must have fab orders before approval.");
+      return;
+    }
+    try {
+      await updateBom.mutateAsync({ id: bomId, status: "APPROVED" } as any);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      Alert.alert("Error", "Failed to approve BOM");
+    }
+  }, [bomId, fabGateData.unfabricatedCount, updateBom]);
+
+  const handleCancelBom = useCallback(() => {
+    Alert.alert("Cancel BOM", "Are you sure you want to cancel this BOM?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Cancel BOM",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await updateBom.mutateAsync({ id: bomId, status: "CANCELLED" } as any);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch {
+            Alert.alert("Error", "Failed to cancel BOM");
+          }
+        },
+      },
+    ]);
+  }, [bomId, updateBom]);
+
+  const handleCompleteBom = useCallback(async () => {
+    try {
+      await updateBom.mutateAsync({ id: bomId, status: "COMPLETED" } as any);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      Alert.alert("Error", "Failed to complete BOM");
+    }
+  }, [bomId, updateBom]);
+
+  const handlePickCheckout = useCallback((selections: { id: string; qty: number }[]) => {
+    const ids = selections.map((s) => s.id);
+    checkoutMutation.mutate(
+      { bomId, lineItemIds: ids },
+      {
+        onSuccess: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
+        onError: () => Alert.alert("Error", "Failed to checkout items"),
+      }
+    );
+  }, [bomId, checkoutMutation]);
+
   const handleCheckoutAll = async () => {
     const unchecked = lineItems
       .filter((li) => Number(li.checkedOutQty ?? 0) < Number(li.quantity ?? 0))
@@ -135,8 +192,22 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
     }
   };
 
+  const checkoutLineItems = useMemo(
+    () => lineItems.map((li) => ({
+      id: String(li.id ?? ""),
+      productName: String(li.productName ?? ""),
+      quantity: Number(li.quantity ?? 0),
+      checkedOutQty: Number(li.checkedOutQty ?? 0),
+      unit: String(li.unit ?? "EA"),
+    })),
+    [lineItems]
+  );
+
   const content = (
     <>
+      {/* Mode bar */}
+      {mode !== "view" ? <BomModeBar mode={mode} onExit={handleExitMode} /> : null}
+
       {/* Header card */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
         <Card>
@@ -187,13 +258,29 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
         </Animated.View>
       ) : null}
 
+      {/* Per-item checkout */}
+      {showCheckout && mode === "view" ? (
+        <PickCheckoutSection
+          lineItems={checkoutLineItems}
+          onCheckout={handlePickCheckout}
+          loading={checkoutMutation.isPending}
+        />
+      ) : null}
+
       {/* Actions */}
       <Animated.View
         entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}
         style={styles.actions}
       >
-        {isDraft && (
+        {/* Draft actions */}
+        {isDraft ? (
           <>
+            <Button
+              title="Edit Draft"
+              icon={<Pencil size={18} color={colors.textInverse} strokeWidth={2} />}
+              onPress={() => setMode("edit")}
+              variant="secondary"
+            />
             <Button
               title="Submit for Review"
               icon={<Send size={18} color={colors.textInverse} strokeWidth={2} />}
@@ -207,16 +294,54 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
               onPress={handleDelete}
             />
           </>
-        )}
+        ) : null}
 
-        {showCheckout && (
+        {/* Pending review actions */}
+        {isPendingReview ? (
+          <>
+            <Button
+              title="Approve BOM"
+              icon={<CheckCircle size={18} color={colors.textInverse} strokeWidth={2} />}
+              onPress={handleApproveBom}
+              loading={updateBom.isPending}
+              disabled={fabGateData.unfabricatedCount > 0}
+            />
+            <Button
+              title="Cancel BOM"
+              variant="destructive"
+              icon={<XCircle size={18} color={colors.textInverse} strokeWidth={2} />}
+              onPress={handleCancelBom}
+            />
+          </>
+        ) : null}
+
+        {/* Approved/In-Progress actions */}
+        {showCheckout && mode === "view" ? (
+          <>
+            <Button
+              title="Add Material"
+              icon={<Plus size={18} color={colors.textInverse} strokeWidth={2} />}
+              onPress={() => setMode("add-material")}
+              variant="secondary"
+            />
+            <Button
+              title="Return Material"
+              icon={<Undo2 size={18} color={colors.textInverse} strokeWidth={2} />}
+              onPress={() => setMode("return")}
+              variant="secondary"
+            />
+          </>
+        ) : null}
+
+        {/* In-Progress completion */}
+        {isInProgress && mode === "view" ? (
           <Button
-            title="Checkout All Items"
-            icon={<ShoppingCart size={18} color={colors.textInverse} strokeWidth={2} />}
-            onPress={handleCheckoutAll}
-            loading={checkoutMutation.isPending}
+            title="Mark as Complete"
+            icon={<CheckCircle size={18} color={colors.textInverse} strokeWidth={2} />}
+            onPress={handleCompleteBom}
+            loading={updateBom.isPending}
           />
-        )}
+        ) : null}
       </Animated.View>
     </>
   );
