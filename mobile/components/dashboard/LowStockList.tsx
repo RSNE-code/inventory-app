@@ -13,9 +13,11 @@ import type { LowStockItem } from "@/types/api";
 
 interface LowStockListProps {
   items: LowStockItem[];
+  onViewAll?: () => void;
+  onItemPress?: (id: string) => void;
 }
 
-export function LowStockList({ items }: LowStockListProps) {
+export function LowStockList({ items, onViewAll, onItemPress }: LowStockListProps) {
   if (items.length === 0) return null;
 
   return (
@@ -31,6 +33,7 @@ export function LowStockList({ items }: LowStockListProps) {
         <Pressable
           key={item.id}
           style={[styles.row, i < items.length - 1 && styles.rowBorder]}
+          onPress={onItemPress ? () => onItemPress(item.id) : undefined}
         >
           <View style={styles.nameCol}>
             <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
@@ -47,7 +50,7 @@ export function LowStockList({ items }: LowStockListProps) {
         </Pressable>
       ))}
 
-      <Pressable style={styles.viewAll}>
+      <Pressable style={styles.viewAll} onPress={onViewAll}>
         <Text style={styles.viewAllText}>View all low stock</Text>
         <ChevronRight size={16} color={colors.brandBlue} strokeWidth={2} />
       </Pressable>

@@ -3,8 +3,9 @@
  * iPad: ActionItems + WorkPipelines in top row, full-width trend, then LowStock + RecentActivity.
  * Phone: vertical stack.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { StyleSheet, ScrollView, RefreshControl, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -27,6 +28,7 @@ import { spacing } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { userName } = useAuth();
   const { data: rawDashboard, isLoading, error, refetch } = useDashboard();
@@ -131,7 +133,7 @@ export default function DashboardScreen() {
             {isTablet ? (
               <View style={styles.tabletRow}>
                 <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
-                  <LowStockList items={dashboard.lowStockItems} />
+                  <LowStockList items={dashboard.lowStockItems} onViewAll={() => router.push("/reorder" as never)} onItemPress={(id) => router.push(`/inventory/${id}` as never)} />
                 </Animated.View>
                 <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(20)}>
                   <RecentActivity transactions={dashboard.recentTransactions} />
@@ -140,7 +142,7 @@ export default function DashboardScreen() {
             ) : (
               <>
                 <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
-                  <LowStockList items={dashboard.lowStockItems} />
+                  <LowStockList items={dashboard.lowStockItems} onViewAll={() => router.push("/reorder" as never)} onItemPress={(id) => router.push(`/inventory/${id}` as never)} />
                 </Animated.View>
                 <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(20)}>
                   <RecentActivity transactions={dashboard.recentTransactions} />

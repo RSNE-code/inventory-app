@@ -21,6 +21,7 @@ import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { LiveItemFeed } from "@/components/bom/LiveItemFeed";
 import { FlaggedItemResolver } from "@/components/bom/FlaggedItemResolver";
+import { CartBar } from "@/components/bom/CartBar";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -107,6 +108,44 @@ export default function NewBomScreen() {
       handleCamera();
     }
   }, [mode, handleCamera]);
+
+  const handleUpdateQty = useCallback((index: number, qty: number) => {
+    setItems((prev) => {
+      if (qty <= 0) return prev.filter((_, i) => i !== index);
+      return prev.map((it, i) => (i === index ? { ...it, quantity: qty } : it));
+    });
+  }, []);
+
+  const handleRemoveItem = useCallback((index: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleAddCustom = useCallback((item: ParsedItem) => {
+    setItems((prev) => [...prev, item]);
+  }, []);
+
+  const handleSaveDraft = useCallback(async () => {
+    if (!jobName.trim()) {
+      Alert.alert("Job Required", "Please select a job before saving.");
+      return;
+    }
+    try {
+      await createBom.mutateAsync({
+        jobName: jobName.trim(),
+        jobNumber: jobNumber || undefined,
+        lineItems: items.map((it) => ({
+          productName: it.productName,
+          quantity: it.quantity,
+          unit: it.unit,
+          productId: it.productId,
+        })),
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch {
+      Alert.alert("Error", "Failed to save draft.");
+    }
+  }, [jobName, jobNumber, items, createBom, router]);
 
   const handleCreate = async () => {
     if (!jobName.trim() || items.length === 0) return;
@@ -219,6 +258,12 @@ export default function NewBomScreen() {
                 style={styles.createBtn}
               />
               <Button
+                title="Save Draft"
+                variant="secondary"
+                onPress={handleSaveDraft}
+                disabled={!jobName.trim() || items.length === 0}
+              />
+              <Button
                 title="Back to Input"
                 variant="ghost"
                 onPress={() => setPhase("input")}
@@ -228,6 +273,14 @@ export default function NewBomScreen() {
           </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>
+      {phase === "review" && items.length > 0 ? (
+        <CartBar
+          items={items}
+          onUpdateQty={handleUpdateQty}
+          onRemove={handleRemoveItem}
+          onAddCustom={handleAddCustom}
+        />
+      ) : null}
     </>
   );
 }

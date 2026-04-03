@@ -3,12 +3,12 @@
  * Used both in the [id] route (standalone) and in the BOMs tab SplitView (inline).
  */
 import { useState, useMemo, useCallback } from "react";
-import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
+import { StyleSheet, ScrollView, View, Text, Alert, Image, Pressable, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { Send, CheckCircle, Trash2, ShoppingCart, Pencil, Plus, Undo2, XCircle } from "lucide-react-native";
+import { Send, CheckCircle, Trash2, ShoppingCart, Pencil, Plus, Undo2, XCircle, FileText } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StepProgress } from "@/components/layout/StepProgress";
@@ -26,7 +26,7 @@ import { useBom, useSubmitForReview, useUpdateBom, useDeleteBom, useCheckoutBom 
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, radius } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 
 interface BomDetailContentProps {
@@ -239,16 +239,46 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
           </View>
           <Text style={styles.meta}>
             {lineItems.length} item{lineItems.length !== 1 ? "s" : ""}
+            {(b.createdBy as Record<string, unknown> | undefined)?.name
+              ? ` · ${String((b.createdBy as Record<string, unknown>).name)}`
+              : ""}
             {b.createdAt ? ` · ${new Date(String(b.createdAt)).toLocaleDateString()}` : ""}
           </Text>
+          {(b.approvedBy as Record<string, unknown> | undefined)?.name ? (
+            <Text style={styles.approvedBy}>
+              Approved by {String((b.approvedBy as Record<string, unknown>).name)}
+              {b.approvedAt ? ` · ${new Date(String(b.approvedAt)).toLocaleDateString()}` : ""}
+            </Text>
+          ) : null}
+          {b.notes ? (
+            <View style={styles.notesBox}>
+              <Text style={styles.notesBoxText}>{String(b.notes)}</Text>
+            </View>
+          ) : null}
         </Card>
       </Animated.View>
 
-      {/* Notes */}
-      {b.notes ? (
+      {/* Paper BOM attachment */}
+      {b.paperBomUrl ? (
         <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 1.5).springify().damping(15)}>
-          <Text style={styles.notesLabel}>Notes</Text>
-          <Text style={styles.notesText}>{String(b.notes)}</Text>
+          <Pressable onPress={() => Linking.openURL(String(b.paperBomUrl))}>
+            <Card style={styles.paperBomCard}>
+              <View style={styles.paperBomRow}>
+                <View style={styles.paperBomIcon}>
+                  <FileText size={20} color={colors.brandBlue} strokeWidth={1.8} />
+                </View>
+                <View style={styles.paperBomText}>
+                  <Text style={styles.paperBomTitle}>Paper BOM</Text>
+                  <Text style={styles.paperBomSub}>Tap to view original document</Text>
+                </View>
+                <Image
+                  source={{ uri: String(b.paperBomUrl) }}
+                  style={styles.paperBomThumb}
+                  resizeMode="cover"
+                />
+              </View>
+            </Card>
+          </Pressable>
         </Animated.View>
       ) : null}
 
@@ -265,12 +295,20 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
                   bomId,
                   productId: li.productId ? String(li.productId) : null,
                   productName: String(li.productName ?? ""),
-                  quantity: Number(li.quantity ?? 0),
-                  checkedOutQty: Number(li.checkedOutQty ?? 0),
+                  quantity: Number(li.quantity ?? li.qtyNeeded ?? 0),
+                  checkedOutQty: Number(li.checkedOutQty ?? li.qtyCheckedOut ?? 0),
                   unit: String(li.unit ?? "EA"),
-                  isCustom: Boolean(li.isCustom),
+                  isCustom: Boolean(li.isCustom ?? li.isNonCatalog),
+                  tier: li.tier ? String(li.tier) : undefined,
+                  fabricationSource: li.fabricationSource ? String(li.fabricationSource) : null,
+                  assemblyId: li.assemblyId ? String(li.assemblyId) : null,
+                  qtyReturned: Number(li.qtyReturned ?? 0),
+                  pickupDate: li.pickupDate ? String(li.pickupDate) : null,
+                  lastCheckoutAt: li.lastCheckoutAt ? String(li.lastCheckoutAt) : null,
+                  nonCatalogCategory: li.nonCatalogCategory ? String(li.nonCatalogCategory) : null,
                 }}
                 showCheckout={showCheckout}
+                bomStatus={status}
               />
             );
             return mode === "edit" ? (
@@ -431,9 +469,17 @@ const styles = StyleSheet.create({
   jobName: { ...typography.sectionTitle, color: colors.navy },
   jobNumber: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
   meta: { ...typography.caption, color: colors.textMuted, marginTop: spacing.md },
+  approvedBy: { ...typography.caption, color: colors.statusGreen, fontWeight: "600", marginTop: spacing.xs },
+  notesBox: { backgroundColor: colors.surfaceSecondary, borderRadius: radius.sm, padding: spacing.sm, marginTop: spacing.md },
+  notesBoxText: { ...typography.caption, color: colors.textSecondary },
   itemsCard: { marginTop: spacing.lg },
   sectionTitle: { ...typography.cardTitle, color: colors.navy, marginBottom: spacing.sm },
-  notesLabel: { ...typography.caption, color: colors.textMuted, marginTop: spacing.lg, marginBottom: spacing.xs },
-  notesText: { ...typography.body, color: colors.navy },
+  paperBomCard: { marginTop: spacing.md },
+  paperBomRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  paperBomIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.statusBlueBg, alignItems: "center", justifyContent: "center" },
+  paperBomText: { flex: 1, minWidth: 0 },
+  paperBomTitle: { ...typography.subtitle, fontWeight: "600", color: colors.navy },
+  paperBomSub: { ...typography.caption, color: colors.textMuted, marginTop: 1 },
+  paperBomThumb: { width: 48, height: 48, borderRadius: radius.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: colors.border, backgroundColor: colors.surfaceSecondary },
   actions: { marginTop: spacing.lg, gap: spacing.md },
 });

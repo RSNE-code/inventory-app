@@ -227,6 +227,8 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
   }
 
   if (phase === "SUMMARY") {
+    const totalQty = items.reduce((sum, it) => sum + it.quantity, 0);
+    const totalCost = items.reduce((sum, it) => sum + it.quantity * it.unitCost, 0);
     return (
       <View style={styles.summaryContainer}>
         <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
@@ -235,9 +237,19 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
         </View>
         <Text style={styles.summaryTitle}>Receipt Saved</Text>
         <Text style={styles.summaryMeta}>
-          {items.length} item{items.length !== 1 ? "s" : ""} received from {supplier?.name}
+          {items.length} item{items.length !== 1 ? "s" : ""} ({totalQty} units) received from {supplier?.name}
         </Text>
-        <Button title="Receive More" variant="primary" onPress={handleReset} />
+        {totalCost > 0 ? (
+          <Text style={styles.summaryMeta}>
+            Total: ${totalCost.toFixed(2)}
+          </Text>
+        ) : null}
+        {notes ? (
+          <View style={styles.summaryNotes}>
+            <Text style={styles.summaryNotesText}>{notes}</Text>
+          </View>
+        ) : null}
+        <Button title="Receive More" variant="primary" onPress={handleReset} style={styles.confirmBtn} />
       </View>
     );
   }
@@ -254,7 +266,21 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
         />
 
         {/* Parsed items with confirm/reject */}
-        <Text style={styles.sectionTitle}>Items to Receive ({items.length})</Text>
+        <View style={styles.reviewHeader}>
+          <Text style={styles.sectionTitle}>Items to Receive ({items.length})</Text>
+          {items.length > 0 && confirmedItemIds.size < items.length ? (
+            <Button
+              title="Confirm All"
+              variant="secondary"
+              size="sm"
+              onPress={() => {
+                const allIds = new Set(items.map((_, idx) => idx));
+                setConfirmedItemIds(allIds);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              }}
+            />
+          ) : null}
+        </View>
         {items.map((item, i) => (
           <ReceivingConfirmationCard
             key={`${item.productName}-${i}`}
@@ -493,6 +519,22 @@ const styles = StyleSheet.create({
   summaryMeta: {
     ...typography.body,
     color: colors.textMuted,
-    marginBottom: spacing.lg,
+  },
+  summaryNotes: {
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    alignSelf: "stretch",
+    marginHorizontal: spacing.lg,
+  },
+  summaryNotesText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });

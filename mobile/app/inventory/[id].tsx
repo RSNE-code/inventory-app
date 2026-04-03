@@ -7,7 +7,7 @@ import { StyleSheet, ScrollView, View, Text, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { Pencil, ArrowUpDown, MapPin, Clock, Package2, Activity } from "lucide-react-native";
+import { Pencil, ArrowUpDown, MapPin, Clock, Package2, Activity, Ruler } from "lucide-react-native";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
@@ -105,6 +105,7 @@ export default function ProductDetailScreen() {
                   <DetailRow icon={Package2} label="Category" value={String(p.category ?? "Not specified")} />
                   <DetailRow icon={MapPin} label="Location" value={String(p.location ?? "Not specified")} />
                   <DetailRow icon={Clock} label="Tier" value={`Tier ${p.tier ?? 1}`} />
+                  <DetailRow icon={Ruler} label="Dimensions" value={String(p.dimensions ?? "Not specified")} />
                 </Card>
               </Animated.View>
               <Animated.View style={styles.tabletDetailRight} entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}>
@@ -135,6 +136,7 @@ export default function ProductDetailScreen() {
                   <DetailRow icon={Package2} label="Category" value={String(p.category ?? "Not specified")} />
                   <DetailRow icon={MapPin} label="Location" value={String(p.location ?? "Not specified")} />
                   <DetailRow icon={Clock} label="Tier" value={`Tier ${p.tier ?? 1}`} />
+                  <DetailRow icon={Ruler} label="Dimensions" value={String(p.dimensions ?? "Not specified")} />
                 </Card>
               </Animated.View>
               <Animated.View

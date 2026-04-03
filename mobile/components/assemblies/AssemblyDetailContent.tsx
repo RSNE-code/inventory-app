@@ -24,7 +24,7 @@ import { useAssembly, useUpdateAssembly, useDeleteAssembly } from "@/hooks/use-a
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
-import { spacing } from "@/constants/layout";
+import { spacing, radius } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 import type { Assembly } from "@/types/api";
 import type { DoorSpecs } from "@/lib/door-specs";
@@ -139,20 +139,41 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
               <Text style={styles.typeMeta}>
                 {TYPE_LABELS[a.type] ?? a.type}
                 {a.jobName ? ` · ${a.jobName}` : ""}
+                {Number((a as any).batchSize ?? 1) > 1 ? ` · Batch of ${(a as any).batchSize}` : ""}
               </Text>
             </View>
             <Badge label={statusConfig.label} variant={statusConfig.variant} />
           </View>
-          {a.startedAt && (
+          <Text style={styles.timestamp}>
+            {(a as any).producedBy?.name ? `${(a as any).producedBy.name} · ` : ""}
+            {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
+          </Text>
+          {a.startedAt ? (
             <Text style={styles.timestamp}>
               Started: {new Date(a.startedAt).toLocaleDateString()}
             </Text>
-          )}
-          {a.completedAt && (
+          ) : null}
+          {a.completedAt ? (
             <Text style={styles.timestamp}>
               Completed: {new Date(a.completedAt).toLocaleDateString()}
             </Text>
-          )}
+          ) : null}
+          {(a as any).approvedBy?.name ? (
+            <Text style={styles.approvedBy}>
+              Approved by {(a as any).approvedBy.name}
+            </Text>
+          ) : null}
+          {(a as any).notes ? (
+            <View style={styles.notesBox}>
+              <Text style={styles.notesBoxText}>{String((a as any).notes)}</Text>
+            </View>
+          ) : null}
+          {(a as any).approvalNotes ? (
+            <View style={styles.notesBox}>
+              <Text style={styles.notesBoxLabel}>Approval Notes</Text>
+              <Text style={styles.notesBoxText}>{String((a as any).approvalNotes)}</Text>
+            </View>
+          ) : null}
         </Card>
       </Animated.View>
 
@@ -271,6 +292,10 @@ const styles = StyleSheet.create({
   name: { ...typography.sectionTitle, color: colors.navy },
   typeMeta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
   timestamp: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },
+  approvedBy: { ...typography.caption, color: colors.statusGreen, fontWeight: "600", marginTop: spacing.xs },
+  notesBox: { backgroundColor: colors.surfaceSecondary, borderRadius: radius.sm, padding: spacing.sm, marginTop: spacing.md },
+  notesBoxLabel: { ...typography.caption, color: colors.textMuted, fontWeight: "600", marginBottom: 2 },
+  notesBoxText: { ...typography.caption, color: colors.textSecondary },
   specsCard: { marginTop: spacing.lg },
   sectionTitle: { ...typography.cardTitle, color: colors.navy, marginBottom: spacing.md },
   specRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(226,230,235,0.4)" },

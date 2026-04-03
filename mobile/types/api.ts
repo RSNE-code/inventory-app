@@ -100,6 +100,20 @@ export interface BomLineItem {
   unit: string;
   isCustom: boolean;
   product?: Product;
+  /** "TIER_1" | "TIER_2" */
+  tier?: string;
+  /** "RSNE_MADE" | "SUPPLIER" */
+  fabricationSource?: string | null;
+  /** Linked assembly ID (for fab-source items) */
+  assemblyId?: string | null;
+  /** Quantity returned back to inventory */
+  qtyReturned?: number;
+  /** Date items were picked up */
+  pickupDate?: string | null;
+  /** Last checkout timestamp */
+  lastCheckoutAt?: string | null;
+  /** Non-catalog category label */
+  nonCatalogCategory?: string | null;
 }
 
 export interface BomWithDetails extends Bom {

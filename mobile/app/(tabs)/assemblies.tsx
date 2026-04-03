@@ -2,8 +2,8 @@
  * Assemblies tab — three tabs: Door Shop, Fabrication, Shipping.
  * iPad: SplitView master-detail with queue reorder controls.
  */
-import { useState, useCallback, useRef, useEffect } from "react";
-import { StyleSheet, View, FlatList, RefreshControl, ScrollView, Alert } from "react-native";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { StyleSheet, View, FlatList, RefreshControl, ScrollView, Alert, Pressable, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -21,7 +21,8 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { useAssemblies, useReorderAssemblies, useBatchShip } from "@/hooks/use-assemblies";
 import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
-import { spacing } from "@/constants/layout";
+import { type as typography } from "@/constants/typography";
+import { spacing, radius } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
 import type { Assembly } from "@/types/api";
 
@@ -34,6 +35,14 @@ const QUEUE_TABS = [
 /** Statuses that can be reordered in the queue */
 const REORDERABLE_STATUSES = ["PLANNED", "AWAITING_APPROVAL", "APPROVED"];
 
+const STATUS_FILTERS = [
+  { key: null, label: "All" },
+  { key: "PLANNED", label: "Pending" },
+  { key: "APPROVED", label: "Approved" },
+  { key: "IN_PRODUCTION", label: "Building" },
+  { key: "COMPLETED", label: "Done" },
+];
+
 export default function AssembliesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -42,6 +51,7 @@ export default function AssembliesScreen() {
   const [queueTab, setQueueTab] = useState("DOOR_SHOP");
   const [refreshing, setRefreshing] = useState(false);
   const [selectedAssemblyId, setSelectedAssemblyId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const isShipping = queueTab === "SHIPPING";
   const { data, isLoading, refetch } = useAssemblies(
@@ -96,6 +106,7 @@ export default function AssembliesScreen() {
     setQueueTab(tab);
     setSelectedAssemblyId(null);
     setSelectedShipIds([]);
+    setStatusFilter(null);
   }, []);
 
   const handleToggleShipSelect = useCallback((id: string) => {
@@ -143,8 +154,12 @@ export default function AssembliesScreen() {
     });
   }, [localQueue, queueItems, reorderMutation]);
 
-  // Build the full display list: reorderable queue items + other items
-  const orderedDisplayList = isShipping ? shippingItems : [...localQueue, ...otherItems];
+  // Build the full display list: reorderable queue items + other items, then filter
+  const orderedDisplayListRaw = isShipping ? shippingItems : [...localQueue, ...otherItems];
+  const orderedDisplayList = useMemo(
+    () => statusFilter ? orderedDisplayListRaw.filter((a) => a.status === statusFilter) : orderedDisplayListRaw,
+    [orderedDisplayListRaw, statusFilter]
+  );
 
   /** Master panel: assembly list (or FinishedGoodsList for shipping) */
   const masterContent = (
@@ -242,6 +257,28 @@ export default function AssembliesScreen() {
           <Tabs tabs={QUEUE_TABS} activeKey={queueTab} onTabChange={handleTabChange} />
         </View>
 
+        {/* Status filter pills (not shown on Shipping tab) */}
+        {!isShipping ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterScroll}
+            style={{ flexGrow: 0, paddingHorizontal: screenPadding }}
+          >
+            {STATUS_FILTERS.map((f) => (
+              <Pressable
+                key={f.label}
+                style={[styles.filterPill, statusFilter === f.key && styles.filterPillActive]}
+                onPress={() => setStatusFilter(f.key)}
+              >
+                <Text style={[styles.filterText, statusFilter === f.key && styles.filterTextActive]}>
+                  {f.label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        ) : null}
+
         {isTablet ? (
           <SplitView master={masterContent} detail={detailContent} />
         ) : (
@@ -255,6 +292,26 @@ export default function AssembliesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   tabBar: { paddingTop: spacing.md },
+  filterScroll: { gap: spacing.sm, paddingVertical: spacing.sm },
+  filterPill: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    backgroundColor: colors.surfaceSecondary,
+    minHeight: 32,
+    justifyContent: "center",
+  },
+  filterPillActive: {
+    backgroundColor: colors.navy,
+  },
+  filterText: {
+    ...typography.caption,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
+  filterTextActive: {
+    color: colors.textInverse,
+  },
   masterContainer: { flex: 1 },
   detailScroll: { flex: 1, backgroundColor: colors.background },
 });
