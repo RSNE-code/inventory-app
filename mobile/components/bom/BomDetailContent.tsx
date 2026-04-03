@@ -11,6 +11,7 @@ import * as Haptics from "expo-haptics";
 import { Send, CheckCircle, Trash2, ShoppingCart, Pencil, Plus, Undo2, XCircle } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { StepProgress } from "@/components/layout/StepProgress";
 import { BomStatusBadge } from "@/components/bom/BomStatusBadge";
 import { BomLineItemRow } from "@/components/bom/BomLineItemRow";
 import { BomModeBar } from "@/components/bom/BomModeBar";
@@ -66,6 +67,18 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
   const isApproved = status === "APPROVED";
   const isInProgress = status === "IN_PROGRESS";
   const showCheckout = isApproved || isInProgress;
+
+  // BOM lifecycle step mapping
+  const BOM_LIFECYCLE_STEPS = ["Draft", "Review", "Approved", "In Progress", "Complete"];
+  const STATUS_TO_STEP: Record<string, number> = {
+    DRAFT: 0,
+    PENDING_REVIEW: 1,
+    APPROVED: 2,
+    IN_PROGRESS: 3,
+    COMPLETED: 4,
+    CANCELLED: 1,
+  };
+  const currentStep = STATUS_TO_STEP[status] ?? 0;
 
   // Fab gate: compute unfabricated assembly items from line item data
   const fabGateData = useMemo(() => {
@@ -209,6 +222,11 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
       {/* Mode bar */}
       {mode !== "view" ? <BomModeBar mode={mode} onExit={handleExitMode} /> : null}
 
+      {/* BOM lifecycle progress */}
+      <Animated.View entering={FadeInDown.springify().damping(15)}>
+        <StepProgress steps={BOM_LIFECYCLE_STEPS} currentStep={currentStep} />
+      </Animated.View>
+
       {/* Header card */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
         <Card>
@@ -225,6 +243,14 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
           </Text>
         </Card>
       </Animated.View>
+
+      {/* Notes */}
+      {b.notes ? (
+        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 1.5).springify().damping(15)}>
+          <Text style={styles.notesLabel}>Notes</Text>
+          <Text style={styles.notesText}>{String(b.notes)}</Text>
+        </Animated.View>
+      ) : null}
 
       {/* Line items */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
@@ -407,5 +433,7 @@ const styles = StyleSheet.create({
   meta: { ...typography.caption, color: colors.textMuted, marginTop: spacing.md },
   itemsCard: { marginTop: spacing.lg },
   sectionTitle: { ...typography.cardTitle, color: colors.navy, marginBottom: spacing.sm },
+  notesLabel: { ...typography.caption, color: colors.textMuted, marginTop: spacing.lg, marginBottom: spacing.xs },
+  notesText: { ...typography.body, color: colors.navy },
   actions: { marginTop: spacing.lg, gap: spacing.md },
 });

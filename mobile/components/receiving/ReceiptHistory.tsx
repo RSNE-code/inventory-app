@@ -4,7 +4,7 @@
  */
 import { useState, useCallback } from "react";
 import { StyleSheet, View, Text, FlatList, RefreshControl, Pressable, Alert } from "react-native";
-import { Building2, PackageCheck, ChevronDown, ChevronUp } from "lucide-react-native";
+import { Building2, PackageCheck, ChevronDown, ChevronUp, FileText, Briefcase } from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Card } from "@/components/ui/Card";
@@ -72,6 +72,20 @@ export function ReceiptHistory() {
                         <Text style={styles.supplier}>{item.supplierName}</Text>
                         {isVoided ? <Badge label="Voided" variant="red" /> : null}
                       </View>
+                      <View style={styles.badgeRow}>
+                        {(item as any).purchaseOrderNumber ? (
+                          <View style={styles.infoPill}>
+                            <FileText size={12} color={colors.brandBlue} strokeWidth={2} />
+                            <Text style={styles.infoPillText}>PO #{(item as any).purchaseOrderNumber}</Text>
+                          </View>
+                        ) : null}
+                        {(item as any).jobName ? (
+                          <View style={styles.infoPill}>
+                            <Briefcase size={12} color={colors.textMuted} strokeWidth={2} />
+                            <Text style={styles.infoPillText}>{(item as any).jobName}</Text>
+                          </View>
+                        ) : null}
+                      </View>
                       <Text style={styles.meta}>
                         {item._count?.lineItems ?? 0} items · {formatCurrency(item.totalAmount)}
                         {item.createdAt ? ` · ${new Date(item.createdAt).toLocaleDateString()}` : ""}
@@ -124,6 +138,9 @@ const styles = StyleSheet.create({
   meta: { ...typography.caption, color: colors.textMuted, marginTop: 2 },
   sep: { height: spacing.sm },
   supplierRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, marginTop: spacing.xs },
+  infoPill: { flexDirection: "row", alignItems: "center", gap: spacing.xs, backgroundColor: colors.surfaceSecondary, borderRadius: radius.full, paddingHorizontal: spacing.sm, paddingVertical: 2 },
+  infoPillText: { ...typography.caption, color: colors.textSecondary, fontSize: 11 },
   expandedContent: { marginTop: spacing.md, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: spacing.md },
   notes: { ...typography.body, color: colors.textMuted, fontStyle: "italic", marginBottom: spacing.sm },
   lineItem: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.xs, gap: spacing.sm },

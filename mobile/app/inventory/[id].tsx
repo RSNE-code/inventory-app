@@ -2,6 +2,7 @@
  * Product detail screen — stats, stock badge, actions.
  * Matches web's inventory/[id]/page.tsx.
  */
+import { useMemo } from "react";
 import { StyleSheet, ScrollView, View, Text, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,6 +12,8 @@ import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { StockBadge } from "@/components/inventory/StockBadge";
+import { StockoutRiskCard } from "@/components/inventory/StockoutRiskCard";
+import { InventoryForecastChart } from "@/components/inventory/InventoryForecastChart";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Button } from "@/components/ui/Button";
@@ -55,6 +58,15 @@ export default function ProductDetailScreen() {
   const qty = Number(p.currentQty ?? 0);
   const reorder = Number(p.reorderPoint ?? 0);
   const unitCost = Number(p.unitCost ?? 0);
+  const isTier1 = p.tier === 1;
+
+  /** Estimate daily usage from reorder point (assumes ~14-day reorder cycle). */
+  const forecast = useMemo(() => {
+    const avgDailyUsage = reorder > 0 ? reorder / 14 : 0;
+    const daysUntilStockout =
+      avgDailyUsage > 0 ? Math.round(qty / avgDailyUsage) : null;
+    return { avgDailyUsage, daysUntilStockout };
+  }, [qty, reorder]);
 
   return (
     <>
@@ -165,6 +177,24 @@ export default function ProductDetailScreen() {
               ) : null}
             </Card>
           </Animated.View>
+
+          {/* Tier 1: Stockout Risk + Usage Forecast */}
+          {isTier1 ? (
+            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(15)} style={styles.tier1Section}>
+              <StockoutRiskCard
+                daysUntilStockout={forecast.daysUntilStockout}
+                currentQty={qty}
+                reorderPoint={reorder}
+                avgDailyUsage={forecast.avgDailyUsage}
+              />
+              <InventoryForecastChart
+                productName={String(p.name ?? "Product")}
+                currentQty={qty}
+                avgDailyUsage={forecast.avgDailyUsage}
+                daysUntilStockout={forecast.daysUntilStockout}
+              />
+            </Animated.View>
+          ) : null}
         </IPadPage>
       </ScrollView>
     </>
@@ -301,5 +331,9 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: "500",
     color: colors.navy,
+  },
+  tier1Section: {
+    gap: spacing.lg,
+    marginTop: spacing.lg,
   },
 });

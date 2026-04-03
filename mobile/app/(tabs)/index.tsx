@@ -14,6 +14,7 @@ import { WorkPipelines } from "@/components/dashboard/WorkPipelines";
 import { LowStockList } from "@/components/dashboard/LowStockList";
 import { InventoryTrendChart } from "@/components/dashboard/InventoryTrendChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { StockSummaryCard } from "@/components/dashboard/StockSummaryCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -116,27 +117,32 @@ export default function DashboardScreen() {
               </>
             )}
 
-            {/* Row 2: Inventory Trend — full width for better visualization */}
+            {/* Row 2: Stock Summary — full width */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(20)}>
+              <StockSummaryCard summary={dashboard.summary} />
+            </Animated.View>
+
+            {/* Row 3: Inventory Trend — full width for better visualization */}
+            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
               <InventoryTrendChart />
             </Animated.View>
 
-            {/* Row 3: Low Stock + Recent Activity — side-by-side on iPad */}
+            {/* Row 4: Low Stock + Recent Activity — side-by-side on iPad */}
             {isTablet ? (
               <View style={styles.tabletRow}>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
                   <LowStockList items={dashboard.lowStockItems} />
                 </Animated.View>
-                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
+                <Animated.View style={styles.tabletHalf} entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(20)}>
                   <RecentActivity transactions={dashboard.recentTransactions} />
                 </Animated.View>
               </View>
             ) : (
               <>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
                   <LowStockList items={dashboard.lowStockItems} />
                 </Animated.View>
-                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 5).springify().damping(20)}>
+                <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 6).springify().damping(20)}>
                   <RecentActivity transactions={dashboard.recentTransactions} />
                 </Animated.View>
               </>

@@ -1,7 +1,7 @@
 /**
  * Root layout — providers, font loading, auth gate, app state refetch.
  */
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -20,6 +20,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { NetworkBanner } from "@/components/shared/NetworkBanner";
 import { ToastProvider } from "@/hooks/use-toast";
+import { CelebrationOverlay } from "@/components/shared/CelebrationOverlay";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +57,12 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const handleCelebrationComplete = useCallback(() => {
+    setShowCelebration(false);
+  }, []);
+
   const [fontsLoaded] = useFonts({
     Figtree: Figtree_400Regular,
     "Figtree-Medium": Figtree_500Medium,
@@ -94,6 +101,7 @@ export default function RootLayout() {
                   <Slot />
                 </AuthGate>
               </ToastProvider>
+              <CelebrationOverlay visible={showCelebration} onComplete={handleCelebrationComplete} />
             </AuthProvider>
           </QueryClientProvider>
         </SafeAreaProvider>

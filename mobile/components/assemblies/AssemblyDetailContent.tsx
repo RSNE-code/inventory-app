@@ -16,6 +16,8 @@ import { Tabs } from "@/components/ui/Tabs";
 import { DoorSpecSheet } from "@/components/doors/DoorSpecSheet";
 import { DoorManufacturingSheet } from "@/components/doors/DoorManufacturingSheet";
 import { ApprovalCard } from "@/components/assemblies/ApprovalCard";
+import { StartBuildModal } from "@/components/shared/StartBuildModal";
+import { StepProgress } from "@/components/layout/StepProgress";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useAssembly, useUpdateAssembly, useDeleteAssembly } from "@/hooks/use-assemblies";
@@ -61,6 +63,7 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
   const updateMutation = useUpdateAssembly();
   const deleteMutation = useDeleteAssembly();
   const [sheetTab, setSheetTab] = useState<"spec" | "manufacturing">("spec");
+  const [showStartBuild, setShowStartBuild] = useState(false);
 
   const a = ((data as any)?.data ?? data) as Assembly | undefined;
 
@@ -71,14 +74,27 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
   const isDoor = a.type === "DOOR";
   const specs = a.specs as Record<string, unknown> | null;
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = useCallback(async (newStatus: string) => {
     try {
       await updateMutation.mutateAsync({ id: assemblyId, status: newStatus });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
       Alert.alert("Error", "Failed to update status");
     }
-  };
+  }, [assemblyId, updateMutation]);
+
+  const handleOpenStartBuild = useCallback(() => {
+    setShowStartBuild(true);
+  }, []);
+
+  const handleCloseStartBuild = useCallback(() => {
+    setShowStartBuild(false);
+  }, []);
+
+  const handleConfirmStartBuild = useCallback(async () => {
+    await handleStatusChange("IN_PRODUCTION");
+    setShowStartBuild(false);
+  }, [handleStatusChange]);
 
   const handleDelete = () => {
     Alert.alert("Delete Assembly", "Are you sure?", [
@@ -98,8 +114,17 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
     ]);
   };
 
+  const ASSEMBLY_STEPS = ["Created", "Building", "Complete", "Shipped"];
+  const stepIndex =
+    a.status === "SHIPPED" ? 3 :
+    a.status === "COMPLETED" ? 2 :
+    a.status === "IN_PRODUCTION" ? 1 : 0;
+
   const content = (
     <>
+      {/* Lifecycle progress */}
+      <StepProgress steps={ASSEMBLY_STEPS} currentStep={stepIndex} />
+
       {/* Header card */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(15)}>
         <Card>
@@ -181,39 +206,46 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
 
       {/* Actions */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)} style={styles.actions}>
-        {a.status === "APPROVED" && (
+        {a.status === "APPROVED" ? (
           <Button
             title="Start Build"
             icon={<Play size={18} color={colors.textInverse} strokeWidth={2} />}
-            onPress={() => handleStatusChange("IN_PRODUCTION")}
-            loading={updateMutation.isPending}
+            onPress={handleOpenStartBuild}
           />
-        )}
-        {a.status === "IN_PRODUCTION" && (
+        ) : null}
+        {a.status === "IN_PRODUCTION" ? (
           <Button
             title="Mark Completed"
             icon={<CheckCircle size={18} color={colors.textInverse} strokeWidth={2} />}
             onPress={() => handleStatusChange("COMPLETED")}
             loading={updateMutation.isPending}
           />
-        )}
-        {a.status === "COMPLETED" && (
+        ) : null}
+        {a.status === "COMPLETED" ? (
           <Button
             title="Mark as Shipped"
             icon={<Truck size={18} color={colors.textInverse} strokeWidth={2} />}
             onPress={() => handleStatusChange("SHIPPED")}
             loading={updateMutation.isPending}
           />
-        )}
-        {(a.status === "PLANNED" || a.status === "AWAITING_APPROVAL") && (
+        ) : null}
+        {(a.status === "PLANNED" || a.status === "AWAITING_APPROVAL") ? (
           <Button
             title="Delete"
             variant="destructive"
             icon={<Trash2 size={18} color={colors.textInverse} strokeWidth={2} />}
             onPress={handleDelete}
           />
-        )}
+        ) : null}
       </Animated.View>
+
+      <StartBuildModal
+        visible={showStartBuild}
+        onClose={handleCloseStartBuild}
+        onConfirm={handleConfirmStartBuild}
+        assemblyName={a.name}
+        loading={updateMutation.isPending}
+      />
     </>
   );
 
