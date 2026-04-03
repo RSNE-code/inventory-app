@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     gap: 2,
-    paddingVertical: 4,
+    paddingVertical: spacing.sm,
     zIndex: 1,
   },
   iconWrap: {

@@ -132,8 +132,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandOrange,
   },
   sendButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: radius.xl,
     backgroundColor: colors.brandBlue,
     alignItems: "center",
