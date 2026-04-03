@@ -53,7 +53,7 @@ export default function BomTemplateDetailScreen() {
         <IPadPage maxWidth={DETAIL_MAX_WIDTH}>
         <Card>
           <Text style={styles.name}>{t.name}</Text>
-          {t.description && <Text style={styles.desc}>{t.description}</Text>}
+          {t.description ? <Text style={styles.desc}>{t.description}</Text> : null}
           <Text style={styles.meta}>{lineItems.length} items · Created {new Date(t.createdAt).toLocaleDateString()}</Text>
         </Card>
 

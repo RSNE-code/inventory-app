@@ -105,14 +105,14 @@ export default function LoginScreen() {
               textContentType="password"
             />
 
-            {error !== "" && (
+            {error !== "" ? (
               <Animated.View
                 entering={FadeInDown.springify().damping(15)}
                 style={styles.errorBox}
               >
                 <Text style={styles.errorText}>{error}</Text>
               </Animated.View>
-            )}
+            ) : null}
 
             <Button
               title={loading ? "Signing in\u2026" : "Sign In"}
@@ -129,7 +129,7 @@ export default function LoginScreen() {
               <Text style={styles.forgotText}>Forgot password?</Text>
             </Pressable>
 
-            {showForgot && (
+            {showForgot ? (
               <Animated.View
                 entering={FadeInDown.springify().damping(15)}
                 style={styles.forgotHint}
@@ -138,7 +138,7 @@ export default function LoginScreen() {
                   Contact your administrator to reset your password.
                 </Text>
               </Animated.View>
-            )}
+            ) : null}
           </View>
         </Animated.View>
 

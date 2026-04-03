@@ -63,7 +63,7 @@ export default function BomTemplatesScreen() {
               <Animated.View entering={FadeInDown.delay(index * STAGGER_DELAY).springify().damping(15)} style={isTablet ? styles.gridCell : undefined}>
                 <Card onPress={() => router.push(`/bom-templates/${item.id}` as never)}>
                   <Text style={styles.name}>{item.name}</Text>
-                  {item.description && <Text style={styles.desc}>{item.description}</Text>}
+                  {item.description ? <Text style={styles.desc}>{item.description}</Text> : null}
                   <Text style={styles.meta}>{item.lineItems?.length ?? 0} items</Text>
                 </Card>
               </Animated.View>

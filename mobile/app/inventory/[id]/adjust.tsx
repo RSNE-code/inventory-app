@@ -161,7 +161,7 @@ export default function AdjustStockScreen() {
           />
 
           {/* Preview */}
-          {qty > 0 && (
+          {qty > 0 ? (
             <Card style={styles.previewCard}>
               <Text style={styles.previewLabel}>New quantity will be</Text>
               <Text
@@ -173,7 +173,7 @@ export default function AdjustStockScreen() {
                 {formatQuantity(Math.max(0, newQty))} {String(p.unit ?? "ea")}
               </Text>
             </Card>
-          )}
+          ) : null}
 
           {/* Reason picker */}
           <Text style={styles.reasonTitle}>Reason *</Text>
