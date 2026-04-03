@@ -3,7 +3,7 @@
  * Matches web's assembly card pattern.
  */
 import { StyleSheet, View, Text, Pressable } from "react-native";
-import { DoorOpen, Layers, ChevronRight, ChevronUp, ChevronDown, Snowflake, Ruler } from "lucide-react-native";
+import { DoorOpen, Layers, ChevronRight, ChevronUp, ChevronDown, Snowflake, Ruler, FileText } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { colors } from "@/constants/colors";
@@ -62,6 +62,11 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
   const frameType = specs ? String(specs.frameType ?? "") : "";
   const hasDimensions = widthInClear !== "" && heightInClear !== "";
   const hasSpecPills = isDoor && (temperatureType !== "" || hasDimensions || frameType !== "");
+
+  // Matched BOMs from API
+  const matchedBoms: Array<{ id: string; status: string; jobName: string }> =
+    (assembly as any).matchedBoms ?? [];
+  const batchSize = Number((assembly as any).batchSize ?? 1);
 
   return (
     <Card
@@ -128,8 +133,21 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
         </View>
       ) : null}
 
+      {/* BOM match badges */}
+      {matchedBoms.length > 0 ? (
+        <View style={styles.specPillsRow}>
+          {matchedBoms.map((bom) => (
+            <View key={bom.id} style={styles.bomBadge}>
+              <FileText size={10} color={colors.brandBlue} strokeWidth={2.5} />
+              <Text style={styles.bomBadgeText}>BOM · {bom.status.replace(/_/g, " ").toLowerCase()}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       <View style={styles.bottomRow}>
         <Text style={styles.date}>
+          {batchSize > 1 ? `Batch of ${batchSize} · ` : ""}
           {new Date(assembly.createdAt).toLocaleDateString()}
         </Text>
         <ChevronRight size={16} color="rgba(107,127,150,0.3)" strokeWidth={1.5} />
@@ -213,5 +231,21 @@ const styles = StyleSheet.create({
   specPillText: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  bomBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    backgroundColor: colors.statusBlueBg,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  bomBadgeText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.brandBlue,
+    textTransform: "capitalize",
   },
 });

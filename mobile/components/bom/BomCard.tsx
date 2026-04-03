@@ -3,7 +3,7 @@
  * Supports reorder controls (up/down) and selection highlight.
  */
 import { StyleSheet, View, Text, Pressable } from "react-native";
-import { ChevronRight, ChevronUp, ChevronDown } from "lucide-react-native";
+import { ChevronRight, ChevronUp, ChevronDown, Wrench } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { BomStatusBadge } from "./BomStatusBadge";
 import { colors } from "@/constants/colors";
@@ -36,6 +36,8 @@ interface BomCardProps {
 export function BomCard({ bom, onPress, isSelected, position, totalInQueue, onMoveUp, onMoveDown }: BomCardProps) {
   const itemCount = bom._count?.lineItems ?? 0;
   const showReorder = position !== undefined && totalInQueue !== undefined && onMoveUp && onMoveDown;
+  const unfabCount = Number((bom as any).unfabricatedCount ?? 0);
+  const creatorName = (bom as any).createdBy?.name as string | undefined;
 
   return (
     <Card
@@ -65,16 +67,27 @@ export function BomCard({ bom, onPress, isSelected, position, totalInQueue, onMo
         )}
         <View style={styles.nameCol}>
           <Text style={styles.jobName} numberOfLines={1}>{bom.jobName}</Text>
-          {bom.jobNumber && (
+          {bom.jobNumber ? (
             <Text style={styles.jobNumber}>Job #{bom.jobNumber}</Text>
-          )}
+          ) : null}
         </View>
         <BomStatusBadge status={bom.status} />
       </View>
 
+      {/* Unfabricated assembly badge */}
+      {unfabCount > 0 ? (
+        <View style={styles.unfabRow}>
+          <View style={styles.unfabBadge}>
+            <Wrench size={10} color={colors.statusYellow} strokeWidth={2.5} />
+            <Text style={styles.unfabText}>{unfabCount} fab item{unfabCount !== 1 ? "s" : ""}</Text>
+          </View>
+        </View>
+      ) : null}
+
       <View style={styles.bottomRow}>
         <Text style={styles.meta}>
           {itemCount} item{itemCount !== 1 ? "s" : ""}
+          {creatorName ? ` · ${creatorName}` : ""}
           <Text style={styles.dot}> · </Text>
           {new Date(bom.createdAt).toLocaleDateString()}
         </Text>
@@ -141,5 +154,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.textMuted,
     fontVariant: ["tabular-nums"],
+  },
+  unfabRow: {
+    flexDirection: "row",
+    marginTop: spacing.sm,
+  },
+  unfabBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    backgroundColor: colors.statusYellowBg,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  unfabText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.statusYellow,
   },
 });

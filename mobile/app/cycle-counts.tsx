@@ -96,6 +96,7 @@ function CountTab({
   const recordMutation = useRecordCycleCount();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [actualQty, setActualQty] = useState("");
+  const [reason, setReason] = useState("");
 
   const handleRecord = async (suggestion: CycleCountSuggestion) => {
     const qty = parseFloat(actualQty);
@@ -109,6 +110,7 @@ function CountTab({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setActiveId(null);
       setActualQty("");
+      setReason("");
     } catch {
       Alert.alert("Error", "Failed to record count");
     }
@@ -150,7 +152,7 @@ function CountTab({
               </View>
             </View>
 
-            {activeId === item.productId && (
+            {activeId === item.productId ? (
               <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
                 <View style={styles.countInput}>
                   <Input
@@ -159,6 +161,27 @@ function CountTab({
                     onChangeText={setActualQty}
                     keyboardType="decimal-pad"
                     placeholder="Enter actual qty"
+                  />
+                  {actualQty ? (
+                    <View style={styles.varianceRow}>
+                      <Text style={styles.varianceLabel}>System: {formatQuantity(item.currentQty)}</Text>
+                      <Text style={styles.varianceLabel}> → </Text>
+                      <Text style={styles.varianceLabel}>Actual: {actualQty}</Text>
+                      <Text style={[
+                        styles.varianceDelta,
+                        { color: parseFloat(actualQty) === item.currentQty ? colors.statusGreen : colors.statusYellow },
+                      ]}>
+                        {parseFloat(actualQty) === item.currentQty
+                          ? " Match"
+                          : ` ${parseFloat(actualQty) > item.currentQty ? "+" : ""}${(parseFloat(actualQty) - item.currentQty).toFixed(1)}`}
+                      </Text>
+                    </View>
+                  ) : null}
+                  <Input
+                    label="Reason (optional)"
+                    value={reason}
+                    onChangeText={setReason}
+                    placeholder="Why is this different?"
                   />
                   <Button
                     title={recordMutation.isPending ? "Saving\u2026" : "Record Count"}
@@ -169,7 +192,7 @@ function CountTab({
                   />
                 </View>
               </KeyboardAvoidingView>
-            )}
+            ) : null}
           </Card>
         </Animated.View>
       )}
@@ -213,13 +236,13 @@ function HistoryTab({
               <View style={styles.histRow}>
                 <Text style={styles.histLabel}>Expected: {formatQuantity(item.expectedQty)}</Text>
                 <Text style={styles.histLabel}>Actual: {formatQuantity(item.actualQty)}</Text>
-                {hasVariance && (
+                {hasVariance ? (
                   <Badge
                     label={`${item.variance > 0 ? "+" : ""}${formatQuantity(item.variance)}`}
                     variant={item.variance > 0 ? "green" : "red"}
                     showDot={false}
                   />
-                )}
+                ) : null}
               </View>
               <Text style={styles.histMeta}>
                 {item.countedBy} · {new Date(item.createdAt).toLocaleDateString()}
@@ -246,4 +269,7 @@ const styles = StyleSheet.create({
   histRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, marginTop: spacing.sm },
   histLabel: { ...typography.caption, color: colors.textMuted, fontVariant: ["tabular-nums"] },
   histMeta: { ...typography.caption, color: colors.textMuted, marginTop: spacing.sm },
+  varianceRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap" },
+  varianceLabel: { ...typography.caption, color: colors.textMuted, fontVariant: ["tabular-nums"] },
+  varianceDelta: { ...typography.caption, fontWeight: "700", fontVariant: ["tabular-nums"] },
 });

@@ -158,6 +158,16 @@ export default function ProductDetailScreen() {
               </Animated.View>
             </>
           )}
+          {/* Notes */}
+          {p.notes ? (
+            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3.5).springify().damping(15)}>
+              <Card style={styles.activityCard}>
+                <Text style={styles.sectionTitle}>Notes</Text>
+                <Text style={styles.notesText}>{String(p.notes)}</Text>
+              </Card>
+            </Animated.View>
+          ) : null}
+
           {/* Recent Activity */}
           <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
             <Card style={styles.activityCard}>
@@ -171,7 +181,7 @@ export default function ProductDetailScreen() {
                   <Text style={styles.activityDate}>{new Date(String(p.createdAt)).toLocaleDateString()}</Text>
                 </View>
               ) : null}
-              {p.updatedAt && p.updatedAt !== p.createdAt ? (
+              {p.updatedAt && String(p.updatedAt) !== String(p.createdAt) ? (
                 <View style={styles.activityRow}>
                   <Text style={styles.activityType}>Last Updated</Text>
                   <Text style={styles.activityDate}>{new Date(String(p.updatedAt)).toLocaleDateString()}</Text>
@@ -333,6 +343,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: "500",
     color: colors.navy,
+  },
+  notesText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   tier1Section: {
     gap: spacing.lg,

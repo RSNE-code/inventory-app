@@ -2,7 +2,7 @@
  * Inventory tab — product list with search, category filter, infinite scroll.
  */
 import { useState, useCallback } from "react";
-import { StyleSheet, View, FlatList, RefreshControl } from "react-native";
+import { StyleSheet, View, Text, FlatList, RefreshControl, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { useProducts, useCategories } from "@/hooks/use-products";
 import { useIsTablet, useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
+import { type as typography } from "@/constants/typography";
 import { spacing } from "@/constants/layout";
 import { STAGGER_DELAY } from "@/constants/animations";
 import type { Product } from "@/types/api";
@@ -82,13 +83,20 @@ export default function InventoryScreen() {
             onChangeText={setSearch}
             placeholder="Search products or SKUs\u2026"
           />
-          {categoryList.length > 0 && (
+          {categoryList.length > 0 ? (
             <CategoryFilter
               categories={categoryList}
               selected={category}
               onSelect={setCategory}
             />
-          )}
+          ) : null}
+          {!isLoading && products.length > 0 ? (
+            <Text style={styles.countLabel}>
+              {products.length} product{products.length !== 1 ? "s" : ""}
+              {search ? ` matching "${search}"` : ""}
+              {category ? ` in ${category}` : ""}
+            </Text>
+          ) : null}
         </View>
 
         {isLoading ? (
@@ -150,5 +158,10 @@ const styles = StyleSheet.create({
   },
   gridCell: {
     flex: 1,
+  },
+  countLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
   },
 });
