@@ -71,14 +71,29 @@ export function JobPicker({ selectedJob, onSelect, label = "Job", required }: Jo
     );
   }
 
+  const renderJobItem = useCallback(({ item: job }: { item: Job }) => (
+    <Pressable
+      onPress={() => handleSelect(job)}
+      style={styles.resultRow}
+    >
+      <Briefcase size={16} color={colors.textMuted} strokeWidth={1.8} />
+      <View style={styles.resultText}>
+        <Text style={styles.resultName} numberOfLines={1}>{job.name}</Text>
+        <Text style={styles.resultMeta}>
+          {job.number ? `#${job.number}` : "No number"}
+        </Text>
+      </View>
+    </Pressable>
+  ), [handleSelect]);
+
   // Unselected state — search input with dropdown
   return (
     <View>
-      {label && (
+      {label ? (
         <Text style={styles.label}>
           {label}{required ? " *" : ""}
         </Text>
-      )}
+      ) : null}
       <SearchInput
         value={search}
         onChangeText={(text) => {
@@ -88,31 +103,24 @@ export function JobPicker({ selectedJob, onSelect, label = "Job", required }: Jo
         placeholder="Search jobs by name or number…"
       />
 
-      {isOpen && jobs.length > 0 && (
+      {isOpen && jobs.length > 0 ? (
         <Card style={styles.dropdown}>
-          {jobs.slice(0, 8).map((job) => (
-            <Pressable
-              key={job.id}
-              onPress={() => handleSelect(job)}
-              style={styles.resultRow}
-            >
-              <Briefcase size={16} color={colors.textMuted} strokeWidth={1.8} />
-              <View style={styles.resultText}>
-                <Text style={styles.resultName} numberOfLines={1}>{job.name}</Text>
-                <Text style={styles.resultMeta}>
-                  {job.number ? `#${job.number}` : "No number"}
-                </Text>
-              </View>
-            </Pressable>
-          ))}
+          <FlatList
+            data={jobs}
+            keyExtractor={(job) => job.id}
+            renderItem={renderJobItem}
+            style={{ maxHeight: 240 }}
+            nestedScrollEnabled
+            maxToRenderPerBatch={10}
+          />
         </Card>
-      )}
+      ) : null}
 
-      {isOpen && search.length > 0 && jobs.length === 0 && (
+      {isOpen && search.length > 0 && jobs.length === 0 ? (
         <Card style={styles.dropdown}>
           <Text style={styles.noResults}>No jobs found</Text>
         </Card>
-      )}
+      ) : null}
     </View>
   );
 }

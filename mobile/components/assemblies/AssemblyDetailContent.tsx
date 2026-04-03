@@ -2,6 +2,7 @@
  * AssemblyDetailContent — reusable assembly detail view.
  * Used both in the [id] route (standalone) and in the Assemblies tab SplitView (inline).
  */
+import { useState, useCallback } from "react";
 import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,6 +12,10 @@ import { Play, CheckCircle, Truck, Trash2, DoorOpen, Layers } from "lucide-react
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Tabs } from "@/components/ui/Tabs";
+import { DoorSpecSheet } from "@/components/doors/DoorSpecSheet";
+import { DoorManufacturingSheet } from "@/components/doors/DoorManufacturingSheet";
+import { ApprovalCard } from "@/components/assemblies/ApprovalCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useAssembly, useUpdateAssembly, useDeleteAssembly } from "@/hooks/use-assemblies";
@@ -20,6 +25,7 @@ import { type as typography } from "@/constants/typography";
 import { spacing } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 import type { Assembly } from "@/types/api";
+import type { DoorSpecs } from "@/lib/door-specs";
 
 const STATUS_BADGE: Record<string, { label: string; variant: "gray" | "yellow" | "blue" | "orange" | "green" }> = {
   PLANNED: { label: "Planned", variant: "gray" },
@@ -42,6 +48,11 @@ interface AssemblyDetailContentProps {
   inline?: boolean;
 }
 
+const SHEET_TABS = [
+  { key: "spec", label: "Spec Sheet" },
+  { key: "manufacturing", label: "Manufacturing" },
+];
+
 export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: AssemblyDetailContentProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -49,6 +60,7 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
   const { data, isLoading, error, refetch } = useAssembly(assemblyId);
   const updateMutation = useUpdateAssembly();
   const deleteMutation = useDeleteAssembly();
+  const [sheetTab, setSheetTab] = useState<"spec" | "manufacturing">("spec");
 
   const a = ((data as any)?.data ?? data) as Assembly | undefined;
 
@@ -119,20 +131,33 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
         </Card>
       </Animated.View>
 
-      {/* Specs card */}
-      {specs && Object.keys(specs).length > 0 && (
+      {/* Specs — door assemblies get tabbed sheets, others get generic card */}
+      {isDoor && specs ? (
+        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
+          <Tabs
+            tabs={SHEET_TABS}
+            activeKey={sheetTab}
+            onTabChange={(key) => setSheetTab(key as "spec" | "manufacturing")}
+          />
+          <View style={styles.sheetContent}>
+            {sheetTab === "spec" ? (
+              <DoorSpecSheet specs={specs as Partial<DoorSpecs>} />
+            ) : (
+              <DoorManufacturingSheet specs={specs as Partial<DoorSpecs>} name={a.name} />
+            )}
+          </View>
+        </Animated.View>
+      ) : specs && Object.keys(specs).length > 0 ? (
         <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(15)}>
           <Card style={styles.specsCard}>
             <Text style={styles.sectionTitle}>Specifications</Text>
             {Object.entries(specs).map(([key, val]) => {
-              // Format display values — no raw true/false
               let displayVal: string;
               if (val === true) displayVal = "Yes";
               else if (val === false) displayVal = "No";
               else if (val === null || val === undefined || val === "") displayVal = "Not specified";
               else displayVal = String(val);
 
-              // Friendlier key names
               const displayKey = key
                 .replace(/([A-Z])/g, " $1")
                 .replace(/^./, (s) => s.toUpperCase())
@@ -147,7 +172,12 @@ export function AssemblyDetailContent({ assemblyId, onDeleted, inline }: Assembl
             })}
           </Card>
         </Animated.View>
-      )}
+      ) : null}
+
+      {/* Approval card — for assemblies awaiting approval */}
+      {a.status === "AWAITING_APPROVAL" ? (
+        <ApprovalCard assemblyId={assemblyId} />
+      ) : null}
 
       {/* Actions */}
       <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)} style={styles.actions}>
@@ -215,4 +245,5 @@ const styles = StyleSheet.create({
   specKey: { ...typography.body, color: colors.textMuted, textTransform: "capitalize" },
   specVal: { ...typography.body, fontWeight: "500", color: colors.navy },
   actions: { marginTop: spacing.lg, gap: spacing.md },
+  sheetContent: { marginTop: spacing.md },
 });

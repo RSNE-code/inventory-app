@@ -3,7 +3,7 @@
  * Phase: INPUT → REVIEW → SUMMARY.
  * PO matching and full confirmation cards will be enhanced in later iterations.
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { StyleSheet, ScrollView, View, Text, Alert, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -13,6 +13,9 @@ import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
 import { SupplierPicker } from "./SupplierPicker";
 import { POBrowser } from "./POBrowser";
+import { POMatchCard } from "./POMatchCard";
+import { POReceiveCard } from "./POReceiveCard";
+import { PanelBreakout } from "./PanelBreakout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -27,10 +30,10 @@ import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
 import type { Supplier, PurchaseOrder } from "@/types/api";
 
-type Phase = "INPUT" | "REVIEW" | "SUMMARY";
+type Phase = "INPUT" | "PO_MATCH" | "PO_RECEIVE" | "REVIEW" | "SUMMARY";
 
 const STEPS = ["Input", "Review", "Confirm"];
-const PHASE_INDEX: Record<Phase, number> = { INPUT: 0, REVIEW: 1, SUMMARY: 2 };
+const PHASE_INDEX: Record<Phase, number> = { INPUT: 0, PO_MATCH: 1, PO_RECEIVE: 1, REVIEW: 1, SUMMARY: 2 };
 
 interface ParsedItem {
   productName: string;
@@ -40,14 +43,20 @@ interface ParsedItem {
   productId?: string;
 }
 
-export function ReceivingFlow() {
+interface ReceivingFlowProps {
+  scrollViewRef?: React.RefObject<ScrollView | null>;
+}
+
+export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
   const insets = useSafeAreaInsets();
   const isTablet = useIsTablet();
+  const poBrowserRef = useRef<View>(null);
   const [phase, setPhase] = useState<Phase>("INPUT");
   const [text, setText] = useState("");
   const [supplier, setSupplier] = useState<Supplier | null>(null);
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [notes, setNotes] = useState("");
+  const [matchedPO, setMatchedPO] = useState<PurchaseOrder | null>(null);
 
   const parseMutation = useParseReceivingText();
   const imageParseM = useParseReceivingImage();
@@ -118,10 +127,102 @@ export function ReceivingFlow() {
     setNotes("");
   };
 
+  const handleBrowsePOs = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    scrollViewRef?.current?.scrollToEnd({ animated: true });
+  }, [scrollViewRef]);
+
   const handlePOSelect = useCallback((po: PurchaseOrder) => {
+    setMatchedPO(po);
     setSupplier({ id: po.id, name: po.supplierName });
-    setPhase("REVIEW");
+    setPhase("PO_MATCH");
   }, []);
+
+  const handlePOAccept = useCallback(() => {
+    if (!matchedPO) return;
+    setPhase("PO_RECEIVE");
+  }, [matchedPO]);
+
+  const handlePOReject = useCallback(() => {
+    setMatchedPO(null);
+    setPhase("INPUT");
+  }, []);
+
+  // PO Match phase — show matched PO with accept/reject
+  if (phase === "PO_MATCH" && matchedPO) {
+    return (
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+        <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
+        <View style={{ height: spacing.lg }} />
+        <POMatchCard
+          poNumber={matchedPO.poNumber}
+          supplierName={matchedPO.supplierName}
+          confidence={0.85}
+          onAccept={handlePOAccept}
+          onReject={handlePOReject}
+        />
+        <Button
+          title="Back to Input"
+          variant="ghost"
+          onPress={handlePOReject}
+          style={styles.backBtn}
+        />
+      </ScrollView>
+    );
+  }
+
+  // PO Receive phase — show PO line items for receiving
+  if (phase === "PO_RECEIVE" && matchedPO) {
+    const poLineItems = ((matchedPO as any).lineItems ?? []).map((li: any) => ({
+      id: String(li.id ?? ""),
+      productName: String(li.productName ?? ""),
+      qtyOrdered: Number(li.quantity ?? 0),
+      qtyReceived: Number(li.qtyReceived ?? 0),
+    }));
+
+    return (
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+        <StepProgress steps={STEPS} currentStep={PHASE_INDEX[phase]} />
+        <View style={{ height: spacing.lg }} />
+        <POReceiveCard poNumber={matchedPO.poNumber} lineItems={poLineItems} />
+
+        {/* Panel breakout — renders when PO has panel line items */}
+        {((matchedPO as any).panelBreakout) ? (
+          <View style={{ marginTop: spacing.lg }}>
+            <PanelBreakout
+              brand={String((matchedPO as any).panelBreakout.brand ?? "")}
+              thickness={String((matchedPO as any).panelBreakout.thickness ?? "")}
+              panels={(matchedPO as any).panelBreakout.panels ?? []}
+            />
+          </View>
+        ) : null}
+
+        <View style={{ height: spacing.lg }} />
+        <SupplierPicker selectedId={supplier?.id ?? ""} onSelect={setSupplier} />
+        <Input
+          label="Notes (optional)"
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Delivery notes…"
+          multiline
+        />
+        <Button
+          title={createReceipt.isPending ? "Saving…" : "Confirm Receipt"}
+          onPress={handleConfirm}
+          disabled={!supplier || createReceipt.isPending}
+          loading={createReceipt.isPending}
+          size="lg"
+          style={styles.confirmBtn}
+        />
+        <Button
+          title="Back"
+          variant="ghost"
+          onPress={() => setPhase("PO_MATCH")}
+          style={styles.backBtn}
+        />
+      </ScrollView>
+    );
+  }
 
   if (phase === "SUMMARY") {
     return (
@@ -212,7 +313,7 @@ export function ReceivingFlow() {
         </Pressable>
 
         <Pressable
-          onPress={() => {/* PO browser shown below */}}
+          onPress={handleBrowsePOs}
           style={[styles.entryCard, styles.entryCardBlue, isTablet && styles.entryHalf]}
         >
           <View style={styles.entryIconBlue}>
@@ -243,7 +344,7 @@ export function ReceivingFlow() {
       />
 
       {/* PO Browser */}
-      <View style={styles.poBrowserWrap}>
+      <View ref={poBrowserRef} style={styles.poBrowserWrap}>
         <POBrowser onSelect={handlePOSelect} />
       </View>
     </View>

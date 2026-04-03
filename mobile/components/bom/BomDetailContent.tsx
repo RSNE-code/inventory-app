@@ -2,6 +2,7 @@
  * BomDetailContent — reusable BOM detail view.
  * Used both in the [id] route (standalone) and in the BOMs tab SplitView (inline).
  */
+import { useState, useMemo, useCallback } from "react";
 import { StyleSheet, ScrollView, View, Text, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,6 +13,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { BomStatusBadge } from "@/components/bom/BomStatusBadge";
 import { BomLineItemRow } from "@/components/bom/BomLineItemRow";
+import { FabGateSection } from "@/components/bom/FabGateSection";
+import { PanelCheckoutSheet } from "@/components/bom/PanelCheckoutSheet";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -38,6 +41,7 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
   const submitReview = useSubmitForReview();
   const deleteBom = useDeleteBom();
   const checkoutMutation = useCheckoutBom();
+  const [panelCheckoutItem, setPanelCheckoutItem] = useState<{ name: string; id: string } | null>(null);
 
   const bom = (data as any)?.data ?? data;
 
@@ -51,9 +55,26 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
   const status = String(b.status ?? "DRAFT");
   const lineItems = (b.lineItems as Array<Record<string, unknown>>) ?? [];
   const isDraft = status === "DRAFT";
+  const isPendingReview = status === "PENDING_REVIEW";
   const isApproved = status === "APPROVED";
   const isInProgress = status === "IN_PROGRESS";
   const showCheckout = isApproved || isInProgress;
+
+  // Fab gate: compute unfabricated assembly items from line item data
+  const fabGateData = useMemo(() => {
+    const ASSEMBLY_CATEGORIES = ["DOOR", "PANEL", "FLOOR", "RAMP"];
+    const assemblyItems = lineItems.filter((li) => {
+      const product = li.product as Record<string, unknown> | undefined;
+      const category = String(product?.category ?? "").toUpperCase();
+      return ASSEMBLY_CATEGORIES.includes(category);
+    });
+    // If the BOM response includes unfabricated data, prefer it
+    const serverCount = Number((b as any).unfabricatedCount ?? -1);
+    return {
+      unfabricatedCount: serverCount >= 0 ? serverCount : assemblyItems.length,
+      assemblyNames: assemblyItems.map((li) => String(li.productName ?? "")),
+    };
+  }, [lineItems, b]);
 
   const handleSubmitReview = async () => {
     try {
@@ -86,6 +107,20 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
       },
     ]);
   };
+
+  const handlePanelCheckout = useCallback((length: number, width: number, qty: number) => {
+    if (!panelCheckoutItem) return;
+    checkoutMutation.mutate(
+      { bomId, lineItemIds: [panelCheckoutItem.id] },
+      {
+        onSuccess: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setPanelCheckoutItem(null);
+        },
+        onError: () => Alert.alert("Error", "Failed to checkout panel"),
+      }
+    );
+  }, [panelCheckoutItem, bomId, checkoutMutation]);
 
   const handleCheckoutAll = async () => {
     const unchecked = lineItems
@@ -142,6 +177,16 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
         </Card>
       </Animated.View>
 
+      {/* Fab gate — blocks approval when assembly items need fabrication */}
+      {(isDraft || isPendingReview) && fabGateData.unfabricatedCount > 0 ? (
+        <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2.5).springify().damping(15)}>
+          <FabGateSection
+            unfabricatedCount={fabGateData.unfabricatedCount}
+            assemblyNames={fabGateData.assemblyNames}
+          />
+        </Animated.View>
+      ) : null}
+
       {/* Actions */}
       <Animated.View
         entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(15)}
@@ -176,17 +221,35 @@ export function BomDetailContent({ bomId, onDeleted, inline }: BomDetailContentP
     </>
   );
 
+  const panelSheet = (
+    <PanelCheckoutSheet
+      visible={panelCheckoutItem !== null}
+      onClose={() => setPanelCheckoutItem(null)}
+      productName={panelCheckoutItem?.name ?? ""}
+      onCheckout={handlePanelCheckout}
+      loading={checkoutMutation.isPending}
+    />
+  );
+
   if (inline) {
-    return <View style={[styles.inlineContainer, { padding: screenPadding }]}>{content}</View>;
+    return (
+      <View style={[styles.inlineContainer, { padding: screenPadding }]}>
+        {content}
+        {panelSheet}
+      </View>
+    );
   }
 
   return (
-    <ScrollView
-      style={styles.scrollContainer}
-      contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
-    >
-      {content}
-    </ScrollView>
+    <>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
+      >
+        {content}
+      </ScrollView>
+      {panelSheet}
+    </>
   );
 }
 

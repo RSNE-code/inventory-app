@@ -76,9 +76,11 @@ export default function AssembliesScreen() {
   }, [queueItems.map((a) => a.id).join(",")]);
 
   // Auto-select first assembly on iPad when list loads
-  if (isTablet && displayList.length > 0 && !selectedAssemblyId) {
-    setSelectedAssemblyId(displayList[0].id);
-  }
+  useEffect(() => {
+    if (isTablet && displayList.length > 0 && !selectedAssemblyId) {
+      setSelectedAssemblyId(displayList[0].id);
+    }
+  }, [isTablet, displayList.length, selectedAssemblyId]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

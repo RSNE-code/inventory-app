@@ -3,7 +3,7 @@
  * iPad: centered content via IPadPage.
  * Receipt History renders its own FlatList (not nested in ScrollView).
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { StyleSheet, View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Header } from "@/components/layout/Header";
@@ -24,6 +24,7 @@ export default function ReceiveScreen() {
   const [activeTab, setActiveTab] = useState("receive");
   const insets = useSafeAreaInsets();
   const { screenPadding } = useResponsiveSpacing();
+  const scrollRef = useRef<ScrollView>(null);
 
   return (
     <>
@@ -35,11 +36,12 @@ export default function ReceiveScreen() {
 
         {activeTab === "receive" ? (
           <ScrollView
+            ref={scrollRef}
             style={styles.content}
             contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}
           >
             <IPadPage maxWidth={FORM_MAX_WIDTH}>
-              <ReceivingFlow />
+              <ReceivingFlow scrollViewRef={scrollRef} />
             </IPadPage>
           </ScrollView>
         ) : (

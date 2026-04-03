@@ -1,7 +1,7 @@
 /**
  * New BOM screen — AI photo/text parse or manual entry.
  */
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -19,6 +19,8 @@ import { IPadPage } from "@/components/layout/iPadPage";
 import { StepProgress } from "@/components/layout/StepProgress";
 import { AIInput } from "@/components/ai/AIInput";
 import { capturePhoto } from "@/components/ai/CameraCapture";
+import { LiveItemFeed } from "@/components/bom/LiveItemFeed";
+import { FlaggedItemResolver } from "@/components/bom/FlaggedItemResolver";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -29,6 +31,7 @@ import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
+import type { Product } from "@/types/api";
 
 interface ParsedItem {
   productName: string;
@@ -51,6 +54,16 @@ export default function NewBomScreen() {
   const [aiText, setAiText] = useState("");
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [phase, setPhase] = useState<"input" | "review">("input");
+
+  // Split items: those with a product match are confirmed, others are flagged
+  const confirmedItems = useMemo(
+    () => items.filter((it) => !!it.productId),
+    [items]
+  );
+  const flaggedItems = useMemo(
+    () => items.filter((it) => !it.productId),
+    [items]
+  );
 
   const handleAIParse = useCallback(async () => {
     if (!aiText.trim()) return;
@@ -166,13 +179,35 @@ export default function NewBomScreen() {
               <Text style={styles.sectionTitle}>
                 Review Items ({items.length})
               </Text>
-              {items.map((item, i) => (
-                <Card key={`${item.productName}-${i}`} style={styles.itemCard}>
-                  <Text style={styles.itemName}>{item.productName}</Text>
-                  <Text style={styles.itemQty}>
-                    {item.quantity} {item.unit}
-                  </Text>
-                </Card>
+
+              {/* Confirmed items — animated feed */}
+              <LiveItemFeed items={confirmedItems} />
+
+              {/* Flagged items — need user resolution */}
+              {flaggedItems.map((item, i) => (
+                <FlaggedItemResolver
+                  key={`flag-${item.productName}-${i}`}
+                  rawText={item.productName}
+                  onResolve={(product: Product) => {
+                    setItems((prev) =>
+                      prev.map((it) =>
+                        it === item
+                          ? { ...it, productName: product.name, productId: product.id }
+                          : it
+                      )
+                    );
+                  }}
+                  onKeepAsWritten={() => {
+                    setItems((prev) =>
+                      prev.map((it) =>
+                        it === item ? { ...it, productId: "kept" } : it
+                      )
+                    );
+                  }}
+                  onRemove={() => {
+                    setItems((prev) => prev.filter((it) => it !== item));
+                  }}
+                />
               ))}
 
               <Button

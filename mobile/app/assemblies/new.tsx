@@ -13,6 +13,7 @@ import { IPadPage } from "@/components/layout/iPadPage";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { DoorCreationFlow } from "@/components/doors/DoorCreationFlow";
 import { useCreateAssembly } from "@/hooks/use-assemblies";
 import { JobPicker } from "@/components/shared/JobPicker";
 import { useResponsiveSpacing } from "@/lib/hooks/useDeviceType";
@@ -45,29 +46,6 @@ export default function NewAssemblyScreen() {
 
   const title = flow === "door" ? "New Door" : flow === "fab" ? "New Assembly" : "New Assembly";
 
-  const handleCreateDoor = async () => {
-    if (!name.trim()) return;
-    try {
-      const result = await createMutation.mutateAsync({
-        name: name.trim(),
-        type: "DOOR",
-        jobName: jobName || undefined,
-        specs: {},
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const r = result as any;
-      const newId = r?.data?.id ?? r?.id;
-      if (newId) {
-        router.back();
-        setTimeout(() => router.push(`/assemblies/${newId}`), 100);
-      } else {
-        router.back();
-      }
-    } catch {
-      Alert.alert("Error", "Failed to create door");
-    }
-  };
-
   const handleCreateFab = async () => {
     if (!name.trim()) return;
     try {
@@ -94,13 +72,25 @@ export default function NewAssemblyScreen() {
     }
   };
 
+  // Door flow renders its own ScrollView — don't nest it
+  if (flow === "door") {
+    return (
+      <>
+        <Header title="New Door" showBack />
+        <IPadPage>
+          <DoorCreationFlow />
+        </IPadPage>
+      </>
+    );
+  }
+
   return (
     <>
       <Header title={title} showBack />
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.flex}>
         <ScrollView style={styles.container} contentContainerStyle={{ padding: screenPadding, paddingBottom: insets.bottom + 100 }}>
           <IPadPage>
-          {flow === "choose" && (
+          {flow === "choose" ? (
             <>
               <Text style={styles.heading}>What are you building?</Text>
               <Text style={styles.subheading}>Select a category to get started</Text>
@@ -133,30 +123,9 @@ export default function NewAssemblyScreen() {
                 </Card>
               </Animated.View>
             </>
-          )}
+          ) : null}
 
-          {flow === "door" && (
-            <View style={styles.form}>
-              <Input label="Door Name *" value={name} onChangeText={setName} placeholder="e.g. Walk-in Cooler #3" />
-              <JobPicker
-                label="Job"
-                selectedJob={jobName ? { name: jobName } : null}
-                onSelect={(job) => setJobName(job.name)}
-              />
-              <Text style={styles.hintText}>
-                Full door spec builder (dimensions, hardware, frame type) will be available in the enhanced version.
-              </Text>
-              <Button
-                title={createMutation.isPending ? "Creating\u2026" : "Create Door"}
-                onPress={handleCreateDoor}
-                disabled={!name.trim() || createMutation.isPending}
-                loading={createMutation.isPending}
-                size="lg"
-              />
-            </View>
-          )}
-
-          {flow === "fab" && (
+          {flow === "fab" ? (
             <View style={styles.form}>
               {/* Type selection */}
               <Text style={styles.fieldLabel}>Type</Text>
@@ -195,7 +164,7 @@ export default function NewAssemblyScreen() {
                 size="lg"
               />
             </View>
-          )}
+          ) : null}
           </IPadPage>
         </ScrollView>
       </KeyboardAvoidingView>

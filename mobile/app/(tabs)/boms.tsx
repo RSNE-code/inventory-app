@@ -81,9 +81,11 @@ export default function BomsScreen() {
   const displayBoms = isReorderable ? localBoms : boms;
 
   // Auto-select first BOM on iPad when list loads
-  if (isTablet && displayBoms.length > 0 && !selectedBomId) {
-    setSelectedBomId(displayBoms[0].id);
-  }
+  useEffect(() => {
+    if (isTablet && displayBoms.length > 0 && !selectedBomId) {
+      setSelectedBomId(displayBoms[0].id);
+    }
+  }, [isTablet, displayBoms.length, selectedBomId]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -207,24 +209,8 @@ export default function BomsScreen() {
             <View style={isTablet ? styles.entryRow : styles.entryCol}>
               <Animated.View style={isTablet ? styles.entryHalf : undefined} entering={FadeInDown.springify().damping(20)}>
                 <Card
-                  onPress={() => router.push("/boms/new?mode=photo" as never)}
-                  style={styles.entryCardProminent}
-                >
-                  <View style={styles.entryIconLarge}>
-                    <Camera size={32} color={colors.textInverse} strokeWidth={1.8} />
-                  </View>
-                  <Text style={styles.entryTitleLarge}>Packing Slip</Text>
-                  <Text style={styles.entrySubLarge}>
-                    Snap a photo of your packing slip or BOM sheet
-                  </Text>
-                  <View style={styles.entryAccentOrange} />
-                </Card>
-              </Animated.View>
-
-              <Animated.View style={isTablet ? styles.entryHalf : undefined} entering={FadeInDown.delay(STAGGER_DELAY).springify().damping(20)}>
-                <Card
                   onPress={() => router.push("/boms/new?mode=manual" as never)}
-                  style={styles.entryCardSecondary}
+                  style={styles.entryCardProminent}
                 >
                   <View style={styles.entryIconLargeBlue}>
                     <ShoppingCart size={32} color={colors.textInverse} strokeWidth={1.8} />
@@ -234,6 +220,22 @@ export default function BomsScreen() {
                     Search the catalog and build a BOM by hand
                   </Text>
                   <View style={styles.entryAccentBlue} />
+                </Card>
+              </Animated.View>
+
+              <Animated.View style={isTablet ? styles.entryHalf : undefined} entering={FadeInDown.delay(STAGGER_DELAY).springify().damping(20)}>
+                <Card
+                  onPress={() => router.push("/boms/new?mode=photo" as never)}
+                  style={styles.entryCardSecondary}
+                >
+                  <View style={styles.entryIconLarge}>
+                    <Camera size={32} color={colors.textInverse} strokeWidth={1.8} />
+                  </View>
+                  <Text style={styles.entryTitleLarge}>Packing Slip</Text>
+                  <Text style={styles.entrySubLarge}>
+                    Snap a photo of your packing slip or BOM sheet
+                  </Text>
+                  <View style={styles.entryAccentOrange} />
                 </Card>
               </Animated.View>
             </View>
