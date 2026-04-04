@@ -1,8 +1,8 @@
 /**
  * Inventory tab — product list with search, category filter, infinite scroll.
  */
-import { useState, useCallback } from "react";
-import { StyleSheet, View, Text, FlatList, RefreshControl, Pressable } from "react-native";
+import { useState, useCallback, useMemo } from "react";
+import { StyleSheet, View, Text, FlatList, RefreshControl, Pressable, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -31,14 +31,21 @@ export default function InventoryScreen() {
   const { screenPadding } = useResponsiveSpacing();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [stockFilter, setStockFilter] = useState<"all" | "low" | "out">("all");
   const [refreshing, setRefreshing] = useState(false);
   const numColumns = isTablet ? 2 : 1;
 
   const { data, isLoading, error, refetch } = useProducts({ search, category });
   const { data: categories } = useCategories();
 
-  const products: Product[] = (data as any)?.data ?? [];
+  const rawProducts: Product[] = (data as any)?.data ?? [];
   const categoryList = (categories as any)?.data ?? [];
+
+  const products = useMemo(() => {
+    if (stockFilter === "low") return rawProducts.filter((p) => p.currentQty > 0 && p.currentQty <= p.reorderPoint);
+    if (stockFilter === "out") return rawProducts.filter((p) => p.currentQty <= 0);
+    return rawProducts;
+  }, [rawProducts, stockFilter]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -89,6 +96,27 @@ export default function InventoryScreen() {
               selected={category}
               onSelect={setCategory}
             />
+          ) : null}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.stockFilterScroll} style={{ flexGrow: 0 }}>
+            {([["all", "All"], ["low", "Low Stock"], ["out", "Out of Stock"]] as const).map(([key, label]) => (
+              <Pressable
+                key={key}
+                style={[styles.stockPill, stockFilter === key && styles.stockPillActive]}
+                onPress={() => setStockFilter(key)}
+              >
+                <Text style={[styles.stockPillText, stockFilter === key && styles.stockPillTextActive]}>{label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          {stockFilter !== "all" ? (
+            <View style={styles.filterIndicator}>
+              <Text style={styles.filterIndicatorText}>
+                Showing: {stockFilter === "low" ? "Low stock" : "Out of stock"}
+              </Text>
+              <Pressable onPress={() => setStockFilter("all")}>
+                <Text style={styles.filterClear}>Clear</Text>
+              </Pressable>
+            </View>
           ) : null}
           {!isLoading && products.length > 0 ? (
             <Text style={styles.countLabel}>
@@ -164,4 +192,12 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.xs,
   },
+  stockFilterScroll: { gap: spacing.sm, paddingVertical: spacing.xs },
+  stockPill: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 9999, backgroundColor: colors.surfaceSecondary, minHeight: 32, justifyContent: "center" },
+  stockPillActive: { backgroundColor: colors.navy },
+  stockPillText: { ...typography.caption, fontWeight: "600", color: colors.textSecondary },
+  stockPillTextActive: { color: colors.textInverse },
+  filterIndicator: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: spacing.xs },
+  filterIndicatorText: { ...typography.caption, color: colors.textMuted },
+  filterClear: { ...typography.caption, fontWeight: "600", color: colors.brandBlue },
 });

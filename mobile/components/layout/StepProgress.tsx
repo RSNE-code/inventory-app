@@ -4,6 +4,7 @@
  */
 import { StyleSheet, View, Text } from "react-native";
 import { Check } from "lucide-react-native";
+import { useIsTablet } from "@/lib/hooks/useDeviceType";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
 import { spacing, radius } from "@/constants/layout";
@@ -14,6 +15,8 @@ interface StepProgressProps {
 }
 
 export function StepProgress({ steps, currentStep }: StepProgressProps) {
+  const isTablet = useIsTablet();
+  const circleSize = isTablet ? 34 : 28;
   return (
     <View style={styles.container}>
       {steps.map((step, i) => {
@@ -25,6 +28,7 @@ export function StepProgress({ steps, currentStep }: StepProgressProps) {
               <View
                 style={[
                   styles.circle,
+                  { width: circleSize, height: circleSize, borderRadius: circleSize / 2 },
                   isComplete && styles.circleComplete,
                   isCurrent && styles.circleCurrent,
                 ]}

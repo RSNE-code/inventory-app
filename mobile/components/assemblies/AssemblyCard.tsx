@@ -133,7 +133,7 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
         </View>
       ) : null}
 
-      {/* BOM match badges */}
+      {/* BOM match badges or "No BOM linked" */}
       {matchedBoms.length > 0 ? (
         <View style={styles.specPillsRow}>
           {matchedBoms.map((bom) => (
@@ -143,7 +143,14 @@ export function AssemblyCard({ assembly, onPress, isSelected, position, totalInQ
             </View>
           ))}
         </View>
-      ) : null}
+      ) : (
+        <View style={styles.specPillsRow}>
+          <View style={styles.noBomBadge}>
+            <FileText size={10} color={colors.textMuted} strokeWidth={2} />
+            <Text style={styles.noBomText}>No BOM linked</Text>
+          </View>
+        </View>
+      )}
 
       <View style={styles.bottomRow}>
         <Text style={styles.date}>
@@ -247,5 +254,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.brandBlue,
     textTransform: "capitalize",
+  },
+  noBomBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    backgroundColor: colors.surfaceSecondary,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: "dashed",
+  },
+  noBomText: {
+    ...typography.caption,
+    fontSize: 10,
+    fontWeight: "500",
+    color: colors.textMuted,
   },
 });

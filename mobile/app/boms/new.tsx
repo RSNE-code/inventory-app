@@ -147,8 +147,7 @@ export default function NewBomScreen() {
     }
   }, [jobName, jobNumber, items, createBom, router]);
 
-  const handleCreate = async () => {
-    if (!jobName.trim() || items.length === 0) return;
+  const doCreate = useCallback(async () => {
     try {
       const result = await createBom.mutateAsync({
         jobName: jobName.trim(),
@@ -170,7 +169,25 @@ export default function NewBomScreen() {
     } catch {
       Alert.alert("Error", "Failed to create BOM.");
     }
-  };
+  }, [jobName, jobNumber, items, createBom, router]);
+
+  const handleCreate = useCallback(() => {
+    if (!jobName.trim() || items.length === 0) return;
+    // Fab warning: check for unresolved items that may need fabrication
+    const unresolvedCount = items.filter((it) => !it.productId || it.productId === "kept").length;
+    if (unresolvedCount > 0) {
+      Alert.alert(
+        "Unresolved Items",
+        `${unresolvedCount} item${unresolvedCount !== 1 ? "s" : ""} could not be matched to catalog products. They will be added as custom items.\n\nCreate BOM anyway?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Create BOM Anyway", onPress: doCreate },
+        ]
+      );
+    } else {
+      doCreate();
+    }
+  }, [jobName, items, doCreate]);
 
   return (
     <>

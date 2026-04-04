@@ -70,8 +70,9 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
       const result = await parseMutation.mutateAsync(text.trim());
       const parsed = (result as { items?: ParsedItem[] })?.items ?? [];
       if (parsed.length > 0) {
-        setItems(parsed);
+        setItems((prev) => phase === "REVIEW" ? [...prev, ...parsed] : parsed);
         setPhase("REVIEW");
+        setText("");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
         Alert.alert("No items found", "Try describing the items differently.");
@@ -79,7 +80,7 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
     } catch {
       Alert.alert("Error", "Failed to parse input. Please try again.");
     }
-  }, [text, parseMutation]);
+  }, [text, phase, parseMutation]);
 
   const handleCamera = useCallback(async () => {
     const uri = await capturePhoto();
@@ -300,6 +301,18 @@ export function ReceivingFlow({ scrollViewRef }: ReceivingFlowProps) {
             }}
           />
         ))}
+
+        {/* Add more items */}
+        <Text style={styles.addMoreLabel}>Add more items</Text>
+        <AIInput
+          value={text}
+          onChangeText={setText}
+          onSubmit={handleSubmitText}
+          onMicPress={() => {}}
+          onCameraPress={handleCamera}
+          isProcessing={parseMutation.isPending || imageParseM.isPending}
+          placeholder="Type or photograph more items\u2026"
+        />
 
         {/* Notes */}
         <Input
@@ -536,5 +549,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  addMoreLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
+    fontWeight: "600",
+    marginTop: spacing.lg,
+    marginBottom: spacing.xs,
   },
 });

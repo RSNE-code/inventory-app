@@ -2,7 +2,7 @@
  * POBrowser — browse and select purchase orders for receiving.
  * Matches web's po-browser.tsx with expandable PO rows.
  */
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   StyleSheet,
   View,
@@ -18,6 +18,8 @@ import {
   Building2,
   Briefcase,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Clock,
 } from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
@@ -37,7 +39,12 @@ interface POBrowserProps {
 
 export function POBrowser({ onSelect }: POBrowserProps) {
   const [search, setSearch] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const { data, isLoading } = usePurchaseOrders();
+
+  const handleToggleExpand = useCallback((id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }, []);
   const allPos: PurchaseOrder[] = (data as any)?.data ?? [];
 
   const filtered = search
@@ -91,8 +98,8 @@ export function POBrowser({ onSelect }: POBrowserProps) {
                 .springify()
                 .damping(15)}
             >
-              <PORow po={item} onSelect={() => onSelect(item)} />
-              {index < filtered.length - 1 && <View style={styles.sep} />}
+              <PORow po={item} expanded={expandedId === item.id} onToggle={() => handleToggleExpand(item.id)} onSelect={() => onSelect(item)} />
+              {index < filtered.length - 1 ? <View style={styles.sep} /> : null}
             </Animated.View>
           ))}
         </ScrollView>
@@ -103,46 +110,82 @@ export function POBrowser({ onSelect }: POBrowserProps) {
 
 function PORow({
   po,
+  expanded,
+  onToggle,
   onSelect,
 }: {
   po: PurchaseOrder;
+  expanded: boolean;
+  onToggle: () => void;
   onSelect: () => void;
 }) {
   const formattedDate = new Date(po.createdAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
+  const lineItems: Array<Record<string, unknown>> = (po as any).lineItems ?? [];
 
   return (
-    <Pressable onPress={onSelect} style={styles.poRow}>
-      {/* PO number badge */}
-      <View style={styles.poBadge}>
-        <Text style={styles.poBadgeText}>{po.poNumber}</Text>
-      </View>
+    <View style={styles.poRow}>
+      <Pressable onPress={onToggle} style={styles.poHeaderRow}>
+        {/* PO number badge */}
+        <View style={styles.poBadge}>
+          <Text style={styles.poBadgeText}>{po.poNumber}</Text>
+        </View>
 
-      {/* Info */}
-      <View style={styles.poInfo}>
-        <Text style={styles.poNumber}>PO #{po.poNumber}</Text>
-        <View style={styles.poMetaRow}>
-          <Building2 size={12} color={colors.textMuted} strokeWidth={2} />
-          <Text style={styles.poSupplier} numberOfLines={1}>
-            {po.supplierName}
-          </Text>
+        {/* Info */}
+        <View style={styles.poInfo}>
+          <Text style={styles.poNumber}>PO #{po.poNumber}</Text>
+          <View style={styles.poMetaRow}>
+            <Building2 size={12} color={colors.textMuted} strokeWidth={2} />
+            <Text style={styles.poSupplier} numberOfLines={1}>
+              {po.supplierName}
+            </Text>
+          </View>
+          <View style={styles.poMetaRow}>
+            <Clock size={11} color={colors.textMuted} strokeWidth={2} />
+            <Text style={styles.poDate}>{formattedDate}</Text>
+          </View>
         </View>
-        <View style={styles.poMetaRow}>
-          <Clock size={11} color={colors.textMuted} strokeWidth={2} />
-          <Text style={styles.poDate}>{formattedDate}</Text>
-        </View>
-      </View>
 
-      {/* Select */}
-      <View style={styles.poRight}>
-        <View style={styles.selectBadge}>
-          <Text style={styles.selectText}>Select</Text>
-        </View>
-        <ChevronRight size={16} color={colors.brandOrange} strokeWidth={2} />
-      </View>
-    </Pressable>
+        {expanded ? (
+          <ChevronUp size={16} color={colors.textMuted} strokeWidth={1.5} />
+        ) : (
+          <ChevronDown size={16} color={colors.textMuted} strokeWidth={1.5} />
+        )}
+      </Pressable>
+
+      {/* Expanded line items table */}
+      {expanded ? (
+        <Animated.View entering={FadeInDown.springify().damping(20)} style={styles.expandedContent}>
+          {lineItems.length > 0 ? (
+            <>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderText, { flex: 1 }]}>Item</Text>
+                <Text style={[styles.tableHeaderText, styles.tableCol]}>Ord</Text>
+                <Text style={[styles.tableHeaderText, styles.tableCol]}>Rcvd</Text>
+              </View>
+              {lineItems.map((li, i) => (
+                <View key={String(li.id ?? i)} style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1 }]} numberOfLines={1}>
+                    {String(li.productName ?? "")}
+                  </Text>
+                  <Text style={[styles.tableCellNum, styles.tableCol]}>
+                    {Number(li.quantity ?? 0)}
+                  </Text>
+                  <Text style={[styles.tableCellNum, styles.tableCol]}>
+                    {Number(li.qtyReceived ?? 0)}
+                  </Text>
+                </View>
+              ))}
+            </>
+          ) : (
+            <Text style={styles.noItems}>No line items</Text>
+          )}
+          <Button title="Receive This PO" onPress={onSelect} size="sm" style={styles.selectBtn} />
+        </Animated.View>
+      ) : null}
+    </View>
   );
 }
 
@@ -200,14 +243,17 @@ const styles = StyleSheet.create({
     height: spacing.sm,
   },
   poRow: {
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: "rgba(226, 230, 235, 0.6)",
+    overflow: "hidden",
+  },
+  poHeaderRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: "rgba(226, 230, 235, 0.6)",
   },
   poBadge: {
     width: 40,
@@ -249,20 +295,28 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
   },
-  poRight: {
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  selectBadge: {
-    backgroundColor: "rgba(232, 121, 43, 0.12)",
-    borderRadius: radius.full,
+  expandedContent: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: spacing.sm,
   },
-  selectText: {
-    ...typography.caption,
-    fontWeight: "700",
-    color: colors.brandOrange,
-    fontSize: 11,
+  tableHeader: {
+    flexDirection: "row",
+    paddingBottom: spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+    marginBottom: spacing.xs,
   },
+  tableHeaderText: { ...typography.caption, fontWeight: "600", color: colors.textMuted },
+  tableCol: { width: 48, textAlign: "right" },
+  tableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: spacing.xs,
+  },
+  tableCell: { ...typography.caption, color: colors.navy },
+  tableCellNum: { ...typography.caption, fontWeight: "600", color: colors.navy, fontVariant: ["tabular-nums"] },
+  noItems: { ...typography.caption, color: colors.textMuted, textAlign: "center", paddingVertical: spacing.md },
+  selectBtn: { marginTop: spacing.sm },
 });

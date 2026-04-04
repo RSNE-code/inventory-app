@@ -126,7 +126,7 @@ export default function DashboardScreen() {
 
             {/* Row 3: Inventory Trend — full width for better visualization */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
-              <InventoryTrendChart />
+              <InventoryTrendChart transactions={dashboard.recentTransactions} />
             </Animated.View>
 
             {/* Row 4: Low Stock + Recent Activity — side-by-side on iPad */}

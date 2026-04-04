@@ -246,6 +246,7 @@ function HistoryTab({
               </View>
               <Text style={styles.histMeta}>
                 {item.countedBy} · {new Date(item.createdAt).toLocaleDateString()}
+                {(item as any).reason ? ` · ${(item as any).reason}` : ""}
               </Text>
             </Card>
           </Animated.View>
