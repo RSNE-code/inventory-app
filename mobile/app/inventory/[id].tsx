@@ -26,6 +26,20 @@ import { type as typography } from "@/constants/typography";
 import { spacing, radius, DETAIL_MAX_WIDTH } from "@/constants/layout";
 import { CARD_ENTER_DELAY } from "@/constants/animations";
 
+const TX_TYPE_LABELS: Record<string, string> = {
+  RECEIVE: "Received",
+  CHECKOUT: "Checked Out",
+  ADDITIONAL_PICKUP: "Pickup",
+  RETURN_FULL: "Returned",
+  RETURN_PARTIAL: "Partial Return",
+  RETURN_SCRAP: "Scrapped",
+  CONSUME: "Consumed",
+  PRODUCE: "Produced",
+  SHIP: "Shipped",
+  ADJUST_UP: "Adjusted +",
+  ADJUST_DOWN: "Adjusted -",
+};
+
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -168,25 +182,46 @@ export default function ProductDetailScreen() {
             </Animated.View>
           ) : null}
 
-          {/* Recent Activity */}
+          {/* Transaction History — last 20 transactions */}
           <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(15)}>
             <Card style={styles.activityCard}>
               <View style={styles.activityHeader}>
                 <Activity size={18} color={colors.brandBlue} strokeWidth={2} />
-                <Text style={styles.sectionTitle}>Recent Activity</Text>
+                <Text style={styles.sectionTitle}>Transaction History</Text>
               </View>
-              {p.createdAt ? (
-                <View style={styles.activityRow}>
-                  <Text style={styles.activityType}>Created</Text>
-                  <Text style={styles.activityDate}>{new Date(String(p.createdAt)).toLocaleDateString()}</Text>
-                </View>
-              ) : null}
-              {p.updatedAt && String(p.updatedAt) !== String(p.createdAt) ? (
-                <View style={styles.activityRow}>
-                  <Text style={styles.activityType}>Last Updated</Text>
-                  <Text style={styles.activityDate}>{new Date(String(p.updatedAt)).toLocaleDateString()}</Text>
-                </View>
-              ) : null}
+              {(() => {
+                const txns = (p.recentTransactions ?? p.transactions ?? []) as Array<{
+                  id: string; type: string; quantity: number; userName?: string; createdAt: string;
+                }>;
+                if (txns.length === 0) {
+                  return (
+                    <View style={styles.activityRow}>
+                      <Text style={styles.activityType}>Created</Text>
+                      <Text style={styles.activityDate}>
+                        {p.createdAt ? new Date(String(p.createdAt)).toLocaleDateString() : "—"}
+                      </Text>
+                    </View>
+                  );
+                }
+                return txns.slice(0, 20).map((tx, i) => {
+                  const isPositive = ["RECEIVE", "RETURN_FULL", "RETURN_PARTIAL", "PRODUCE", "ADJUST_UP"].includes(tx.type);
+                  const label = TX_TYPE_LABELS[tx.type] || tx.type;
+                  return (
+                    <View key={tx.id ?? i} style={[styles.activityRow, i === 0 && { borderTopWidth: 0 }]}>
+                      <View style={styles.txTextCol}>
+                        <Text style={styles.activityType}>{label}</Text>
+                        <Text style={styles.txMeta}>
+                          {tx.userName ? `${tx.userName} · ` : ""}
+                          {new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </Text>
+                      </View>
+                      <Text style={[styles.txQty, { color: isPositive ? colors.statusGreen : colors.statusRed }]}>
+                        {isPositive ? "+" : "-"}{formatQuantity(Math.abs(Number(tx.quantity)))}
+                      </Text>
+                    </View>
+                  );
+                });
+              })()}
             </Card>
           </Animated.View>
 
@@ -347,6 +382,21 @@ const styles = StyleSheet.create({
   notesText: {
     ...typography.body,
     color: colors.textSecondary,
+  },
+  txTextCol: {
+    flex: 1,
+    minWidth: 0,
+  },
+  txMeta: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  txQty: {
+    ...typography.subtitle,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"] as const,
+    marginLeft: spacing.md,
   },
   tier1Section: {
     gap: spacing.lg,

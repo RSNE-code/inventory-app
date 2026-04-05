@@ -4,6 +4,7 @@
  */
 import { StyleSheet, View, Text } from "react-native";
 import { DollarSign } from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/Card";
 import { colors } from "@/constants/colors";
 import { type as typography } from "@/constants/typography";
@@ -20,8 +21,10 @@ interface StockSummaryProps {
 }
 
 export function StockSummaryCard({ summary }: StockSummaryProps) {
+  const router = useRouter();
+
   return (
-    <Card accent="blue">
+    <Card accent="blue" onPress={() => router.push("/(tabs)/inventory")}>
       <View style={styles.row}>
         <View style={styles.textCol}>
           <Text style={styles.label}>INVENTORY VALUE</Text>

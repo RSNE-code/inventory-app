@@ -28,6 +28,8 @@ export interface DashboardData {
     inProduction: number;
     completed: number;
   };
+  doorQueueCount: number;
+  unfabricatedAssemblyCount: number;
 }
 
 export interface LowStockItem {
@@ -45,6 +47,20 @@ export interface RecentTransaction {
   quantity: number;
   userName: string;
   createdAt: string;
+}
+
+// ── Dashboard Trend ──
+
+export interface TrendDataPoint {
+  date: string;
+  value: number;
+}
+
+export interface DashboardTrendData {
+  historical: TrendDataPoint[];
+  projected: TrendDataPoint[];
+  currentValue: number;
+  categories: { id: string; name: string }[];
 }
 
 // ── Inventory ──

@@ -161,6 +161,19 @@ export default function InventoryScreen() {
             }
           />
         )}
+
+        {/* FAB — matches web's fixed bottom-20 right-4 h-14 w-14 rounded-full bg-brand-orange */}
+        <Pressable
+          style={[styles.fab, { bottom: insets.bottom + 80 }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push("/inventory/new" as never);
+          }}
+          accessibilityLabel="Add new product"
+          accessibilityRole="button"
+        >
+          <Plus size={24} color={colors.textInverse} strokeWidth={2.5} />
+        </Pressable>
       </View>
     </>
   );
@@ -200,4 +213,20 @@ const styles = StyleSheet.create({
   filterIndicator: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: spacing.xs },
   filterIndicatorText: { ...typography.caption, color: colors.textMuted },
   filterClear: { ...typography.caption, fontWeight: "600", color: colors.brandBlue },
+  fab: {
+    position: "absolute",
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.brandOrange,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#E8792B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 8,
+    zIndex: 50,
+  },
 });

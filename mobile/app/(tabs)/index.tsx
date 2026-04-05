@@ -3,7 +3,7 @@
  * iPad: ActionItems + WorkPipelines in top row, full-width trend, then LowStock + RecentActivity.
  * Phone: vertical stack.
  */
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, ScrollView, RefreshControl, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -87,14 +87,14 @@ export default function DashboardScreen() {
                     lowStockCount={dashboard.summary.lowStockCount}
                     outOfStockCount={dashboard.summary.outOfStockCount}
                     pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
-                    unfabricatedAssemblyCount={0}
+                    unfabricatedAssemblyCount={dashboard.unfabricatedAssemblyCount || 0}
                   />
                 </Animated.View>
                 <Animated.View style={styles.tabletTwoThirds} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
                   <WorkPipelines
                     bomStatusCounts={dashboard.bomStatusCounts || {}}
                     fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
-                    doorQueueCount={0}
+                    doorQueueCount={dashboard.doorQueueCount || 0}
                   />
                 </Animated.View>
               </View>
@@ -106,14 +106,14 @@ export default function DashboardScreen() {
                     lowStockCount={dashboard.summary.lowStockCount}
                     outOfStockCount={dashboard.summary.outOfStockCount}
                     pendingApprovals={dashboard.fabrication?.pendingApprovals || 0}
-                    unfabricatedAssemblyCount={0}
+                    unfabricatedAssemblyCount={dashboard.unfabricatedAssemblyCount || 0}
                   />
                 </Animated.View>
                 <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
                   <WorkPipelines
                     bomStatusCounts={dashboard.bomStatusCounts || {}}
                     fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
-                    doorQueueCount={0}
+                    doorQueueCount={dashboard.doorQueueCount || 0}
                   />
                 </Animated.View>
               </>
@@ -124,9 +124,9 @@ export default function DashboardScreen() {
               <StockSummaryCard summary={dashboard.summary} />
             </Animated.View>
 
-            {/* Row 3: Inventory Trend — full width for better visualization */}
+            {/* Row 3: Inventory Trend — full width, self-contained (fetches own data) */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
-              <InventoryTrendChart transactions={dashboard.recentTransactions} />
+              <InventoryTrendChart />
             </Animated.View>
 
             {/* Row 4: Low Stock + Recent Activity — side-by-side on iPad */}

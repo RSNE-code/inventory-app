@@ -2,7 +2,7 @@
  * Receiving hooks — receipt CRUD, PO matching, history.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import type { Receipt, Supplier, PurchaseOrder } from "@/types/api";
 
@@ -61,6 +61,47 @@ export function useCreateReceipt() {
       qc.invalidateQueries({ queryKey: queryKeys.receipts });
       qc.invalidateQueries({ queryKey: queryKeys.inventory });
       qc.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}
+
+export function useSupplierMatch() {
+  return useMutation({
+    mutationFn: (name: string) =>
+      apiPost<{ id: string; name: string; confidence: number } | null>(
+        "/api/suppliers/match",
+        { name }
+      ),
+  });
+}
+
+export function usePoMatch() {
+  return useMutation({
+    mutationFn: (body: { poNumber?: string; vendorName?: string; amount?: number }) =>
+      apiPost("/api/pos/match", body),
+  });
+}
+
+export function usePoSearch(supplierId?: string, search?: string) {
+  const params = new URLSearchParams();
+  if (supplierId) params.set("supplierId", supplierId);
+  if (search) params.set("search", search);
+  return useQuery({
+    queryKey: [...queryKeys.pos, { supplierId, search }],
+    queryFn: () => apiGet(`/api/pos?${params}`),
+    enabled: !!search || !!supplierId,
+  });
+}
+
+export function useVoidReceipt() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (receiptId: string) => apiDelete(`/api/receiving/${receiptId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.receipts });
+      qc.invalidateQueries({ queryKey: queryKeys.inventory });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard });
+      qc.invalidateQueries({ queryKey: queryKeys.pos });
     },
   });
 }

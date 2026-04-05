@@ -106,3 +106,24 @@ export function useReorderBoms() {
     },
   });
 }
+
+export function usePanelCheckout() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bomId, ...body }: { bomId: string; lineItemId: string; items: unknown[] }) =>
+      apiPost(`/api/boms/${bomId}/panel-checkout`, body),
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: queryKeys.bom(v.bomId) });
+      qc.invalidateQueries({ queryKey: queryKeys.boms });
+      qc.invalidateQueries({ queryKey: queryKeys.inventory });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard });
+    },
+  });
+}
+
+export function useClonableBoms() {
+  return useQuery({
+    queryKey: [...queryKeys.boms, "clonable"],
+    queryFn: () => apiGet<{ data: Bom[] }>("/api/boms/clonable"),
+  });
+}

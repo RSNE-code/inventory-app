@@ -8,7 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
 import { IPadPage } from "@/components/layout/iPadPage";
-import { ProductForm } from "@/components/inventory/ProductForm";
+import { ProductForm, EMPTY_FORM } from "@/components/inventory/ProductForm";
+import type { ProductFormData } from "@/components/inventory/ProductForm";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { useProduct, useUpdateProduct } from "@/hooks/use-products";
@@ -27,23 +28,30 @@ export default function EditProductScreen() {
   const product = (data as any)?.data ?? data;
   const p = product as Record<string, any> | undefined;
 
-  const [form, setForm] = useState({
-    name: "", sku: "", categoryId: "", unitOfMeasure: "",
-    currentQty: "", reorderPoint: "", location: "", unitCost: "", notes: "",
-  });
+  const [form, setForm] = useState<ProductFormData>({ ...EMPTY_FORM });
 
   useEffect(() => {
     if (p) {
       setForm({
+        ...EMPTY_FORM,
         name: String(p.name ?? ""),
         sku: String(p.sku ?? ""),
         categoryId: String(p.categoryId ?? ""),
-        unitOfMeasure: String(p.unitOfMeasure ?? p.unit ?? ""),
+        tier: String(p.tier ?? "1"),
+        unitOfMeasure: String(p.unitOfMeasure ?? p.unit ?? "EA"),
+        shopUnit: String(p.shopUnit ?? ""),
         currentQty: String(p.currentQty ?? "0"),
         reorderPoint: String(p.reorderPoint ?? "0"),
+        leadTimeDays: String(p.leadTimeDays ?? ""),
         location: String(p.location ?? ""),
         unitCost: String(p.unitCost ?? ""),
         notes: String(p.notes ?? ""),
+        dimLength: String(p.dimLength ?? ""),
+        dimLengthUnit: String(p.dimLengthUnit ?? "in"),
+        dimWidth: String(p.dimWidth ?? ""),
+        dimWidthUnit: String(p.dimWidthUnit ?? "in"),
+        dimThickness: String(p.dimThickness ?? ""),
+        dimThicknessUnit: String(p.dimThicknessUnit ?? "in"),
       });
     }
   }, [p]);
