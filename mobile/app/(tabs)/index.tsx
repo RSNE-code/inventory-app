@@ -11,11 +11,10 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Header } from "@/components/layout/Header";
 import { ActionItems } from "@/components/dashboard/ActionItems";
-import { WorkPipelines } from "@/components/dashboard/WorkPipelines";
+import { WorkPipelines, BomPipelineCard, FabPipelineCard } from "@/components/dashboard/WorkPipelines";
 import { LowStockList } from "@/components/dashboard/LowStockList";
 import { InventoryTrendChart } from "@/components/dashboard/InventoryTrendChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { StockSummaryCard } from "@/components/dashboard/StockSummaryCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -63,13 +62,16 @@ export default function DashboardScreen() {
       >
         {isLoading ? (
           <View style={styles.skeletons}>
-            <Skeleton width="100%" height={96} />
+            <View style={styles.skeletonRow}>
+              <Skeleton width="32%" height={140} />
+              <Skeleton width="32%" height={140} />
+              <Skeleton width="32%" height={140} />
+            </View>
+            <Skeleton width="100%" height={180} />
             <View style={styles.skeletonRow}>
               <Skeleton width="48%" height={140} />
               <Skeleton width="48%" height={140} />
             </View>
-            <Skeleton width="100%" height={96} />
-            <Skeleton width="100%" height={180} />
           </View>
         ) : error ? (
           <ErrorState
@@ -78,7 +80,7 @@ export default function DashboardScreen() {
           />
         ) : dashboard ? (
           <>
-            {/* Row 1: Needs Attention + Work Pipelines (BOM + Fab) — side-by-side on iPad */}
+            {/* Row 1: 3 uniform cards — ActionItems + BOM Pipeline + Fab Pipeline */}
             {isTablet ? (
               <View style={styles.tabletRow}>
                 <Animated.View style={styles.tabletThird} entering={FadeInDown.delay(CARD_ENTER_DELAY).springify().damping(20)}>
@@ -90,9 +92,11 @@ export default function DashboardScreen() {
                     unfabricatedAssemblyCount={dashboard.unfabricatedAssemblyCount || 0}
                   />
                 </Animated.View>
-                <Animated.View style={styles.tabletTwoThirds} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
-                  <WorkPipelines
-                    bomStatusCounts={dashboard.bomStatusCounts || {}}
+                <Animated.View style={styles.tabletThird} entering={FadeInDown.delay(CARD_ENTER_DELAY * 2).springify().damping(20)}>
+                  <BomPipelineCard bomStatusCounts={dashboard.bomStatusCounts || {}} />
+                </Animated.View>
+                <Animated.View style={styles.tabletThird} entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(20)}>
+                  <FabPipelineCard
                     fabrication={dashboard.fabrication || { pendingApprovals: 0, inProduction: 0, completed: 0 }}
                     doorQueueCount={dashboard.doorQueueCount || 0}
                   />
@@ -119,12 +123,7 @@ export default function DashboardScreen() {
               </>
             )}
 
-            {/* Row 2: Stock Summary — full width */}
-            <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 3).springify().damping(20)}>
-              <StockSummaryCard summary={dashboard.summary} />
-            </Animated.View>
-
-            {/* Row 3: Inventory Trend — full width, self-contained (fetches own data) */}
+            {/* Row 2: Inventory Trend — full width, self-contained (fetches own data) */}
             <Animated.View entering={FadeInDown.delay(CARD_ENTER_DELAY * 4).springify().damping(20)}>
               <InventoryTrendChart />
             </Animated.View>
@@ -180,8 +179,5 @@ const styles = StyleSheet.create({
   },
   tabletThird: {
     flex: 1,
-  },
-  tabletTwoThirds: {
-    flex: 2,
   },
 });
